@@ -33,7 +33,7 @@ fn main() {
         let mut rs = RenderStates::default();
         vertices.clear();
         let mut idx = 0;
-        for y in 0..67 {
+        'display: for y in 0..67 {
             for x in 0..73 {
                 let byte = data[idx];
                 let [g1, g2] = hex_conv::byte_to_hex_digits(byte);
@@ -54,6 +54,9 @@ fn main() {
                     Color::WHITE,
                 );
                 idx += 1;
+                if idx == data.len() {
+                    break 'display;
+                }
             }
         }
         rs.set_texture(Some(f.texture(10)));
