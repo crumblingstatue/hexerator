@@ -7,7 +7,7 @@ use egui_sfml::{
 use sfml::{
     graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
     system::Vector2,
-    window::{ContextSettings, Event, Style},
+    window::{ContextSettings, Event, Key, Style},
 };
 
 macro_rules! dv {
@@ -44,6 +44,13 @@ fn main() {
             sf_egui.add_event(&event);
             match event {
                 Event::Closed => w.close(),
+                Event::KeyPressed { code, .. } => match code {
+                    Key::Up => starting_offset -= rows,
+                    Key::Down => starting_offset += rows,
+                    Key::PageUp => starting_offset -= rows * cols,
+                    Key::PageDown => starting_offset += rows * cols,
+                    _ => {}
+                },
                 _ => {}
             }
         }
