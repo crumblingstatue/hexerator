@@ -45,10 +45,30 @@ fn main() {
             match event {
                 Event::Closed => w.close(),
                 Event::KeyPressed { code, .. } => match code {
-                    Key::Up => starting_offset -= rows,
-                    Key::Down => starting_offset += rows,
-                    Key::PageUp => starting_offset -= rows * cols,
-                    Key::PageDown => starting_offset += rows * cols,
+                    Key::Up => {
+                        if starting_offset >= cols {
+                            starting_offset -= cols
+                        }
+                    }
+                    Key::Down => {
+                        if starting_offset + cols < data.len() {
+                            starting_offset += cols
+                        }
+                    }
+                    Key::PageUp => {
+                        if starting_offset >= rows * cols {
+                            starting_offset -= rows * cols
+                        } else {
+                            starting_offset = 0
+                        }
+                    }
+                    Key::PageDown => {
+                        if starting_offset + rows * cols < data.len() {
+                            starting_offset += rows * cols
+                        }
+                    }
+                    Key::Home => starting_offset = 0,
+                    Key::End => starting_offset = data.len() - rows * cols,
                     _ => {}
                 },
                 _ => {}
