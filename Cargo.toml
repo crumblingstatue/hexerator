@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies.sfml]
 git = "https://github.com/jeremyletang/rust-sfml.git"
+[dependencies.egui-sfml]
+git = "https://github.com/crumblingstatue/egui-sfml.git"

@@ -1,10 +1,23 @@
 mod hex_conv;
 
+use egui_sfml::{
+    egui::{DragValue, Window},
+    SfEgui,
+};
 use sfml::{
     graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
     system::Vector2,
     window::{ContextSettings, Event, Style},
 };
+
+macro_rules! dv {
+    ($ui:expr, $val:expr) => {
+        $ui.horizontal(|ui| {
+            ui.label(stringify!($val));
+            ui.add(DragValue::new(&mut $val));
+        });
+    };
+}
 
 fn main() {
     let path = std::env::args_os()
@@ -19,11 +32,16 @@ fn main() {
     );
     w.set_vertical_sync_enabled(true);
     w.set_position(Vector2::new(0, 0));
+    let mut sf_egui = SfEgui::new(&w);
     let f = Font::from_file("DejaVuSansMono.ttf").unwrap();
     let mut vertices = Vec::new();
+    let mut rows = 67;
+    let mut cols = 73;
+    let mut starting_offset = 0;
 
     while w.is_open() {
         while let Some(event) = w.poll_event() {
+            sf_egui.add_event(&event);
             match event {
                 Event::Closed => w.close(),
                 _ => {}
@@ -32,9 +50,16 @@ fn main() {
         w.clear(Color::BLACK);
         let mut rs = RenderStates::default();
         vertices.clear();
-        let mut idx = 0;
-        'display: for y in 0..67 {
-            for x in 0..73 {
+        let mut idx = starting_offset;
+        sf_egui.do_frame(|ctx| {
+            Window::new("Hexerator").show(ctx, |ui| {
+                dv!(ui, rows);
+                dv!(ui, cols);
+                dv!(ui, starting_offset);
+            });
+        });
+        'display: for y in 0..rows {
+            for x in 0..cols {
                 let byte = data[idx];
                 let [g1, g2] = hex_conv::byte_to_hex_digits(byte);
                 draw_glyph(
@@ -62,6 +87,7 @@ fn main() {
         rs.set_texture(Some(f.texture(10)));
         w.draw_primitives(&vertices, PrimitiveType::QUADS, &rs);
         rs.set_texture(None);
+        sf_egui.draw(&mut w, None);
         w.display();
     }
 }
