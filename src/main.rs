@@ -1,7 +1,7 @@
 mod hex_conv;
 
 use egui_sfml::{
-    egui::{DragValue, Window},
+    egui::{color::rgb_from_hsv, Checkbox, DragValue, Window},
     SfEgui,
 };
 use sfml::{
@@ -10,12 +10,24 @@ use sfml::{
     window::{ContextSettings, Event, Key, Style},
 };
 
-macro_rules! dv {
-    ($ui:expr, $val:expr) => {
+macro_rules! modify {
+    ($ui:expr, $val:expr, $widget:expr) => {
         $ui.horizontal(|ui| {
             ui.label(stringify!($val));
-            ui.add(DragValue::new(&mut $val));
+            ui.add($widget);
         });
+    };
+}
+
+macro_rules! dv {
+    ($ui:expr, $val:expr) => {
+        modify!($ui, $val, DragValue::new(&mut $val))
+    };
+}
+
+macro_rules! cb {
+    ($ui:expr, $val:expr) => {
+        modify!($ui, $val, Checkbox::new(&mut $val, ""))
     };
 }
 
@@ -38,6 +50,7 @@ fn main() {
     let mut rows = 67;
     let mut cols = 73;
     let mut starting_offset = 0;
+    let mut colorize = false;
 
     while w.is_open() {
         while let Some(event) = w.poll_event() {
@@ -83,19 +96,26 @@ fn main() {
                 dv!(ui, rows);
                 dv!(ui, cols);
                 dv!(ui, starting_offset);
+                cb!(ui, colorize);
             });
         });
         'display: for y in 0..rows {
             for x in 0..cols {
                 let byte = data[idx];
                 let [g1, g2] = hex_conv::byte_to_hex_digits(byte);
+                let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
+                let c = if colorize {
+                    Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
+                } else {
+                    Color::WHITE
+                };
                 draw_glyph(
                     &f,
                     &mut vertices,
                     x as f32 * 26.0,
                     y as f32 * 16.0,
                     g1 as u32,
-                    Color::WHITE,
+                    c,
                 );
                 draw_glyph(
                     &f,
@@ -103,7 +123,7 @@ fn main() {
                     x as f32 * 26.0 + 11.0,
                     y as f32 * 16.0,
                     g2 as u32,
-                    Color::WHITE,
+                    c,
                 );
                 idx += 1;
                 if idx == data.len() {
