@@ -48,7 +48,7 @@ fn main() {
     let f = Font::from_file("DejaVuSansMono.ttf").unwrap();
     let mut vertices = Vec::new();
     let mut rows = 67;
-    let mut cols = 73;
+    let mut cols = 48;
     let mut starting_offset = 0;
     let mut colorize = false;
 
@@ -90,7 +90,6 @@ fn main() {
         w.clear(Color::BLACK);
         let mut rs = RenderStates::default();
         vertices.clear();
-        let mut idx = starting_offset;
         sf_egui.do_frame(|ctx| {
             Window::new("Hexerator").show(ctx, |ui| {
                 dv!(ui, rows);
@@ -99,6 +98,8 @@ fn main() {
                 cb!(ui, colorize);
             });
         });
+        // region: hex display
+        let mut idx = starting_offset;
         'display: for y in 0..rows {
             for x in 0..cols {
                 let byte = data[idx];
@@ -131,6 +132,33 @@ fn main() {
                 }
             }
         }
+        // endregion
+        // region: ascii display
+        idx = starting_offset;
+        'asciidisplay: for y in 0..rows {
+            for x in 0..cols {
+                let byte = data[idx];
+                let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
+                let c = if colorize {
+                    Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
+                } else {
+                    Color::WHITE
+                };
+                draw_glyph(
+                    &f,
+                    &mut vertices,
+                    (x + cols * 2 + 1) as f32 * 13.0,
+                    y as f32 * 16.0,
+                    byte as u32,
+                    c,
+                );
+                idx += 1;
+                if idx == data.len() {
+                    break 'asciidisplay;
+                }
+            }
+        }
+        // endregion
         rs.set_texture(Some(f.texture(10)));
         w.draw_primitives(&vertices, PrimitiveType::QUADS, &rs);
         rs.set_texture(None);
