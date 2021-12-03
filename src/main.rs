@@ -102,6 +102,9 @@ fn main() {
         let mut idx = starting_offset;
         'display: for y in 0..rows {
             for x in 0..cols {
+                if idx == data.len() {
+                    break 'display;
+                }
                 let byte = data[idx];
                 let [g1, g2] = hex_conv::byte_to_hex_digits(byte);
                 let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
@@ -127,9 +130,6 @@ fn main() {
                     c,
                 );
                 idx += 1;
-                if idx == data.len() {
-                    break 'display;
-                }
             }
         }
         // endregion
@@ -137,6 +137,9 @@ fn main() {
         idx = starting_offset;
         'asciidisplay: for y in 0..rows {
             for x in 0..cols {
+                if idx == data.len() {
+                    break 'asciidisplay;
+                }
                 let byte = data[idx];
                 let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
                 let c = if colorize {
@@ -153,9 +156,6 @@ fn main() {
                     c,
                 );
                 idx += 1;
-                if idx == data.len() {
-                    break 'asciidisplay;
-                }
             }
         }
         // endregion
