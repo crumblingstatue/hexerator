@@ -5,7 +5,10 @@ use egui_sfml::{
     SfEgui,
 };
 use sfml::{
-    graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
+    graphics::{
+        Color, Font, PrimitiveType, Rect, RectangleShape, RenderStates, RenderTarget, RenderWindow,
+        Shape, Vertex,
+    },
     system::Vector2,
     window::{ContextSettings, Event, Key, Style},
 };
@@ -51,6 +54,7 @@ fn main() {
     let mut cols = 48;
     let mut starting_offset = 0;
     let mut colorize = false;
+    let mut cursor: usize = 0;
 
     while w.is_open() {
         while let Some(event) = w.poll_event() {
@@ -59,29 +63,44 @@ fn main() {
                 Event::Closed => w.close(),
                 Event::KeyPressed { code, .. } => match code {
                     Key::Up => {
-                        if starting_offset >= cols {
-                            starting_offset -= cols
+                        cursor = cursor.saturating_sub(cols);
+                        if cursor < starting_offset {
+                            starting_offset -= cols;
                         }
                     }
                     Key::Down => {
-                        if starting_offset + cols < data.len() {
-                            starting_offset += cols
+                        cursor += cols;
+                        if cursor >= starting_offset + rows * cols {
+                            starting_offset += cols;
                         }
                     }
+                    Key::Left => cursor = cursor.saturating_sub(1),
+                    Key::Right => cursor += 1,
                     Key::PageUp => {
-                        if starting_offset >= rows * cols {
-                            starting_offset -= rows * cols
+                        let amount = rows * cols;
+                        if starting_offset >= amount {
+                            starting_offset -= amount;
+                            cursor -= amount;
                         } else {
                             starting_offset = 0
                         }
                     }
                     Key::PageDown => {
-                        if starting_offset + rows * cols < data.len() {
-                            starting_offset += rows * cols
+                        let amount = rows * cols;
+                        if starting_offset + amount < data.len() {
+                            starting_offset += amount;
+                            cursor += amount;
                         }
                     }
-                    Key::Home => starting_offset = 0,
-                    Key::End => starting_offset = data.len() - rows * cols,
+                    Key::Home => {
+                        starting_offset = 0;
+                        cursor = 0;
+                    }
+                    Key::End => {
+                        let pos = data.len() - rows * cols;
+                        starting_offset = pos;
+                        cursor = pos;
+                    }
                     _ => {}
                 },
                 _ => {}
@@ -92,10 +111,13 @@ fn main() {
         vertices.clear();
         sf_egui.do_frame(|ctx| {
             Window::new("Hexerator").show(ctx, |ui| {
+                // region: debug panel
                 dv!(ui, rows);
                 dv!(ui, cols);
                 dv!(ui, starting_offset);
+                dv!(ui, cursor);
                 cb!(ui, colorize);
+                // endregion
             });
         });
         // region: hex display
@@ -106,6 +128,9 @@ fn main() {
                     break 'display;
                 }
                 let byte = data[idx];
+                if idx == cursor {
+                    draw_cursor(x as f32 * 26.0, y as f32 * 16.0, &mut w);
+                }
                 let [g1, g2] = hex_conv::byte_to_hex_digits(byte);
                 let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
                 let c = if colorize {
@@ -147,6 +172,9 @@ fn main() {
                 } else {
                     Color::WHITE
                 };
+                if idx == cursor {
+                    draw_cursor((x + cols * 2 + 1) as f32 * 13.0, y as f32 * 16.0, &mut w);
+                }
                 draw_glyph(
                     &f,
                     &mut vertices,
@@ -165,6 +193,19 @@ fn main() {
         sf_egui.draw(&mut w, None);
         w.display();
     }
+}
+
+fn draw_cursor(x: f32, y: f32, w: &mut RenderWindow) {
+    let mut rs = RectangleShape::from_rect(Rect {
+        left: x,
+        top: y,
+        width: 10.0,
+        height: 10.0,
+    });
+    rs.set_fill_color(Color::TRANSPARENT);
+    rs.set_outline_thickness(2.0);
+    rs.set_outline_color(Color::YELLOW);
+    w.draw(&rs);
 }
 
 fn draw_glyph(font: &Font, vertices: &mut Vec<Vertex>, x: f32, y: f32, glyph: u32, color: Color) {
