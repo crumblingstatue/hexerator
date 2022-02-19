@@ -1,7 +1,7 @@
 mod hex_conv;
 
 use egui_sfml::{
-    egui::{color::rgb_from_hsv, Checkbox, DragValue, Window},
+    egui::{color::rgb_from_hsv, Checkbox, ComboBox, DragValue, Window},
     SfEgui,
 };
 use sfml::{
@@ -34,11 +34,26 @@ macro_rules! cb {
     };
 }
 
+#[derive(PartialEq)]
+enum EditTarget {
+    Hex,
+    Text,
+}
+
+impl EditTarget {
+    fn name(&self) -> &'static str {
+        match self {
+            EditTarget::Hex => "hex",
+            EditTarget::Text => "text",
+        }
+    }
+}
+
 fn main() {
     let path = std::env::args_os()
         .nth(1)
         .expect("Need file path as argument");
-    let data = std::fs::read(path).unwrap();
+    let mut data = std::fs::read(path).unwrap();
     let mut w = RenderWindow::new(
         (1920, 1080),
         "hello",
@@ -55,8 +70,10 @@ fn main() {
     let mut starting_offset = 0;
     let mut colorize = false;
     let mut cursor: usize = 0;
+    let mut edit_target = EditTarget::Hex;
 
     while w.is_open() {
+        // region: event handling
         while let Some(event) = w.poll_event() {
             sf_egui.add_event(&event);
             match event {
@@ -103,9 +120,19 @@ fn main() {
                     }
                     _ => {}
                 },
+                Event::TextEntered { unicode } => match edit_target {
+                    EditTarget::Hex => todo!(),
+                    EditTarget::Text => {
+                        if unicode.is_ascii() {
+                            data[cursor] = unicode as u8;
+                            cursor += 1;
+                        }
+                    }
+                },
                 _ => {}
             }
         }
+        // endregion
         w.clear(Color::BLACK);
         let mut rs = RenderStates::default();
         vertices.clear();
@@ -117,6 +144,20 @@ fn main() {
                 dv!(ui, starting_offset);
                 dv!(ui, cursor);
                 cb!(ui, colorize);
+                ComboBox::new("edit-select", "Edit target")
+                    .selected_text(edit_target.name())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(
+                            &mut edit_target,
+                            EditTarget::Hex,
+                            EditTarget::Hex.name(),
+                        );
+                        ui.selectable_value(
+                            &mut edit_target,
+                            EditTarget::Text,
+                            EditTarget::Text.name(),
+                        );
+                    });
                 // endregion
             });
         });
@@ -129,7 +170,12 @@ fn main() {
                 }
                 let byte = data[idx];
                 if idx == cursor {
-                    draw_cursor(x as f32 * 26.0, y as f32 * 16.0, &mut w);
+                    draw_cursor(
+                        x as f32 * 26.0,
+                        y as f32 * 16.0,
+                        &mut w,
+                        edit_target == EditTarget::Hex,
+                    );
                 }
                 let [g1, g2] = hex_conv::byte_to_hex_digits(byte);
                 let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
@@ -173,7 +219,12 @@ fn main() {
                     Color::WHITE
                 };
                 if idx == cursor {
-                    draw_cursor((x + cols * 2 + 1) as f32 * 13.0, y as f32 * 16.0, &mut w);
+                    draw_cursor(
+                        (x + cols * 2 + 1) as f32 * 13.0,
+                        y as f32 * 16.0,
+                        &mut w,
+                        edit_target == EditTarget::Text,
+                    );
                 }
                 draw_glyph(
                     &f,
@@ -195,7 +246,7 @@ fn main() {
     }
 }
 
-fn draw_cursor(x: f32, y: f32, w: &mut RenderWindow) {
+fn draw_cursor(x: f32, y: f32, w: &mut RenderWindow, active: bool) {
     let mut rs = RectangleShape::from_rect(Rect {
         left: x,
         top: y,
@@ -203,8 +254,13 @@ fn draw_cursor(x: f32, y: f32, w: &mut RenderWindow) {
         height: 10.0,
     });
     rs.set_fill_color(Color::TRANSPARENT);
-    rs.set_outline_thickness(2.0);
-    rs.set_outline_color(Color::YELLOW);
+    if active {
+        rs.set_outline_thickness(2.0);
+        rs.set_outline_color(Color::YELLOW);
+    } else {
+        rs.set_outline_thickness(1.0);
+        rs.set_outline_color(Color::BLUE);
+    }
     w.draw(&rs);
 }
 
