@@ -53,7 +53,7 @@ fn main() {
     let path = std::env::args_os()
         .nth(1)
         .expect("Need file path as argument");
-    let mut data = std::fs::read(path).unwrap();
+    let mut data = std::fs::read(&path).unwrap();
     let mut w = RenderWindow::new(
         (1920, 1080),
         "hello",
@@ -158,6 +158,9 @@ fn main() {
                             EditTarget::Text.name(),
                         );
                     });
+                if ui.button("Save").clicked() {
+                    std::fs::write(&path, &data).unwrap();
+                }
                 // endregion
             });
         });
