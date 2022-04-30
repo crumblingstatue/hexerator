@@ -270,7 +270,7 @@ fn main() {
                         }
                     }
                     ui.with_layout(Layout::right_to_left(), |ui| {
-                        ui.checkbox(&mut show_debug_panel, "debug panel (F12)");
+                        ui.checkbox(&mut show_debug_panel, "debug (F12)");
                         ui.checkbox(&mut colorize, "color");
                         ui.checkbox(&mut show_text, "text");
                     })
