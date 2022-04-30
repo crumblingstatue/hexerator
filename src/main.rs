@@ -79,7 +79,7 @@ fn main() {
     let mut interact_mode = InteractMode::View;
     // The half digit when the user begins to type into a hex view
     let mut hex_edit_half_digit = None;
-    let mut show_debug_panel = true;
+    let mut show_debug_panel = false;
 
     while w.is_open() {
         // region: event handling
@@ -162,6 +162,7 @@ fn main() {
                     }
                     Key::F1 => interact_mode = InteractMode::View,
                     Key::F2 => interact_mode = InteractMode::Edit,
+                    Key::F12 => show_debug_panel ^= true,
                     Key::Escape => {
                         hex_edit_half_digit = None;
                     }
@@ -211,7 +212,7 @@ fn main() {
         let mut rs = RenderStates::default();
         vertices.clear();
         sf_egui.do_frame(|ctx| {
-            Window::new("Hexerator")
+            Window::new("Debug")
                 .open(&mut show_debug_panel)
                 .show(ctx, |ui| {
                     // region: debug panel
@@ -271,7 +272,7 @@ fn main() {
                         }
                     }
                     ui.with_layout(Layout::right_to_left(), |ui| {
-                        ui.checkbox(&mut show_debug_panel, "debug panel");
+                        ui.checkbox(&mut show_debug_panel, "debug panel (F12)");
                     })
                 })
             });
