@@ -116,7 +116,9 @@ fn main() {
                     Key::Down => match interact_mode {
                         InteractMode::View => starting_offset += cols,
                         InteractMode::Edit => {
-                            cursor += cols;
+                            if cursor + cols < data.len() {
+                                cursor += cols;
+                            }
                             if cursor >= starting_offset + rows * cols {
                                 starting_offset += cols;
                             }
@@ -140,13 +142,19 @@ fn main() {
                                 starting_offset += 1;
                             }
                         }
-                        InteractMode::Edit => cursor += 1,
+                        InteractMode::Edit => {
+                            if cursor + 1 < data.len() {
+                                cursor += 1;
+                            }
+                        }
                     },
                     Key::PageUp => {
                         let amount = rows * cols;
                         if starting_offset >= amount {
                             starting_offset -= amount;
-                            cursor = cursor.saturating_sub(amount);
+                            if interact_mode == InteractMode::Edit {
+                                cursor = cursor.saturating_sub(amount);
+                            }
                         } else {
                             starting_offset = 0
                         }
@@ -155,17 +163,23 @@ fn main() {
                         let amount = rows * cols;
                         if starting_offset + amount < data.len() {
                             starting_offset += amount;
-                            cursor += amount;
+                            if interact_mode == InteractMode::Edit && cursor + amount < data.len() {
+                                cursor += amount;
+                            }
                         }
                     }
                     Key::Home => {
                         starting_offset = 0;
-                        cursor = 0;
+                        if interact_mode == InteractMode::Edit {
+                            cursor = 0;
+                        }
                     }
                     Key::End => {
                         let pos = data.len() - rows * cols;
                         starting_offset = pos;
-                        cursor = pos;
+                        if interact_mode == InteractMode::Edit {
+                            cursor = pos;
+                        }
                     }
                     Key::Tab if shift => {
                         edit_target.switch();
@@ -189,7 +203,9 @@ fn main() {
                                         Some(half) => {
                                             data[cursor] = hex_conv::merge_hex_halves(half, ascii);
                                             dirty = true;
-                                            cursor += 1;
+                                            if cursor + 1 < data.len() {
+                                                cursor += 1;
+                                            }
                                             hex_edit_half_digit = None;
                                         }
                                         None => hex_edit_half_digit = Some(ascii),
@@ -201,7 +217,9 @@ fn main() {
                             if unicode.is_ascii() {
                                 data[cursor] = unicode as u8;
                                 dirty = true;
-                                cursor += 1;
+                                if cursor + 1 < data.len() {
+                                    cursor += 1;
+                                }
                             }
                         }
                     },
@@ -315,7 +333,7 @@ fn main() {
                     break 'display;
                 }
                 let byte = data[idx];
-                if idx == cursor && interact_mode == InteractMode::Edit {
+                if idx == cursor {
                     let extra_x = if hex_edit_half_digit.is_none() {
                         0
                     } else {
@@ -325,7 +343,7 @@ fn main() {
                         x as f32 * f32::from(col_width) + extra_x as f32,
                         y as f32 * f32::from(row_height),
                         &mut w,
-                        edit_target == EditTarget::Hex,
+                        edit_target == EditTarget::Hex && interact_mode == InteractMode::Edit,
                     );
                 }
                 let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);
@@ -377,12 +395,12 @@ fn main() {
                     } else {
                         Color::WHITE
                     };
-                    if idx == cursor && interact_mode == InteractMode::Edit {
+                    if idx == cursor {
                         draw_cursor(
                             (x + cols * 2 + 1) as f32 * f32::from(col_width / 2),
                             y as f32 * f32::from(row_height),
                             &mut w,
-                            edit_target == EditTarget::Text,
+                            edit_target == EditTarget::Text && interact_mode == InteractMode::Edit,
                         );
                     }
                     draw_glyph(
