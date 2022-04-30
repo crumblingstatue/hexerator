@@ -4,7 +4,9 @@ mod hex_conv;
 
 use egui_inspect::{derive::Inspect, inspect};
 use egui_sfml::{
-    egui::{self, color::rgb_from_hsv, Button, Layout, TextEdit, TopBottomPanel, Window},
+    egui::{
+        self, color::rgb_from_hsv, Button, Layout, ScrollArea, TextEdit, TopBottomPanel, Window,
+    },
     SfEgui,
 };
 use gamedebug_core::{Info, PerEntry, PERSISTENT};
@@ -47,6 +49,17 @@ enum InteractMode {
     Edit,
 }
 
+#[derive(Default)]
+struct FindDialog {
+    open: bool,
+    input: String,
+    result_offsets: Vec<usize>,
+    /// Used to keep track of previous/next result to go to
+    result_cursor: usize,
+    /// When Some, the results list should be scrolled to the offset of that result
+    scroll_to: Option<usize>,
+}
+
 fn main() {
     let path = std::env::args_os()
         .nth(1)
@@ -84,6 +97,7 @@ fn main() {
     let mut hex_edit_half_digit = None;
     let mut show_debug_panel = false;
     let mut u8_buf = String::new();
+    let mut find_dialog = FindDialog::default();
 
     while w.is_open() {
         // region: event handling
@@ -191,6 +205,9 @@ fn main() {
                     Key::Escape => {
                         hex_edit_half_digit = None;
                     }
+                    Key::F if ctrl => {
+                        find_dialog.open ^= true;
+                    }
                     _ => {}
                 },
                 Event::TextEntered { unicode } => match interact_mode {
@@ -277,6 +294,62 @@ fn main() {
                     }
                     // endregion
                 });
+            // region: find window
+            Window::new("Find")
+                .open(&mut find_dialog.open)
+                .show(ctx, |ui| {
+                    if ui.text_edit_singleline(&mut find_dialog.input).lost_focus()
+                        && ui.input().key_pressed(egui::Key::Enter)
+                    {
+                        let needle = find_dialog.input.parse().unwrap();
+                        find_dialog.result_offsets.clear();
+                        for (offset, &byte) in data.iter().enumerate() {
+                            if byte == needle {
+                                find_dialog.result_offsets.push(offset);
+                            }
+                        }
+                    }
+                    ScrollArea::vertical().max_height(480.).show(ui, |ui| {
+                        for (i, &off) in find_dialog.result_offsets.iter().enumerate() {
+                            let re = ui
+                                .selectable_label(find_dialog.result_cursor == i, off.to_string());
+                            if let Some(scroll_off) = find_dialog.scroll_to && scroll_off == i {
+                            re.scroll_to_me(None);
+                            find_dialog.scroll_to = None;
+                        }
+                            if re.clicked() {
+                                cursor = off;
+                                starting_offset = off;
+                                find_dialog.result_cursor = i;
+                            }
+                        }
+                    });
+                    ui.horizontal(|ui| {
+                        ui.set_enabled(!find_dialog.result_offsets.is_empty());
+                        if (ui.button("Previous (P)").clicked()
+                            || ui.input().key_pressed(egui::Key::P))
+                            && find_dialog.result_cursor > 0
+                        {
+                            find_dialog.result_cursor -= 1;
+                            let off = find_dialog.result_offsets[find_dialog.result_cursor];
+                            cursor = off;
+                            starting_offset = off;
+                            find_dialog.scroll_to = Some(find_dialog.result_cursor);
+                        }
+                        ui.label((find_dialog.result_cursor + 1).to_string());
+                        if (ui.button("Next (N)").clicked() || ui.input().key_pressed(egui::Key::N))
+                            && find_dialog.result_cursor + 1 < find_dialog.result_offsets.len()
+                        {
+                            find_dialog.result_cursor += 1;
+                            let off = find_dialog.result_offsets[find_dialog.result_cursor];
+                            cursor = off;
+                            starting_offset = off;
+                            find_dialog.scroll_to = Some(find_dialog.result_cursor);
+                        }
+                        ui.label(format!("{} results", find_dialog.result_offsets.len()));
+                    });
+                });
+            // endregion
             // region: bottom panel
             TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
                 ui.horizontal(|ui| {
@@ -333,6 +406,16 @@ fn main() {
                     break 'display;
                 }
                 let byte = data[idx];
+                if find_dialog.open && find_dialog.result_offsets.contains(&idx) {
+                    let mut rs = RectangleShape::from_rect(Rect::new(
+                        x as f32 * f32::from(col_width),
+                        y as f32 * f32::from(row_height),
+                        col_width as f32,
+                        row_height as f32,
+                    ));
+                    rs.set_fill_color(Color::rgb(150, 150, 150));
+                    w.draw(&rs);
+                }
                 if idx == cursor {
                     let extra_x = if hex_edit_half_digit.is_none() {
                         0
