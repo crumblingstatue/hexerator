@@ -158,15 +158,18 @@ fn main() {
                     Key::F2 => interact_mode = InteractMode::Edit,
                     _ => {}
                 },
-                Event::TextEntered { unicode } => match edit_target {
-                    EditTarget::Hex => per_msg!("hex editing not implemented"),
-                    EditTarget::Text => {
-                        if unicode.is_ascii() {
-                            data[cursor] = unicode as u8;
-                            dirty = true;
-                            cursor += 1;
+                Event::TextEntered { unicode } => match interact_mode {
+                    InteractMode::Edit => match edit_target {
+                        EditTarget::Hex => per_msg!("hex editing not implemented"),
+                        EditTarget::Text => {
+                            if unicode.is_ascii() {
+                                data[cursor] = unicode as u8;
+                                dirty = true;
+                                cursor += 1;
+                            }
                         }
-                    }
+                    },
+                    InteractMode::View => {}
                 },
                 Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                     if button == mouse::Button::Left {
