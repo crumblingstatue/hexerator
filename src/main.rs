@@ -133,6 +133,10 @@ fn main() {
                     colorize,
                     edit_target
                 }
+                if ui.add_enabled(dirty, Button::new("Reload")).clicked() {
+                    data = std::fs::read(&path).unwrap();
+                    dirty = false;
+                }
                 if ui.add_enabled(dirty, Button::new("Save")).clicked() {
                     std::fs::write(&path, &data).unwrap();
                 }
