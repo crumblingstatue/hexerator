@@ -148,6 +148,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "gamedebug_core"
+version = "0.1.0"
+source = "git+https://github.com/crumblingstatue/gamedebug_core.git#7e2eb2cbb2d9e2666d6f64aa042a3132b800ebbe"
+dependencies = [
+ "lazy_static",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -179,6 +187,7 @@ version = "0.1.0"
 dependencies = [
  "egui-inspect",
  "egui-sfml",
+ "gamedebug_core",
  "sfml",
 ]
 

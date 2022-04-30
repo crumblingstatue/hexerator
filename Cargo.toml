@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 egui-inspect = { git = "https://github.com/crumblingstatue/egui-inspect.git", version = "0.1.0" }
+gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

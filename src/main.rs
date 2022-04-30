@@ -5,6 +5,7 @@ use egui_sfml::{
     egui::{self, color::rgb_from_hsv, Button, Window},
     SfEgui,
 };
+use gamedebug_core::{per_msg, Info, PerEntry, PERSISTENT};
 use sfml::{
     graphics::{
         Color, Font, PrimitiveType, Rect, RectangleShape, RenderStates, RenderTarget, RenderWindow,
@@ -105,7 +106,7 @@ fn main() {
                     _ => {}
                 },
                 Event::TextEntered { unicode } => match edit_target {
-                    EditTarget::Hex => todo!(),
+                    EditTarget::Hex => per_msg!("hex editing not implemented"),
                     EditTarget::Text => {
                         if unicode.is_ascii() {
                             data[cursor] = unicode as u8;
@@ -131,14 +132,22 @@ fn main() {
                     starting_offset,
                     cursor,
                     colorize,
-                    edit_target
+                    edit_target,
                 }
+                ui.separator();
                 if ui.add_enabled(dirty, Button::new("Reload")).clicked() {
                     data = std::fs::read(&path).unwrap();
                     dirty = false;
                 }
                 if ui.add_enabled(dirty, Button::new("Save")).clicked() {
                     std::fs::write(&path, &data).unwrap();
+                }
+                ui.separator();
+                ui.heading("Debug log");
+                for PerEntry { frame, info } in PERSISTENT.lock().unwrap().iter() {
+                    if let Info::Msg(msg) = info {
+                        ui.label(format!("{}: {}", frame, msg));
+                    }
                 }
                 // endregion
             });
@@ -225,6 +234,7 @@ fn main() {
         rs.set_texture(None);
         sf_egui.draw(&mut w, None);
         w.display();
+        gamedebug_core::inc_frame();
     }
 }
 
