@@ -12,7 +12,7 @@ use sfml::{
         Shape, Vertex,
     },
     system::Vector2,
-    window::{ContextSettings, Event, Key, Style},
+    window::{mouse, ContextSettings, Event, Key, Style},
 };
 
 #[derive(PartialEq, Debug, Inspect)]
@@ -53,11 +53,14 @@ fn main() {
     let mut cursor: usize = 0;
     let mut edit_target = EditTarget::Hex;
     let mut dirty = false;
+    let mut row_height: u8 = 16;
+    let mut col_width: u8 = 26;
 
     while w.is_open() {
         // region: event handling
         while let Some(event) = w.poll_event() {
             sf_egui.add_event(&event);
+            let wants_pointer = sf_egui.context().wants_pointer_input();
             match event {
                 Event::Closed => w.close(),
                 Event::KeyPressed { code, shift, .. } => match code {
@@ -79,7 +82,7 @@ fn main() {
                         let amount = rows * cols;
                         if starting_offset >= amount {
                             starting_offset -= amount;
-                            cursor -= amount;
+                            cursor = cursor.saturating_sub(amount);
                         } else {
                             starting_offset = 0
                         }
@@ -115,6 +118,14 @@ fn main() {
                         }
                     }
                 },
+                Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
+                    if button == mouse::Button::Left {
+                        let row = y as usize / usize::from(row_height);
+                        let col = x as usize / usize::from(col_width);
+                        let new_cursor = row * cols + col;
+                        cursor = starting_offset + new_cursor;
+                    }
+                }
                 _ => {}
             }
         }
@@ -133,6 +144,8 @@ fn main() {
                     cursor,
                     colorize,
                     edit_target,
+                    row_height,
+                    col_width
                 }
                 ui.separator();
                 if ui.add_enabled(dirty, Button::new("Reload")).clicked() {
@@ -162,8 +175,8 @@ fn main() {
                 let byte = data[idx];
                 if idx == cursor {
                     draw_cursor(
-                        x as f32 * 26.0,
-                        y as f32 * 16.0,
+                        x as f32 * f32::from(col_width),
+                        y as f32 * f32::from(row_height),
                         &mut w,
                         edit_target == EditTarget::Hex,
                     );
@@ -178,16 +191,16 @@ fn main() {
                 draw_glyph(
                     &f,
                     &mut vertices,
-                    x as f32 * 26.0,
-                    y as f32 * 16.0,
+                    x as f32 * f32::from(col_width),
+                    y as f32 * f32::from(row_height),
                     g1 as u32,
                     c,
                 );
                 draw_glyph(
                     &f,
                     &mut vertices,
-                    x as f32 * 26.0 + 11.0,
-                    y as f32 * 16.0,
+                    x as f32 * f32::from(col_width) + 11.0,
+                    y as f32 * f32::from(row_height),
                     g2 as u32,
                     c,
                 );
@@ -211,8 +224,8 @@ fn main() {
                 };
                 if idx == cursor {
                     draw_cursor(
-                        (x + cols * 2 + 1) as f32 * 13.0,
-                        y as f32 * 16.0,
+                        (x + cols * 2 + 1) as f32 * f32::from(col_width / 2),
+                        y as f32 * f32::from(row_height),
                         &mut w,
                         edit_target == EditTarget::Text,
                     );
@@ -220,8 +233,8 @@ fn main() {
                 draw_glyph(
                     &f,
                     &mut vertices,
-                    (x + cols * 2 + 1) as f32 * 13.0,
-                    y as f32 * 16.0,
+                    (x + cols * 2 + 1) as f32 * f32::from(col_width / 2),
+                    y as f32 * f32::from(row_height),
                     byte as u32,
                     c,
                 );
