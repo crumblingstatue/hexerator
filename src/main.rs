@@ -47,7 +47,10 @@ fn main() {
     let f = Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap();
     let mut vertices = Vec::new();
     let mut rows = 67;
+    // Number of columns in the view
     let mut cols = 48;
+    // Maximum number of visible cols that can be shown on screen
+    let mut max_visible_cols = 74;
     let mut starting_offset = 0;
     let mut colorize = true;
     let mut cursor: usize = 0;
@@ -55,6 +58,7 @@ fn main() {
     let mut dirty = false;
     let mut row_height: u8 = 16;
     let mut col_width: u8 = 26;
+    let mut show_text = true;
 
     while w.is_open() {
         // region: event handling
@@ -140,10 +144,12 @@ fn main() {
                     ui,
                     rows,
                     cols,
+                    max_visible_cols,
                     starting_offset,
                     cursor,
                     colorize,
                     edit_target,
+                    show_text,
                     row_height,
                     col_width
                 }
@@ -169,7 +175,11 @@ fn main() {
         let mut idx = starting_offset;
         'display: for y in 0..rows {
             for x in 0..cols {
-                if idx == data.len() {
+                if x == max_visible_cols {
+                    idx += cols - x;
+                    break;
+                }
+                if idx >= data.len() {
                     break 'display;
                 }
                 let byte = data[idx];
@@ -209,36 +219,42 @@ fn main() {
         }
         // endregion
         // region: ascii display
-        idx = starting_offset;
-        'asciidisplay: for y in 0..rows {
-            for x in 0..cols {
-                if idx == data.len() {
-                    break 'asciidisplay;
-                }
-                let byte = data[idx];
-                let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
-                let c = if colorize {
-                    Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
-                } else {
-                    Color::WHITE
-                };
-                if idx == cursor {
-                    draw_cursor(
+        if show_text {
+            idx = starting_offset;
+            'asciidisplay: for y in 0..rows {
+                for x in 0..cols {
+                    if x == max_visible_cols {
+                        idx += cols - x;
+                        break;
+                    }
+                    if idx >= data.len() {
+                        break 'asciidisplay;
+                    }
+                    let byte = data[idx];
+                    let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
+                    let c = if colorize {
+                        Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
+                    } else {
+                        Color::WHITE
+                    };
+                    if idx == cursor {
+                        draw_cursor(
+                            (x + cols * 2 + 1) as f32 * f32::from(col_width / 2),
+                            y as f32 * f32::from(row_height),
+                            &mut w,
+                            edit_target == EditTarget::Text,
+                        );
+                    }
+                    draw_glyph(
+                        &f,
+                        &mut vertices,
                         (x + cols * 2 + 1) as f32 * f32::from(col_width / 2),
                         y as f32 * f32::from(row_height),
-                        &mut w,
-                        edit_target == EditTarget::Text,
+                        byte as u32,
+                        c,
                     );
+                    idx += 1;
                 }
-                draw_glyph(
-                    &f,
-                    &mut vertices,
-                    (x + cols * 2 + 1) as f32 * f32::from(col_width / 2),
-                    y as f32 * f32::from(row_height),
-                    byte as u32,
-                    c,
-                );
-                idx += 1;
             }
         }
         // endregion
