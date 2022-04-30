@@ -1,4 +1,4 @@
-#![feature(let_chains)]
+#![feature(let_chains, decl_macro)]
 
 mod hex_conv;
 
@@ -294,7 +294,30 @@ fn main() {
                     }
                     // endregion
                 });
+            enum CursorViewStatus {
+                Inside,
+                Before,
+                After,
+            }
             // region: find window
+            macro cursor_view_status() {
+                if cursor < starting_offset {
+                    CursorViewStatus::Before
+                } else if cursor > starting_offset + rows * cols {
+                    CursorViewStatus::After
+                } else {
+                    CursorViewStatus::Inside
+                }
+            }
+            macro search_focus($off:expr) {
+                // Focus the search result in the hex view
+                cursor = $off;
+                match cursor_view_status!() {
+                    CursorViewStatus::Before => starting_offset = $off - ((rows - 1) * (cols - 1)),
+                    CursorViewStatus::After => starting_offset = $off - (rows + cols),
+                    CursorViewStatus::Inside => {}
+                }
+            }
             Window::new("Find")
                 .open(&mut find_dialog.open)
                 .show(ctx, |ui| {
@@ -308,6 +331,9 @@ fn main() {
                                 find_dialog.result_offsets.push(offset);
                             }
                         }
+                        if let Some(&off) = find_dialog.result_offsets.first() {
+                            search_focus!(off);
+                        }
                     }
                     ScrollArea::vertical().max_height(480.).show(ui, |ui| {
                         for (i, &off) in find_dialog.result_offsets.iter().enumerate() {
@@ -318,8 +344,7 @@ fn main() {
                             find_dialog.scroll_to = None;
                         }
                             if re.clicked() {
-                                cursor = off;
-                                starting_offset = off;
+                                search_focus!(off);
                                 find_dialog.result_cursor = i;
                             }
                         }
@@ -332,8 +357,7 @@ fn main() {
                         {
                             find_dialog.result_cursor -= 1;
                             let off = find_dialog.result_offsets[find_dialog.result_cursor];
-                            cursor = off;
-                            starting_offset = off;
+                            search_focus!(off);
                             find_dialog.scroll_to = Some(find_dialog.result_cursor);
                         }
                         ui.label((find_dialog.result_cursor + 1).to_string());
@@ -342,8 +366,7 @@ fn main() {
                         {
                             find_dialog.result_cursor += 1;
                             let off = find_dialog.result_offsets[find_dialog.result_cursor];
-                            cursor = off;
-                            starting_offset = off;
+                            search_focus!(off);
                             find_dialog.scroll_to = Some(find_dialog.result_cursor);
                         }
                         ui.label(format!("{} results", find_dialog.result_offsets.len()));
@@ -414,6 +437,10 @@ fn main() {
                         row_height as f32,
                     ));
                     rs.set_fill_color(Color::rgb(150, 150, 150));
+                    if cursor == idx {
+                        rs.set_outline_color(Color::WHITE);
+                        rs.set_outline_thickness(-2.0);
+                    }
                     w.draw(&rs);
                 }
                 if idx == cursor {
