@@ -102,6 +102,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui-inspect"
+version = "0.1.0"
+source = "git+https://github.com/crumblingstatue/egui-inspect.git#93412e32c234a6ef75bc632b85136f3bdf0bdd21"
+dependencies = [
+ "egui",
+ "egui-inspect-derive",
+]
+
+[[package]]
+name = "egui-inspect-derive"
+version = "0.1.0"
+source = "git+https://github.com/crumblingstatue/egui-inspect.git#93412e32c234a6ef75bc632b85136f3bdf0bdd21"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "egui-sfml"
 version = "0.1.0"
 source = "git+https://github.com/crumblingstatue/egui-sfml.git#ce6c28ed55f3d39949b3c573e74897ae74c47ded"
@@ -158,6 +177,7 @@ dependencies = [
 name = "hexerator"
 version = "0.1.0"
 dependencies = [
+ "egui-inspect",
  "egui-sfml",
  "sfml",
 ]
@@ -296,6 +316,17 @@ name = "shlex"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
+
+[[package]]
+name = "syn"
+version = "1.0.92"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ff7c592601f11445996a06f8ad0c27f094a58857c2f89e97974ab9235b92c52"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-xid",
+]
 
 [[package]]
 name = "ttf-parser"

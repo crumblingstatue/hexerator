@@ -1,7 +1,8 @@
 mod hex_conv;
 
+use egui_inspect::{derive::Inspect, inspect};
 use egui_sfml::{
-    egui::{color::rgb_from_hsv, Checkbox, ComboBox, DragValue, Window},
+    egui::{self, color::rgb_from_hsv, Window},
     SfEgui,
 };
 use sfml::{
@@ -13,40 +14,13 @@ use sfml::{
     window::{ContextSettings, Event, Key, Style},
 };
 
-macro_rules! modify {
-    ($ui:expr, $val:expr, $widget:expr) => {
-        $ui.horizontal(|ui| {
-            ui.label(stringify!($val));
-            ui.add($widget);
-        });
-    };
-}
-
-macro_rules! dv {
-    ($ui:expr, $val:expr) => {
-        modify!($ui, $val, DragValue::new(&mut $val))
-    };
-}
-
-macro_rules! cb {
-    ($ui:expr, $val:expr) => {
-        modify!($ui, $val, Checkbox::new(&mut $val, ""))
-    };
-}
-
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug, Inspect)]
 enum EditTarget {
     Hex,
     Text,
 }
 
 impl EditTarget {
-    fn name(&self) -> &'static str {
-        match self {
-            EditTarget::Hex => "hex",
-            EditTarget::Text => "text",
-        }
-    }
     fn switch(&mut self) {
         *self = match self {
             EditTarget::Hex => EditTarget::Text,
@@ -148,25 +122,15 @@ fn main() {
         sf_egui.do_frame(|ctx| {
             Window::new("Hexerator").show(ctx, |ui| {
                 // region: debug panel
-                dv!(ui, rows);
-                dv!(ui, cols);
-                dv!(ui, starting_offset);
-                dv!(ui, cursor);
-                cb!(ui, colorize);
-                ComboBox::new("edit-select", "Edit target")
-                    .selected_text(edit_target.name())
-                    .show_ui(ui, |ui| {
-                        ui.selectable_value(
-                            &mut edit_target,
-                            EditTarget::Hex,
-                            EditTarget::Hex.name(),
-                        );
-                        ui.selectable_value(
-                            &mut edit_target,
-                            EditTarget::Text,
-                            EditTarget::Text.name(),
-                        );
-                    });
+                inspect! {
+                    ui,
+                    rows,
+                    cols,
+                    starting_offset,
+                    cursor,
+                    colorize,
+                    edit_target
+                }
                 if ui.button("Save").clicked() {
                     std::fs::write(&path, &data).unwrap();
                 }
