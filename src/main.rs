@@ -98,6 +98,14 @@ fn main() {
     let mut show_debug_panel = false;
     let mut u8_buf = String::new();
     let mut find_dialog = FindDialog::default();
+    macro reload() {
+        data = std::fs::read(&path).unwrap();
+        dirty = false;
+    }
+    macro save() {
+        std::fs::write(&path, &data).unwrap();
+        dirty = false;
+    }
 
     while w.is_open() {
         // region: event handling
@@ -208,6 +216,12 @@ fn main() {
                     Key::F if ctrl => {
                         find_dialog.open ^= true;
                     }
+                    Key::S if ctrl => {
+                        save!();
+                    }
+                    Key::R if ctrl => {
+                        reload!();
+                    }
                     _ => {}
                 },
                 Event::TextEntered { unicode } => match interact_mode {
@@ -276,14 +290,6 @@ fn main() {
                         edit_target,
                         row_height,
                         col_width
-                    }
-                    ui.separator();
-                    if ui.add_enabled(dirty, Button::new("Reload")).clicked() {
-                        data = std::fs::read(&path).unwrap();
-                        dirty = false;
-                    }
-                    if ui.add_enabled(dirty, Button::new("Save")).clicked() {
-                        std::fs::write(&path, &data).unwrap();
                     }
                     ui.separator();
                     ui.heading("Debug log");
@@ -412,6 +418,19 @@ fn main() {
                         ui.checkbox(&mut show_debug_panel, "debug (F12)");
                         ui.checkbox(&mut colorize, "color");
                         ui.checkbox(&mut show_text, "text");
+                        ui.separator();
+                        if ui
+                            .add_enabled(dirty, Button::new("Reload (ctrl+R)"))
+                            .clicked()
+                        {
+                            reload!();
+                        }
+                        if ui
+                            .add_enabled(dirty, Button::new("Save (ctrl+S)"))
+                            .clicked()
+                        {
+                            save!();
+                        }
                     })
                 })
             });
