@@ -325,12 +325,11 @@ fn draw_cursor(x: f32, y: f32, w: &mut RenderWindow, active: bool) {
         height: 10.0,
     });
     rs.set_fill_color(Color::TRANSPARENT);
+    rs.set_outline_thickness(2.0);
     if active {
-        rs.set_outline_thickness(2.0);
-        rs.set_outline_color(Color::YELLOW);
+        rs.set_outline_color(Color::WHITE);
     } else {
-        rs.set_outline_thickness(1.0);
-        rs.set_outline_color(Color::BLUE);
+        rs.set_outline_color(Color::rgb(150, 150, 150));
     }
     w.draw(&rs);
 }
