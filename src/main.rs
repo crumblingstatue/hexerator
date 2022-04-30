@@ -4,7 +4,7 @@ mod hex_conv;
 
 use egui_inspect::{derive::Inspect, inspect};
 use egui_sfml::{
-    egui::{self, color::rgb_from_hsv, Button, Layout, TopBottomPanel, Window},
+    egui::{self, color::rgb_from_hsv, Button, Layout, TextEdit, TopBottomPanel, Window},
     SfEgui,
 };
 use gamedebug_core::{Info, PerEntry, PERSISTENT};
@@ -70,7 +70,10 @@ fn main() {
     let mut max_visible_cols = 74;
     let mut starting_offset: usize = 0;
     let mut colorize = true;
+    // The editing byte offset
     let mut cursor: usize = 0;
+    // The value of the cursor on the previous frame. Used to determine when the cursor changes
+    let mut cursor_prev_frame = cursor;
     let mut edit_target = EditTarget::Hex;
     let mut dirty = false;
     let mut row_height: u8 = 16;
@@ -80,12 +83,20 @@ fn main() {
     // The half digit when the user begins to type into a hex view
     let mut hex_edit_half_digit = None;
     let mut show_debug_panel = false;
+    let mut u8_buf = String::new();
 
     while w.is_open() {
         // region: event handling
         while let Some(event) = w.poll_event() {
             sf_egui.add_event(&event);
             let wants_pointer = sf_egui.context().wants_pointer_input();
+            let wants_kb = sf_egui.context().wants_keyboard_input();
+            if wants_kb {
+                if event == Event::Closed {
+                    w.close();
+                }
+                continue;
+            }
             match event {
                 Event::Closed => w.close(),
                 Event::KeyPressed {
@@ -207,6 +218,10 @@ fn main() {
                 _ => {}
             }
         }
+        let cursor_changed = cursor != cursor_prev_frame;
+        if cursor_changed {
+            u8_buf = data[cursor].to_string();
+        }
         // endregion
         w.clear(Color::BLACK);
         let mut rs = RenderStates::default();
@@ -267,6 +282,16 @@ fn main() {
                         }
                         InteractMode::Edit => {
                             ui.label(format!("cursor: {}", cursor));
+                            ui.separator();
+                            ui.label("u8");
+                            if ui
+                                .add(TextEdit::singleline(&mut u8_buf).desired_width(28.0))
+                                .lost_focus()
+                                && ui.input().key_pressed(egui::Key::Enter)
+                            {
+                                data[cursor] = u8_buf.parse().unwrap();
+                                dirty = true;
+                            }
                         }
                     }
                     ui.with_layout(Layout::right_to_left(), |ui| {
@@ -379,6 +404,7 @@ fn main() {
         sf_egui.draw(&mut w, None);
         w.display();
         gamedebug_core::inc_frame();
+        cursor_prev_frame = cursor;
     }
 }
 
