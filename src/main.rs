@@ -2,7 +2,7 @@ mod hex_conv;
 
 use egui_inspect::{derive::Inspect, inspect};
 use egui_sfml::{
-    egui::{self, color::rgb_from_hsv, Window},
+    egui::{self, color::rgb_from_hsv, Button, Window},
     SfEgui,
 };
 use sfml::{
@@ -51,6 +51,7 @@ fn main() {
     let mut colorize = true;
     let mut cursor: usize = 0;
     let mut edit_target = EditTarget::Hex;
+    let mut dirty = false;
 
     while w.is_open() {
         // region: event handling
@@ -108,6 +109,7 @@ fn main() {
                     EditTarget::Text => {
                         if unicode.is_ascii() {
                             data[cursor] = unicode as u8;
+                            dirty = true;
                             cursor += 1;
                         }
                     }
@@ -131,7 +133,7 @@ fn main() {
                     colorize,
                     edit_target
                 }
-                if ui.button("Save").clicked() {
+                if ui.add_enabled(dirty, Button::new("Save")).clicked() {
                     std::fs::write(&path, &data).unwrap();
                 }
                 // endregion
