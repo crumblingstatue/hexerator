@@ -74,7 +74,7 @@ fn main() {
     let mut rows = 67;
     let mut cols = 48;
     let mut starting_offset = 0;
-    let mut colorize = false;
+    let mut colorize = true;
     let mut cursor: usize = 0;
     let mut edit_target = EditTarget::Hex;
 
