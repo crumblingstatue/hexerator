@@ -30,6 +30,21 @@ impl EditTarget {
     }
 }
 
+/// User interaction mode
+///
+/// There are 2 modes: View and Edit
+#[derive(PartialEq, Debug, Inspect)]
+enum InteractMode {
+    /// Mode optimized for viewing the contents
+    ///
+    /// For example arrow keys scroll the content
+    View,
+    /// Mode optimized for editing the contents
+    ///
+    /// For example arrow keys move the cursor
+    Edit,
+}
+
 fn main() {
     let path = std::env::args_os()
         .nth(1)
@@ -51,7 +66,7 @@ fn main() {
     let mut cols = 48;
     // Maximum number of visible cols that can be shown on screen
     let mut max_visible_cols = 74;
-    let mut starting_offset = 0;
+    let mut starting_offset: usize = 0;
     let mut colorize = true;
     let mut cursor: usize = 0;
     let mut edit_target = EditTarget::Hex;
@@ -59,6 +74,7 @@ fn main() {
     let mut row_height: u8 = 16;
     let mut col_width: u8 = 26;
     let mut show_text = true;
+    let mut interact_mode = InteractMode::View;
 
     while w.is_open() {
         // region: event handling
@@ -67,21 +83,49 @@ fn main() {
             let wants_pointer = sf_egui.context().wants_pointer_input();
             match event {
                 Event::Closed => w.close(),
-                Event::KeyPressed { code, shift, .. } => match code {
-                    Key::Up => {
-                        cursor = cursor.saturating_sub(cols);
-                        if cursor < starting_offset {
-                            starting_offset -= cols;
+                Event::KeyPressed {
+                    code, shift, ctrl, ..
+                } => match code {
+                    Key::Up => match interact_mode {
+                        InteractMode::View => {
+                            starting_offset = starting_offset.saturating_sub(cols)
                         }
-                    }
-                    Key::Down => {
-                        cursor += cols;
-                        if cursor >= starting_offset + rows * cols {
-                            starting_offset += cols;
+                        InteractMode::Edit => {
+                            cursor = cursor.saturating_sub(cols);
+                            if cursor < starting_offset {
+                                starting_offset -= cols;
+                            }
                         }
-                    }
-                    Key::Left => cursor = cursor.saturating_sub(1),
-                    Key::Right => cursor += 1,
+                    },
+                    Key::Down => match interact_mode {
+                        InteractMode::View => starting_offset += cols,
+                        InteractMode::Edit => {
+                            cursor += cols;
+                            if cursor >= starting_offset + rows * cols {
+                                starting_offset += cols;
+                            }
+                        }
+                    },
+                    Key::Left => match interact_mode {
+                        InteractMode::View => {
+                            if ctrl {
+                                cols = cols.saturating_sub(1);
+                            } else {
+                                starting_offset = starting_offset.saturating_sub(1);
+                            }
+                        }
+                        InteractMode::Edit => cursor = cursor.saturating_sub(1),
+                    },
+                    Key::Right => match interact_mode {
+                        InteractMode::View => {
+                            if ctrl {
+                                cols += 1;
+                            } else {
+                                starting_offset += 1;
+                            }
+                        }
+                        InteractMode::Edit => cursor += 1,
+                    },
                     Key::PageUp => {
                         let amount = rows * cols;
                         if starting_offset >= amount {
@@ -142,6 +186,7 @@ fn main() {
                 // region: debug panel
                 inspect! {
                     ui,
+                    interact_mode,
                     rows,
                     cols,
                     max_visible_cols,
