@@ -324,7 +324,9 @@ fn main() {
                 // Focus the search result in the hex view
                 cursor = $off;
                 match cursor_view_status!() {
-                    CursorViewStatus::Before => starting_offset = $off - ((rows - 1) * (cols - 1)),
+                    CursorViewStatus::Before => {
+                        starting_offset = $off.saturating_sub((rows - 1) * (cols - 1))
+                    }
                     CursorViewStatus::After => starting_offset = $off - (rows + cols),
                     CursorViewStatus::Inside => {}
                 }
