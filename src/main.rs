@@ -67,7 +67,7 @@ fn main() {
     let mut data = std::fs::read(&path).unwrap();
     let mut w = RenderWindow::new(
         (1920, 1080),
-        "hello",
+        "Hexerator",
         Style::NONE,
         &ContextSettings::default(),
     );
