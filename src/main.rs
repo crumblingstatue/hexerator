@@ -223,9 +223,7 @@ fn main() {
                         max_visible_cols,
                         starting_offset,
                         cursor,
-                        colorize,
                         edit_target,
-                        show_text,
                         row_height,
                         col_width
                     }
@@ -273,6 +271,8 @@ fn main() {
                     }
                     ui.with_layout(Layout::right_to_left(), |ui| {
                         ui.checkbox(&mut show_debug_panel, "debug panel (F12)");
+                        ui.checkbox(&mut colorize, "color");
+                        ui.checkbox(&mut show_text, "text");
                     })
                 })
             });
