@@ -98,6 +98,11 @@ fn main() {
     let mut show_debug_panel = false;
     let mut u8_buf = String::new();
     let mut find_dialog = FindDialog::default();
+    let backup_path = {
+        let mut new = path.to_owned();
+        new.push(".hexerator_bak");
+        new
+    };
     macro reload() {
         data = std::fs::read(&path).unwrap();
         dirty = false;
@@ -430,6 +435,14 @@ fn main() {
                             .clicked()
                         {
                             save!();
+                        }
+                        ui.separator();
+                        if ui.button("Restore").clicked() {
+                            std::fs::copy(&backup_path, &path).unwrap();
+                            reload!();
+                        }
+                        if ui.button("Backup").clicked() {
+                            std::fs::copy(&path, &backup_path).unwrap();
                         }
                     })
                 })
