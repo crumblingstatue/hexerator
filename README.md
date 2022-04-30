@@ -3,7 +3,7 @@ Ultra nerdy hex editor with reverse engineering features
 
 Work in progress.
 
-#Features
+# Features
 ## colorized values ✅
 ![image](https://user-images.githubusercontent.com/1521976/166120851-d7c48e9f-c958-444e-9e1b-b5c20bf0b3be.png)
 
