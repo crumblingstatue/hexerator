@@ -47,6 +47,12 @@ impl EditTarget {
             EditTarget::Text => "text",
         }
     }
+    fn switch(&mut self) {
+        *self = match self {
+            EditTarget::Hex => EditTarget::Text,
+            EditTarget::Text => EditTarget::Hex,
+        }
+    }
 }
 
 fn main() {
@@ -78,7 +84,7 @@ fn main() {
             sf_egui.add_event(&event);
             match event {
                 Event::Closed => w.close(),
-                Event::KeyPressed { code, .. } => match code {
+                Event::KeyPressed { code, shift, .. } => match code {
                     Key::Up => {
                         cursor = cursor.saturating_sub(cols);
                         if cursor < starting_offset {
@@ -117,6 +123,9 @@ fn main() {
                         let pos = data.len() - rows * cols;
                         starting_offset = pos;
                         cursor = pos;
+                    }
+                    Key::Tab if shift => {
+                        edit_target.switch();
                     }
                     _ => {}
                 },
