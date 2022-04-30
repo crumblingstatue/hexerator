@@ -154,6 +154,8 @@ fn main() {
                     Key::Tab if shift => {
                         edit_target.switch();
                     }
+                    Key::F1 => interact_mode = InteractMode::View,
+                    Key::F2 => interact_mode = InteractMode::Edit,
                     _ => {}
                 },
                 Event::TextEntered { unicode } => match edit_target {
