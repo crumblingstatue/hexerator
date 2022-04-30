@@ -1,3 +1,5 @@
+#![feature(let_chains)]
+
 mod hex_conv;
 
 use egui_inspect::{derive::Inspect, inspect};
@@ -5,7 +7,7 @@ use egui_sfml::{
     egui::{self, color::rgb_from_hsv, Button, Window},
     SfEgui,
 };
-use gamedebug_core::{per_msg, Info, PerEntry, PERSISTENT};
+use gamedebug_core::{Info, PerEntry, PERSISTENT};
 use sfml::{
     graphics::{
         Color, Font, PrimitiveType, Rect, RectangleShape, RenderStates, RenderTarget, RenderWindow,
@@ -75,6 +77,8 @@ fn main() {
     let mut col_width: u8 = 26;
     let mut show_text = true;
     let mut interact_mode = InteractMode::View;
+    // The half digit when the user begins to type into a hex view
+    let mut hex_edit_half_digit = None;
 
     while w.is_open() {
         // region: event handling
@@ -160,7 +164,22 @@ fn main() {
                 },
                 Event::TextEntered { unicode } => match interact_mode {
                     InteractMode::Edit => match edit_target {
-                        EditTarget::Hex => per_msg!("hex editing not implemented"),
+                        EditTarget::Hex => {
+                            if unicode.is_ascii() {
+                                let ascii = unicode as u8;
+                                if (b'0'..=b'f').contains(&ascii) {
+                                    match hex_edit_half_digit {
+                                        Some(half) => {
+                                            data[cursor] = hex_conv::merge_hex_halves(half, ascii);
+                                            dirty = true;
+                                            cursor += 1;
+                                            hex_edit_half_digit = None;
+                                        }
+                                        None => hex_edit_half_digit = Some(ascii),
+                                    }
+                                }
+                            }
+                        }
                         EditTarget::Text => {
                             if unicode.is_ascii() {
                                 data[cursor] = unicode as u8;
@@ -234,14 +253,22 @@ fn main() {
                 }
                 let byte = data[idx];
                 if idx == cursor && interact_mode == InteractMode::Edit {
+                    let extra_x = if hex_edit_half_digit.is_none() {
+                        0
+                    } else {
+                        col_width / 2
+                    };
                     draw_cursor(
-                        x as f32 * f32::from(col_width),
+                        x as f32 * f32::from(col_width) + extra_x as f32,
                         y as f32 * f32::from(row_height),
                         &mut w,
                         edit_target == EditTarget::Hex,
                     );
                 }
-                let [g1, g2] = hex_conv::byte_to_hex_digits(byte);
+                let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);
+                if let Some(half) = hex_edit_half_digit && cursor == idx {
+                    g1 = half.to_ascii_uppercase();
+                }
                 let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
                 let c = if colorize {
                     Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)

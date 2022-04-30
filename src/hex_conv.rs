@@ -29,3 +29,38 @@ fn test_byte_to_hex_digits() {
         assert_eq!(byte_to_hex_digits(byte), *hex);
     }
 }
+
+fn digit_to_byte(digit: u8) -> u8 {
+    match digit {
+        b'0' => 0,
+        b'1' => 1,
+        b'2' => 2,
+        b'3' => 3,
+        b'4' => 4,
+        b'5' => 5,
+        b'6' => 6,
+        b'7' => 7,
+        b'8' => 8,
+        b'9' => 9,
+        b'a' => 10,
+        b'b' => 11,
+        b'c' => 12,
+        b'd' => 13,
+        b'e' => 14,
+        b'f' => 15,
+        _ => panic!("Invalid hex digit: {}", digit),
+    }
+}
+
+pub fn merge_hex_halves(first: u8, second: u8) -> u8 {
+    digit_to_byte(first) * 16 + digit_to_byte(second)
+}
+
+#[test]
+fn test_merge_halves() {
+    assert_eq!(merge_hex_halves(b'0', b'0'), 0);
+    assert_eq!(merge_hex_halves(b'0', b'F'), 15);
+    assert_eq!(merge_hex_halves(b'3', b'2'), 50);
+    assert_eq!(merge_hex_halves(b'F', b'0'), 240);
+    assert_eq!(merge_hex_halves(b'F', b'F'), 255);
+}
