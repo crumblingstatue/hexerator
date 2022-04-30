@@ -228,7 +228,7 @@ fn main() {
                     break 'display;
                 }
                 let byte = data[idx];
-                if idx == cursor {
+                if idx == cursor && interact_mode == InteractMode::Edit {
                     draw_cursor(
                         x as f32 * f32::from(col_width),
                         y as f32 * f32::from(row_height),
@@ -282,7 +282,7 @@ fn main() {
                     } else {
                         Color::WHITE
                     };
-                    if idx == cursor {
+                    if idx == cursor && interact_mode == InteractMode::Edit {
                         draw_cursor(
                             (x + cols * 2 + 1) as f32 * f32::from(col_width / 2),
                             y as f32 * f32::from(row_height),
