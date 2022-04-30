@@ -4,7 +4,7 @@ mod hex_conv;
 
 use egui_inspect::{derive::Inspect, inspect};
 use egui_sfml::{
-    egui::{self, color::rgb_from_hsv, Button, Window},
+    egui::{self, color::rgb_from_hsv, Button, Layout, TopBottomPanel, Window},
     SfEgui,
 };
 use gamedebug_core::{Info, PerEntry, PERSISTENT};
@@ -63,7 +63,7 @@ fn main() {
     let mut sf_egui = SfEgui::new(&w);
     let f = Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap();
     let mut vertices = Vec::new();
-    let mut rows = 67;
+    let mut rows = 66;
     // Number of columns in the view
     let mut cols = 48;
     // Maximum number of visible cols that can be shown on screen
@@ -79,6 +79,7 @@ fn main() {
     let mut interact_mode = InteractMode::View;
     // The half digit when the user begins to type into a hex view
     let mut hex_edit_half_digit = None;
+    let mut show_debug_panel = true;
 
     while w.is_open() {
         // region: event handling
@@ -210,39 +211,71 @@ fn main() {
         let mut rs = RenderStates::default();
         vertices.clear();
         sf_egui.do_frame(|ctx| {
-            Window::new("Hexerator").show(ctx, |ui| {
-                // region: debug panel
-                inspect! {
-                    ui,
-                    interact_mode,
-                    rows,
-                    cols,
-                    max_visible_cols,
-                    starting_offset,
-                    cursor,
-                    colorize,
-                    edit_target,
-                    show_text,
-                    row_height,
-                    col_width
-                }
-                ui.separator();
-                if ui.add_enabled(dirty, Button::new("Reload")).clicked() {
-                    data = std::fs::read(&path).unwrap();
-                    dirty = false;
-                }
-                if ui.add_enabled(dirty, Button::new("Save")).clicked() {
-                    std::fs::write(&path, &data).unwrap();
-                }
-                ui.separator();
-                ui.heading("Debug log");
-                for PerEntry { frame, info } in PERSISTENT.lock().unwrap().iter() {
-                    if let Info::Msg(msg) = info {
-                        ui.label(format!("{}: {}", frame, msg));
+            Window::new("Hexerator")
+                .open(&mut show_debug_panel)
+                .show(ctx, |ui| {
+                    // region: debug panel
+                    inspect! {
+                        ui,
+                        rows,
+                        cols,
+                        max_visible_cols,
+                        starting_offset,
+                        cursor,
+                        colorize,
+                        edit_target,
+                        show_text,
+                        row_height,
+                        col_width
                     }
-                }
-                // endregion
+                    ui.separator();
+                    if ui.add_enabled(dirty, Button::new("Reload")).clicked() {
+                        data = std::fs::read(&path).unwrap();
+                        dirty = false;
+                    }
+                    if ui.add_enabled(dirty, Button::new("Save")).clicked() {
+                        std::fs::write(&path, &data).unwrap();
+                    }
+                    ui.separator();
+                    ui.heading("Debug log");
+                    for PerEntry { frame, info } in PERSISTENT.lock().unwrap().iter() {
+                        if let Info::Msg(msg) = info {
+                            ui.label(format!("{}: {}", frame, msg));
+                        }
+                    }
+                    // endregion
+                });
+            // region: bottom panel
+            TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    if ui
+                        .selectable_label(interact_mode == InteractMode::View, "View (F1)")
+                        .clicked()
+                    {
+                        interact_mode = InteractMode::View;
+                    }
+                    if ui
+                        .selectable_label(interact_mode == InteractMode::Edit, "Edit (F2)")
+                        .clicked()
+                    {
+                        interact_mode = InteractMode::Edit;
+                    }
+                    ui.separator();
+                    match interact_mode {
+                        InteractMode::View => {
+                            ui.label(format!("offset: {}", starting_offset));
+                            ui.label(format!("columns: {}", cols));
+                        }
+                        InteractMode::Edit => {
+                            ui.label(format!("cursor: {}", cursor));
+                        }
+                    }
+                    ui.with_layout(Layout::right_to_left(), |ui| {
+                        ui.checkbox(&mut show_debug_panel, "debug panel");
+                    })
+                })
             });
+            // endregion
         });
         // region: hex display
         let mut idx = starting_offset;
