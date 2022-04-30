@@ -157,9 +157,13 @@ fn main() {
                     }
                     Key::Tab if shift => {
                         edit_target.switch();
+                        hex_edit_half_digit = None;
                     }
                     Key::F1 => interact_mode = InteractMode::View,
                     Key::F2 => interact_mode = InteractMode::Edit,
+                    Key::Escape => {
+                        hex_edit_half_digit = None;
+                    }
                     _ => {}
                 },
                 Event::TextEntered { unicode } => match interact_mode {
