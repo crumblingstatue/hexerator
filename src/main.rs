@@ -293,7 +293,8 @@ fn main() {
                         let col_x = x / i64::from(col_width);
                         let col_y = y / i64::from(row_height);
                         per_msg!("col_x: {}, col_y: {}", col_x, col_y);
-                        let new_cursor: usize = col_y as usize * cols + col_x as usize;
+                        let new_cursor: usize = usize::try_from(col_y).unwrap_or(0) * cols
+                            + usize::try_from(col_x).unwrap_or(0);
                         cursor = starting_offset + new_cursor;
                     }
                 }
