@@ -141,6 +141,9 @@ fn main() {
         show_debug_panel ^= true;
         gamedebug_core::toggle();
     }}
+    macro ascii_display_x_offset() {
+        cols as i64 * i64::from(col_width) + 12
+    }
 
     while w.is_open() {
         // region: event handling
@@ -304,10 +307,17 @@ fn main() {
                         let x: i64 = view_x + i64::from(x);
                         let y: i64 = view_y + i64::from(y);
                         per_msg!("x: {}, y: {}", x, y);
-                        let col_x = x / i64::from(col_width);
+                        let ascii_display_x_offset = ascii_display_x_offset!();
+                        let col_x;
                         let col_y = y / i64::from(row_height);
-                        per_msg!("col_x: {}, col_y: {}", col_x, col_y);
-                        let new_cursor: usize = usize::try_from(col_y).unwrap_or(0) * cols
+                        if x < ascii_display_x_offset {
+                            col_x = x / i64::from(col_width);
+                            per_msg!("col_x: {}, col_y: {}", col_x, col_y);
+                        } else {
+                            let x_rel = x - ascii_display_x_offset;
+                            col_x = x_rel / i64::from(col_width / 2);
+                        }
+                        let new_cursor = usize::try_from(col_y).unwrap_or(0) * cols
                             + usize::try_from(col_x).unwrap_or(0);
                         cursor = starting_offset + new_cursor;
                     }
@@ -651,7 +661,7 @@ fn main() {
         // endregion
         // region: ascii display
         // The offset for the ascii display imposed by the view
-        let ascii_display_x_offset = cols as i64 * i64::from(col_width) + 12;
+        let ascii_display_x_offset = ascii_display_x_offset!();
         imm_msg!(ascii_display_x_offset);
         let view_idx_off_x: usize = view_x
             .saturating_sub(ascii_display_x_offset)
@@ -689,6 +699,24 @@ fn main() {
                     } else {
                         Color::WHITE
                     };
+                    let selected = match selection {
+                        Some(sel) => (sel.begin..=sel.end).contains(&idx),
+                        None => false,
+                    };
+                    if selected || (find_dialog.open && find_dialog.result_offsets.contains(&idx)) {
+                        let mut rs = RectangleShape::from_rect(Rect::new(
+                            pix_x,
+                            pix_y,
+                            (col_width / 2) as f32,
+                            row_height as f32,
+                        ));
+                        rs.set_fill_color(Color::rgb(150, 150, 150));
+                        if cursor == idx {
+                            rs.set_outline_color(Color::WHITE);
+                            rs.set_outline_thickness(-2.0);
+                        }
+                        w.draw(&rs);
+                    }
                     if idx == cursor {
                         draw_cursor(
                             pix_x,
