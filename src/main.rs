@@ -82,7 +82,8 @@ fn main() {
     let mut rows = 67;
     // Number of columns in the view
     let mut cols = 48;
-    // Maximum number of visible cols that can be shown on screen
+    // Maximum number of visible hex columns that can be shown on screen.
+    // ascii is double this amount.
     let mut max_visible_cols = 75;
     // The byte offset in the data from which the view starts viewing data from
     let mut starting_offset: usize = 0;
@@ -591,7 +592,7 @@ fn main() {
             imm_msg!(idx);
             'asciidisplay: for y in 0..rows {
                 for x in 0..cols {
-                    if x == max_visible_cols || x >= cols.saturating_sub(view_idx_off_x) {
+                    if x == max_visible_cols * 2 || x >= cols.saturating_sub(view_idx_off_x) {
                         idx += cols - x;
                         break;
                     }
