@@ -147,13 +147,21 @@ fn main() {
                     code, shift, ctrl, ..
                 } => match code {
                     Key::Up => match interact_mode {
-                        InteractMode::View => {}
+                        InteractMode::View => {
+                            if ctrl {
+                                starting_offset = starting_offset.saturating_sub(1);
+                            }
+                        }
                         InteractMode::Edit => {
                             cursor = cursor.saturating_sub(cols);
                         }
                     },
                     Key::Down => match interact_mode {
-                        InteractMode::View => {}
+                        InteractMode::View => {
+                            if ctrl {
+                                starting_offset += 1;
+                            }
+                        }
                         InteractMode::Edit => {
                             if cursor + cols < data.len() {
                                 cursor += cols;
