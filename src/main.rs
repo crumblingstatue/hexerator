@@ -1,6 +1,7 @@
 #![feature(let_chains, decl_macro)]
 
 mod hex_conv;
+mod input;
 
 use egui_inspect::{derive::Inspect, inspect};
 use egui_sfml::{
@@ -9,7 +10,7 @@ use egui_sfml::{
     },
     SfEgui,
 };
-use gamedebug_core::{Info, PerEntry, PERSISTENT};
+use gamedebug_core::{imm_msg, per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
 use sfml::{
     graphics::{
         Color, Font, PrimitiveType, Rect, RectangleShape, RenderStates, RenderTarget, RenderWindow,
@@ -18,6 +19,8 @@ use sfml::{
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style},
 };
+
+use crate::input::Input;
 
 #[derive(PartialEq, Debug, Inspect)]
 enum EditTarget {
@@ -76,12 +79,19 @@ fn main() {
     let mut sf_egui = SfEgui::new(&w);
     let f = Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap();
     let mut vertices = Vec::new();
-    let mut rows = 66;
+    let mut rows = 67;
     // Number of columns in the view
     let mut cols = 48;
     // Maximum number of visible cols that can be shown on screen
-    let mut max_visible_cols = 74;
+    let mut max_visible_cols = 75;
+    // The byte offset in the data from which the view starts viewing data from
     let mut starting_offset: usize = 0;
+    // The x pixel offset of the scrollable view
+    let mut view_x: i64 = 0;
+    // The y pixel offset of the scrollable view
+    let mut view_y: i64 = 0;
+    // The amount scrolled per frame in view mode
+    let mut scroll_speed = 4;
     let mut colorize = true;
     // The editing byte offset
     let mut cursor: usize = 0;
@@ -103,6 +113,7 @@ fn main() {
         new.push(".hexerator_bak");
         new
     };
+    let mut input = Input::default();
     macro reload() {
         data = std::fs::read(&path).unwrap();
         dirty = false;
@@ -111,10 +122,15 @@ fn main() {
         std::fs::write(&path, &data).unwrap();
         dirty = false;
     }
+    macro toggle_debug() {{
+        show_debug_panel ^= true;
+        gamedebug_core::toggle();
+    }}
 
     while w.is_open() {
         // region: event handling
         while let Some(event) = w.poll_event() {
+            input.update_from_event(&event);
             sf_egui.add_event(&event);
             let wants_pointer = sf_egui.context().wants_pointer_input();
             let wants_kb = sf_egui.context().wants_keyboard_input();
@@ -130,91 +146,90 @@ fn main() {
                     code, shift, ctrl, ..
                 } => match code {
                     Key::Up => match interact_mode {
-                        InteractMode::View => {
-                            starting_offset = starting_offset.saturating_sub(cols)
-                        }
+                        InteractMode::View => {}
                         InteractMode::Edit => {
                             cursor = cursor.saturating_sub(cols);
-                            if cursor < starting_offset {
-                                starting_offset -= cols;
-                            }
                         }
                     },
                     Key::Down => match interact_mode {
-                        InteractMode::View => starting_offset += cols,
+                        InteractMode::View => {}
                         InteractMode::Edit => {
                             if cursor + cols < data.len() {
                                 cursor += cols;
                             }
-                            if cursor >= starting_offset + rows * cols {
-                                starting_offset += cols;
-                            }
                         }
                     },
-                    Key::Left => match interact_mode {
-                        InteractMode::View => {
-                            if ctrl {
-                                cols = cols.saturating_sub(1);
-                            } else {
-                                starting_offset = starting_offset.saturating_sub(1);
-                            }
+                    Key::Left => {
+                        if interact_mode == InteractMode::Edit {
+                            cursor = cursor.saturating_sub(1)
+                        } else if ctrl {
+                            cols -= 1;
                         }
-                        InteractMode::Edit => cursor = cursor.saturating_sub(1),
-                    },
-                    Key::Right => match interact_mode {
+                    }
+                    Key::Right => {
+                        if interact_mode == InteractMode::Edit && cursor + 1 < data.len() {
+                            cursor += 1;
+                        } else if ctrl {
+                            cols += 1;
+                        }
+                    }
+                    Key::PageUp => match interact_mode {
                         InteractMode::View => {
-                            if ctrl {
-                                cols += 1;
-                            } else {
-                                starting_offset += 1;
-                            }
+                            view_y -= 1040;
                         }
                         InteractMode::Edit => {
-                            if cursor + 1 < data.len() {
-                                cursor += 1;
+                            let amount = rows * cols;
+                            if starting_offset >= amount {
+                                starting_offset -= amount;
+                                if interact_mode == InteractMode::Edit {
+                                    cursor = cursor.saturating_sub(amount);
+                                }
+                            } else {
+                                starting_offset = 0
                             }
                         }
                     },
-                    Key::PageUp => {
-                        let amount = rows * cols;
-                        if starting_offset >= amount {
-                            starting_offset -= amount;
-                            if interact_mode == InteractMode::Edit {
-                                cursor = cursor.saturating_sub(amount);
-                            }
-                        } else {
-                            starting_offset = 0
-                        }
-                    }
-                    Key::PageDown => {
-                        let amount = rows * cols;
-                        if starting_offset + amount < data.len() {
-                            starting_offset += amount;
-                            if interact_mode == InteractMode::Edit && cursor + amount < data.len() {
-                                cursor += amount;
+                    Key::PageDown => match interact_mode {
+                        InteractMode::View => view_y += 1040,
+                        InteractMode::Edit => {
+                            let amount = rows * cols;
+                            if starting_offset + amount < data.len() {
+                                starting_offset += amount;
+                                if interact_mode == InteractMode::Edit
+                                    && cursor + amount < data.len()
+                                {
+                                    cursor += amount;
+                                }
                             }
                         }
-                    }
-                    Key::Home => {
-                        starting_offset = 0;
-                        if interact_mode == InteractMode::Edit {
+                    },
+                    Key::Home => match interact_mode {
+                        InteractMode::View => view_y = 0,
+                        InteractMode::Edit => {
+                            starting_offset = 0;
                             cursor = 0;
                         }
-                    }
-                    Key::End => {
-                        let pos = data.len() - rows * cols;
-                        starting_offset = pos;
-                        if interact_mode == InteractMode::Edit {
-                            cursor = pos;
+                    },
+                    Key::End => match interact_mode {
+                        InteractMode::View => {
+                            let data_pix_size = (data.len() / cols) as i64 * i64::from(row_height);
+                            view_y = data_pix_size - 1040;
                         }
-                    }
+                        InteractMode::Edit => {
+                            let pos = data.len() - rows * cols;
+                            starting_offset = pos;
+                            if interact_mode == InteractMode::Edit {
+                                cursor = pos;
+                            }
+                        }
+                    },
                     Key::Tab if shift => {
                         edit_target.switch();
                         hex_edit_half_digit = None;
                     }
                     Key::F1 => interact_mode = InteractMode::View,
                     Key::F2 => interact_mode = InteractMode::Edit,
-                    Key::F12 => show_debug_panel ^= true,
+                    Key::F12 => toggle_debug!(),
                     Key::Escape => {
                         hex_edit_half_digit = None;
                     }
@@ -263,13 +278,34 @@ fn main() {
                 },
                 Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                     if button == mouse::Button::Left {
-                        let row = y as usize / usize::from(row_height);
-                        let col = x as usize / usize::from(col_width);
-                        let new_cursor = row * cols + col;
+                        let x: i64 = view_x + i64::from(x);
+                        let y: i64 = view_y + i64::from(y);
+                        per_msg!("x: {}, y: {}", x, y);
+                        let col_x = x / i64::from(col_width);
+                        let col_y = y / i64::from(row_height);
+                        per_msg!("col_x: {}, col_y: {}", col_x, col_y);
+                        let new_cursor: usize = col_y as usize * cols + col_x as usize;
                         cursor = starting_offset + new_cursor;
                     }
                 }
                 _ => {}
+            }
+        }
+        if interact_mode == InteractMode::View && !input.key_down(Key::LControl) {
+            let spd = if input.key_down(Key::LShift) {
+                scroll_speed * 4
+            } else {
+                scroll_speed
+            };
+            if input.key_down(Key::Left) {
+                view_x -= spd;
+            } else if input.key_down(Key::Right) {
+                view_x += spd;
+            }
+            if input.key_down(Key::Up) {
+                view_y -= spd;
+            } else if input.key_down(Key::Down) {
+                view_y += spd;
             }
         }
         let cursor_changed = cursor != cursor_prev_frame;
@@ -294,10 +330,20 @@ fn main() {
                         cursor,
                         edit_target,
                         row_height,
-                        col_width
+                        col_width,
+                        view_x,
+                        view_y,
+                        scroll_speed
                     }
                     ui.separator();
-                    ui.heading("Debug log");
+                    ui.heading("More Debug");
+                    for info in IMMEDIATE.lock().unwrap().iter() {
+                        if let Info::Msg(msg) = info {
+                            ui.label(msg);
+                        }
+                    }
+                    gamedebug_core::clear_immediates();
+                    ui.separator();
                     for PerEntry { frame, info } in PERSISTENT.lock().unwrap().iter() {
                         if let Info::Msg(msg) = info {
                             ui.label(format!("{}: {}", frame, msg));
@@ -452,21 +498,33 @@ fn main() {
             // endregion
         });
         // region: hex display
-        let mut idx = starting_offset;
+        // The offset for the hex display imposed by the view
+        let view_idx_off_x: usize = view_x.try_into().unwrap_or(0) / col_width as usize;
+        let view_idx_off_y: usize = view_y.try_into().unwrap_or(0) / row_height as usize;
+        let view_idx_off = view_idx_off_y * cols + view_idx_off_x;
+        // The ascii view has a different offset indexing
+        imm_msg!(view_idx_off_x);
+        imm_msg!(view_idx_off_y);
+        imm_msg!(view_idx_off);
+        let mut idx = starting_offset + view_idx_off;
+        let mut rows_rendered: u32 = 0;
+        let mut cols_rendered: u32 = 0;
         'display: for y in 0..rows {
             for x in 0..cols {
-                if x == max_visible_cols {
+                if x == max_visible_cols || x >= cols.saturating_sub(view_idx_off_x) {
                     idx += cols - x;
                     break;
                 }
                 if idx >= data.len() {
                     break 'display;
                 }
+                let pix_x = (x + view_idx_off_x) as f32 * f32::from(col_width) - view_x as f32;
+                let pix_y = (y + view_idx_off_y) as f32 * f32::from(row_height) - view_y as f32;
                 let byte = data[idx];
                 if find_dialog.open && find_dialog.result_offsets.contains(&idx) {
                     let mut rs = RectangleShape::from_rect(Rect::new(
-                        x as f32 * f32::from(col_width),
-                        y as f32 * f32::from(row_height),
+                        pix_x,
+                        pix_y,
                         col_width as f32,
                         row_height as f32,
                     ));
@@ -484,8 +542,8 @@ fn main() {
                         col_width / 2
                     };
                     draw_cursor(
-                        x as f32 * f32::from(col_width) + extra_x as f32,
-                        y as f32 * f32::from(row_height),
+                        pix_x + extra_x as f32,
+                        pix_y,
                         &mut w,
                         edit_target == EditTarget::Hex && interact_mode == InteractMode::Edit,
                     );
@@ -500,38 +558,50 @@ fn main() {
                 } else {
                     Color::WHITE
                 };
-                draw_glyph(
-                    &f,
-                    &mut vertices,
-                    x as f32 * f32::from(col_width),
-                    y as f32 * f32::from(row_height),
-                    g1 as u32,
-                    c,
-                );
-                draw_glyph(
-                    &f,
-                    &mut vertices,
-                    x as f32 * f32::from(col_width) + 11.0,
-                    y as f32 * f32::from(row_height),
-                    g2 as u32,
-                    c,
-                );
+                draw_glyph(&f, &mut vertices, pix_x, pix_y, g1 as u32, c);
+                draw_glyph(&f, &mut vertices, pix_x + 11.0, pix_y, g2 as u32, c);
                 idx += 1;
+                cols_rendered += 1;
             }
+            rows_rendered += 1;
         }
+        imm_msg!(rows_rendered);
+        cols_rendered = cols_rendered.checked_div(rows_rendered).unwrap_or(0);
+        imm_msg!(cols_rendered);
         // endregion
         // region: ascii display
+        // The offset for the ascii display imposed by the view
+        let ascii_display_x_offset = cols as i64 * i64::from(col_width) + 12;
+        imm_msg!(ascii_display_x_offset);
+        let view_idx_off_x: usize = view_x
+            .saturating_sub(ascii_display_x_offset)
+            .try_into()
+            .unwrap_or(0)
+            / col_width as usize;
+        //let view_idx_off_y: usize = view_y.try_into().unwrap_or(0) / row_height as usize;
+        let view_idx_off = view_idx_off_y * cols + view_idx_off_x;
+        imm_msg!("ascii");
+        imm_msg!(view_idx_off_x);
+        //imm_msg!(view_idx_off_y);
+        imm_msg!(view_idx_off);
+        let mut ascii_rows_rendered: u32 = 0;
+        let mut ascii_cols_rendered: u32 = 0;
         if show_text {
-            idx = starting_offset;
+            idx = starting_offset + view_idx_off;
+            imm_msg!(idx);
             'asciidisplay: for y in 0..rows {
                 for x in 0..cols {
-                    if x == max_visible_cols {
+                    if x == max_visible_cols || x >= cols.saturating_sub(view_idx_off_x) {
                         idx += cols - x;
                         break;
                     }
                     if idx >= data.len() {
                         break 'asciidisplay;
                     }
+                    let pix_x =
+                        (x + cols * 2 + 1) as f32 * f32::from(col_width / 2) - view_x as f32;
+                    //let pix_y = y as f32 * f32::from(row_height) - view_y as f32;
+                    let pix_y = (y + view_idx_off_y) as f32 * f32::from(row_height) - view_y as f32;
                     let byte = data[idx];
                     let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
                     let c = if colorize {
@@ -541,24 +611,24 @@ fn main() {
                     };
                     if idx == cursor {
                         draw_cursor(
-                            (x + cols * 2 + 1) as f32 * f32::from(col_width / 2),
-                            y as f32 * f32::from(row_height),
+                            pix_x,
+                            pix_y,
                             &mut w,
                             edit_target == EditTarget::Text && interact_mode == InteractMode::Edit,
                         );
                     }
-                    draw_glyph(
-                        &f,
-                        &mut vertices,
-                        (x + cols * 2 + 1) as f32 * f32::from(col_width / 2),
-                        y as f32 * f32::from(row_height),
-                        byte as u32,
-                        c,
-                    );
+                    draw_glyph(&f, &mut vertices, pix_x, pix_y, byte as u32, c);
                     idx += 1;
+                    ascii_cols_rendered += 1;
                 }
+                ascii_rows_rendered += 1;
             }
         }
+        imm_msg!(ascii_rows_rendered);
+        ascii_cols_rendered = ascii_cols_rendered
+            .checked_div(ascii_rows_rendered)
+            .unwrap_or(0);
+        imm_msg!(ascii_cols_rendered);
         // endregion
         rs.set_texture(Some(f.texture(10)));
         w.draw_primitives(&vertices, PrimitiveType::QUADS, &rs);
