@@ -59,8 +59,8 @@ pub fn merge_hex_halves(first: u8, second: u8) -> u8 {
 #[test]
 fn test_merge_halves() {
     assert_eq!(merge_hex_halves(b'0', b'0'), 0);
-    assert_eq!(merge_hex_halves(b'0', b'F'), 15);
+    assert_eq!(merge_hex_halves(b'0', b'f'), 15);
     assert_eq!(merge_hex_halves(b'3', b'2'), 50);
-    assert_eq!(merge_hex_halves(b'F', b'0'), 240);
-    assert_eq!(merge_hex_halves(b'F', b'F'), 255);
+    assert_eq!(merge_hex_halves(b'f', b'0'), 240);
+    assert_eq!(merge_hex_halves(b'f', b'f'), 255);
 }

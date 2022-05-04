@@ -2,7 +2,9 @@
 
 mod hex_conv;
 mod input;
+mod slice_ext;
 
+use crate::slice_ext::SliceExt;
 use egui_inspect::{derive::Inspect, inspect};
 use egui_sfml::{
     egui::{
@@ -63,6 +65,12 @@ struct FindDialog {
     scroll_to: Option<usize>,
 }
 
+#[derive(Clone, Copy, Debug)]
+struct Region {
+    begin: usize,
+    end: usize,
+}
+
 fn main() {
     let path = std::env::args_os()
         .nth(1)
@@ -87,10 +95,13 @@ fn main() {
     let mut max_visible_cols = 75;
     // The byte offset in the data from which the view starts viewing data from
     let mut starting_offset: usize = 0;
+    // The top part where the top panel is. You should try to position stuff so it's not overdrawn
+    // by the top panel
+    let top_gap = 30;
     // The x pixel offset of the scrollable view
     let mut view_x: i64 = 0;
     // The y pixel offset of the scrollable view
-    let mut view_y: i64 = 0;
+    let mut view_y: i64 = -top_gap;
     // The amount scrolled per frame in view mode
     let mut scroll_speed = 4;
     let mut colorize = true;
@@ -109,6 +120,9 @@ fn main() {
     let mut show_debug_panel = false;
     let mut u8_buf = String::new();
     let mut find_dialog = FindDialog::default();
+    let mut selection: Option<Region> = None;
+    let mut select_begin: Option<usize> = None;
+    let mut fill_text = String::new();
     let backup_path = {
         let mut new = path.to_owned();
         new.push(".hexerator_bak");
@@ -213,7 +227,7 @@ fn main() {
                         }
                     },
                     Key::Home => match interact_mode {
-                        InteractMode::View => view_y = 0,
+                        InteractMode::View => view_y = -top_gap,
                         InteractMode::Edit => {
                             starting_offset = 0;
                             cursor = 0;
@@ -442,6 +456,58 @@ fn main() {
                     });
                 });
             // endregion
+            // region: top panel
+            TopBottomPanel::top("top_panel").show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    let begin_text = match select_begin {
+                        Some(begin) => begin.to_string(),
+                        None => "-".to_owned(),
+                    };
+                    ui.label(format!("Select begin: {}", begin_text));
+                    if ui.button("set").clicked() {
+                        match &mut selection {
+                            Some(sel) => sel.begin = cursor,
+                            None => select_begin = Some(cursor),
+                        }
+                    }
+                    let end_text = match selection {
+                        Some(sel) => sel.end.to_string(),
+                        None => "-".to_owned(),
+                    };
+                    ui.label(format!("end: {}", end_text));
+                    if ui.button("set").clicked() {
+                        match select_begin {
+                            Some(begin) => match &mut selection {
+                                None => selection = Some(Region { begin, end: cursor }),
+                                Some(sel) => sel.end = cursor,
+                            },
+                            None => {}
+                        }
+                    }
+                    if ui.button("deselect").clicked() {
+                        selection = None;
+                    }
+                    ui.text_edit_singleline(&mut fill_text);
+                    if ui.button("fill").clicked() {
+                        if let Some(sel) = selection {
+                            let values: Result<Vec<u8>, _> = fill_text
+                                .split(' ')
+                                .map(|token| u8::from_str_radix(token, 16))
+                                .collect();
+                            match values {
+                                Ok(values) => {
+                                    data[sel.begin..=sel.end].pattern_fill(&values);
+                                    dirty = true;
+                                }
+                                Err(e) => {
+                                    per_msg!("Fill parse error: {}", e);
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+            // endregion
             // region: bottom panel
             TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
                 ui.horizontal(|ui| {
@@ -531,7 +597,11 @@ fn main() {
                 let pix_x = (x + view_idx_off_x) as f32 * f32::from(col_width) - view_x as f32;
                 let pix_y = (y + view_idx_off_y) as f32 * f32::from(row_height) - view_y as f32;
                 let byte = data[idx];
-                if find_dialog.open && find_dialog.result_offsets.contains(&idx) {
+                let selected = match selection {
+                    Some(sel) => (sel.begin..=sel.end).contains(&idx),
+                    None => false,
+                };
+                if selected || (find_dialog.open && find_dialog.result_offsets.contains(&idx)) {
                     let mut rs = RectangleShape::from_rect(Rect::new(
                         pix_x,
                         pix_y,
