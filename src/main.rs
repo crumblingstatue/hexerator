@@ -1,10 +1,11 @@
 #![feature(let_chains, decl_macro)]
 
+mod app;
 mod hex_conv;
 mod input;
 mod slice_ext;
 
-use crate::slice_ext::SliceExt;
+use crate::{app::App, slice_ext::SliceExt};
 use egui_inspect::{derive::Inspect, inspect};
 use egui_sfml::{
     egui::{
@@ -87,12 +88,7 @@ fn main() {
     let mut sf_egui = SfEgui::new(&w);
     let f = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
     let mut vertices = Vec::new();
-    let mut rows = 67;
-    // Number of columns in the view
-    let mut cols = 48;
-    // Maximum number of visible hex columns that can be shown on screen.
-    // ascii is double this amount.
-    let mut max_visible_cols = 75;
+    let mut app = App::default();
     // The byte offset in the data from which the view starts viewing data from
     let mut starting_offset: usize = 0;
     // The top part where the top panel is. You should try to position stuff so it's not overdrawn
@@ -142,7 +138,7 @@ fn main() {
         gamedebug_core::toggle();
     }}
     macro ascii_display_x_offset() {
-        cols as i64 * i64::from(col_width) + 12
+        app.cols as i64 * i64::from(col_width) + 12
     }
 
     while w.is_open() {
@@ -170,7 +166,7 @@ fn main() {
                             }
                         }
                         InteractMode::Edit => {
-                            cursor = cursor.saturating_sub(cols);
+                            cursor = cursor.saturating_sub(app.cols);
                         }
                     },
                     Key::Down => match interact_mode {
@@ -180,8 +176,8 @@ fn main() {
                             }
                         }
                         InteractMode::Edit => {
-                            if cursor + cols < data.len() {
-                                cursor += cols;
+                            if cursor + app.cols < data.len() {
+                                cursor += app.cols;
                             }
                         }
                     },
@@ -189,14 +185,14 @@ fn main() {
                         if interact_mode == InteractMode::Edit {
                             cursor = cursor.saturating_sub(1)
                         } else if ctrl {
-                            cols -= 1;
+                            app.cols -= 1;
                         }
                     }
                     Key::Right => {
                         if interact_mode == InteractMode::Edit && cursor + 1 < data.len() {
                             cursor += 1;
                         } else if ctrl {
-                            cols += 1;
+                            app.cols += 1;
                         }
                     }
                     Key::PageUp => match interact_mode {
@@ -204,7 +200,7 @@ fn main() {
                             view_y -= 1040;
                         }
                         InteractMode::Edit => {
-                            let amount = rows * cols;
+                            let amount = app.rows * app.cols;
                             if starting_offset >= amount {
                                 starting_offset -= amount;
                                 if interact_mode == InteractMode::Edit {
@@ -218,7 +214,7 @@ fn main() {
                     Key::PageDown => match interact_mode {
                         InteractMode::View => view_y += 1040,
                         InteractMode::Edit => {
-                            let amount = rows * cols;
+                            let amount = app.rows * app.cols;
                             if starting_offset + amount < data.len() {
                                 starting_offset += amount;
                                 if interact_mode == InteractMode::Edit
@@ -238,11 +234,12 @@ fn main() {
                     },
                     Key::End => match interact_mode {
                         InteractMode::View => {
-                            let data_pix_size = (data.len() / cols) as i64 * i64::from(row_height);
+                            let data_pix_size =
+                                (data.len() / app.cols) as i64 * i64::from(row_height);
                             view_y = data_pix_size - 1040;
                         }
                         InteractMode::Edit => {
-                            let pos = data.len() - rows * cols;
+                            let pos = data.len() - app.rows * app.cols;
                             starting_offset = pos;
                             if interact_mode == InteractMode::Edit {
                                 cursor = pos;
@@ -317,7 +314,7 @@ fn main() {
                             let x_rel = x - ascii_display_x_offset;
                             col_x = x_rel / i64::from(col_width / 2);
                         }
-                        let new_cursor = usize::try_from(col_y).unwrap_or(0) * cols
+                        let new_cursor = usize::try_from(col_y).unwrap_or(0) * app.cols
                             + usize::try_from(col_x).unwrap_or(0);
                         cursor = starting_offset + new_cursor;
                     }
@@ -357,9 +354,9 @@ fn main() {
                     // region: debug panel
                     inspect! {
                         ui,
-                        rows,
-                        cols,
-                        max_visible_cols,
+                        app.rows,
+                        app.cols,
+                        app.max_visible_cols,
                         starting_offset,
                         cursor,
                         edit_target,
@@ -394,7 +391,7 @@ fn main() {
             macro cursor_view_status() {
                 if cursor < starting_offset {
                     CursorViewStatus::Before
-                } else if cursor > starting_offset + rows * cols {
+                } else if cursor > starting_offset + app.rows * app.cols {
                     CursorViewStatus::After
                 } else {
                     CursorViewStatus::Inside
@@ -405,9 +402,9 @@ fn main() {
                 cursor = $off;
                 match cursor_view_status!() {
                     CursorViewStatus::Before => {
-                        starting_offset = $off.saturating_sub((rows - 1) * (cols - 1))
+                        starting_offset = $off.saturating_sub((app.rows - 1) * (app.cols - 1))
                     }
-                    CursorViewStatus::After => starting_offset = $off - (rows + cols),
+                    CursorViewStatus::After => starting_offset = $off - (app.rows + app.cols),
                     CursorViewStatus::Inside => {}
                 }
             }
@@ -537,7 +534,7 @@ fn main() {
                     match interact_mode {
                         InteractMode::View => {
                             ui.label(format!("offset: {}", starting_offset));
-                            ui.label(format!("columns: {}", cols));
+                            ui.label(format!("columns: {}", app.cols));
                         }
                         InteractMode::Edit => {
                             ui.label(format!("cursor: {}", cursor));
@@ -587,7 +584,7 @@ fn main() {
         // The offset for the hex display imposed by the view
         let view_idx_off_x: usize = view_x.try_into().unwrap_or(0) / col_width as usize;
         let view_idx_off_y: usize = view_y.try_into().unwrap_or(0) / row_height as usize;
-        let view_idx_off = view_idx_off_y * cols + view_idx_off_x;
+        let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
         // The ascii view has a different offset indexing
         imm_msg!(view_idx_off_x);
         imm_msg!(view_idx_off_y);
@@ -595,10 +592,10 @@ fn main() {
         let mut idx = starting_offset + view_idx_off;
         let mut rows_rendered: u32 = 0;
         let mut cols_rendered: u32 = 0;
-        'display: for y in 0..rows {
-            for x in 0..cols {
-                if x == max_visible_cols || x >= cols.saturating_sub(view_idx_off_x) {
-                    idx += cols - x;
+        'display: for y in 0..app.rows {
+            for x in 0..app.cols {
+                if x == app.max_visible_cols || x >= app.cols.saturating_sub(view_idx_off_x) {
+                    idx += app.cols - x;
                     break;
                 }
                 if idx >= data.len() {
@@ -669,7 +666,7 @@ fn main() {
             .unwrap_or(0)
             / col_width as usize;
         //let view_idx_off_y: usize = view_y.try_into().unwrap_or(0) / row_height as usize;
-        let view_idx_off = view_idx_off_y * cols + view_idx_off_x;
+        let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
         imm_msg!("ascii");
         imm_msg!(view_idx_off_x);
         //imm_msg!(view_idx_off_y);
@@ -679,17 +676,18 @@ fn main() {
         if show_text {
             idx = starting_offset + view_idx_off;
             imm_msg!(idx);
-            'asciidisplay: for y in 0..rows {
-                for x in 0..cols {
-                    if x == max_visible_cols * 2 || x >= cols.saturating_sub(view_idx_off_x) {
-                        idx += cols - x;
+            'asciidisplay: for y in 0..app.rows {
+                for x in 0..app.cols {
+                    if x == app.max_visible_cols * 2 || x >= app.cols.saturating_sub(view_idx_off_x)
+                    {
+                        idx += app.cols - x;
                         break;
                     }
                     if idx >= data.len() {
                         break 'asciidisplay;
                     }
                     let pix_x =
-                        (x + cols * 2 + 1) as f32 * f32::from(col_width / 2) - view_x as f32;
+                        (x + app.cols * 2 + 1) as f32 * f32::from(col_width / 2) - view_x as f32;
                     //let pix_y = y as f32 * f32::from(row_height) - view_y as f32;
                     let pix_y = (y + view_idx_off_y) as f32 * f32::from(row_height) - view_y as f32;
                     let byte = data[idx];
