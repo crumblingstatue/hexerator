@@ -1,4 +1,4 @@
-#![feature(let_chains, decl_macro)]
+#![feature(let_chains)]
 
 mod app;
 mod hex_conv;
@@ -88,8 +88,6 @@ fn main() {
     let f = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
     let mut vertices = Vec::new();
     let mut app = App::new(path);
-    // The byte offset in the data from which the view starts viewing data from
-    let mut starting_offset: usize = 0;
     // The top part where the top panel is. You should try to position stuff so it's not overdrawn
     // by the top panel
     let top_gap = 30;
@@ -100,10 +98,8 @@ fn main() {
     // The amount scrolled per frame in view mode
     let mut scroll_speed = 4;
     let mut colorize = true;
-    // The editing byte offset
-    let mut cursor: usize = 0;
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
-    let mut cursor_prev_frame = cursor;
+    let mut cursor_prev_frame = app.cursor;
     let mut edit_target = EditTarget::Hex;
     let mut row_height: u8 = 16;
     let mut show_text = true;
@@ -143,35 +139,35 @@ fn main() {
                     Key::Up => match interact_mode {
                         InteractMode::View => {
                             if ctrl {
-                                starting_offset = starting_offset.saturating_sub(1);
+                                app.starting_offset = app.starting_offset.saturating_sub(1);
                             }
                         }
                         InteractMode::Edit => {
-                            cursor = cursor.saturating_sub(app.cols);
+                            app.cursor = app.cursor.saturating_sub(app.cols);
                         }
                     },
                     Key::Down => match interact_mode {
                         InteractMode::View => {
                             if ctrl {
-                                starting_offset += 1;
+                                app.starting_offset += 1;
                             }
                         }
                         InteractMode::Edit => {
-                            if cursor + app.cols < app.data.len() {
-                                cursor += app.cols;
+                            if app.cursor + app.cols < app.data.len() {
+                                app.cursor += app.cols;
                             }
                         }
                     },
                     Key::Left => {
                         if interact_mode == InteractMode::Edit {
-                            cursor = cursor.saturating_sub(1)
+                            app.cursor = app.cursor.saturating_sub(1)
                         } else if ctrl {
                             app.cols -= 1;
                         }
                     }
                     Key::Right => {
-                        if interact_mode == InteractMode::Edit && cursor + 1 < app.data.len() {
-                            cursor += 1;
+                        if interact_mode == InteractMode::Edit && app.cursor + 1 < app.data.len() {
+                            app.cursor += 1;
                         } else if ctrl {
                             app.cols += 1;
                         }
@@ -182,13 +178,13 @@ fn main() {
                         }
                         InteractMode::Edit => {
                             let amount = app.rows * app.cols;
-                            if starting_offset >= amount {
-                                starting_offset -= amount;
+                            if app.starting_offset >= amount {
+                                app.starting_offset -= amount;
                                 if interact_mode == InteractMode::Edit {
-                                    cursor = cursor.saturating_sub(amount);
+                                    app.cursor = app.cursor.saturating_sub(amount);
                                 }
                             } else {
-                                starting_offset = 0
+                                app.starting_offset = 0
                             }
                         }
                     },
@@ -196,12 +192,12 @@ fn main() {
                         InteractMode::View => view_y += 1040,
                         InteractMode::Edit => {
                             let amount = app.rows * app.cols;
-                            if starting_offset + amount < app.data.len() {
-                                starting_offset += amount;
+                            if app.starting_offset + amount < app.data.len() {
+                                app.starting_offset += amount;
                                 if interact_mode == InteractMode::Edit
-                                    && cursor + amount < app.data.len()
+                                    && app.cursor + amount < app.data.len()
                                 {
-                                    cursor += amount;
+                                    app.cursor += amount;
                                 }
                             }
                         }
@@ -209,8 +205,8 @@ fn main() {
                     Key::Home => match interact_mode {
                         InteractMode::View => view_y = -top_gap,
                         InteractMode::Edit => {
-                            starting_offset = 0;
-                            cursor = 0;
+                            app.starting_offset = 0;
+                            app.cursor = 0;
                         }
                     },
                     Key::End => match interact_mode {
@@ -221,9 +217,9 @@ fn main() {
                         }
                         InteractMode::Edit => {
                             let pos = app.data.len() - app.rows * app.cols;
-                            starting_offset = pos;
+                            app.starting_offset = pos;
                             if interact_mode == InteractMode::Edit {
-                                cursor = pos;
+                                app.cursor = pos;
                             }
                         }
                     },
@@ -256,11 +252,11 @@ fn main() {
                                 if (b'0'..=b'f').contains(&ascii) {
                                     match hex_edit_half_digit {
                                         Some(half) => {
-                                            app.data[cursor] =
+                                            app.data[app.cursor] =
                                                 hex_conv::merge_hex_halves(half, ascii);
                                             app.dirty = true;
-                                            if cursor + 1 < app.data.len() {
-                                                cursor += 1;
+                                            if app.cursor + 1 < app.data.len() {
+                                                app.cursor += 1;
                                             }
                                             hex_edit_half_digit = None;
                                         }
@@ -271,10 +267,10 @@ fn main() {
                         }
                         EditTarget::Text => {
                             if unicode.is_ascii() {
-                                app.data[cursor] = unicode as u8;
+                                app.data[app.cursor] = unicode as u8;
                                 app.dirty = true;
-                                if cursor + 1 < app.data.len() {
-                                    cursor += 1;
+                                if app.cursor + 1 < app.data.len() {
+                                    app.cursor += 1;
                                 }
                             }
                         }
@@ -298,7 +294,7 @@ fn main() {
                         }
                         let new_cursor = usize::try_from(col_y).unwrap_or(0) * app.cols
                             + usize::try_from(col_x).unwrap_or(0);
-                        cursor = starting_offset + new_cursor;
+                        app.cursor = app.starting_offset + new_cursor;
                     }
                 }
                 _ => {}
@@ -321,9 +317,9 @@ fn main() {
                 view_y += spd;
             }
         }
-        let cursor_changed = cursor != cursor_prev_frame;
+        let cursor_changed = app.cursor != cursor_prev_frame;
         if cursor_changed {
-            u8_buf = app.data[cursor].to_string();
+            u8_buf = app.data[app.cursor].to_string();
         }
         // endregion
         w.clear(Color::BLACK);
@@ -339,8 +335,8 @@ fn main() {
                         app.rows,
                         app.cols,
                         app.max_visible_cols,
-                        starting_offset,
-                        cursor,
+                        app.starting_offset,
+                        app.cursor,
                         edit_target,
                         row_height,
                         app.col_width,
@@ -364,32 +360,7 @@ fn main() {
                     }
                     // endregion
                 });
-            enum CursorViewStatus {
-                Inside,
-                Before,
-                After,
-            }
             // region: find window
-            macro cursor_view_status() {
-                if cursor < starting_offset {
-                    CursorViewStatus::Before
-                } else if cursor > starting_offset + app.rows * app.cols {
-                    CursorViewStatus::After
-                } else {
-                    CursorViewStatus::Inside
-                }
-            }
-            macro search_focus($off:expr) {
-                // Focus the search result in the hex view
-                cursor = $off;
-                match cursor_view_status!() {
-                    CursorViewStatus::Before => {
-                        starting_offset = $off.saturating_sub((app.rows - 1) * (app.cols - 1))
-                    }
-                    CursorViewStatus::After => starting_offset = $off - (app.rows + app.cols),
-                    CursorViewStatus::Inside => {}
-                }
-            }
             Window::new("Find")
                 .open(&mut find_dialog.open)
                 .show(ctx, |ui| {
@@ -404,7 +375,7 @@ fn main() {
                             }
                         }
                         if let Some(&off) = find_dialog.result_offsets.first() {
-                            search_focus!(off);
+                            app.search_focus(off);
                         }
                     }
                     ScrollArea::vertical().max_height(480.).show(ui, |ui| {
@@ -416,7 +387,7 @@ fn main() {
                             find_dialog.scroll_to = None;
                         }
                             if re.clicked() {
-                                search_focus!(off);
+                                app.search_focus(off);
                                 find_dialog.result_cursor = i;
                             }
                         }
@@ -429,7 +400,7 @@ fn main() {
                         {
                             find_dialog.result_cursor -= 1;
                             let off = find_dialog.result_offsets[find_dialog.result_cursor];
-                            search_focus!(off);
+                            app.search_focus(off);
                             find_dialog.scroll_to = Some(find_dialog.result_cursor);
                         }
                         ui.label((find_dialog.result_cursor + 1).to_string());
@@ -438,7 +409,7 @@ fn main() {
                         {
                             find_dialog.result_cursor += 1;
                             let off = find_dialog.result_offsets[find_dialog.result_cursor];
-                            search_focus!(off);
+                            app.search_focus(off);
                             find_dialog.scroll_to = Some(find_dialog.result_cursor);
                         }
                         ui.label(format!("{} results", find_dialog.result_offsets.len()));
@@ -455,8 +426,8 @@ fn main() {
                     ui.label(format!("Select begin: {}", begin_text));
                     if ui.button("set").clicked() {
                         match &mut selection {
-                            Some(sel) => sel.begin = cursor,
-                            None => select_begin = Some(cursor),
+                            Some(sel) => sel.begin = app.cursor,
+                            None => select_begin = Some(app.cursor),
                         }
                     }
                     let end_text = match selection {
@@ -467,8 +438,13 @@ fn main() {
                     if ui.button("set").clicked() {
                         match select_begin {
                             Some(begin) => match &mut selection {
-                                None => selection = Some(Region { begin, end: cursor }),
-                                Some(sel) => sel.end = cursor,
+                                None => {
+                                    selection = Some(Region {
+                                        begin,
+                                        end: app.cursor,
+                                    })
+                                }
+                                Some(sel) => sel.end = app.cursor,
                             },
                             None => {}
                         }
@@ -515,11 +491,11 @@ fn main() {
                     ui.separator();
                     match interact_mode {
                         InteractMode::View => {
-                            ui.label(format!("offset: {}", starting_offset));
+                            ui.label(format!("offset: {}", app.starting_offset));
                             ui.label(format!("columns: {}", app.cols));
                         }
                         InteractMode::Edit => {
-                            ui.label(format!("cursor: {}", cursor));
+                            ui.label(format!("app.cursor: {}", app.cursor));
                             ui.separator();
                             ui.label("u8");
                             if ui
@@ -527,7 +503,7 @@ fn main() {
                                 .lost_focus()
                                 && ui.input().key_pressed(egui::Key::Enter)
                             {
-                                app.data[cursor] = u8_buf.parse().unwrap();
+                                app.data[app.cursor] = u8_buf.parse().unwrap();
                                 app.dirty = true;
                             }
                         }
@@ -571,7 +547,7 @@ fn main() {
         imm_msg!(view_idx_off_x);
         imm_msg!(view_idx_off_y);
         imm_msg!(view_idx_off);
-        let mut idx = starting_offset + view_idx_off;
+        let mut idx = app.starting_offset + view_idx_off;
         let mut rows_rendered: u32 = 0;
         let mut cols_rendered: u32 = 0;
         'display: for y in 0..app.rows {
@@ -598,13 +574,13 @@ fn main() {
                         row_height as f32,
                     ));
                     rs.set_fill_color(Color::rgb(150, 150, 150));
-                    if cursor == idx {
+                    if app.cursor == idx {
                         rs.set_outline_color(Color::WHITE);
                         rs.set_outline_thickness(-2.0);
                     }
                     w.draw(&rs);
                 }
-                if idx == cursor {
+                if idx == app.cursor {
                     let extra_x = if hex_edit_half_digit.is_none() {
                         0
                     } else {
@@ -618,7 +594,7 @@ fn main() {
                     );
                 }
                 let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);
-                if let Some(half) = hex_edit_half_digit && cursor == idx {
+                if let Some(half) = hex_edit_half_digit && app.cursor == idx {
                     g1 = half.to_ascii_uppercase();
                 }
                 let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
@@ -656,7 +632,7 @@ fn main() {
         let mut ascii_rows_rendered: u32 = 0;
         let mut ascii_cols_rendered: u32 = 0;
         if show_text {
-            idx = starting_offset + view_idx_off;
+            idx = app.starting_offset + view_idx_off;
             imm_msg!(idx);
             'asciidisplay: for y in 0..app.rows {
                 for x in 0..app.cols {
@@ -691,13 +667,13 @@ fn main() {
                             row_height as f32,
                         ));
                         rs.set_fill_color(Color::rgb(150, 150, 150));
-                        if cursor == idx {
+                        if app.cursor == idx {
                             rs.set_outline_color(Color::WHITE);
                             rs.set_outline_thickness(-2.0);
                         }
                         w.draw(&rs);
                     }
-                    if idx == cursor {
+                    if idx == app.cursor {
                         draw_cursor(
                             pix_x,
                             pix_y,
@@ -724,7 +700,7 @@ fn main() {
         sf_egui.draw(&mut w, None);
         w.display();
         gamedebug_core::inc_frame();
-        cursor_prev_frame = cursor;
+        cursor_prev_frame = app.cursor;
     }
 }
 
