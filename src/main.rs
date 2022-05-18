@@ -85,7 +85,7 @@ fn main() {
     w.set_vertical_sync_enabled(true);
     w.set_position(Vector2::new(0, 0));
     let mut sf_egui = SfEgui::new(&w);
-    let f = Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap();
+    let f = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
     let mut vertices = Vec::new();
     let mut rows = 67;
     // Number of columns in the view
