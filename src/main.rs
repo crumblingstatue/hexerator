@@ -106,7 +106,6 @@ fn main() {
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     let mut cursor_prev_frame = cursor;
     let mut edit_target = EditTarget::Hex;
-    let mut dirty = false;
     let mut row_height: u8 = 16;
     let mut col_width: u8 = 26;
     let mut show_text = true;
@@ -127,11 +126,11 @@ fn main() {
     let mut input = Input::default();
     macro reload() {
         data = std::fs::read(&app.path).unwrap();
-        dirty = false;
+        app.dirty = false;
     }
     macro save() {
         std::fs::write(&app.path, &data).unwrap();
-        dirty = false;
+        app.dirty = false;
     }
     macro toggle_debug() {{
         show_debug_panel ^= true;
@@ -276,7 +275,7 @@ fn main() {
                                     match hex_edit_half_digit {
                                         Some(half) => {
                                             data[cursor] = hex_conv::merge_hex_halves(half, ascii);
-                                            dirty = true;
+                                            app.dirty = true;
                                             if cursor + 1 < data.len() {
                                                 cursor += 1;
                                             }
@@ -290,7 +289,7 @@ fn main() {
                         EditTarget::Text => {
                             if unicode.is_ascii() {
                                 data[cursor] = unicode as u8;
-                                dirty = true;
+                                app.dirty = true;
                                 if cursor + 1 < data.len() {
                                     cursor += 1;
                                 }
@@ -504,7 +503,7 @@ fn main() {
                             match values {
                                 Ok(values) => {
                                     data[sel.begin..=sel.end].pattern_fill(&values);
-                                    dirty = true;
+                                    app.dirty = true;
                                 }
                                 Err(e) => {
                                     per_msg!("Fill parse error: {}", e);
@@ -546,7 +545,7 @@ fn main() {
                                 && ui.input().key_pressed(egui::Key::Enter)
                             {
                                 data[cursor] = u8_buf.parse().unwrap();
-                                dirty = true;
+                                app.dirty = true;
                             }
                         }
                     }
@@ -556,13 +555,13 @@ fn main() {
                         ui.checkbox(&mut show_text, "text");
                         ui.separator();
                         if ui
-                            .add_enabled(dirty, Button::new("Reload (ctrl+R)"))
+                            .add_enabled(app.dirty, Button::new("Reload (ctrl+R)"))
                             .clicked()
                         {
                             reload!();
                         }
                         if ui
-                            .add_enabled(dirty, Button::new("Save (ctrl+S)"))
+                            .add_enabled(app.dirty, Button::new("Save (ctrl+S)"))
                             .clicked()
                         {
                             save!();

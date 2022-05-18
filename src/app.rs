@@ -10,6 +10,7 @@ pub struct App {
     pub max_visible_cols: usize,
     /// Path to the file we're editing
     pub path: OsString,
+    pub dirty: bool,
 }
 
 impl App {
@@ -19,6 +20,7 @@ impl App {
             cols: 48,
             max_visible_cols: 75,
             path,
+            dirty: false,
         }
     }
 }
