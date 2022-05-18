@@ -76,7 +76,6 @@ fn main() {
     let path = std::env::args_os()
         .nth(1)
         .expect("Need file path as argument");
-    let mut data = std::fs::read(&path).unwrap();
     let mut w = RenderWindow::new(
         (1920, 1080),
         "Hexerator",
@@ -124,14 +123,6 @@ fn main() {
         new
     };
     let mut input = Input::default();
-    macro reload() {
-        data = std::fs::read(&app.path).unwrap();
-        app.dirty = false;
-    }
-    macro save() {
-        std::fs::write(&app.path, &data).unwrap();
-        app.dirty = false;
-    }
     macro toggle_debug() {{
         show_debug_panel ^= true;
         gamedebug_core::toggle();
@@ -175,7 +166,7 @@ fn main() {
                             }
                         }
                         InteractMode::Edit => {
-                            if cursor + app.cols < data.len() {
+                            if cursor + app.cols < app.data.len() {
                                 cursor += app.cols;
                             }
                         }
@@ -188,7 +179,7 @@ fn main() {
                         }
                     }
                     Key::Right => {
-                        if interact_mode == InteractMode::Edit && cursor + 1 < data.len() {
+                        if interact_mode == InteractMode::Edit && cursor + 1 < app.data.len() {
                             cursor += 1;
                         } else if ctrl {
                             app.cols += 1;
@@ -214,10 +205,10 @@ fn main() {
                         InteractMode::View => view_y += 1040,
                         InteractMode::Edit => {
                             let amount = app.rows * app.cols;
-                            if starting_offset + amount < data.len() {
+                            if starting_offset + amount < app.data.len() {
                                 starting_offset += amount;
                                 if interact_mode == InteractMode::Edit
-                                    && cursor + amount < data.len()
+                                    && cursor + amount < app.data.len()
                                 {
                                     cursor += amount;
                                 }
@@ -234,11 +225,11 @@ fn main() {
                     Key::End => match interact_mode {
                         InteractMode::View => {
                             let data_pix_size =
-                                (data.len() / app.cols) as i64 * i64::from(row_height);
+                                (app.data.len() / app.cols) as i64 * i64::from(row_height);
                             view_y = data_pix_size - 1040;
                         }
                         InteractMode::Edit => {
-                            let pos = data.len() - app.rows * app.cols;
+                            let pos = app.data.len() - app.rows * app.cols;
                             starting_offset = pos;
                             if interact_mode == InteractMode::Edit {
                                 cursor = pos;
@@ -259,10 +250,10 @@ fn main() {
                         find_dialog.open ^= true;
                     }
                     Key::S if ctrl => {
-                        save!();
+                        app.save();
                     }
                     Key::R if ctrl => {
-                        reload!();
+                        app.reload();
                     }
                     _ => {}
                 },
@@ -274,9 +265,10 @@ fn main() {
                                 if (b'0'..=b'f').contains(&ascii) {
                                     match hex_edit_half_digit {
                                         Some(half) => {
-                                            data[cursor] = hex_conv::merge_hex_halves(half, ascii);
+                                            app.data[cursor] =
+                                                hex_conv::merge_hex_halves(half, ascii);
                                             app.dirty = true;
-                                            if cursor + 1 < data.len() {
+                                            if cursor + 1 < app.data.len() {
                                                 cursor += 1;
                                             }
                                             hex_edit_half_digit = None;
@@ -288,9 +280,9 @@ fn main() {
                         }
                         EditTarget::Text => {
                             if unicode.is_ascii() {
-                                data[cursor] = unicode as u8;
+                                app.data[cursor] = unicode as u8;
                                 app.dirty = true;
-                                if cursor + 1 < data.len() {
+                                if cursor + 1 < app.data.len() {
                                     cursor += 1;
                                 }
                             }
@@ -340,7 +332,7 @@ fn main() {
         }
         let cursor_changed = cursor != cursor_prev_frame;
         if cursor_changed {
-            u8_buf = data[cursor].to_string();
+            u8_buf = app.data[cursor].to_string();
         }
         // endregion
         w.clear(Color::BLACK);
@@ -415,7 +407,7 @@ fn main() {
                     {
                         let needle = find_dialog.input.parse().unwrap();
                         find_dialog.result_offsets.clear();
-                        for (offset, &byte) in data.iter().enumerate() {
+                        for (offset, &byte) in app.data.iter().enumerate() {
                             if byte == needle {
                                 find_dialog.result_offsets.push(offset);
                             }
@@ -502,7 +494,7 @@ fn main() {
                                 .collect();
                             match values {
                                 Ok(values) => {
-                                    data[sel.begin..=sel.end].pattern_fill(&values);
+                                    app.data[sel.begin..=sel.end].pattern_fill(&values);
                                     app.dirty = true;
                                 }
                                 Err(e) => {
@@ -544,7 +536,7 @@ fn main() {
                                 .lost_focus()
                                 && ui.input().key_pressed(egui::Key::Enter)
                             {
-                                data[cursor] = u8_buf.parse().unwrap();
+                                app.data[cursor] = u8_buf.parse().unwrap();
                                 app.dirty = true;
                             }
                         }
@@ -558,18 +550,18 @@ fn main() {
                             .add_enabled(app.dirty, Button::new("Reload (ctrl+R)"))
                             .clicked()
                         {
-                            reload!();
+                            app.reload();
                         }
                         if ui
                             .add_enabled(app.dirty, Button::new("Save (ctrl+S)"))
                             .clicked()
                         {
-                            save!();
+                            app.save();
                         }
                         ui.separator();
                         if ui.button("Restore").clicked() {
                             std::fs::copy(&backup_path, &app.path).unwrap();
-                            reload!();
+                            app.reload();
                         }
                         if ui.button("Backup").clicked() {
                             std::fs::copy(&app.path, &backup_path).unwrap();
@@ -597,12 +589,12 @@ fn main() {
                     idx += app.cols - x;
                     break;
                 }
-                if idx >= data.len() {
+                if idx >= app.data.len() {
                     break 'display;
                 }
                 let pix_x = (x + view_idx_off_x) as f32 * f32::from(col_width) - view_x as f32;
                 let pix_y = (y + view_idx_off_y) as f32 * f32::from(row_height) - view_y as f32;
-                let byte = data[idx];
+                let byte = app.data[idx];
                 let selected = match selection {
                     Some(sel) => (sel.begin..=sel.end).contains(&idx),
                     None => false,
@@ -682,14 +674,14 @@ fn main() {
                         idx += app.cols - x;
                         break;
                     }
-                    if idx >= data.len() {
+                    if idx >= app.data.len() {
                         break 'asciidisplay;
                     }
                     let pix_x =
                         (x + app.cols * 2 + 1) as f32 * f32::from(col_width / 2) - view_x as f32;
                     //let pix_y = y as f32 * f32::from(row_height) - view_y as f32;
                     let pix_y = (y + view_idx_off_y) as f32 * f32::from(row_height) - view_y as f32;
-                    let byte = data[idx];
+                    let byte = app.data[idx];
                     let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
                     let c = if colorize {
                         Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)

@@ -11,16 +11,27 @@ pub struct App {
     /// Path to the file we're editing
     pub path: OsString,
     pub dirty: bool,
+    pub data: Vec<u8>,
 }
 
 impl App {
     pub fn new(path: OsString) -> Self {
+        let data = std::fs::read(&path).unwrap();
         Self {
             rows: 67,
             cols: 48,
             max_visible_cols: 75,
             path,
             dirty: false,
+            data,
         }
+    }
+    pub fn reload(&mut self) {
+        self.data = std::fs::read(&self.path).unwrap();
+        self.dirty = false;
+    }
+    pub fn save(&mut self) {
+        std::fs::write(&self.path, &self.data).unwrap();
+        self.dirty = false;
     }
 }
