@@ -12,6 +12,7 @@ pub struct App {
     pub path: OsString,
     pub dirty: bool,
     pub data: Vec<u8>,
+    pub show_debug_panel: bool,
 }
 
 impl App {
@@ -24,6 +25,7 @@ impl App {
             path,
             dirty: false,
             data,
+            show_debug_panel: false,
         }
     }
     pub fn reload(&mut self) {
@@ -33,5 +35,9 @@ impl App {
     pub fn save(&mut self) {
         std::fs::write(&self.path, &self.data).unwrap();
         self.dirty = false;
+    }
+    pub fn toggle_debug(&mut self) {
+        self.show_debug_panel ^= true;
+        gamedebug_core::toggle();
     }
 }

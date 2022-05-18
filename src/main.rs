@@ -111,7 +111,6 @@ fn main() {
     let mut interact_mode = InteractMode::View;
     // The half digit when the user begins to type into a hex view
     let mut hex_edit_half_digit = None;
-    let mut show_debug_panel = false;
     let mut u8_buf = String::new();
     let mut find_dialog = FindDialog::default();
     let mut selection: Option<Region> = None;
@@ -123,10 +122,6 @@ fn main() {
         new
     };
     let mut input = Input::default();
-    macro toggle_debug() {{
-        show_debug_panel ^= true;
-        gamedebug_core::toggle();
-    }}
     macro ascii_display_x_offset() {
         app.cols as i64 * i64::from(col_width) + 12
     }
@@ -242,7 +237,7 @@ fn main() {
                     }
                     Key::F1 => interact_mode = InteractMode::View,
                     Key::F2 => interact_mode = InteractMode::Edit,
-                    Key::F12 => toggle_debug!(),
+                    Key::F12 => app.toggle_debug(),
                     Key::Escape => {
                         hex_edit_half_digit = None;
                     }
@@ -340,7 +335,7 @@ fn main() {
         vertices.clear();
         sf_egui.do_frame(|ctx| {
             Window::new("Debug")
-                .open(&mut show_debug_panel)
+                .open(&mut app.show_debug_panel)
                 .show(ctx, |ui| {
                     // region: debug panel
                     inspect! {
@@ -542,7 +537,7 @@ fn main() {
                         }
                     }
                     ui.with_layout(Layout::right_to_left(), |ui| {
-                        ui.checkbox(&mut show_debug_panel, "debug (F12)");
+                        ui.checkbox(&mut app.show_debug_panel, "debug (F12)");
                         ui.checkbox(&mut colorize, "color");
                         ui.checkbox(&mut show_text, "text");
                         ui.separator();
