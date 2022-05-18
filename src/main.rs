@@ -106,7 +106,6 @@ fn main() {
     let mut cursor_prev_frame = cursor;
     let mut edit_target = EditTarget::Hex;
     let mut row_height: u8 = 16;
-    let mut col_width: u8 = 26;
     let mut show_text = true;
     let mut interact_mode = InteractMode::View;
     // The half digit when the user begins to type into a hex view
@@ -122,9 +121,6 @@ fn main() {
         new
     };
     let mut input = Input::default();
-    macro ascii_display_x_offset() {
-        app.cols as i64 * i64::from(col_width) + 12
-    }
 
     while w.is_open() {
         // region: event handling
@@ -290,15 +286,15 @@ fn main() {
                         let x: i64 = view_x + i64::from(x);
                         let y: i64 = view_y + i64::from(y);
                         per_msg!("x: {}, y: {}", x, y);
-                        let ascii_display_x_offset = ascii_display_x_offset!();
+                        let ascii_display_x_offset = app.ascii_display_x_offset();
                         let col_x;
                         let col_y = y / i64::from(row_height);
                         if x < ascii_display_x_offset {
-                            col_x = x / i64::from(col_width);
+                            col_x = x / i64::from(app.col_width);
                             per_msg!("col_x: {}, col_y: {}", col_x, col_y);
                         } else {
                             let x_rel = x - ascii_display_x_offset;
-                            col_x = x_rel / i64::from(col_width / 2);
+                            col_x = x_rel / i64::from(app.col_width / 2);
                         }
                         let new_cursor = usize::try_from(col_y).unwrap_or(0) * app.cols
                             + usize::try_from(col_x).unwrap_or(0);
@@ -347,7 +343,7 @@ fn main() {
                         cursor,
                         edit_target,
                         row_height,
-                        col_width,
+                        app.col_width,
                         view_x,
                         view_y,
                         scroll_speed
@@ -568,7 +564,7 @@ fn main() {
         });
         // region: hex display
         // The offset for the hex display imposed by the view
-        let view_idx_off_x: usize = view_x.try_into().unwrap_or(0) / col_width as usize;
+        let view_idx_off_x: usize = view_x.try_into().unwrap_or(0) / app.col_width as usize;
         let view_idx_off_y: usize = view_y.try_into().unwrap_or(0) / row_height as usize;
         let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
         // The ascii view has a different offset indexing
@@ -587,7 +583,7 @@ fn main() {
                 if idx >= app.data.len() {
                     break 'display;
                 }
-                let pix_x = (x + view_idx_off_x) as f32 * f32::from(col_width) - view_x as f32;
+                let pix_x = (x + view_idx_off_x) as f32 * f32::from(app.col_width) - view_x as f32;
                 let pix_y = (y + view_idx_off_y) as f32 * f32::from(row_height) - view_y as f32;
                 let byte = app.data[idx];
                 let selected = match selection {
@@ -598,7 +594,7 @@ fn main() {
                     let mut rs = RectangleShape::from_rect(Rect::new(
                         pix_x,
                         pix_y,
-                        col_width as f32,
+                        app.col_width as f32,
                         row_height as f32,
                     ));
                     rs.set_fill_color(Color::rgb(150, 150, 150));
@@ -612,7 +608,7 @@ fn main() {
                     let extra_x = if hex_edit_half_digit.is_none() {
                         0
                     } else {
-                        col_width / 2
+                        app.col_width / 2
                     };
                     draw_cursor(
                         pix_x + extra_x as f32,
@@ -644,13 +640,13 @@ fn main() {
         // endregion
         // region: ascii display
         // The offset for the ascii display imposed by the view
-        let ascii_display_x_offset = ascii_display_x_offset!();
+        let ascii_display_x_offset = app.ascii_display_x_offset();
         imm_msg!(ascii_display_x_offset);
         let view_idx_off_x: usize = view_x
             .saturating_sub(ascii_display_x_offset)
             .try_into()
             .unwrap_or(0)
-            / col_width as usize;
+            / app.col_width as usize;
         //let view_idx_off_y: usize = view_y.try_into().unwrap_or(0) / row_height as usize;
         let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
         imm_msg!("ascii");
@@ -672,8 +668,8 @@ fn main() {
                     if idx >= app.data.len() {
                         break 'asciidisplay;
                     }
-                    let pix_x =
-                        (x + app.cols * 2 + 1) as f32 * f32::from(col_width / 2) - view_x as f32;
+                    let pix_x = (x + app.cols * 2 + 1) as f32 * f32::from(app.col_width / 2)
+                        - view_x as f32;
                     //let pix_y = y as f32 * f32::from(row_height) - view_y as f32;
                     let pix_y = (y + view_idx_off_y) as f32 * f32::from(row_height) - view_y as f32;
                     let byte = app.data[idx];
@@ -691,7 +687,7 @@ fn main() {
                         let mut rs = RectangleShape::from_rect(Rect::new(
                             pix_x,
                             pix_y,
-                            (col_width / 2) as f32,
+                            (app.col_width / 2) as f32,
                             row_height as f32,
                         ));
                         rs.set_fill_color(Color::rgb(150, 150, 150));

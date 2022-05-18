@@ -13,6 +13,7 @@ pub struct App {
     pub dirty: bool,
     pub data: Vec<u8>,
     pub show_debug_panel: bool,
+    pub col_width: u8,
 }
 
 impl App {
@@ -26,6 +27,7 @@ impl App {
             dirty: false,
             data,
             show_debug_panel: false,
+            col_width: 26,
         }
     }
     pub fn reload(&mut self) {
@@ -39,5 +41,8 @@ impl App {
     pub fn toggle_debug(&mut self) {
         self.show_debug_panel ^= true;
         gamedebug_core::toggle();
+    }
+    pub fn ascii_display_x_offset(&self) -> i64 {
+        self.cols as i64 * i64::from(self.col_width) + 12
     }
 }
