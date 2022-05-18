@@ -88,7 +88,7 @@ fn main() {
     let mut sf_egui = SfEgui::new(&w);
     let f = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
     let mut vertices = Vec::new();
-    let mut app = App::default();
+    let mut app = App::new(path);
     // The byte offset in the data from which the view starts viewing data from
     let mut starting_offset: usize = 0;
     // The top part where the top panel is. You should try to position stuff so it's not overdrawn
@@ -120,17 +120,17 @@ fn main() {
     let mut select_begin: Option<usize> = None;
     let mut fill_text = String::new();
     let backup_path = {
-        let mut new = path.to_owned();
+        let mut new = app.path.clone();
         new.push(".hexerator_bak");
         new
     };
     let mut input = Input::default();
     macro reload() {
-        data = std::fs::read(&path).unwrap();
+        data = std::fs::read(&app.path).unwrap();
         dirty = false;
     }
     macro save() {
-        std::fs::write(&path, &data).unwrap();
+        std::fs::write(&app.path, &data).unwrap();
         dirty = false;
     }
     macro toggle_debug() {{
@@ -569,11 +569,11 @@ fn main() {
                         }
                         ui.separator();
                         if ui.button("Restore").clicked() {
-                            std::fs::copy(&backup_path, &path).unwrap();
+                            std::fs::copy(&backup_path, &app.path).unwrap();
                             reload!();
                         }
                         if ui.button("Backup").clicked() {
-                            std::fs::copy(&path, &backup_path).unwrap();
+                            std::fs::copy(&app.path, &backup_path).unwrap();
                         }
                     })
                 })
