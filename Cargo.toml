@@ -11,5 +11,8 @@ gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git"
 
 [dependencies.sfml]
 git = "https://github.com/jeremyletang/rust-sfml.git"
+default-features = false
+features = ["graphics"]
+
 [dependencies.egui-sfml]
 git = "https://github.com/crumblingstatue/egui-sfml.git"
