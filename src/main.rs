@@ -702,7 +702,7 @@ fn byte_color(byte: u8, mono: bool) -> Color {
     } else if byte == 255 {
         Color::WHITE
     } else {
-        let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
+        let [r, g, b] = rgb_from_hsv((byte as f32 / 288.0, 1.0, 1.0));
         Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
     }
 }
