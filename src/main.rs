@@ -92,7 +92,200 @@ fn main() {
 }
 
 fn do_frame(app: &mut App, sf_egui: &mut SfEgui, w: &mut RenderWindow, f: &Font) {
-    // region: event handling
+    handle_events(app, w, sf_egui);
+    update(app);
+    do_egui(sf_egui, app);
+    w.clear(Color::BLACK);
+    draw(app, w, f);
+    sf_egui.draw(w, None);
+    w.display();
+    gamedebug_core::inc_frame();
+    app.cursor_prev_frame = app.cursor;
+}
+
+fn update(app: &mut App) {
+    if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
+        let spd = if app.input.key_down(Key::LShift) {
+            app.scroll_speed * 4
+        } else {
+            app.scroll_speed
+        };
+        if app.input.key_down(Key::Left) {
+            app.view_x -= spd;
+        } else if app.input.key_down(Key::Right) {
+            app.view_x += spd;
+        }
+        if app.input.key_down(Key::Up) {
+            app.view_y -= spd;
+        } else if app.input.key_down(Key::Down) {
+            app.view_y += spd;
+        }
+    }
+    let cursor_changed = app.cursor != app.cursor_prev_frame;
+    if cursor_changed {
+        app.u8_buf = app.data[app.cursor].to_string();
+    }
+}
+
+fn draw(app: &mut App, w: &mut RenderWindow, f: &Font) {
+    let mut rs = RenderStates::default();
+    app.vertices.clear();
+    // region: hex display
+    // The offset for the hex display imposed by the view
+    let view_idx_off_x: usize = app.view_x.try_into().unwrap_or(0) / app.col_width as usize;
+    let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
+    let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
+    // The ascii view has a different offset indexing
+    imm_msg!(view_idx_off_x);
+    imm_msg!(view_idx_off_y);
+    imm_msg!(view_idx_off);
+    let mut idx = app.starting_offset + view_idx_off;
+    let mut rows_rendered: u32 = 0;
+    let mut cols_rendered: u32 = 0;
+    'display: for y in 0..app.rows {
+        for x in 0..app.cols {
+            if x == app.max_visible_cols || x >= app.cols.saturating_sub(view_idx_off_x) {
+                idx += app.cols - x;
+                break;
+            }
+            if idx >= app.data.len() {
+                break 'display;
+            }
+            let pix_x = (x + view_idx_off_x) as f32 * f32::from(app.col_width) - app.view_x as f32;
+            let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.row_height) - app.view_y as f32;
+            let byte = app.data[idx];
+            let selected = match app.selection {
+                Some(sel) => (sel.begin..=sel.end).contains(&idx),
+                None => false,
+            };
+            if selected || (app.find_dialog.open && app.find_dialog.result_offsets.contains(&idx)) {
+                let mut rs = RectangleShape::from_rect(Rect::new(
+                    pix_x,
+                    pix_y,
+                    app.col_width as f32,
+                    app.row_height as f32,
+                ));
+                rs.set_fill_color(Color::rgb(150, 150, 150));
+                if app.cursor == idx {
+                    rs.set_outline_color(Color::WHITE);
+                    rs.set_outline_thickness(-2.0);
+                }
+                w.draw(&rs);
+            }
+            if idx == app.cursor {
+                let extra_x = if app.hex_edit_half_digit.is_none() {
+                    0
+                } else {
+                    app.col_width / 2
+                };
+                draw_cursor(
+                    pix_x + extra_x as f32,
+                    pix_y,
+                    w,
+                    app.edit_target == EditTarget::Hex && app.interact_mode == InteractMode::Edit,
+                );
+            }
+            let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);
+            if let Some(half) = app.hex_edit_half_digit && app.cursor == idx {
+                g1 = half.to_ascii_uppercase();
+            }
+            let c = byte_color(byte, !app.colorize);
+            draw_glyph(f, &mut app.vertices, pix_x, pix_y, g1 as u32, c);
+            draw_glyph(f, &mut app.vertices, pix_x + 11.0, pix_y, g2 as u32, c);
+            idx += 1;
+            cols_rendered += 1;
+        }
+        rows_rendered += 1;
+    }
+    imm_msg!(rows_rendered);
+    cols_rendered = cols_rendered.checked_div(rows_rendered).unwrap_or(0);
+    imm_msg!(cols_rendered);
+    // endregion
+    // region: ascii display
+    // The offset for the ascii display imposed by the view
+    let ascii_display_x_offset = app.ascii_display_x_offset();
+    imm_msg!(ascii_display_x_offset);
+    let view_idx_off_x: usize = app
+        .view_x
+        .saturating_sub(ascii_display_x_offset)
+        .try_into()
+        .unwrap_or(0)
+        / app.col_width as usize;
+    //let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
+    let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
+    imm_msg!("ascii");
+    imm_msg!(view_idx_off_x);
+    //imm_msg!(view_idx_off_y);
+    imm_msg!(view_idx_off);
+    let mut ascii_rows_rendered: u32 = 0;
+    let mut ascii_cols_rendered: u32 = 0;
+    if app.show_text {
+        idx = app.starting_offset + view_idx_off;
+        imm_msg!(idx);
+        'asciidisplay: for y in 0..app.rows {
+            for x in 0..app.cols {
+                if x == app.max_visible_cols * 2 || x >= app.cols.saturating_sub(view_idx_off_x) {
+                    idx += app.cols - x;
+                    break;
+                }
+                if idx >= app.data.len() {
+                    break 'asciidisplay;
+                }
+                let pix_x = (x + app.cols * 2 + 1) as f32 * f32::from(app.col_width / 2)
+                    - app.view_x as f32;
+                //let pix_y = y as f32 * f32::from(app.row_height) - app.view_y as f32;
+                let pix_y =
+                    (y + view_idx_off_y) as f32 * f32::from(app.row_height) - app.view_y as f32;
+                let byte = app.data[idx];
+                let c = byte_color(byte, !app.colorize);
+                let selected = match app.selection {
+                    Some(sel) => (sel.begin..=sel.end).contains(&idx),
+                    None => false,
+                };
+                if selected
+                    || (app.find_dialog.open && app.find_dialog.result_offsets.contains(&idx))
+                {
+                    let mut rs = RectangleShape::from_rect(Rect::new(
+                        pix_x,
+                        pix_y,
+                        (app.col_width / 2) as f32,
+                        app.row_height as f32,
+                    ));
+                    rs.set_fill_color(Color::rgb(150, 150, 150));
+                    if app.cursor == idx {
+                        rs.set_outline_color(Color::WHITE);
+                        rs.set_outline_thickness(-2.0);
+                    }
+                    w.draw(&rs);
+                }
+                if idx == app.cursor {
+                    draw_cursor(
+                        pix_x,
+                        pix_y,
+                        w,
+                        app.edit_target == EditTarget::Text
+                            && app.interact_mode == InteractMode::Edit,
+                    );
+                }
+                draw_glyph(f, &mut app.vertices, pix_x, pix_y, byte as u32, c);
+                idx += 1;
+                ascii_cols_rendered += 1;
+            }
+            ascii_rows_rendered += 1;
+        }
+    }
+    imm_msg!(ascii_rows_rendered);
+    ascii_cols_rendered = ascii_cols_rendered
+        .checked_div(ascii_rows_rendered)
+        .unwrap_or(0);
+    imm_msg!(ascii_cols_rendered);
+    // endregion
+    rs.set_texture(Some(f.texture(10)));
+    w.draw_primitives(&app.vertices, PrimitiveType::QUADS, &rs);
+    rs.set_texture(None);
+}
+
+fn handle_events(app: &mut App, w: &mut RenderWindow, sf_egui: &mut SfEgui) {
     while let Some(event) = w.poll_event() {
         app.input.update_from_event(&event);
         sf_egui.add_event(&event);
@@ -273,31 +466,9 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, w: &mut RenderWindow, f: &Font)
             _ => {}
         }
     }
-    if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
-        let spd = if app.input.key_down(Key::LShift) {
-            app.scroll_speed * 4
-        } else {
-            app.scroll_speed
-        };
-        if app.input.key_down(Key::Left) {
-            app.view_x -= spd;
-        } else if app.input.key_down(Key::Right) {
-            app.view_x += spd;
-        }
-        if app.input.key_down(Key::Up) {
-            app.view_y -= spd;
-        } else if app.input.key_down(Key::Down) {
-            app.view_y += spd;
-        }
-    }
-    let cursor_changed = app.cursor != app.cursor_prev_frame;
-    if cursor_changed {
-        app.u8_buf = app.data[app.cursor].to_string();
-    }
-    // endregion
-    w.clear(Color::BLACK);
-    let mut rs = RenderStates::default();
-    app.vertices.clear();
+}
+
+fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
     sf_egui.do_frame(|ctx| {
         Window::new("Debug")
             .open(&mut app.show_debug_panel)
@@ -537,163 +708,6 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, w: &mut RenderWindow, f: &Font)
         });
         // endregion
     });
-    // region: hex display
-    // The offset for the hex display imposed by the view
-    let view_idx_off_x: usize = app.view_x.try_into().unwrap_or(0) / app.col_width as usize;
-    let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
-    let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
-    // The ascii view has a different offset indexing
-    imm_msg!(view_idx_off_x);
-    imm_msg!(view_idx_off_y);
-    imm_msg!(view_idx_off);
-    let mut idx = app.starting_offset + view_idx_off;
-    let mut rows_rendered: u32 = 0;
-    let mut cols_rendered: u32 = 0;
-    'display: for y in 0..app.rows {
-        for x in 0..app.cols {
-            if x == app.max_visible_cols || x >= app.cols.saturating_sub(view_idx_off_x) {
-                idx += app.cols - x;
-                break;
-            }
-            if idx >= app.data.len() {
-                break 'display;
-            }
-            let pix_x = (x + view_idx_off_x) as f32 * f32::from(app.col_width) - app.view_x as f32;
-            let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.row_height) - app.view_y as f32;
-            let byte = app.data[idx];
-            let selected = match app.selection {
-                Some(sel) => (sel.begin..=sel.end).contains(&idx),
-                None => false,
-            };
-            if selected || (app.find_dialog.open && app.find_dialog.result_offsets.contains(&idx)) {
-                let mut rs = RectangleShape::from_rect(Rect::new(
-                    pix_x,
-                    pix_y,
-                    app.col_width as f32,
-                    app.row_height as f32,
-                ));
-                rs.set_fill_color(Color::rgb(150, 150, 150));
-                if app.cursor == idx {
-                    rs.set_outline_color(Color::WHITE);
-                    rs.set_outline_thickness(-2.0);
-                }
-                w.draw(&rs);
-            }
-            if idx == app.cursor {
-                let extra_x = if app.hex_edit_half_digit.is_none() {
-                    0
-                } else {
-                    app.col_width / 2
-                };
-                draw_cursor(
-                    pix_x + extra_x as f32,
-                    pix_y,
-                    w,
-                    app.edit_target == EditTarget::Hex && app.interact_mode == InteractMode::Edit,
-                );
-            }
-            let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);
-            if let Some(half) = app.hex_edit_half_digit && app.cursor == idx {
-                g1 = half.to_ascii_uppercase();
-            }
-            let c = byte_color(byte, !app.colorize);
-            draw_glyph(f, &mut app.vertices, pix_x, pix_y, g1 as u32, c);
-            draw_glyph(f, &mut app.vertices, pix_x + 11.0, pix_y, g2 as u32, c);
-            idx += 1;
-            cols_rendered += 1;
-        }
-        rows_rendered += 1;
-    }
-    imm_msg!(rows_rendered);
-    cols_rendered = cols_rendered.checked_div(rows_rendered).unwrap_or(0);
-    imm_msg!(cols_rendered);
-    // endregion
-    // region: ascii display
-    // The offset for the ascii display imposed by the view
-    let ascii_display_x_offset = app.ascii_display_x_offset();
-    imm_msg!(ascii_display_x_offset);
-    let view_idx_off_x: usize = app
-        .view_x
-        .saturating_sub(ascii_display_x_offset)
-        .try_into()
-        .unwrap_or(0)
-        / app.col_width as usize;
-    //let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
-    let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
-    imm_msg!("ascii");
-    imm_msg!(view_idx_off_x);
-    //imm_msg!(view_idx_off_y);
-    imm_msg!(view_idx_off);
-    let mut ascii_rows_rendered: u32 = 0;
-    let mut ascii_cols_rendered: u32 = 0;
-    if app.show_text {
-        idx = app.starting_offset + view_idx_off;
-        imm_msg!(idx);
-        'asciidisplay: for y in 0..app.rows {
-            for x in 0..app.cols {
-                if x == app.max_visible_cols * 2 || x >= app.cols.saturating_sub(view_idx_off_x) {
-                    idx += app.cols - x;
-                    break;
-                }
-                if idx >= app.data.len() {
-                    break 'asciidisplay;
-                }
-                let pix_x = (x + app.cols * 2 + 1) as f32 * f32::from(app.col_width / 2)
-                    - app.view_x as f32;
-                //let pix_y = y as f32 * f32::from(app.row_height) - app.view_y as f32;
-                let pix_y =
-                    (y + view_idx_off_y) as f32 * f32::from(app.row_height) - app.view_y as f32;
-                let byte = app.data[idx];
-                let c = byte_color(byte, !app.colorize);
-                let selected = match app.selection {
-                    Some(sel) => (sel.begin..=sel.end).contains(&idx),
-                    None => false,
-                };
-                if selected
-                    || (app.find_dialog.open && app.find_dialog.result_offsets.contains(&idx))
-                {
-                    let mut rs = RectangleShape::from_rect(Rect::new(
-                        pix_x,
-                        pix_y,
-                        (app.col_width / 2) as f32,
-                        app.row_height as f32,
-                    ));
-                    rs.set_fill_color(Color::rgb(150, 150, 150));
-                    if app.cursor == idx {
-                        rs.set_outline_color(Color::WHITE);
-                        rs.set_outline_thickness(-2.0);
-                    }
-                    w.draw(&rs);
-                }
-                if idx == app.cursor {
-                    draw_cursor(
-                        pix_x,
-                        pix_y,
-                        w,
-                        app.edit_target == EditTarget::Text
-                            && app.interact_mode == InteractMode::Edit,
-                    );
-                }
-                draw_glyph(f, &mut app.vertices, pix_x, pix_y, byte as u32, c);
-                idx += 1;
-                ascii_cols_rendered += 1;
-            }
-            ascii_rows_rendered += 1;
-        }
-    }
-    imm_msg!(ascii_rows_rendered);
-    ascii_cols_rendered = ascii_cols_rendered
-        .checked_div(ascii_rows_rendered)
-        .unwrap_or(0);
-    imm_msg!(ascii_cols_rendered);
-    // endregion
-    rs.set_texture(Some(f.texture(10)));
-    w.draw_primitives(&app.vertices, PrimitiveType::QUADS, &rs);
-    rs.set_texture(None);
-    sf_egui.draw(w, None);
-    w.display();
-    gamedebug_core::inc_frame();
-    app.cursor_prev_frame = app.cursor;
 }
 
 fn byte_color(byte: u8, mono: bool) -> Color {
