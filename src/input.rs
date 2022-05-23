@@ -1,10 +1,21 @@
 use std::collections::HashSet;
 
+use egui_inspect::{derive::Inspect, UiExt};
+use egui_sfml::egui;
 use sfml::window::{Event, Key};
 
-#[derive(Default)]
+#[derive(Default, Inspect, Debug)]
 pub struct Input {
+    #[inspect_with(inspect_key_down)]
     key_down: HashSet<Key>,
+}
+
+fn inspect_key_down(keys: &mut HashSet<Key>, ui: &mut egui::Ui, mut id_source: u64) {
+    ui.inspect_iter_with("HashSet", keys.iter(), &mut id_source, inspect_key);
+}
+
+fn inspect_key(ui: &mut egui::Ui, i: usize, key: &Key, _id_source: &mut u64) {
+    ui.label(format!("({}) {:?}", i, key));
 }
 
 impl Input {

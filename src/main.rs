@@ -53,7 +53,7 @@ pub enum InteractMode {
     Edit,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug, Inspect)]
 pub struct FindDialog {
     open: bool,
     input: String,
@@ -64,7 +64,7 @@ pub struct FindDialog {
     scroll_to: Option<usize>,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Inspect)]
 pub struct Region {
     begin: usize,
     end: usize,
@@ -466,24 +466,15 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
     }
 }
 
-fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
+fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
     sf_egui.do_frame(|ctx| {
+        let mut open = app.show_debug_panel;
         Window::new("Debug")
-            .open(&mut app.show_debug_panel)
+            .open(&mut open)
             .show(ctx, |ui| {
                 inspect! {
                     ui,
-                    app.view.rows,
-                    app.view.cols,
-                    app.max_visible_cols,
-                    app.view.start_offset,
-                    app.cursor,
-                    app.edit_target,
-                    app.row_height,
-                    app.col_width,
-                    app.view_x,
-                    app.view_y,
-                    app.scroll_speed
+                    app
                 }
                 ui.separator();
                 ui.heading("More Debug");
@@ -500,6 +491,7 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                     }
                 }
             });
+        app.show_debug_panel = open;
         Window::new("Find")
             .open(&mut app.find_dialog.open)
             .show(ctx, |ui| {

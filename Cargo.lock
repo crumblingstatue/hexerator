@@ -100,7 +100,7 @@ dependencies = [
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/emilk/egui.git#f807a290a422f401939bd38236ece3cf86c8ee70"
+source = "git+https://github.com/emilk/egui.git#f5cca2a28888dde7d7bb9605f16c7b61aa55b13d"
 dependencies = [
  "ahash",
  "epaint",
@@ -110,7 +110,7 @@ dependencies = [
 [[package]]
 name = "egui-inspect"
 version = "0.1.0"
-source = "git+https://github.com/crumblingstatue/egui-inspect.git#93412e32c234a6ef75bc632b85136f3bdf0bdd21"
+source = "git+https://github.com/crumblingstatue/egui-inspect.git#daa80cbca5635abbdbd06f01bd15e4245d097334"
 dependencies = [
  "egui",
  "egui-inspect-derive",
@@ -119,7 +119,7 @@ dependencies = [
 [[package]]
 name = "egui-inspect-derive"
 version = "0.1.0"
-source = "git+https://github.com/crumblingstatue/egui-inspect.git#93412e32c234a6ef75bc632b85136f3bdf0bdd21"
+source = "git+https://github.com/crumblingstatue/egui-inspect.git#daa80cbca5635abbdbd06f01bd15e4245d097334"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -139,12 +139,12 @@ dependencies = [
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/emilk/egui.git#f807a290a422f401939bd38236ece3cf86c8ee70"
+source = "git+https://github.com/emilk/egui.git#f5cca2a28888dde7d7bb9605f16c7b61aa55b13d"
 
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/emilk/egui.git#f807a290a422f401939bd38236ece3cf86c8ee70"
+source = "git+https://github.com/emilk/egui.git#f5cca2a28888dde7d7bb9605f16c7b61aa55b13d"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -265,9 +265,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.10.0"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87f3e037eac156d1775da914196f0f37741a274155e34a0b7e427c35d2a2ecb9"
+checksum = "7709cef83f0c1f58f666e746a08b21e0085f7440fa6a29cc194d68aac97a4225"
 
 [[package]]
 name = "owned_ttf_parser"
@@ -336,18 +336,18 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.5.5"
+version = "1.5.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a11647b6b25ff05a515cb92c365cec08801e83423a235b51e231e1808747286"
+checksum = "d83f127d94bdbcda4c8cc2e50f6f84f4b611f69c902699ca385a39c3a75f9ff1"
 dependencies = [
  "regex-syntax",
 ]
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.25"
+version = "0.6.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
+checksum = "49b3de9ec5dc0a3417da371aab17d729997c15010e7fd24ff707773a33bddb64"
 
 [[package]]
 name = "rustc-hash"

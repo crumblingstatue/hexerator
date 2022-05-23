@@ -1,10 +1,13 @@
 use std::ffi::OsString;
 
+use egui_inspect::{derive::Inspect, UiExt};
+use egui_sfml::egui::{self, Ui};
 use sfml::graphics::Vertex;
 
 use crate::{input::Input, EditTarget, FindDialog, InteractMode, Region};
 
 /// The hexerator application state
+#[derive(Inspect, Debug)]
 pub struct App {
     /// The default view
     pub view: View,
@@ -19,6 +22,7 @@ pub struct App {
     pub col_width: u8,
     // The editing byte offset
     pub cursor: usize,
+    #[inspect_with(inspect_vertices)]
     pub vertices: Vec<Vertex>,
     pub input: Input,
     pub interact_mode: InteractMode,
@@ -43,7 +47,18 @@ pub struct App {
     pub backup_path: OsString,
 }
 
+fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
+    ui.inspect_iter_with_mut(&format!("Vec<Vertex> [{}]", vertices.len()), vertices, &mut id_source, |ui, i, vert, id_source| {
+        ui.horizontal(|ui| {
+            ui.label(i.to_string());
+            ui.property("x", &mut vert.position.x, id_source);
+            ui.property("y", &mut vert.position.y, id_source);
+        });
+    });
+}
+
 /// A view into the data
+#[derive(Inspect, Debug)]
 pub struct View {
     /// The starting offset where the view starts from
     pub start_offset: usize,
