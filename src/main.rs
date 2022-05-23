@@ -74,31 +74,31 @@ fn main() {
     let path = std::env::args_os()
         .nth(1)
         .expect("Need file path as argument");
-    let mut w = RenderWindow::new(
+    let mut window = RenderWindow::new(
         (1920, 1080),
         "Hexerator",
         Style::NONE,
         &ContextSettings::default(),
     );
-    w.set_vertical_sync_enabled(true);
-    w.set_position(Vector2::new(0, 0));
-    let mut sf_egui = SfEgui::new(&w);
-    let f = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
+    window.set_vertical_sync_enabled(true);
+    window.set_position(Vector2::new(0, 0));
+    let mut sf_egui = SfEgui::new(&window);
+    let font = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
     let mut app = App::new(path);
 
-    while w.is_open() {
-        do_frame(&mut app, &mut sf_egui, &mut w, &f);
+    while window.is_open() {
+        do_frame(&mut app, &mut sf_egui, &mut window, &font);
     }
 }
 
-fn do_frame(app: &mut App, sf_egui: &mut SfEgui, w: &mut RenderWindow, f: &Font) {
-    handle_events(app, w, sf_egui);
+fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font: &Font) {
+    handle_events(app, window, sf_egui);
     update(app);
     do_egui(sf_egui, app);
-    w.clear(Color::BLACK);
-    draw(app, w, f);
-    sf_egui.draw(w, None);
-    w.display();
+    window.clear(Color::BLACK);
+    draw(app, window, font);
+    sf_egui.draw(window, None);
+    window.display();
     gamedebug_core::inc_frame();
     app.cursor_prev_frame = app.cursor;
 }
@@ -127,10 +127,9 @@ fn update(app: &mut App) {
     }
 }
 
-fn draw(app: &mut App, w: &mut RenderWindow, f: &Font) {
+fn draw(app: &mut App, window: &mut RenderWindow, font: &Font) {
     let mut rs = RenderStates::default();
     app.vertices.clear();
-    // region: hex display
     // The offset for the hex display imposed by the view
     let view_idx_off_x: usize = app.view_x.try_into().unwrap_or(0) / app.col_width as usize;
     let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
@@ -170,7 +169,7 @@ fn draw(app: &mut App, w: &mut RenderWindow, f: &Font) {
                     rs.set_outline_color(Color::WHITE);
                     rs.set_outline_thickness(-2.0);
                 }
-                w.draw(&rs);
+                window.draw(&rs);
             }
             if idx == app.cursor {
                 let extra_x = if app.hex_edit_half_digit.is_none() {
@@ -181,7 +180,7 @@ fn draw(app: &mut App, w: &mut RenderWindow, f: &Font) {
                 draw_cursor(
                     pix_x + extra_x as f32,
                     pix_y,
-                    w,
+                    window,
                     app.edit_target == EditTarget::Hex && app.interact_mode == InteractMode::Edit,
                 );
             }
@@ -190,8 +189,8 @@ fn draw(app: &mut App, w: &mut RenderWindow, f: &Font) {
                 g1 = half.to_ascii_uppercase();
             }
             let c = byte_color(byte, !app.colorize);
-            draw_glyph(f, &mut app.vertices, pix_x, pix_y, g1 as u32, c);
-            draw_glyph(f, &mut app.vertices, pix_x + 11.0, pix_y, g2 as u32, c);
+            draw_glyph(font, &mut app.vertices, pix_x, pix_y, g1 as u32, c);
+            draw_glyph(font, &mut app.vertices, pix_x + 11.0, pix_y, g2 as u32, c);
             idx += 1;
             cols_rendered += 1;
         }
@@ -200,8 +199,6 @@ fn draw(app: &mut App, w: &mut RenderWindow, f: &Font) {
     imm_msg!(rows_rendered);
     cols_rendered = cols_rendered.checked_div(rows_rendered).unwrap_or(0);
     imm_msg!(cols_rendered);
-    // endregion
-    // region: ascii display
     // The offset for the ascii display imposed by the view
     let ascii_display_x_offset = app.ascii_display_x_offset();
     imm_msg!(ascii_display_x_offset);
@@ -256,18 +253,18 @@ fn draw(app: &mut App, w: &mut RenderWindow, f: &Font) {
                         rs.set_outline_color(Color::WHITE);
                         rs.set_outline_thickness(-2.0);
                     }
-                    w.draw(&rs);
+                    window.draw(&rs);
                 }
                 if idx == app.cursor {
                     draw_cursor(
                         pix_x,
                         pix_y,
-                        w,
+                        window,
                         app.edit_target == EditTarget::Text
                             && app.interact_mode == InteractMode::Edit,
                     );
                 }
-                draw_glyph(f, &mut app.vertices, pix_x, pix_y, byte as u32, c);
+                draw_glyph(font, &mut app.vertices, pix_x, pix_y, byte as u32, c);
                 idx += 1;
                 ascii_cols_rendered += 1;
             }
@@ -279,26 +276,25 @@ fn draw(app: &mut App, w: &mut RenderWindow, f: &Font) {
         .checked_div(ascii_rows_rendered)
         .unwrap_or(0);
     imm_msg!(ascii_cols_rendered);
-    // endregion
-    rs.set_texture(Some(f.texture(10)));
-    w.draw_primitives(&app.vertices, PrimitiveType::QUADS, &rs);
+    rs.set_texture(Some(font.texture(10)));
+    window.draw_primitives(&app.vertices, PrimitiveType::QUADS, &rs);
     rs.set_texture(None);
 }
 
-fn handle_events(app: &mut App, w: &mut RenderWindow, sf_egui: &mut SfEgui) {
-    while let Some(event) = w.poll_event() {
+fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui) {
+    while let Some(event) = window.poll_event() {
         app.input.update_from_event(&event);
         sf_egui.add_event(&event);
         let wants_pointer = sf_egui.context().wants_pointer_input();
         let wants_kb = sf_egui.context().wants_keyboard_input();
         if wants_kb {
             if event == Event::Closed {
-                w.close();
+                window.close();
             }
             continue;
         }
         match event {
-            Event::Closed => w.close(),
+            Event::Closed => window.close(),
             Event::KeyPressed {
                 code, shift, ctrl, ..
             } => match code {
@@ -473,7 +469,6 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
         Window::new("Debug")
             .open(&mut app.show_debug_panel)
             .show(ctx, |ui| {
-                // region: debug panel
                 inspect! {
                     ui,
                     app.rows,
@@ -502,9 +497,7 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                         ui.label(format!("{}: {}", frame, msg));
                     }
                 }
-                // endregion
             });
-        // region: find window
         Window::new("Find")
             .open(&mut app.find_dialog.open)
             .show(ctx, |ui| {
@@ -584,8 +577,6 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                     ui.label(format!("{} results", app.find_dialog.result_offsets.len()));
                 });
             });
-        // endregion
-        // region: top panel
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 let begin_text = match app.select_begin {
@@ -642,8 +633,6 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                 }
             });
         });
-        // endregion
-        // region: bottom panel
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 if ui
@@ -706,7 +695,6 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                 })
             })
         });
-        // endregion
     });
 }
 
@@ -723,7 +711,7 @@ fn byte_color(byte: u8, mono: bool) -> Color {
     }
 }
 
-fn draw_cursor(x: f32, y: f32, w: &mut RenderWindow, active: bool) {
+fn draw_cursor(x: f32, y: f32, window: &mut RenderWindow, active: bool) {
     let mut rs = RectangleShape::from_rect(Rect {
         left: x,
         top: y,
@@ -737,7 +725,7 @@ fn draw_cursor(x: f32, y: f32, w: &mut RenderWindow, active: bool) {
     } else {
         rs.set_outline_color(Color::rgb(150, 150, 150));
     }
-    w.draw(&rs);
+    window.draw(&rs);
 }
 
 fn draw_glyph(font: &Font, vertices: &mut Vec<Vertex>, x: f32, y: f32, glyph: u32, color: Color) {
