@@ -48,13 +48,18 @@ pub struct App {
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
-    ui.inspect_iter_with_mut(&format!("Vec<Vertex> [{}]", vertices.len()), vertices, &mut id_source, |ui, i, vert, id_source| {
-        ui.horizontal(|ui| {
-            ui.label(i.to_string());
-            ui.property("x", &mut vert.position.x, id_source);
-            ui.property("y", &mut vert.position.y, id_source);
-        });
-    });
+    ui.inspect_iter_with_mut(
+        &format!("Vec<Vertex> [{}]", vertices.len()),
+        vertices,
+        &mut id_source,
+        |ui, i, vert, id_source| {
+            ui.horizontal(|ui| {
+                ui.label(i.to_string());
+                ui.property("x", &mut vert.position.x, id_source);
+                ui.property("y", &mut vert.position.y, id_source);
+            });
+        },
+    );
 }
 
 /// A view into the data

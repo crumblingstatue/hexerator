@@ -469,28 +469,26 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
 fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
     sf_egui.do_frame(|ctx| {
         let mut open = app.show_debug_panel;
-        Window::new("Debug")
-            .open(&mut open)
-            .show(ctx, |ui| {
-                inspect! {
-                    ui,
-                    app
+        Window::new("Debug").open(&mut open).show(ctx, |ui| {
+            inspect! {
+                ui,
+                app
+            }
+            ui.separator();
+            ui.heading("More Debug");
+            for info in IMMEDIATE.lock().unwrap().iter() {
+                if let Info::Msg(msg) = info {
+                    ui.label(msg);
                 }
-                ui.separator();
-                ui.heading("More Debug");
-                for info in IMMEDIATE.lock().unwrap().iter() {
-                    if let Info::Msg(msg) = info {
-                        ui.label(msg);
-                    }
+            }
+            gamedebug_core::clear_immediates();
+            ui.separator();
+            for PerEntry { frame, info } in PERSISTENT.lock().unwrap().iter() {
+                if let Info::Msg(msg) = info {
+                    ui.label(format!("{}: {}", frame, msg));
                 }
-                gamedebug_core::clear_immediates();
-                ui.separator();
-                for PerEntry { frame, info } in PERSISTENT.lock().unwrap().iter() {
-                    if let Info::Msg(msg) = info {
-                        ui.label(format!("{}: {}", frame, msg));
-                    }
-                }
-            });
+            }
+        });
         app.show_debug_panel = open;
         Window::new("Find")
             .open(&mut app.find_dialog.open)
