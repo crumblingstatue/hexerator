@@ -6,9 +6,8 @@ use crate::{input::Input, EditTarget, FindDialog, InteractMode, Region};
 
 /// The hexerator application state
 pub struct App {
-    pub rows: usize,
-    // Number of columns in the view
-    pub cols: usize,
+    /// The default view
+    pub view: View,
     // Maximum number of visible hex columns that can be shown on screen.
     // ascii is double this amount.
     pub max_visible_cols: usize,
@@ -20,8 +19,6 @@ pub struct App {
     pub col_width: u8,
     // The editing byte offset
     pub cursor: usize,
-    // The byte offset in the data from which the view starts viewing data from
-    pub starting_offset: usize,
     pub vertices: Vec<Vertex>,
     pub input: Input,
     pub interact_mode: InteractMode,
@@ -46,6 +43,16 @@ pub struct App {
     pub backup_path: OsString,
 }
 
+/// A view into the data
+pub struct View {
+    /// The starting offset where the view starts from
+    pub start_offset: usize,
+    /// How many rows the view displays (how tall it is)
+    pub rows: usize,
+    /// How many columns the view displays (how wide it is)
+    pub cols: usize,
+}
+
 pub enum CursorViewStatus {
     Inside,
     Before,
@@ -58,8 +65,11 @@ impl App {
         let top_gap = 30;
         let cursor = 0;
         Self {
-            rows: 67,
-            cols: 48,
+            view: View {
+                start_offset: 0,
+                rows: 67,
+                cols: 48,
+            },
             max_visible_cols: 75,
             path: path.clone(),
             dirty: false,
@@ -67,7 +77,6 @@ impl App {
             show_debug_panel: false,
             col_width: 26,
             cursor,
-            starting_offset: 0,
             vertices: Vec::new(),
             input: Input::default(),
             interact_mode: InteractMode::View,
@@ -113,36 +122,25 @@ impl App {
         gamedebug_core::toggle();
     }
     pub fn ascii_display_x_offset(&self) -> i64 {
-        self.cols as i64 * i64::from(self.col_width) + 12
+        self.view.cols as i64 * i64::from(self.col_width) + 12
     }
-    pub fn cursor_view_status(
-        cursor: usize,
-        starting_offset: usize,
-        rows: usize,
-        cols: usize,
-    ) -> CursorViewStatus {
-        if cursor < starting_offset {
+    pub fn cursor_view_status(cursor: usize, view: &View) -> CursorViewStatus {
+        if cursor < view.start_offset {
             CursorViewStatus::Before
-        } else if cursor > starting_offset + rows * cols {
+        } else if cursor > view.start_offset + view.rows * view.cols {
             CursorViewStatus::After
         } else {
             CursorViewStatus::Inside
         }
     }
-    pub fn search_focus(
-        cursor: &mut usize,
-        starting_offset: &mut usize,
-        off: usize,
-        rows: usize,
-        cols: usize,
-    ) {
+    pub fn search_focus(cursor: &mut usize, view: &mut View, off: usize) {
         // Focus the search result in the hex view
         *cursor = off;
-        match Self::cursor_view_status(*cursor, *starting_offset, rows, cols) {
+        match Self::cursor_view_status(*cursor, view) {
             CursorViewStatus::Before => {
-                *starting_offset = off.saturating_sub((rows - 1) * (cols - 1))
+                view.start_offset = off.saturating_sub((view.rows - 1) * (view.cols - 1))
             }
-            CursorViewStatus::After => *starting_offset = off - (rows + cols),
+            CursorViewStatus::After => view.start_offset = off - (view.rows + view.cols),
             CursorViewStatus::Inside => {}
         }
     }

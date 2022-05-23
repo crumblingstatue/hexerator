@@ -133,18 +133,18 @@ fn draw(app: &mut App, window: &mut RenderWindow, font: &Font) {
     // The offset for the hex display imposed by the view
     let view_idx_off_x: usize = app.view_x.try_into().unwrap_or(0) / app.col_width as usize;
     let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
-    let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
+    let view_idx_off = view_idx_off_y * app.view.cols + view_idx_off_x;
     // The ascii view has a different offset indexing
     imm_msg!(view_idx_off_x);
     imm_msg!(view_idx_off_y);
     imm_msg!(view_idx_off);
-    let mut idx = app.starting_offset + view_idx_off;
+    let mut idx = app.view.start_offset + view_idx_off;
     let mut rows_rendered: u32 = 0;
     let mut cols_rendered: u32 = 0;
-    'display: for y in 0..app.rows {
-        for x in 0..app.cols {
-            if x == app.max_visible_cols || x >= app.cols.saturating_sub(view_idx_off_x) {
-                idx += app.cols - x;
+    'display: for y in 0..app.view.rows {
+        for x in 0..app.view.cols {
+            if x == app.max_visible_cols || x >= app.view.cols.saturating_sub(view_idx_off_x) {
+                idx += app.view.cols - x;
                 break;
             }
             if idx >= app.data.len() {
@@ -209,7 +209,7 @@ fn draw(app: &mut App, window: &mut RenderWindow, font: &Font) {
         .unwrap_or(0)
         / app.col_width as usize;
     //let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
-    let view_idx_off = view_idx_off_y * app.cols + view_idx_off_x;
+    let view_idx_off = view_idx_off_y * app.view.cols + view_idx_off_x;
     imm_msg!("ascii");
     imm_msg!(view_idx_off_x);
     //imm_msg!(view_idx_off_y);
@@ -217,18 +217,20 @@ fn draw(app: &mut App, window: &mut RenderWindow, font: &Font) {
     let mut ascii_rows_rendered: u32 = 0;
     let mut ascii_cols_rendered: u32 = 0;
     if app.show_text {
-        idx = app.starting_offset + view_idx_off;
+        idx = app.view.start_offset + view_idx_off;
         imm_msg!(idx);
-        'asciidisplay: for y in 0..app.rows {
-            for x in 0..app.cols {
-                if x == app.max_visible_cols * 2 || x >= app.cols.saturating_sub(view_idx_off_x) {
-                    idx += app.cols - x;
+        'asciidisplay: for y in 0..app.view.rows {
+            for x in 0..app.view.cols {
+                if x == app.max_visible_cols * 2
+                    || x >= app.view.cols.saturating_sub(view_idx_off_x)
+                {
+                    idx += app.view.cols - x;
                     break;
                 }
                 if idx >= app.data.len() {
                     break 'asciidisplay;
                 }
-                let pix_x = (x + app.cols * 2 + 1) as f32 * f32::from(app.col_width / 2)
+                let pix_x = (x + app.view.cols * 2 + 1) as f32 * f32::from(app.col_width / 2)
                     - app.view_x as f32;
                 //let pix_y = y as f32 * f32::from(app.row_height) - app.view_y as f32;
                 let pix_y =
@@ -301,22 +303,22 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                 Key::Up => match app.interact_mode {
                     InteractMode::View => {
                         if ctrl {
-                            app.starting_offset = app.starting_offset.saturating_sub(1);
+                            app.view.start_offset = app.view.start_offset.saturating_sub(1);
                         }
                     }
                     InteractMode::Edit => {
-                        app.cursor = app.cursor.saturating_sub(app.cols);
+                        app.cursor = app.cursor.saturating_sub(app.view.cols);
                     }
                 },
                 Key::Down => match app.interact_mode {
                     InteractMode::View => {
                         if ctrl {
-                            app.starting_offset += 1;
+                            app.view.start_offset += 1;
                         }
                     }
                     InteractMode::Edit => {
-                        if app.cursor + app.cols < app.data.len() {
-                            app.cursor += app.cols;
+                        if app.cursor + app.view.cols < app.data.len() {
+                            app.cursor += app.view.cols;
                         }
                     }
                 },
@@ -324,14 +326,14 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                     if app.interact_mode == InteractMode::Edit {
                         app.cursor = app.cursor.saturating_sub(1)
                     } else if ctrl {
-                        app.cols -= 1;
+                        app.view.cols -= 1;
                     }
                 }
                 Key::Right => {
                     if app.interact_mode == InteractMode::Edit && app.cursor + 1 < app.data.len() {
                         app.cursor += 1;
                     } else if ctrl {
-                        app.cols += 1;
+                        app.view.cols += 1;
                     }
                 }
                 Key::PageUp => match app.interact_mode {
@@ -339,23 +341,23 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                         app.view_y -= 1040;
                     }
                     InteractMode::Edit => {
-                        let amount = app.rows * app.cols;
-                        if app.starting_offset >= amount {
-                            app.starting_offset -= amount;
+                        let amount = app.view.rows * app.view.cols;
+                        if app.view.start_offset >= amount {
+                            app.view.start_offset -= amount;
                             if app.interact_mode == InteractMode::Edit {
                                 app.cursor = app.cursor.saturating_sub(amount);
                             }
                         } else {
-                            app.starting_offset = 0
+                            app.view.start_offset = 0
                         }
                     }
                 },
                 Key::PageDown => match app.interact_mode {
                     InteractMode::View => app.view_y += 1040,
                     InteractMode::Edit => {
-                        let amount = app.rows * app.cols;
-                        if app.starting_offset + amount < app.data.len() {
-                            app.starting_offset += amount;
+                        let amount = app.view.rows * app.view.cols;
+                        if app.view.start_offset + amount < app.data.len() {
+                            app.view.start_offset += amount;
                             if app.interact_mode == InteractMode::Edit
                                 && app.cursor + amount < app.data.len()
                             {
@@ -367,19 +369,19 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                 Key::Home => match app.interact_mode {
                     InteractMode::View => app.view_y = -app.top_gap,
                     InteractMode::Edit => {
-                        app.starting_offset = 0;
+                        app.view.start_offset = 0;
                         app.cursor = 0;
                     }
                 },
                 Key::End => match app.interact_mode {
                     InteractMode::View => {
                         let data_pix_size =
-                            (app.data.len() / app.cols) as i64 * i64::from(app.row_height);
+                            (app.data.len() / app.view.cols) as i64 * i64::from(app.row_height);
                         app.view_y = data_pix_size - 1040;
                     }
                     InteractMode::Edit => {
-                        let pos = app.data.len() - app.rows * app.cols;
-                        app.starting_offset = pos;
+                        let pos = app.data.len() - app.view.rows * app.view.cols;
+                        app.view.start_offset = pos;
                         if app.interact_mode == InteractMode::Edit {
                             app.cursor = pos;
                         }
@@ -454,9 +456,9 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                         let x_rel = x - ascii_display_x_offset;
                         col_x = x_rel / i64::from(app.col_width / 2);
                     }
-                    let new_cursor = usize::try_from(col_y).unwrap_or(0) * app.cols
+                    let new_cursor = usize::try_from(col_y).unwrap_or(0) * app.view.cols
                         + usize::try_from(col_x).unwrap_or(0);
-                    app.cursor = app.starting_offset + new_cursor;
+                    app.cursor = app.view.start_offset + new_cursor;
                 }
             }
             _ => {}
@@ -471,10 +473,10 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
             .show(ctx, |ui| {
                 inspect! {
                     ui,
-                    app.rows,
-                    app.cols,
+                    app.view.rows,
+                    app.view.cols,
                     app.max_visible_cols,
-                    app.starting_offset,
+                    app.view.start_offset,
                     app.cursor,
                     app.edit_target,
                     app.row_height,
@@ -514,13 +516,7 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                         }
                     }
                     if let Some(&off) = app.find_dialog.result_offsets.first() {
-                        App::search_focus(
-                            &mut app.cursor,
-                            &mut app.starting_offset,
-                            off,
-                            app.rows,
-                            app.cols,
-                        );
+                        App::search_focus(&mut app.cursor, &mut app.view, off);
                     }
                 }
                 ScrollArea::vertical().max_height(480.).show(ui, |ui| {
@@ -532,13 +528,7 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                         app.find_dialog.scroll_to = None;
                     }
                         if re.clicked() {
-                            App::search_focus(
-                                &mut app.cursor,
-                                &mut app.starting_offset,
-                                off,
-                                app.rows,
-                                app.cols,
-                            );
+                            App::search_focus(&mut app.cursor, &mut app.view, off);
                             app.find_dialog.result_cursor = i;
                         }
                     }
@@ -550,13 +540,7 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                     {
                         app.find_dialog.result_cursor -= 1;
                         let off = app.find_dialog.result_offsets[app.find_dialog.result_cursor];
-                        App::search_focus(
-                            &mut app.cursor,
-                            &mut app.starting_offset,
-                            off,
-                            app.rows,
-                            app.cols,
-                        );
+                        App::search_focus(&mut app.cursor, &mut app.view, off);
                         app.find_dialog.scroll_to = Some(app.find_dialog.result_cursor);
                     }
                     ui.label((app.find_dialog.result_cursor + 1).to_string());
@@ -565,13 +549,7 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                     {
                         app.find_dialog.result_cursor += 1;
                         let off = app.find_dialog.result_offsets[app.find_dialog.result_cursor];
-                        App::search_focus(
-                            &mut app.cursor,
-                            &mut app.starting_offset,
-                            off,
-                            app.rows,
-                            app.cols,
-                        );
+                        App::search_focus(&mut app.cursor, &mut app.view, off);
                         app.find_dialog.scroll_to = Some(app.find_dialog.result_cursor);
                     }
                     ui.label(format!("{} results", app.find_dialog.result_offsets.len()));
@@ -650,8 +628,8 @@ fn do_egui(sf_egui: &mut SfEgui, app: &mut App) {
                 ui.separator();
                 match app.interact_mode {
                     InteractMode::View => {
-                        ui.label(format!("offset: {}", app.starting_offset));
-                        ui.label(format!("columns: {}", app.cols));
+                        ui.label(format!("offset: {}", app.view.start_offset));
+                        ui.label(format!("columns: {}", app.view.cols));
                     }
                     InteractMode::Edit => {
                         ui.label(format!("app.cursor: {}", app.cursor));
