@@ -597,12 +597,7 @@ fn main() {
                 if let Some(half) = hex_edit_half_digit && app.cursor == idx {
                     g1 = half.to_ascii_uppercase();
                 }
-                let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
-                let c = if colorize {
-                    Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
-                } else {
-                    Color::WHITE
-                };
+                let c = byte_color(byte, !colorize);
                 draw_glyph(&f, &mut vertices, pix_x, pix_y, g1 as u32, c);
                 draw_glyph(&f, &mut vertices, pix_x + 11.0, pix_y, g2 as u32, c);
                 idx += 1;
@@ -649,12 +644,7 @@ fn main() {
                     //let pix_y = y as f32 * f32::from(row_height) - view_y as f32;
                     let pix_y = (y + view_idx_off_y) as f32 * f32::from(row_height) - view_y as f32;
                     let byte = app.data[idx];
-                    let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
-                    let c = if colorize {
-                        Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
-                    } else {
-                        Color::WHITE
-                    };
+                    let c = byte_color(byte, !colorize);
                     let selected = match selection {
                         Some(sel) => (sel.begin..=sel.end).contains(&idx),
                         None => false,
@@ -701,6 +691,15 @@ fn main() {
         w.display();
         gamedebug_core::inc_frame();
         cursor_prev_frame = app.cursor;
+    }
+}
+
+fn byte_color(byte: u8, mono: bool) -> Color {
+    let [r, g, b] = rgb_from_hsv((byte as f32 / 255.0, 1.0, 1.0));
+    if mono {
+        Color::WHITE
+    } else {
+        Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
     }
 }
 
