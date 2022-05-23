@@ -25,7 +25,7 @@ use sfml::{
 
 use crate::input::Input;
 
-#[derive(PartialEq, Debug, Inspect)]
+#[derive(PartialEq, Eq, Debug, Inspect)]
 enum EditTarget {
     Hex,
     Text,
@@ -43,7 +43,7 @@ impl EditTarget {
 /// User interaction mode
 ///
 /// There are 2 modes: View and Edit
-#[derive(PartialEq, Debug, Inspect)]
+#[derive(PartialEq, Eq, Debug, Inspect)]
 enum InteractMode {
     /// Mode optimized for viewing the contents
     ///
