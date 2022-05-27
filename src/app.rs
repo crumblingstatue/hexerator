@@ -9,6 +9,8 @@ use crate::{input::Input, EditTarget, FindDialog, InteractMode, Region};
 /// The hexerator application state
 #[derive(Inspect, Debug)]
 pub struct App {
+    /// Font size
+    pub font_size: u32,
     /// The default view
     pub view: View,
     // Maximum number of visible hex columns that can be shown on screen.
@@ -85,6 +87,7 @@ impl App {
         let top_gap = 30;
         let cursor = 0;
         Self {
+            font_size: 14,
             view: View {
                 start_offset: 0,
                 rows: 67,

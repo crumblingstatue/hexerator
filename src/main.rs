@@ -131,7 +131,7 @@ fn draw(app: &mut App, window: &mut RenderWindow, font: &Font) {
     app.vertices.clear();
     draw_inner(app, window, font);
     let mut rs = RenderStates::default();
-    rs.set_texture(Some(font.texture(10)));
+    rs.set_texture(Some(font.texture(app.font_size)));
     window.draw_primitives(&app.vertices, PrimitiveType::QUADS, &rs);
 }
 
@@ -195,8 +195,24 @@ fn draw_inner(app: &mut App, window: &mut RenderWindow, font: &Font) {
                 g1 = half.to_ascii_uppercase();
             }
             let c = byte_color(byte, !app.colorize);
-            draw_glyph(font, &mut app.vertices, pix_x, pix_y, g1 as u32, c);
-            draw_glyph(font, &mut app.vertices, pix_x + 11.0, pix_y, g2 as u32, c);
+            draw_glyph(
+                font,
+                app.font_size,
+                &mut app.vertices,
+                pix_x,
+                pix_y,
+                g1 as u32,
+                c,
+            );
+            draw_glyph(
+                font,
+                app.font_size,
+                &mut app.vertices,
+                pix_x + 11.0,
+                pix_y,
+                g2 as u32,
+                c,
+            );
             idx += 1;
             cols_rendered += 1;
         }
@@ -272,7 +288,15 @@ fn draw_inner(app: &mut App, window: &mut RenderWindow, font: &Font) {
                             && app.interact_mode == InteractMode::Edit,
                     );
                 }
-                draw_glyph(font, &mut app.vertices, pix_x, pix_y, byte as u32, c);
+                draw_glyph(
+                    font,
+                    app.font_size,
+                    &mut app.vertices,
+                    pix_x,
+                    pix_y,
+                    byte as u32,
+                    c,
+                );
                 idx += 1;
                 ascii_cols_rendered += 1;
             }
@@ -704,27 +728,49 @@ fn draw_cursor(x: f32, y: f32, window: &mut RenderWindow, active: bool) {
     window.draw(&rs);
 }
 
-fn draw_glyph(font: &Font, vertices: &mut Vec<Vertex>, x: f32, y: f32, glyph: u32, color: Color) {
-    let g = font.glyph(glyph, 10, false, 0.0);
-    let r = g.texture_rect();
+fn draw_glyph(
+    font: &Font,
+    font_size: u32,
+    vertices: &mut Vec<Vertex>,
+    mut x: f32,
+    mut y: f32,
+    glyph: u32,
+    color: Color,
+) {
+    let glyph = font.glyph(glyph, font_size, false, 0.0);
+    let bounds = glyph.bounds();
+    let baseline = 10.0; // TODO: Stupid assumption
+    y += baseline;
+    x += bounds.left;
+    y += bounds.top;
+    let texture_rect = glyph.texture_rect();
     vertices.push(Vertex {
         position: Vector2::new(x, y),
         color,
-        tex_coords: Vector2::new(r.left as f32, r.top as f32),
+        tex_coords: Vector2::new(texture_rect.left as f32, texture_rect.top as f32),
     });
     vertices.push(Vertex {
-        position: Vector2::new(x, y + 10.0),
+        position: Vector2::new(x, y + bounds.height),
         color,
-        tex_coords: Vector2::new(r.left as f32, (r.top + r.height) as f32),
+        tex_coords: Vector2::new(
+            texture_rect.left as f32,
+            (texture_rect.top + texture_rect.height) as f32,
+        ),
     });
     vertices.push(Vertex {
-        position: Vector2::new(x + 10.0, y + 10.0),
+        position: Vector2::new(x + bounds.width, y + bounds.height),
         color,
-        tex_coords: Vector2::new((r.left + r.width) as f32, (r.top + r.height) as f32),
+        tex_coords: Vector2::new(
+            (texture_rect.left + texture_rect.width) as f32,
+            (texture_rect.top + texture_rect.height) as f32,
+        ),
     });
     vertices.push(Vertex {
-        position: Vector2::new(x + 10.0, y),
+        position: Vector2::new(x + bounds.width, y),
         color,
-        tex_coords: Vector2::new((r.left + r.width) as f32, r.top as f32),
+        tex_coords: Vector2::new(
+            (texture_rect.left + texture_rect.width) as f32,
+            texture_rect.top as f32,
+        ),
     });
 }
