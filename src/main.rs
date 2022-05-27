@@ -633,6 +633,11 @@ fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                             app.data[app.cursor] = app.u8_buf.parse().unwrap();
                             app.dirty = true;
                         }
+                        ui.label("ascii");
+                        ui.add(
+                            TextEdit::singleline(&mut (app.data[app.cursor] as char).to_string())
+                                .desired_width(28.0),
+                        );
                     }
                 }
                 ui.with_layout(Layout::right_to_left(), |ui| {
