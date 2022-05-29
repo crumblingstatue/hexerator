@@ -184,7 +184,9 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                 ui.with_layout(Layout::right_to_left(), |ui| {
                     ui.checkbox(&mut app.show_debug_panel, "debug (F12)");
                     ui.checkbox(&mut app.colorize, "color");
+                    ui.checkbox(&mut app.show_block, "block");
                     ui.checkbox(&mut app.show_text, "text");
+                    ui.checkbox(&mut app.show_hex, "hex");
                     ui.separator();
                     if ui
                         .add_enabled(app.dirty, Button::new("Reload (ctrl+R)"))

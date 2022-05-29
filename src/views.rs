@@ -1,6 +1,8 @@
 mod ascii;
+mod block;
 mod hex;
 pub use ascii::ascii;
+pub use block::block;
 use egui_sfml::egui::color::rgb_from_hsv;
 pub use hex::hex;
 use sfml::{

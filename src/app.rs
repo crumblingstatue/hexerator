@@ -11,6 +11,8 @@ use crate::{input::Input, EditTarget, FindDialog, InteractMode, Region};
 pub struct App {
     /// Font size
     pub font_size: u32,
+    /// Block size for block view
+    pub block_size: u8,
     /// The default view
     pub view: View,
     // Maximum number of visible hex columns that can be shown on screen.
@@ -38,7 +40,9 @@ pub struct App {
     pub cursor_prev_frame: usize,
     pub edit_target: EditTarget,
     pub row_height: u8,
+    pub show_hex: bool,
     pub show_text: bool,
+    pub show_block: bool,
     // The half digit when the user begins to type into a hex view
     pub hex_edit_half_digit: Option<u8>,
     pub u8_buf: String,
@@ -88,6 +92,7 @@ impl App {
         let cursor = 0;
         Self {
             font_size: 14,
+            block_size: 4,
             view: View {
                 start_offset: 0,
                 rows: 67,
@@ -117,7 +122,9 @@ impl App {
             cursor_prev_frame: cursor,
             edit_target: EditTarget::Hex,
             row_height: 16,
+            show_hex: true,
             show_text: true,
+            show_block: false,
             // The half digit when the user begins to type into a hex view
             hex_edit_half_digit: None,
             u8_buf: String::new(),
@@ -166,5 +173,9 @@ impl App {
             CursorViewStatus::After => view.start_offset = off - (view.rows + view.cols),
             CursorViewStatus::Inside => {}
         }
+    }
+
+    pub(crate) fn block_display_x_offset(&self) -> i64 {
+        self.ascii_display_x_offset() * 2
     }
 }
