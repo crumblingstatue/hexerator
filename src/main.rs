@@ -4,21 +4,17 @@ mod app;
 mod hex_conv;
 mod input;
 mod slice_ext;
+mod views;
 
 use crate::{app::App, slice_ext::SliceExt};
 use egui_inspect::{derive::Inspect, inspect};
 use egui_sfml::{
-    egui::{
-        self, color::rgb_from_hsv, Button, Layout, ScrollArea, TextEdit, TopBottomPanel, Window,
-    },
+    egui::{self, Button, Layout, ScrollArea, TextEdit, TopBottomPanel, Window},
     SfEgui,
 };
-use gamedebug_core::{imm_msg, per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
+use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
 use sfml::{
-    graphics::{
-        Color, Font, PrimitiveType, Rect, RectangleShape, RenderStates, RenderTarget, RenderWindow,
-        Shape, Vertex,
-    },
+    graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow},
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style},
 };
@@ -139,173 +135,10 @@ fn draw_inner(app: &mut App, window: &mut RenderWindow, font: &Font) {
     // The offset for the hex display imposed by the view
     let view_idx_off_x: usize = app.view_x.try_into().unwrap_or(0) / app.col_width as usize;
     let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
-    let view_idx_off = view_idx_off_y * app.view.cols + view_idx_off_x;
-    // The ascii view has a different offset indexing
-    imm_msg!(view_idx_off_x);
-    imm_msg!(view_idx_off_y);
-    imm_msg!(view_idx_off);
-    let mut idx = app.view.start_offset + view_idx_off;
-    let mut rows_rendered: u32 = 0;
-    let mut cols_rendered: u32 = 0;
-    'display: for y in 0..app.view.rows {
-        for x in 0..app.view.cols {
-            if x == app.max_visible_cols || x >= app.view.cols.saturating_sub(view_idx_off_x) {
-                idx += app.view.cols - x;
-                break;
-            }
-            if idx >= app.data.len() {
-                break 'display;
-            }
-            let pix_x = (x + view_idx_off_x) as f32 * f32::from(app.col_width) - app.view_x as f32;
-            let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.row_height) - app.view_y as f32;
-            let byte = app.data[idx];
-            let selected = match app.selection {
-                Some(sel) => (sel.begin..=sel.end).contains(&idx),
-                None => false,
-            };
-            if selected || (app.find_dialog.open && app.find_dialog.result_offsets.contains(&idx)) {
-                let mut rs = RectangleShape::from_rect(Rect::new(
-                    pix_x,
-                    pix_y,
-                    app.col_width as f32,
-                    app.row_height as f32,
-                ));
-                rs.set_fill_color(Color::rgb(150, 150, 150));
-                if app.cursor == idx {
-                    rs.set_outline_color(Color::WHITE);
-                    rs.set_outline_thickness(-2.0);
-                }
-                window.draw(&rs);
-            }
-            if idx == app.cursor {
-                let extra_x = if app.hex_edit_half_digit.is_none() {
-                    0
-                } else {
-                    app.col_width / 2
-                };
-                draw_cursor(
-                    pix_x + extra_x as f32,
-                    pix_y,
-                    window,
-                    app.edit_target == EditTarget::Hex && app.interact_mode == InteractMode::Edit,
-                );
-            }
-            let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);
-            if let Some(half) = app.hex_edit_half_digit && app.cursor == idx {
-                g1 = half.to_ascii_uppercase();
-            }
-            let c = byte_color(byte, !app.colorize);
-            draw_glyph(
-                font,
-                app.font_size,
-                &mut app.vertices,
-                pix_x,
-                pix_y,
-                g1 as u32,
-                c,
-            );
-            draw_glyph(
-                font,
-                app.font_size,
-                &mut app.vertices,
-                pix_x + 11.0,
-                pix_y,
-                g2 as u32,
-                c,
-            );
-            idx += 1;
-            cols_rendered += 1;
-        }
-        rows_rendered += 1;
-    }
-    imm_msg!(rows_rendered);
-    cols_rendered = cols_rendered.checked_div(rows_rendered).unwrap_or(0);
-    imm_msg!(cols_rendered);
+    views::hex(view_idx_off_y, app, view_idx_off_x, window, font);
     if app.show_text {
-        ascii_view(app, view_idx_off_y, window, font);
+        views::ascii(app, view_idx_off_y, window, font);
     }
-}
-
-fn ascii_view(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow, font: &Font) {
-    // The offset for the ascii display imposed by the view
-    let ascii_display_x_offset = app.ascii_display_x_offset();
-    imm_msg!(ascii_display_x_offset);
-    let view_idx_off_x: usize = app
-        .view_x
-        .saturating_sub(ascii_display_x_offset)
-        .try_into()
-        .unwrap_or(0)
-        / app.col_width as usize;
-    //let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
-    let view_idx_off = view_idx_off_y * app.view.cols + view_idx_off_x;
-    imm_msg!("ascii");
-    imm_msg!(view_idx_off_x);
-    //imm_msg!(view_idx_off_y);
-    imm_msg!(view_idx_off);
-    let mut ascii_rows_rendered: u32 = 0;
-    let mut ascii_cols_rendered: u32 = 0;
-    let mut idx = app.view.start_offset + view_idx_off;
-    imm_msg!(idx);
-    'asciidisplay: for y in 0..app.view.rows {
-        for x in 0..app.view.cols {
-            if x == app.max_visible_cols * 2 || x >= app.view.cols.saturating_sub(view_idx_off_x) {
-                idx += app.view.cols - x;
-                break;
-            }
-            if idx >= app.data.len() {
-                break 'asciidisplay;
-            }
-            let pix_x = (x + app.view.cols * 2 + 1) as f32 * f32::from(app.col_width / 2)
-                - app.view_x as f32;
-            //let pix_y = y as f32 * f32::from(app.row_height) - app.view_y as f32;
-            let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.row_height) - app.view_y as f32;
-            let byte = app.data[idx];
-            let c = byte_color(byte, !app.colorize);
-            let selected = match app.selection {
-                Some(sel) => (sel.begin..=sel.end).contains(&idx),
-                None => false,
-            };
-            if selected || (app.find_dialog.open && app.find_dialog.result_offsets.contains(&idx)) {
-                let mut rs = RectangleShape::from_rect(Rect::new(
-                    pix_x,
-                    pix_y,
-                    (app.col_width / 2) as f32,
-                    app.row_height as f32,
-                ));
-                rs.set_fill_color(Color::rgb(150, 150, 150));
-                if app.cursor == idx {
-                    rs.set_outline_color(Color::WHITE);
-                    rs.set_outline_thickness(-2.0);
-                }
-                window.draw(&rs);
-            }
-            if idx == app.cursor {
-                draw_cursor(
-                    pix_x,
-                    pix_y,
-                    window,
-                    app.edit_target == EditTarget::Text && app.interact_mode == InteractMode::Edit,
-                );
-            }
-            draw_glyph(
-                font,
-                app.font_size,
-                &mut app.vertices,
-                pix_x,
-                pix_y,
-                byte as u32,
-                c,
-            );
-            idx += 1;
-            ascii_cols_rendered += 1;
-        }
-        ascii_rows_rendered += 1;
-    }
-    imm_msg!(ascii_rows_rendered);
-    ascii_cols_rendered = ascii_cols_rendered
-        .checked_div(ascii_rows_rendered)
-        .unwrap_or(0);
-    imm_msg!(ascii_cols_rendered);
 }
 
 fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui) {
@@ -693,82 +526,5 @@ fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                 })
             })
         });
-    });
-}
-
-fn byte_color(byte: u8, mono: bool) -> Color {
-    if mono {
-        Color::WHITE
-    } else if byte == 0 {
-        Color::rgb(100, 100, 100)
-    } else if byte == 255 {
-        Color::WHITE
-    } else {
-        let [r, g, b] = rgb_from_hsv((byte as f32 / 288.0, 1.0, 1.0));
-        Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
-    }
-}
-
-fn draw_cursor(x: f32, y: f32, window: &mut RenderWindow, active: bool) {
-    let mut rs = RectangleShape::from_rect(Rect {
-        left: x,
-        top: y,
-        width: 10.0,
-        height: 10.0,
-    });
-    rs.set_fill_color(Color::TRANSPARENT);
-    rs.set_outline_thickness(2.0);
-    if active {
-        rs.set_outline_color(Color::WHITE);
-    } else {
-        rs.set_outline_color(Color::rgb(150, 150, 150));
-    }
-    window.draw(&rs);
-}
-
-fn draw_glyph(
-    font: &Font,
-    font_size: u32,
-    vertices: &mut Vec<Vertex>,
-    mut x: f32,
-    mut y: f32,
-    glyph: u32,
-    color: Color,
-) {
-    let glyph = font.glyph(glyph, font_size, false, 0.0);
-    let bounds = glyph.bounds();
-    let baseline = 10.0; // TODO: Stupid assumption
-    y += baseline;
-    x += bounds.left;
-    y += bounds.top;
-    let texture_rect = glyph.texture_rect();
-    vertices.push(Vertex {
-        position: Vector2::new(x, y),
-        color,
-        tex_coords: Vector2::new(texture_rect.left as f32, texture_rect.top as f32),
-    });
-    vertices.push(Vertex {
-        position: Vector2::new(x, y + bounds.height),
-        color,
-        tex_coords: Vector2::new(
-            texture_rect.left as f32,
-            (texture_rect.top + texture_rect.height) as f32,
-        ),
-    });
-    vertices.push(Vertex {
-        position: Vector2::new(x + bounds.width, y + bounds.height),
-        color,
-        tex_coords: Vector2::new(
-            (texture_rect.left + texture_rect.width) as f32,
-            (texture_rect.top + texture_rect.height) as f32,
-        ),
-    });
-    vertices.push(Vertex {
-        position: Vector2::new(x + bounds.width, y),
-        color,
-        tex_coords: Vector2::new(
-            (texture_rect.left + texture_rect.width) as f32,
-            texture_rect.top as f32,
-        ),
     });
 }
