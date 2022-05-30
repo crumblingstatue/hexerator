@@ -5,7 +5,7 @@ use egui_sfml::{
 };
 use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
 
-use crate::{app::App, slice_ext::SliceExt, views::ColorMethod, InteractMode, Region};
+use crate::{app::App, color::ColorMethod, slice_ext::SliceExt, InteractMode, Region};
 
 pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
     sf_egui.do_frame(|ctx| {

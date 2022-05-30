@@ -4,7 +4,7 @@ use egui_inspect::{derive::Inspect, UiExt};
 use egui_sfml::egui::{self, Ui};
 use sfml::graphics::Vertex;
 
-use crate::{input::Input, views::ColorMethod, EditTarget, FindDialog, InteractMode, Region};
+use crate::{color::ColorMethod, input::Input, EditTarget, FindDialog, InteractMode, Region};
 
 /// The hexerator application state
 #[derive(Inspect, Debug)]

@@ -1,6 +1,7 @@
 #![feature(let_chains)]
 
 mod app;
+mod color;
 mod hex_conv;
 mod input;
 mod slice_ext;
