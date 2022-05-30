@@ -88,6 +88,7 @@ fn main() {
 fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font: &Font) {
     handle_events(app, window, sf_egui);
     update(app);
+    app.clamp_view();
     ui::do_egui(sf_egui, app);
     window.clear(Color::BLACK);
     draw(app, window, font);
@@ -188,6 +189,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                         app.cursor = app.cursor.saturating_sub(1)
                     } else if ctrl {
                         if shift {
+                            app.view_y *= 2;
                             app.view_x /= 2;
                             app.view.cols /= 2;
                         } else {
@@ -200,6 +202,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                         app.cursor += 1;
                     } else if ctrl {
                         if shift {
+                            app.view_y /= 2;
                             app.view.cols *= 2;
                         } else {
                             app.view.cols += 1;

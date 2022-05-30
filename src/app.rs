@@ -178,4 +178,13 @@ impl App {
     pub(crate) fn block_display_x_offset(&self) -> i64 {
         self.ascii_display_x_offset() * 2
     }
+
+    pub(crate) fn clamp_view(&mut self) {
+        if self.view_x < -100 {
+            self.view_x = -100;
+        }
+        if self.view_y < -100 {
+            self.view_y = -100;
+        }
+    }
 }
