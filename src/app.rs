@@ -4,7 +4,7 @@ use egui_inspect::{derive::Inspect, UiExt};
 use egui_sfml::egui::{self, Ui};
 use sfml::graphics::Vertex;
 
-use crate::{input::Input, EditTarget, FindDialog, InteractMode, Region};
+use crate::{input::Input, views::ColorMethod, EditTarget, FindDialog, InteractMode, Region};
 
 /// The hexerator application state
 #[derive(Inspect, Debug)]
@@ -35,7 +35,7 @@ pub struct App {
     pub view_y: i64,
     // The amount scrolled per frame in view mode
     pub scroll_speed: i64,
-    pub colorize: bool,
+    pub color_method: ColorMethod,
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub cursor_prev_frame: usize,
     pub edit_target: EditTarget,
@@ -117,7 +117,7 @@ impl App {
             view_y: -top_gap,
             // The amount scrolled per frame in view mode
             scroll_speed: 4,
-            colorize: true,
+            color_method: ColorMethod::Default,
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             cursor_prev_frame: cursor,
             edit_target: EditTarget::Hex,

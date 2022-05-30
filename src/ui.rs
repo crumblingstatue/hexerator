@@ -1,11 +1,11 @@
 use egui_inspect::inspect;
 use egui_sfml::{
-    egui::{self, Button, Layout, ScrollArea, TextEdit, TopBottomPanel, Window},
+    egui::{self, Button, ComboBox, Layout, ScrollArea, TextEdit, TopBottomPanel, Window},
     SfEgui,
 };
 use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
 
-use crate::{app::App, slice_ext::SliceExt, InteractMode, Region};
+use crate::{app::App, slice_ext::SliceExt, views::ColorMethod, InteractMode, Region};
 
 pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
     sf_egui.do_frame(|ctx| {
@@ -140,6 +140,14 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                         }
                     }
                 }
+                ui.with_layout(Layout::right_to_left(), |ui| {
+                    ComboBox::new("color_combo", "Color").show_ui(ui, |ui| {
+                        ui.selectable_value(&mut app.color_method, ColorMethod::Default, "default");
+                        ui.selectable_value(&mut app.color_method, ColorMethod::Mono, "mono");
+                        ui.selectable_value(&mut app.color_method, ColorMethod::Rgb332, "rgb332");
+                        ui.selectable_value(&mut app.color_method, ColorMethod::Vga13h, "vga 13h");
+                    });
+                });
             });
         });
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
@@ -183,7 +191,6 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                 }
                 ui.with_layout(Layout::right_to_left(), |ui| {
                     ui.checkbox(&mut app.show_debug_panel, "debug (F12)");
-                    ui.checkbox(&mut app.colorize, "color");
                     ui.checkbox(&mut app.show_block, "block");
                     ui.checkbox(&mut app.show_text, "text");
                     ui.checkbox(&mut app.show_hex, "hex");

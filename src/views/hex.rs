@@ -4,7 +4,7 @@ use sfml::graphics::{Color, Font, Rect, RectangleShape, RenderTarget, RenderWind
 use crate::{
     app::App,
     hex_conv,
-    views::{byte_color, draw_cursor, draw_glyph},
+    views::{draw_cursor, draw_glyph},
     EditTarget, InteractMode,
 };
 
@@ -70,7 +70,7 @@ pub fn hex(
             if let Some(half) = app.hex_edit_half_digit && app.cursor == idx {
                 g1 = half.to_ascii_uppercase();
             }
-            let c = byte_color(byte, !app.colorize);
+            let c = app.color_method.byte_color(byte);
             draw_glyph(
                 font,
                 app.font_size,

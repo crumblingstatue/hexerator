@@ -1,11 +1,7 @@
 use gamedebug_core::imm_msg;
 use sfml::graphics::{Color, Rect, RectangleShape, RenderTarget, RenderWindow, Shape};
 
-use crate::{
-    app::App,
-    views::{byte_color, draw_cursor},
-    EditTarget, InteractMode,
-};
+use crate::{app::App, views::draw_cursor, EditTarget, InteractMode};
 
 pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
     let view_offset = app.block_display_x_offset();
@@ -37,7 +33,7 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
                 (x + app.view.cols * 2 + 1) as f32 * f32::from(app.block_size) - app.view_x as f32;
             let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.block_size) - app.view_y as f32;
             let byte = app.data[idx];
-            let c = byte_color(byte, !app.colorize);
+            let c = app.color_method.byte_color(byte);
             let selected = match app.selection {
                 Some(sel) => (sel.begin..=sel.end).contains(&idx),
                 None => false,
