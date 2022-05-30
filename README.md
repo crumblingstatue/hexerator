@@ -5,14 +5,17 @@ Work in progress.
 
 # Features
 ## colorized values ✅
-![image](https://user-images.githubusercontent.com/1521976/166120851-d7c48e9f-c958-444e-9e1b-b5c20bf0b3be.png)
+![image](https://user-images.githubusercontent.com/1521976/170778127-a2128870-3b8b-40d4-a862-8085518604d2.png)
 
-Colorized values help with recognizing patterns. For example, in the image above, the red region clearly marks the beginning of a different kind of data.
 
-## easily adjustable column count ✅
-![image](https://user-images.githubusercontent.com/1521976/166120928-ce0ad1ec-fa59-4175-b60c-a6fe02082f44.png)
+Colorized values help with recognizing patterns. For example, in the image above, the green section indicates a different kind of data with different byte patterns than the region below it.
 
-Quickly and easily align the data for more clarity.
+## easily adjustable column count and offset ✅
+![image](https://user-images.githubusercontent.com/1521976/170778901-98618f19-9c19-4136-b6cd-17a0465e0597.png)
+
+Quickly and easily align the data for better clarity.
+On the left is the thumbnail of a game save. This thumbnail is embedded inside the save file as raw pixel data.
+The column count and offset were changed in hexerator to align the data and reveal the image.
 
 ## Bookmarks 🔲
 
