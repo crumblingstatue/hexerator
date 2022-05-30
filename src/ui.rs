@@ -141,12 +141,35 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     }
                 }
                 ui.with_layout(Layout::right_to_left(), |ui| {
-                    ComboBox::new("color_combo", "Color").show_ui(ui, |ui| {
-                        ui.selectable_value(&mut app.color_method, ColorMethod::Default, "default");
-                        ui.selectable_value(&mut app.color_method, ColorMethod::Mono, "mono");
-                        ui.selectable_value(&mut app.color_method, ColorMethod::Rgb332, "rgb332");
-                        ui.selectable_value(&mut app.color_method, ColorMethod::Vga13h, "vga 13h");
-                    });
+                    ComboBox::new("color_combo", "Color")
+                        .selected_text(app.color_method.name())
+                        .show_ui(ui, |ui| {
+                            ui.selectable_value(
+                                &mut app.color_method,
+                                ColorMethod::Default,
+                                ColorMethod::Default.name(),
+                            );
+                            ui.selectable_value(
+                                &mut app.color_method,
+                                ColorMethod::Mono,
+                                ColorMethod::Mono.name(),
+                            );
+                            ui.selectable_value(
+                                &mut app.color_method,
+                                ColorMethod::Rgb332,
+                                ColorMethod::Rgb332.name(),
+                            );
+                            ui.selectable_value(
+                                &mut app.color_method,
+                                ColorMethod::Vga13h,
+                                ColorMethod::Vga13h.name(),
+                            );
+                            ui.selectable_value(
+                                &mut app.color_method,
+                                ColorMethod::Grayscale,
+                                ColorMethod::Grayscale.name(),
+                            );
+                        });
                 });
             });
         });

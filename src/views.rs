@@ -17,6 +17,7 @@ pub enum ColorMethod {
     Default,
     Rgb332,
     Vga13h,
+    Grayscale,
 }
 
 impl ColorMethod {
@@ -26,6 +27,17 @@ impl ColorMethod {
             ColorMethod::Default => default_color(byte),
             ColorMethod::Rgb332 => rgb332_color(byte),
             ColorMethod::Vga13h => vga_13h_color(byte),
+            ColorMethod::Grayscale => Color::rgb(byte, byte, byte),
+        }
+    }
+
+    pub(crate) fn name(&self) -> &str {
+        match self {
+            ColorMethod::Mono => "monochrome (white)",
+            ColorMethod::Default => "default",
+            ColorMethod::Rgb332 => "rgb 3-3-2",
+            ColorMethod::Vga13h => "VGA 13h",
+            ColorMethod::Grayscale => "grayscale",
         }
     }
 }
