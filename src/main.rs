@@ -187,14 +187,23 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                     if app.interact_mode == InteractMode::Edit {
                         app.cursor = app.cursor.saturating_sub(1)
                     } else if ctrl {
-                        app.view.cols -= 1;
+                        if shift {
+                            app.view_x /= 2;
+                            app.view.cols /= 2;
+                        } else {
+                            app.view.cols -= 1;
+                        }
                     }
                 }
                 Key::Right => {
                     if app.interact_mode == InteractMode::Edit && app.cursor + 1 < app.data.len() {
                         app.cursor += 1;
                     } else if ctrl {
-                        app.view.cols += 1;
+                        if shift {
+                            app.view.cols *= 2;
+                        } else {
+                            app.view.cols += 1;
+                        }
                     }
                 }
                 Key::PageUp => match app.interact_mode {
