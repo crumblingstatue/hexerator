@@ -45,7 +45,7 @@ fn draw_glyph(
     vertices.push(Vertex {
         position: Vector2::new(x, y),
         color,
-        tex_coords: Vector2::new(texture_rect.left as f32, texture_rect.top as f32),
+        tex_coords: texture_rect.position().as_other(),
     });
     vertices.push(Vertex {
         position: Vector2::new(x, y + bounds.height),
