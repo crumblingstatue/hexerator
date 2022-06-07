@@ -36,6 +36,8 @@ pub struct App {
     // The amount scrolled per frame in view mode
     pub scroll_speed: i64,
     pub color_method: ColorMethod,
+    pub invert_color: bool,
+    pub bg_color: [f32; 3],
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub cursor_prev_frame: usize,
     pub edit_target: EditTarget,
@@ -118,6 +120,8 @@ impl App {
             // The amount scrolled per frame in view mode
             scroll_speed: 4,
             color_method: ColorMethod::Default,
+            invert_color: false,
+            bg_color: [0.; 3],
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             cursor_prev_frame: cursor,
             edit_target: EditTarget::Hex,

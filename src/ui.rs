@@ -141,6 +141,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     }
                 }
                 ui.with_layout(Layout::right_to_left(), |ui| {
+                    ui.checkbox(&mut app.invert_color, "invert");
                     ComboBox::new("color_combo", "Color")
                         .selected_text(app.color_method.name())
                         .show_ui(ui, |ui| {
@@ -169,7 +170,14 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                                 ColorMethod::Grayscale,
                                 ColorMethod::Grayscale.name(),
                             );
+                            ui.selectable_value(
+                                &mut app.color_method,
+                                ColorMethod::Aitd,
+                                ColorMethod::Aitd.name(),
+                            );
                         });
+                    ui.color_edit_button_rgb(&mut app.bg_color);
+                    ui.label("Bg color");
                 });
             });
         });

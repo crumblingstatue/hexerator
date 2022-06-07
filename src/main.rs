@@ -91,7 +91,12 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font
     update(app);
     app.clamp_view();
     ui::do_egui(sf_egui, app);
-    window.clear(Color::BLACK);
+    let [r, g, b] = app.bg_color;
+    window.clear(Color::rgb(
+        (r * 255.) as u8,
+        (g * 255.) as u8,
+        (b * 255.) as u8,
+    ));
     draw(app, window, font);
     sf_egui.draw(window, None);
     window.display();
