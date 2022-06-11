@@ -53,6 +53,7 @@ pub struct App {
     pub select_begin: Option<usize>,
     pub fill_text: String,
     pub backup_path: OsString,
+    pub center_offset_input: String,
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
@@ -79,12 +80,6 @@ pub struct View {
     pub rows: usize,
     /// How many columns the view displays (how wide it is)
     pub cols: usize,
-}
-
-pub enum CursorViewStatus {
-    Inside,
-    Before,
-    After,
 }
 
 impl App {
@@ -141,6 +136,7 @@ impl App {
                 new.push(".hexerator_bak");
                 new
             },
+            center_offset_input: String::new(),
         }
     }
     pub fn reload(&mut self) {
@@ -158,25 +154,9 @@ impl App {
     pub fn ascii_display_x_offset(&self) -> i64 {
         self.view.cols as i64 * i64::from(self.col_width) + 12
     }
-    pub fn cursor_view_status(cursor: usize, view: &View) -> CursorViewStatus {
-        if cursor < view.start_offset {
-            CursorViewStatus::Before
-        } else if cursor > view.start_offset + view.rows * view.cols {
-            CursorViewStatus::After
-        } else {
-            CursorViewStatus::Inside
-        }
-    }
-    pub fn search_focus(cursor: &mut usize, view: &mut View, off: usize) {
-        // Focus the search result in the hex view
-        *cursor = off;
-        match Self::cursor_view_status(*cursor, view) {
-            CursorViewStatus::Before => {
-                view.start_offset = off.saturating_sub((view.rows - 1) * (view.cols - 1))
-            }
-            CursorViewStatus::After => view.start_offset = off - (view.rows + view.cols),
-            CursorViewStatus::Inside => {}
-        }
+    pub fn search_focus(&mut self, offset: usize) {
+        self.cursor = offset;
+        self.center_view_on_offset(offset);
     }
 
     pub(crate) fn block_display_x_offset(&self) -> i64 {
@@ -190,5 +170,17 @@ impl App {
         if self.view_y < -100 {
             self.view_y = -100;
         }
+    }
+
+    pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
+        let (row, col) = self.view.offset_row_col(offset);
+        self.view_x = (col as i64 * self.col_width as i64) - 200;
+        self.view_y = (row as i64 * self.row_height as i64) - 200;
+    }
+}
+impl View {
+    /// Calculate the row and column for a given offset when viewed through this View
+    fn offset_row_col(&self, offset: usize) -> (usize, usize) {
+        (offset / self.cols, offset % self.cols)
     }
 }

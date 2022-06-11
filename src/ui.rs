@@ -31,61 +31,62 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
             }
         });
         app.show_debug_panel = open;
-        Window::new("Find")
-            .open(&mut app.find_dialog.open)
-            .show(ctx, |ui| {
-                if ui
-                    .text_edit_singleline(&mut app.find_dialog.input)
-                    .lost_focus()
-                    && ui.input().key_pressed(egui::Key::Enter)
-                {
-                    let needle = app.find_dialog.input.parse().unwrap();
-                    app.find_dialog.result_offsets.clear();
-                    for (offset, &byte) in app.data.iter().enumerate() {
-                        if byte == needle {
-                            app.find_dialog.result_offsets.push(offset);
-                        }
-                    }
-                    if let Some(&off) = app.find_dialog.result_offsets.first() {
-                        App::search_focus(&mut app.cursor, &mut app.view, off);
+        open = app.find_dialog.open;
+        Window::new("Find").open(&mut open).show(ctx, |ui| {
+            if ui
+                .text_edit_singleline(&mut app.find_dialog.input)
+                .lost_focus()
+                && ui.input().key_pressed(egui::Key::Enter)
+            {
+                let needle = app.find_dialog.input.parse().unwrap();
+                app.find_dialog.result_offsets.clear();
+                for (offset, &byte) in app.data.iter().enumerate() {
+                    if byte == needle {
+                        app.find_dialog.result_offsets.push(offset);
                     }
                 }
-                ScrollArea::vertical().max_height(480.).show(ui, |ui| {
-                    for (i, &off) in app.find_dialog.result_offsets.iter().enumerate() {
-                        let re = ui
-                            .selectable_label(app.find_dialog.result_cursor == i, off.to_string());
-                        if let Some(scroll_off) = app.find_dialog.scroll_to && scroll_off == i {
+                if let Some(&off) = app.find_dialog.result_offsets.first() {
+                    app.search_focus(off);
+                }
+            }
+            ScrollArea::vertical().max_height(480.).show(ui, |ui| {
+                for (i, &off) in app.find_dialog.result_offsets.iter().enumerate() {
+                    let re =
+                        ui.selectable_label(app.find_dialog.result_cursor == i, off.to_string());
+                    if let Some(scroll_off) = app.find_dialog.scroll_to && scroll_off == i {
                         re.scroll_to_me(None);
                         app.find_dialog.scroll_to = None;
                     }
-                        if re.clicked() {
-                            App::search_focus(&mut app.cursor, &mut app.view, off);
-                            app.find_dialog.result_cursor = i;
-                        }
+                    if re.clicked() {
+                        app.search_focus(off);
+                        app.find_dialog.result_cursor = i;
+                        break;
                     }
-                });
-                ui.horizontal(|ui| {
-                    ui.set_enabled(!app.find_dialog.result_offsets.is_empty());
-                    if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
-                        && app.find_dialog.result_cursor > 0
-                    {
-                        app.find_dialog.result_cursor -= 1;
-                        let off = app.find_dialog.result_offsets[app.find_dialog.result_cursor];
-                        App::search_focus(&mut app.cursor, &mut app.view, off);
-                        app.find_dialog.scroll_to = Some(app.find_dialog.result_cursor);
-                    }
-                    ui.label((app.find_dialog.result_cursor + 1).to_string());
-                    if (ui.button("Next (N)").clicked() || ui.input().key_pressed(egui::Key::N))
-                        && app.find_dialog.result_cursor + 1 < app.find_dialog.result_offsets.len()
-                    {
-                        app.find_dialog.result_cursor += 1;
-                        let off = app.find_dialog.result_offsets[app.find_dialog.result_cursor];
-                        App::search_focus(&mut app.cursor, &mut app.view, off);
-                        app.find_dialog.scroll_to = Some(app.find_dialog.result_cursor);
-                    }
-                    ui.label(format!("{} results", app.find_dialog.result_offsets.len()));
-                });
+                }
             });
+            ui.horizontal(|ui| {
+                ui.set_enabled(!app.find_dialog.result_offsets.is_empty());
+                if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
+                    && app.find_dialog.result_cursor > 0
+                {
+                    app.find_dialog.result_cursor -= 1;
+                    let off = app.find_dialog.result_offsets[app.find_dialog.result_cursor];
+                    app.search_focus(off);
+                    app.find_dialog.scroll_to = Some(app.find_dialog.result_cursor);
+                }
+                ui.label((app.find_dialog.result_cursor + 1).to_string());
+                if (ui.button("Next (N)").clicked() || ui.input().key_pressed(egui::Key::N))
+                    && app.find_dialog.result_cursor + 1 < app.find_dialog.result_offsets.len()
+                {
+                    app.find_dialog.result_cursor += 1;
+                    let off = app.find_dialog.result_offsets[app.find_dialog.result_cursor];
+                    app.search_focus(off);
+                    app.find_dialog.scroll_to = Some(app.find_dialog.result_cursor);
+                }
+                ui.label(format!("{} results", app.find_dialog.result_offsets.len()));
+            });
+        });
+        app.find_dialog.open = open;
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 let begin_text = match app.select_begin {
@@ -200,6 +201,15 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     InteractMode::View => {
                         ui.label(format!("offset: {}", app.view.start_offset));
                         ui.label(format!("columns: {}", app.view.cols));
+                        let re = ui.add(
+                            TextEdit::singleline(&mut app.center_offset_input)
+                                .hint_text("Center view on offset"),
+                        );
+                        if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
+                            if let Ok(offset) = app.center_offset_input.parse() {
+                                app.center_view_on_offset(offset);
+                            }
+                        }
                     }
                     InteractMode::Edit => {
                         ui.label(format!("app.cursor: {}", app.cursor));
