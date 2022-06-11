@@ -1,6 +1,7 @@
 #![feature(let_chains)]
 
 mod app;
+mod args;
 mod color;
 mod hex_conv;
 mod input;
@@ -9,6 +10,8 @@ mod ui;
 mod views;
 
 use crate::app::App;
+use args::Args;
+use clap::Parser;
 use egui_inspect::derive::Inspect;
 use egui_sfml::{egui, SfEgui};
 use gamedebug_core::per_msg;
@@ -66,9 +69,7 @@ pub struct Region {
 }
 
 fn main() {
-    let path = std::env::args_os()
-        .nth(1)
-        .expect("Need file path as argument");
+    let args = Args::parse();
     let mut window = RenderWindow::new(
         (1920, 1080),
         "Hexerator",
@@ -79,7 +80,7 @@ fn main() {
     window.set_position(Vector2::new(0, 0));
     let mut sf_egui = SfEgui::new(&window);
     let font = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
-    let mut app = App::new(path);
+    let mut app = App::new(args);
 
     while window.is_open() {
         do_frame(&mut app, &mut sf_egui, &mut window, &font);

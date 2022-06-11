@@ -250,11 +250,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     }
                     ui.separator();
                     if ui.button("Restore").clicked() {
-                        std::fs::copy(&app.backup_path, &app.path).unwrap();
+                        std::fs::copy(&app.backup_path(), &app.args.file).unwrap();
                         app.reload();
                     }
                     if ui.button("Backup").clicked() {
-                        std::fs::copy(&app.path, &app.backup_path).unwrap();
+                        std::fs::copy(&app.args.file, &app.backup_path()).unwrap();
                     }
                 })
             })

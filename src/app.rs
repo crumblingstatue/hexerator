@@ -1,10 +1,12 @@
-use std::ffi::OsString;
+use std::path::PathBuf;
 
 use egui_inspect::{derive::Inspect, UiExt};
 use egui_sfml::egui::{self, Ui};
 use sfml::graphics::Vertex;
 
-use crate::{color::ColorMethod, input::Input, EditTarget, FindDialog, InteractMode, Region};
+use crate::{
+    args::Args, color::ColorMethod, input::Input, EditTarget, FindDialog, InteractMode, Region,
+};
 
 /// The hexerator application state
 #[derive(Inspect, Debug)]
@@ -18,8 +20,6 @@ pub struct App {
     // Maximum number of visible hex columns that can be shown on screen.
     // ascii is double this amount.
     pub max_visible_cols: usize,
-    /// Path to the file we're editing
-    pub path: OsString,
     pub dirty: bool,
     pub data: Vec<u8>,
     pub show_debug_panel: bool,
@@ -52,8 +52,9 @@ pub struct App {
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
     pub fill_text: String,
-    pub backup_path: OsString,
     pub center_offset_input: String,
+    #[opaque]
+    pub args: Args,
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
@@ -83,11 +84,11 @@ pub struct View {
 }
 
 impl App {
-    pub fn new(path: OsString) -> Self {
-        let data = std::fs::read(&path).unwrap();
+    pub fn new(args: Args) -> Self {
+        let data = std::fs::read(&args.file).unwrap();
         let top_gap = 30;
         let cursor = 0;
-        Self {
+        let mut this = Self {
             font_size: 14,
             block_size: 4,
             view: View {
@@ -96,7 +97,6 @@ impl App {
                 cols: 48,
             },
             max_visible_cols: 75,
-            path: path.clone(),
             dirty: false,
             data,
             show_debug_panel: false,
@@ -131,20 +131,21 @@ impl App {
             selection: None,
             select_begin: None,
             fill_text: String::new(),
-            backup_path: {
-                let mut new = path;
-                new.push(".hexerator_bak");
-                new
-            },
             center_offset_input: String::new(),
+            args,
+        };
+        if let Some(offset) = this.args.jump {
+            this.center_view_on_offset(offset);
+            this.cursor = offset;
         }
+        this
     }
     pub fn reload(&mut self) {
-        self.data = std::fs::read(&self.path).unwrap();
+        self.data = std::fs::read(&self.args.file).unwrap();
         self.dirty = false;
     }
     pub fn save(&mut self) {
-        std::fs::write(&self.path, &self.data).unwrap();
+        std::fs::write(&self.args.file, &self.data).unwrap();
         self.dirty = false;
     }
     pub fn toggle_debug(&mut self) {
@@ -176,6 +177,10 @@ impl App {
         let (row, col) = self.view.offset_row_col(offset);
         self.view_x = (col as i64 * self.col_width as i64) - 200;
         self.view_y = (row as i64 * self.row_height as i64) - 200;
+    }
+
+    pub(crate) fn backup_path(&self) -> PathBuf {
+        self.args.file.join(".hexerator_bak")
     }
 }
 impl View {
