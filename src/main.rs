@@ -130,13 +130,6 @@ fn update(app: &mut App) {
 
 fn draw(app: &mut App, window: &mut RenderWindow, font: &Font) {
     app.vertices.clear();
-    draw_inner(app, window, font);
-    let mut rs = RenderStates::default();
-    rs.set_texture(Some(font.texture(app.font_size)));
-    window.draw_primitives(&app.vertices, PrimitiveType::QUADS, &rs);
-}
-
-fn draw_inner(app: &mut App, window: &mut RenderWindow, font: &Font) {
     // The offset for the hex display imposed by the view
     let view_idx_off_x: usize = app.view_x.try_into().unwrap_or(0) / app.col_width as usize;
     let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
@@ -146,6 +139,9 @@ fn draw_inner(app: &mut App, window: &mut RenderWindow, font: &Font) {
     if app.show_text {
         views::ascii(app, view_idx_off_y, window, font);
     }
+    let mut rs = RenderStates::default();
+    rs.set_texture(Some(font.texture(app.font_size)));
+    window.draw_primitives(&app.vertices, PrimitiveType::QUADS, &rs);
     if app.show_block {
         views::block(app, view_idx_off_y, window);
     }

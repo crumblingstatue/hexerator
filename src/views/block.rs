@@ -1,5 +1,5 @@
 use gamedebug_core::imm_msg;
-use sfml::graphics::{Color, Rect, RectangleShape, RenderTarget, RenderWindow, Shape};
+use sfml::graphics::{RenderTarget, RenderWindow, Sprite, Texture, Transformable};
 
 use crate::{app::App, views::draw_cursor, EditTarget, InteractMode};
 
@@ -20,9 +20,12 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
     let mut block_cols_rendered: u32 = 0;
     let mut idx = app.view.start_offset + view_idx_off;
     imm_msg!(idx);
-    'display: for y in 0..app.view.rows {
+    let rows = 240;
+    let mut pixels = vec![255; app.view.cols * rows * 4];
+    let max_visible_cols = 300;
+    'display: for y in 0..rows {
         for x in 0..app.view.cols {
-            if x == app.max_visible_cols * 2 || x >= app.view.cols.saturating_sub(view_idx_off_x) {
+            if x == max_visible_cols * 2 || x >= app.view.cols.saturating_sub(view_idx_off_x) {
                 idx += app.view.cols - x;
                 break;
             }
@@ -34,23 +37,15 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
             let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.block_size) - app.view_y as f32;
             let byte = app.data[idx];
             let c = app.color_method.byte_color(byte, app.invert_color);
+            let idxx = (y * app.view.cols + x) * 4;
+            pixels[idxx] = c.red();
+            pixels[idxx + 1] = c.green();
+            pixels[idxx + 2] = c.blue();
             let selected = match app.selection {
                 Some(sel) => (sel.begin..=sel.end).contains(&idx),
                 None => false,
             };
             if selected || (app.find_dialog.open && app.find_dialog.result_offsets.contains(&idx)) {
-                let mut rs = RectangleShape::from_rect(Rect::new(
-                    pix_x,
-                    pix_y,
-                    (app.col_width / 2) as f32,
-                    app.row_height as f32,
-                ));
-                rs.set_fill_color(Color::rgb(150, 150, 150));
-                if app.cursor == idx {
-                    rs.set_outline_color(Color::WHITE);
-                    rs.set_outline_thickness(-2.0);
-                }
-                window.draw(&rs);
             }
             if idx == app.cursor {
                 draw_cursor(
@@ -60,19 +55,20 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
                     app.edit_target == EditTarget::Text && app.interact_mode == InteractMode::Edit,
                 );
             }
-            let mut shape = RectangleShape::from_rect(Rect::new(
-                pix_x as f32,
-                pix_y as f32,
-                app.block_size as f32,
-                app.block_size as f32,
-            ));
-            shape.set_fill_color(c);
-            window.draw(&shape);
             idx += 1;
             block_cols_rendered += 1;
         }
         block_rows_rendered += 1;
     }
+    let mut t = Texture::new().unwrap();
+    let _ = t.create(app.view.cols as _, rows as _);
+    unsafe {
+        t.update_from_pixels(&pixels, app.view.cols as _, rows as _, 0, 0);
+    }
+    let mut s = Sprite::with_texture(&t);
+    s.set_position((-app.view_x as _, app.top_gap as f32 - app.view_y as f32));
+    s.set_scale((app.block_size as _, app.block_size as _));
+    window.draw(&s);
     imm_msg!(block_rows_rendered);
     block_cols_rendered = block_cols_rendered
         .checked_div(block_rows_rendered)
