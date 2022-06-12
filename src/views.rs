@@ -9,7 +9,7 @@ use sfml::{
     system::Vector2,
 };
 
-fn draw_cursor(x: f32, y: f32, window: &mut RenderWindow, active: bool) {
+fn draw_cursor(x: f32, y: f32, window: &mut RenderWindow, active: bool, flash_timer: Option<u32>) {
     let mut rs = RectangleShape::from_rect(Rect {
         left: x,
         top: y,
@@ -19,9 +19,15 @@ fn draw_cursor(x: f32, y: f32, window: &mut RenderWindow, active: bool) {
     rs.set_fill_color(Color::TRANSPARENT);
     rs.set_outline_thickness(2.0);
     if active {
-        rs.set_outline_color(Color::WHITE);
+        match flash_timer {
+            Some(timer) => rs.set_outline_color(Color::rgb(timer as u8, timer as u8, timer as u8)),
+            None => rs.set_outline_color(Color::WHITE),
+        }
     } else {
-        rs.set_outline_color(Color::rgb(150, 150, 150));
+        match flash_timer {
+            Some(timer) => rs.set_outline_color(Color::rgb(timer as u8, timer as u8, timer as u8)),
+            None => rs.set_outline_color(Color::rgb(150, 150, 150)),
+        }
     }
     window.draw(&rs);
 }

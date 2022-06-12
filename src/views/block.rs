@@ -53,6 +53,7 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
                     pix_y,
                     window,
                     app.edit_target == EditTarget::Text && app.interact_mode == InteractMode::Edit,
+                    app.cursor_flash_timer(),
                 );
             }
             idx += 1;

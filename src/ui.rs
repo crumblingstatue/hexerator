@@ -118,8 +118,13 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     }
                 });
                 ui.menu_button("View", |ui| {
+                    if ui.button("Flash cursor").clicked() {
+                        app.flash_cursor();
+                        ui.close_menu();
+                    }
                     if ui.button("Center view on cursor").clicked() {
                         app.center_view_on_offset(app.cursor);
+                        app.flash_cursor();
                         ui.close_menu();
                     }
                     ui.horizontal(|ui| {

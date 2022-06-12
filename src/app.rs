@@ -3,6 +3,7 @@ use std::{
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
+    time::{Duration, Instant},
 };
 
 use anyhow::Context;
@@ -67,6 +68,8 @@ pub struct App {
     file: Option<File>,
     pub col_change_lock_x: bool,
     pub col_change_lock_y: bool,
+    #[opaque]
+    flash_cursor_timer: Timer,
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
@@ -161,10 +164,12 @@ impl App {
             file: opt_file,
             col_change_lock_x: false,
             col_change_lock_y: true,
+            flash_cursor_timer: Timer::default(),
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
             this.cursor = offset;
+            this.flash_cursor();
         }
         Ok(this)
     }
@@ -347,6 +352,40 @@ impl App {
     pub(crate) fn set_cursor_init(&mut self) {
         self.cursor = self.args.jump.unwrap_or(0);
         self.center_view_on_offset(self.cursor);
+        self.flash_cursor();
+    }
+    pub fn flash_cursor(&mut self) {
+        self.flash_cursor_timer = Timer::set(Duration::from_millis(1500));
+    }
+    /// If the cursor should be flashing, returns a timer value that can be used to color cursor
+    pub fn cursor_flash_timer(&self) -> Option<u32> {
+        let elapsed = self.flash_cursor_timer.init_point.elapsed();
+        if elapsed > self.flash_cursor_timer.duration {
+            None
+        } else {
+            Some(elapsed.as_millis() as u32)
+        }
+    }
+}
+
+#[derive(Debug)]
+struct Timer {
+    init_point: Instant,
+    duration: Duration,
+}
+
+impl Timer {
+    fn set(duration: Duration) -> Self {
+        Self {
+            init_point: Instant::now(),
+            duration,
+        }
+    }
+}
+
+impl Default for Timer {
+    fn default() -> Self {
+        Timer::set(Duration::ZERO)
     }
 }
 

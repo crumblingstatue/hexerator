@@ -64,6 +64,7 @@ pub fn hex(
                     pix_y,
                     window,
                     app.edit_target == EditTarget::Hex && app.interact_mode == InteractMode::Edit,
+                    app.cursor_flash_timer(),
                 );
             }
             let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);

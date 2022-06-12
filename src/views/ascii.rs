@@ -66,6 +66,7 @@ pub fn ascii(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow, fo
                     pix_y,
                     window,
                     app.edit_target == EditTarget::Text && app.interact_mode == InteractMode::Edit,
+                    app.cursor_flash_timer(),
                 );
             }
             let glyph = match byte {
