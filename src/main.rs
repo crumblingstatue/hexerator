@@ -214,9 +214,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                         app.cursor = app.cursor.saturating_sub(1)
                     } else if ctrl {
                         if shift {
-                            app.view_y *= 2;
-                            app.view_x /= 2;
-                            app.view.cols /= 2;
+                            app.halve_cols();
                         } else {
                             app.dec_cols();
                         }
@@ -227,8 +225,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                         app.cursor += 1;
                     } else if ctrl {
                         if shift {
-                            app.view_y /= 2;
-                            app.view.cols *= 2;
+                            app.double_cols();
                         } else {
                             app.inc_cols();
                         }

@@ -279,6 +279,16 @@ impl App {
         self.view.cols += 1;
         self.set_view_to_byte_offset(prev_offset.byte);
     }
+    pub(crate) fn halve_cols(&mut self) {
+        let prev_offset = self.view_offsets();
+        self.view.cols /= 2;
+        self.set_view_to_byte_offset(prev_offset.byte);
+    }
+    pub(crate) fn double_cols(&mut self) {
+        let prev_offset = self.view_offsets();
+        self.view.cols *= 2;
+        self.set_view_to_byte_offset(prev_offset.byte);
+    }
     /// Calculate the (row, col, byte) offset where the view starts showing from
     pub fn view_offsets(&self) -> ViewOffsets {
         let view_y = self.view_y + self.top_gap;
