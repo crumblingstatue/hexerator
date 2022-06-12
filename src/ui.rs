@@ -1,6 +1,8 @@
 use egui_inspect::inspect;
 use egui_sfml::{
-    egui::{self, Button, ComboBox, Layout, ScrollArea, TextEdit, TopBottomPanel, Window},
+    egui::{
+        self, Button, ComboBox, DragValue, Layout, ScrollArea, TextEdit, TopBottomPanel, Window,
+    },
     SfEgui,
 };
 use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
@@ -246,8 +248,10 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                 ui.separator();
                 match app.interact_mode {
                     InteractMode::View => {
-                        ui.label(format!("offset: {}", app.view.start_offset));
-                        ui.label(format!("columns: {}", app.view.cols));
+                        ui.label("offset");
+                        ui.add(DragValue::new(&mut app.view.start_offset));
+                        ui.label("columns");
+                        ui.add(DragValue::new(&mut app.view.cols));
                         let offsets = app.view_offsets();
                         ui.label(format!(
                             "view offset: row {} col {} byte {}",
