@@ -94,6 +94,27 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
         app.find_dialog.open = open;
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
+                ui.menu_button("File", |ui| {
+                    if ui.button("Open").clicked() {
+                        ui.close_menu();
+                    }
+                });
+                ui.menu_button("Edit", |ui| {
+                    if ui.button("Find").clicked() {
+                        ui.close_menu();
+                    }
+                });
+                ui.menu_button("View", |ui| {
+                    if ui.button("Center view on cursor").clicked() {
+                        app.center_view_on_offset(app.cursor);
+                        ui.close_menu();
+                    }
+                });
+                ui.with_layout(Layout::right_to_left(), |ui| {
+                    ui.label(app.args.file.canonicalize().unwrap().display().to_string());
+                });
+            });
+            ui.horizontal(|ui| {
                 let begin_text = match app.select_begin {
                     Some(begin) => begin.to_string(),
                     None => "-".to_owned(),
