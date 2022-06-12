@@ -343,6 +343,11 @@ impl App {
         )?;
         Ok(())
     }
+
+    pub(crate) fn set_cursor_init(&mut self) {
+        self.cursor = self.args.jump.unwrap_or(0);
+        self.center_view_on_offset(self.cursor);
+    }
 }
 
 pub struct ViewOffsets {

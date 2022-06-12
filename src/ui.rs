@@ -108,8 +108,12 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                         ui.close_menu();
                     }
                 });
-                ui.menu_button("Edit", |ui| {
-                    if ui.button("Find").clicked() {
+                ui.menu_button("Seek", |ui| {
+                    let re = ui
+                        .button("Set cursor to initial position")
+                        .on_hover_text("Set to --jump argument, 0 otherwise");
+                    if re.clicked() {
+                        app.set_cursor_init();
                         ui.close_menu();
                     }
                 });
