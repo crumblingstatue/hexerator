@@ -68,13 +68,18 @@ pub fn ascii(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow, fo
                     app.edit_target == EditTarget::Text && app.interact_mode == InteractMode::Edit,
                 );
             }
+            let glyph = match byte {
+                0x00 => '∅' as u32,
+                0xFF => '■' as u32,
+                _ => byte as u32,
+            };
             draw_glyph(
                 font,
                 app.font_size,
                 &mut app.vertices,
                 pix_x,
                 pix_y,
-                byte as u32,
+                glyph,
                 c,
             );
             idx += 1;
