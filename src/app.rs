@@ -98,7 +98,7 @@ impl App {
             .write(true)
             .open(&args.file)
             .context("Failed to open file")?;
-        let data = read_contents(&args, &mut file);
+        let data = read_contents(&args, &mut file)?;
         let top_gap = 46;
         let cursor = 0;
         let mut this = Self {
@@ -155,13 +155,14 @@ impl App {
         }
         Ok(this)
     }
-    pub fn reload(&mut self) {
-        self.data = read_contents(&self.args, &mut self.file);
+    pub fn reload(&mut self) -> anyhow::Result<()> {
+        self.data = read_contents(&self.args, &mut self.file)?;
         self.dirty_region = None;
+        Ok(())
     }
-    pub fn save(&mut self) {
+    pub fn save(&mut self) -> anyhow::Result<()> {
         let offset = self.args.hard_seek.unwrap_or(0);
-        self.file.seek(SeekFrom::Start(offset)).unwrap();
+        self.file.seek(SeekFrom::Start(offset))?;
         let data_to_write = match self.dirty_region {
             Some(region) => {
                 eprintln!(
@@ -171,9 +172,7 @@ impl App {
                     // TODO: See below, same +1 stuff
                     (region.end - region.begin) + 1,
                 );
-                self.file
-                    .seek(SeekFrom::Current(region.begin as _))
-                    .unwrap();
+                self.file.seek(SeekFrom::Current(region.begin as _))?;
                 // TODO: We're assuming here that end of the region is the same position as the last dirty byte
                 // Make sure to enforce this invariant.
                 // Add 1 to the end to write the dirty region even if it's 1 byte
@@ -181,8 +180,9 @@ impl App {
             }
             None => &self.data,
         };
-        self.file.write_all(data_to_write).unwrap();
+        self.file.write_all(data_to_write)?;
         self.dirty_region = None;
+        Ok(())
     }
     pub fn toggle_debug(&mut self) {
         self.show_debug_panel ^= true;
@@ -273,17 +273,15 @@ impl App {
     }
 }
 
-#[must_use]
-fn read_contents(args: &Args, file: &mut File) -> Vec<u8> {
-    if let Some(offset) = args.hard_seek {
-        file.seek(SeekFrom::Start(offset)).unwrap();
-    }
+fn read_contents(args: &Args, file: &mut File) -> anyhow::Result<Vec<u8>> {
+    let seek = args.hard_seek.unwrap_or(0);
+    file.seek(SeekFrom::Start(seek))?;
     let mut data = Vec::new();
     match args.take {
-        Some(amount) => (&*file).take(amount).read_to_end(&mut data).unwrap(),
-        None => file.read_to_end(&mut data).unwrap(),
+        Some(amount) => (&*file).take(amount).read_to_end(&mut data)?,
+        None => file.read_to_end(&mut data)?,
     };
-    data
+    Ok(data)
 }
 impl View {
     /// Calculate the row and column for a given offset when viewed through this View

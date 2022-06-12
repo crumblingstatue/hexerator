@@ -21,6 +21,16 @@ use sfml::{
     window::{mouse, ContextSettings, Event, Key, Style},
 };
 
+fn msg_if_fail(result: anyhow::Result<()>, prefix: &str) {
+    if let Err(e) = result {
+        rfd::MessageDialog::new()
+            .set_level(rfd::MessageLevel::Error)
+            .set_title("Error")
+            .set_description(&format!("{}: {}", prefix, e))
+            .show();
+    }
+}
+
 #[derive(PartialEq, Eq, Debug, Inspect)]
 pub enum EditTarget {
     Hex,
@@ -278,10 +288,10 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                     app.find_dialog.open ^= true;
                 }
                 Key::S if ctrl => {
-                    app.save();
+                    msg_if_fail(app.save(), "Failed to save");
                 }
                 Key::R if ctrl => {
-                    app.reload();
+                    msg_if_fail(app.reload(), "Failed to reload");
                 }
                 _ => {}
             },
