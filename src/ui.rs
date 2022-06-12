@@ -133,7 +133,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                         match values {
                             Ok(values) => {
                                 app.data[sel.begin..=sel.end].pattern_fill(&values);
-                                app.dirty = true;
+                                app.widen_dirty_region(sel.begin, Some(sel.end));
                             }
                             Err(e) => {
                                 per_msg!("Fill parse error: {}", e);
@@ -221,7 +221,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                             && ui.input().key_pressed(egui::Key::Enter)
                         {
                             app.data[app.cursor] = app.u8_buf.parse().unwrap();
-                            app.dirty = true;
+                            app.widen_dirty_region(app.cursor, None);
                         }
                         ui.label("ascii");
                         ui.add(
@@ -236,14 +236,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     ui.checkbox(&mut app.show_text, "text");
                     ui.checkbox(&mut app.show_hex, "hex");
                     ui.separator();
-                    if ui
-                        .add_enabled(app.dirty, Button::new("Reload (ctrl+R)"))
-                        .clicked()
-                    {
+                    if ui.add(Button::new("Reload (ctrl+R)")).clicked() {
                         app.reload();
                     }
                     if ui
-                        .add_enabled(app.dirty, Button::new("Save (ctrl+S)"))
+                        .add_enabled(app.dirty_region.is_some(), Button::new("Save (ctrl+S)"))
                         .clicked()
                     {
                         app.save();

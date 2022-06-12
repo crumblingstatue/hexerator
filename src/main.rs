@@ -294,7 +294,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                                     Some(half) => {
                                         app.data[app.cursor] =
                                             hex_conv::merge_hex_halves(half, ascii);
-                                        app.dirty = true;
+                                        app.widen_dirty_region(app.cursor, None);
                                         if app.cursor + 1 < app.data.len() {
                                             app.cursor += 1;
                                         }
@@ -308,7 +308,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                     EditTarget::Text => {
                         if unicode.is_ascii() {
                             app.data[app.cursor] = unicode as u8;
-                            app.dirty = true;
+                            app.widen_dirty_region(app.cursor, None);
                             if app.cursor + 1 < app.data.len() {
                                 app.cursor += 1;
                             }

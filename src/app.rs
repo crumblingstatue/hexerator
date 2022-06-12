@@ -1,4 +1,8 @@
-use std::path::PathBuf;
+use std::{
+    fs::{File, OpenOptions},
+    io::{Read, Seek, SeekFrom, Write},
+    path::PathBuf,
+};
 
 use egui_inspect::{derive::Inspect, UiExt};
 use egui_sfml::egui::{self, Ui};
@@ -20,7 +24,7 @@ pub struct App {
     // Maximum number of visible hex columns that can be shown on screen.
     // ascii is double this amount.
     pub max_visible_cols: usize,
-    pub dirty: bool,
+    pub dirty_region: Option<Region>,
     pub data: Vec<u8>,
     pub show_debug_panel: bool,
     pub col_width: u8,
@@ -55,6 +59,8 @@ pub struct App {
     pub center_offset_input: String,
     #[opaque]
     pub args: Args,
+    #[opaque]
+    file: File,
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
@@ -85,7 +91,12 @@ pub struct View {
 
 impl App {
     pub fn new(args: Args) -> Self {
-        let data = std::fs::read(&args.file).unwrap();
+        let mut file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(&args.file)
+            .unwrap();
+        let data = read_contents(&args, &mut file);
         let top_gap = 30;
         let cursor = 0;
         let mut this = Self {
@@ -97,7 +108,7 @@ impl App {
                 cols: 48,
             },
             max_visible_cols: 75,
-            dirty: false,
+            dirty_region: None,
             data,
             show_debug_panel: false,
             col_width: 26,
@@ -133,6 +144,7 @@ impl App {
             fill_text: String::new(),
             center_offset_input: String::new(),
             args,
+            file,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -141,12 +153,33 @@ impl App {
         this
     }
     pub fn reload(&mut self) {
-        self.data = std::fs::read(&self.args.file).unwrap();
-        self.dirty = false;
+        self.data = read_contents(&self.args, &mut self.file);
+        self.dirty_region = None;
     }
     pub fn save(&mut self) {
-        std::fs::write(&self.args.file, &self.data).unwrap();
-        self.dirty = false;
+        let offset = self.args.hard_seek.unwrap_or(0);
+        self.file.seek(SeekFrom::Start(offset)).unwrap();
+        let data_to_write = match self.dirty_region {
+            Some(region) => {
+                eprintln!(
+                    "Writing dirty region {}..{}, size {}",
+                    region.begin,
+                    region.end,
+                    // TODO: See below, same +1 stuff
+                    (region.end - region.begin) + 1,
+                );
+                self.file
+                    .seek(SeekFrom::Current(region.begin as _))
+                    .unwrap();
+                // TODO: We're assuming here that end of the region is the same position as the last dirty byte
+                // Make sure to enforce this invariant.
+                // Add 1 to the end to write the dirty region even if it's 1 byte
+                &self.data[region.begin..region.end + 1]
+            }
+            None => &self.data,
+        };
+        self.file.write_all(data_to_write).unwrap();
+        self.dirty_region = None;
     }
     pub fn toggle_debug(&mut self) {
         self.show_debug_panel ^= true;
@@ -182,6 +215,46 @@ impl App {
     pub(crate) fn backup_path(&self) -> PathBuf {
         self.args.file.join(".hexerator_bak")
     }
+
+    pub(crate) fn widen_dirty_region(&mut self, begin: usize, end: Option<usize>) {
+        match &mut self.dirty_region {
+            Some(dirty_region) => {
+                if begin < dirty_region.begin {
+                    dirty_region.begin = begin;
+                }
+                if begin > dirty_region.end {
+                    dirty_region.end = begin;
+                }
+                if let Some(end) = end {
+                    if end < dirty_region.begin {
+                        panic!("Wait, what?");
+                    }
+                    if end > dirty_region.end {
+                        dirty_region.end = end;
+                    }
+                }
+            }
+            None => {
+                self.dirty_region = Some(Region {
+                    begin,
+                    end: end.unwrap_or(begin),
+                })
+            }
+        }
+    }
+}
+
+#[must_use]
+fn read_contents(args: &Args, file: &mut File) -> Vec<u8> {
+    if let Some(offset) = args.hard_seek {
+        file.seek(SeekFrom::Start(offset)).unwrap();
+    }
+    let mut data = Vec::new();
+    match args.take {
+        Some(amount) => (&*file).take(amount).read_to_end(&mut data).unwrap(),
+        None => file.read_to_end(&mut data).unwrap(),
+    };
+    data
 }
 impl View {
     /// Calculate the row and column for a given offset when viewed through this View
