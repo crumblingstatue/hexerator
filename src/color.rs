@@ -130,7 +130,7 @@ fn default_color(byte: u8) -> Color {
     if byte == 0 {
         Color::rgb(100, 100, 100)
     } else if byte == 255 {
-        Color::WHITE
+        Color::rgb(210, 210, 210)
     } else {
         let [r, g, b] = egui::color::rgb_from_hsv((byte as f32 / 288.0, 1.0, 1.0));
         Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
