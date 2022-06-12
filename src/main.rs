@@ -1,4 +1,4 @@
-#![feature(let_chains)]
+#![feature(let_chains, lint_reasons)]
 
 mod app;
 mod args;

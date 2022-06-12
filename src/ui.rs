@@ -7,6 +7,11 @@ use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
 
 use crate::{app::App, color::ColorMethod, slice_ext::SliceExt, InteractMode, Region};
 
+#[expect(
+    clippy::significant_drop_in_scrutinee,
+    reason = "this isn't a useful lint for for loops"
+)]
+// https://github.com/rust-lang/rust-clippy/issues/8987
 pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
     sf_egui.do_frame(|ctx| {
         let mut open = app.show_debug_panel;
