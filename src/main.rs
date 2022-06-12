@@ -68,7 +68,7 @@ pub struct Region {
     end: usize,
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let mut window = RenderWindow::new(
         (1920, 1080),
@@ -80,11 +80,12 @@ fn main() {
     window.set_position(Vector2::new(0, 0));
     let mut sf_egui = SfEgui::new(&window);
     let font = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
-    let mut app = App::new(args);
+    let mut app = App::new(args)?;
 
     while window.is_open() {
         do_frame(&mut app, &mut sf_egui, &mut window, &font);
     }
+    Ok(())
 }
 
 fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font: &Font) {

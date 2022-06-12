@@ -4,6 +4,7 @@ use std::{
     path::PathBuf,
 };
 
+use anyhow::Context;
 use egui_inspect::{derive::Inspect, UiExt};
 use egui_sfml::egui::{self, Ui};
 use sfml::graphics::Vertex;
@@ -91,12 +92,12 @@ pub struct View {
 }
 
 impl App {
-    pub fn new(args: Args) -> Self {
+    pub fn new(args: Args) -> anyhow::Result<Self> {
         let mut file = OpenOptions::new()
             .read(true)
             .write(true)
             .open(&args.file)
-            .unwrap();
+            .context("Failed to open file")?;
         let data = read_contents(&args, &mut file);
         let top_gap = 46;
         let cursor = 0;
@@ -152,7 +153,7 @@ impl App {
             this.center_view_on_offset(offset);
             this.cursor = offset;
         }
-        this
+        Ok(this)
     }
     pub fn reload(&mut self) {
         self.data = read_contents(&self.args, &mut self.file);
