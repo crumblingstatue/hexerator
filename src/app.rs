@@ -292,6 +292,7 @@ impl App {
     pub(crate) fn load_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
         let mut file = open_file(&path)?;
         self.data = read_contents(&self.args, &mut file)?;
+        self.file = Some(file);
         self.args.file = Some(path);
         Ok(())
     }
