@@ -64,6 +64,8 @@ pub struct App {
     pub args: Args,
     #[opaque]
     file: Option<File>,
+    pub col_change_lock_x: bool,
+    pub col_change_lock_y: bool,
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
@@ -156,6 +158,8 @@ impl App {
             seek_byte_offset_input: String::new(),
             args,
             file: opt_file,
+            col_change_lock_x: false,
+            col_change_lock_y: true,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -264,29 +268,37 @@ impl App {
     }
 
     pub(crate) fn dec_cols(&mut self) {
-        let prev_offset = self.view_byte_offset();
+        let prev_offset = self.view_offsets();
         self.view.cols -= 1;
-        self.set_view_to_byte_offset(prev_offset);
+        self.set_view_to_byte_offset(prev_offset.byte);
     }
     pub(crate) fn inc_cols(&mut self) {
-        let prev_offset = self.view_byte_offset();
+        let prev_offset = self.view_offsets();
         self.view.cols += 1;
-        self.set_view_to_byte_offset(prev_offset);
+        self.set_view_to_byte_offset(prev_offset.byte);
     }
-    /// Calculate the approximate byte offset where the view starts showing from
-    pub fn view_byte_offset(&self) -> usize {
+    /// Calculate the (row, col, byte) offset where the view starts showing from
+    pub fn view_offsets(&self) -> ViewOffsets {
         let view_y = self.view_y + self.top_gap;
         let row_offset: usize = (view_y / self.row_height as i64).try_into().unwrap_or(0);
         let col_offset: usize = (self.view_x / self.col_width as i64)
             .try_into()
             .unwrap_or(0);
-        row_offset * self.view.cols + col_offset
+        ViewOffsets {
+            row: row_offset,
+            col: col_offset,
+            byte: row_offset * self.view.cols + col_offset,
+        }
     }
 
     pub fn set_view_to_byte_offset(&mut self, offset: usize) {
         let (row, col) = self.view.offset_row_col(offset);
-        self.view_x = (col * self.col_width as usize) as i64;
-        self.view_y = ((row * self.row_height as usize) as i64) - self.top_gap;
+        if self.col_change_lock_x {
+            self.view_x = (col * self.col_width as usize) as i64;
+        }
+        if self.col_change_lock_y {
+            self.view_y = ((row * self.row_height as usize) as i64) - self.top_gap;
+        }
     }
 
     pub(crate) fn load_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
@@ -303,6 +315,12 @@ impl App {
         self.args.file = None;
         self.file = None;
     }
+}
+
+pub struct ViewOffsets {
+    pub row: usize,
+    pub col: usize,
+    pub byte: usize,
 }
 
 fn open_file(path: &Path) -> Result<File, anyhow::Error> {

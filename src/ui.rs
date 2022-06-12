@@ -127,6 +127,8 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                             );
                         }
                     });
+                    ui.checkbox(&mut app.col_change_lock_x, "Lock x on column change");
+                    ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
                 });
                 ui.with_layout(Layout::right_to_left(), |ui| match &app.args.file {
                     Some(file) => ui.label(file.canonicalize().unwrap().display().to_string()),
@@ -246,7 +248,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     InteractMode::View => {
                         ui.label(format!("offset: {}", app.view.start_offset));
                         ui.label(format!("columns: {}", app.view.cols));
-                        ui.label(format!("view byte offset: {}", app.view_byte_offset()));
+                        let offsets = app.view_offsets();
+                        ui.label(format!(
+                            "view offset: row {} col {} byte {}",
+                            offsets.row, offsets.col, offsets.byte
+                        ));
                         let re = ui.add(
                             TextEdit::singleline(&mut app.center_offset_input)
                                 .hint_text("Center view on offset"),
