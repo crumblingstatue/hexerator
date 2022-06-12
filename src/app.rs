@@ -1,7 +1,7 @@
 use std::{
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 use anyhow::Context;
@@ -10,7 +10,8 @@ use egui_sfml::egui::{self, Ui};
 use sfml::graphics::Vertex;
 
 use crate::{
-    args::Args, color::ColorMethod, input::Input, EditTarget, FindDialog, InteractMode, Region,
+    args::Args, color::ColorMethod, input::Input, msg_warn, EditTarget, FindDialog, InteractMode,
+    Region,
 };
 
 /// The hexerator application state
@@ -62,7 +63,7 @@ pub struct App {
     #[opaque]
     pub args: Args,
     #[opaque]
-    file: File,
+    file: Option<File>,
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
@@ -93,12 +94,19 @@ pub struct View {
 
 impl App {
     pub fn new(args: Args) -> anyhow::Result<Self> {
-        let mut file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .open(&args.file)
-            .context("Failed to open file")?;
-        let data = read_contents(&args, &mut file)?;
+        let data;
+        let opt_file;
+        match &args.file {
+            Some(file_arg) => {
+                let mut file = open_file(file_arg)?;
+                data = read_contents(&args, &mut file)?;
+                opt_file = Some(file);
+            }
+            None => {
+                data = Vec::new();
+                opt_file = None;
+            }
+        }
         let top_gap = 46;
         let cursor = 0;
         let mut this = Self {
@@ -147,7 +155,7 @@ impl App {
             center_offset_input: String::new(),
             seek_byte_offset_input: String::new(),
             args,
-            file,
+            file: opt_file,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -156,13 +164,19 @@ impl App {
         Ok(this)
     }
     pub fn reload(&mut self) -> anyhow::Result<()> {
-        self.data = read_contents(&self.args, &mut self.file)?;
-        self.dirty_region = None;
+        match &mut self.file {
+            Some(file) => {
+                self.data = read_contents(&self.args, file)?;
+                self.dirty_region = None;
+            }
+            None => msg_warn("No file to reload"),
+        }
         Ok(())
     }
     pub fn save(&mut self) -> anyhow::Result<()> {
+        let file = self.file.as_mut().context("No file to save")?;
         let offset = self.args.hard_seek.unwrap_or(0);
-        self.file.seek(SeekFrom::Start(offset))?;
+        file.seek(SeekFrom::Start(offset))?;
         let data_to_write = match self.dirty_region {
             Some(region) => {
                 eprintln!(
@@ -172,7 +186,7 @@ impl App {
                     // TODO: See below, same +1 stuff
                     (region.end - region.begin) + 1,
                 );
-                self.file.seek(SeekFrom::Current(region.begin as _))?;
+                file.seek(SeekFrom::Current(region.begin as _))?;
                 // TODO: We're assuming here that end of the region is the same position as the last dirty byte
                 // Make sure to enforce this invariant.
                 // Add 1 to the end to write the dirty region even if it's 1 byte
@@ -180,7 +194,7 @@ impl App {
             }
             None => &self.data,
         };
-        self.file.write_all(data_to_write)?;
+        file.write_all(data_to_write)?;
         self.dirty_region = None;
         Ok(())
     }
@@ -215,8 +229,11 @@ impl App {
         self.view_y = (row as i64 * self.row_height as i64) - 200;
     }
 
-    pub(crate) fn backup_path(&self) -> PathBuf {
-        self.args.file.join(".hexerator_bak")
+    pub(crate) fn backup_path(&self) -> Option<PathBuf> {
+        self.args
+            .file
+            .as_ref()
+            .map(|file| file.join(".hexerator_bak"))
     }
 
     pub(crate) fn widen_dirty_region(&mut self, begin: usize, end: Option<usize>) {
@@ -271,6 +288,28 @@ impl App {
         self.view_x = (col * self.col_width as usize) as i64;
         self.view_y = ((row * self.row_height as usize) as i64) - self.top_gap;
     }
+
+    pub(crate) fn load_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
+        let mut file = open_file(&path)?;
+        self.data = read_contents(&self.args, &mut file)?;
+        self.args.file = Some(path);
+        Ok(())
+    }
+
+    pub fn close_file(&mut self) {
+        // We potentially had large data, free it instead of clearing the Vec
+        self.data = Vec::new();
+        self.args.file = None;
+        self.file = None;
+    }
+}
+
+fn open_file(path: &Path) -> Result<File, anyhow::Error> {
+    OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(path)
+        .context("Failed to open file")
 }
 
 fn read_contents(args: &Args, file: &mut File) -> anyhow::Result<Vec<u8>> {

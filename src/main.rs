@@ -1,4 +1,4 @@
-#![feature(let_chains, lint_reasons)]
+#![feature(let_chains, lint_reasons, label_break_value)]
 
 mod app;
 mod args;
@@ -29,6 +29,14 @@ fn msg_if_fail(result: anyhow::Result<()>, prefix: &str) {
             .set_description(&format!("{}: {}", prefix, e))
             .show();
     }
+}
+
+fn msg_warn(msg: &str) {
+    rfd::MessageDialog::new()
+        .set_level(rfd::MessageLevel::Warning)
+        .set_title("Warning")
+        .set_description(msg)
+        .show();
 }
 
 #[derive(PartialEq, Eq, Debug, Inspect)]
@@ -117,6 +125,9 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font
 }
 
 fn update(app: &mut App) {
+    if app.data.is_empty() {
+        return;
+    }
     if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
         let spd = if app.input.key_down(Key::LShift) {
             app.scroll_speed * 4

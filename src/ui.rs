@@ -5,7 +5,9 @@ use egui_sfml::{
 };
 use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
 
-use crate::{app::App, color::ColorMethod, msg_if_fail, slice_ext::SliceExt, InteractMode, Region};
+use crate::{
+    app::App, color::ColorMethod, msg_if_fail, msg_warn, slice_ext::SliceExt, InteractMode, Region,
+};
 
 #[expect(
     clippy::significant_drop_in_scrutinee,
@@ -96,6 +98,13 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
             ui.horizontal(|ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("Open").clicked() {
+                        if let Some(file) = rfd::FileDialog::new().pick_file() {
+                            msg_if_fail(app.load_file(file), "Failed to load file");
+                        }
+                        ui.close_menu();
+                    }
+                    if ui.button("Close").clicked() {
+                        app.close_file();
                         ui.close_menu();
                     }
                 });
@@ -119,8 +128,9 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                         }
                     });
                 });
-                ui.with_layout(Layout::right_to_left(), |ui| {
-                    ui.label(app.args.file.canonicalize().unwrap().display().to_string());
+                ui.with_layout(Layout::right_to_left(), |ui| match &app.args.file {
+                    Some(file) => ui.label(file.canonicalize().unwrap().display().to_string()),
+                    None => ui.label("No file loaded"),
                 });
             });
             ui.horizontal(|ui| {
@@ -247,7 +257,10 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                             }
                         }
                     }
-                    InteractMode::Edit => {
+                    InteractMode::Edit => 'edit: {
+                        if app.data.is_empty() {
+                            break 'edit;
+                        }
                         ui.label(format!("app.cursor: {}", app.cursor));
                         ui.separator();
                         ui.label("u8");
@@ -283,11 +296,21 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     }
                     ui.separator();
                     if ui.button("Restore").clicked() {
-                        std::fs::copy(&app.backup_path(), &app.args.file).unwrap();
-                        msg_if_fail(app.reload(), "Failed to reload");
+                        match &app.args.file {
+                            Some(file) => {
+                                std::fs::copy(&app.backup_path().unwrap(), file).unwrap();
+                                msg_if_fail(app.reload(), "Failed to reload");
+                            }
+                            None => msg_warn("No file to reload"),
+                        }
                     }
                     if ui.button("Backup").clicked() {
-                        std::fs::copy(&app.args.file, &app.backup_path()).unwrap();
+                        match &app.args.file {
+                            Some(file) => {
+                                std::fs::copy(file, &app.backup_path().unwrap()).unwrap();
+                            }
+                            None => msg_warn("No file to backup"),
+                        };
                     }
                 })
             })
