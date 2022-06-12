@@ -57,6 +57,7 @@ pub struct App {
     pub select_begin: Option<usize>,
     pub fill_text: String,
     pub center_offset_input: String,
+    pub seek_byte_offset_input: String,
     #[opaque]
     pub args: Args,
     #[opaque]
@@ -97,7 +98,7 @@ impl App {
             .open(&args.file)
             .unwrap();
         let data = read_contents(&args, &mut file);
-        let top_gap = 30;
+        let top_gap = 46;
         let cursor = 0;
         let mut this = Self {
             font_size: 14,
@@ -143,6 +144,7 @@ impl App {
             select_begin: None,
             fill_text: String::new(),
             center_offset_input: String::new(),
+            seek_byte_offset_input: String::new(),
             args,
             file,
         };
@@ -241,6 +243,32 @@ impl App {
                 })
             }
         }
+    }
+
+    pub(crate) fn dec_cols(&mut self) {
+        let prev_offset = self.view_byte_offset();
+        self.view.cols -= 1;
+        self.set_view_to_byte_offset(prev_offset);
+    }
+    pub(crate) fn inc_cols(&mut self) {
+        let prev_offset = self.view_byte_offset();
+        self.view.cols += 1;
+        self.set_view_to_byte_offset(prev_offset);
+    }
+    /// Calculate the approximate byte offset where the view starts showing from
+    pub fn view_byte_offset(&self) -> usize {
+        let view_y = self.view_y + self.top_gap;
+        let row_offset: usize = (view_y / self.row_height as i64).try_into().unwrap_or(0);
+        let col_offset: usize = (self.view_x / self.col_width as i64)
+            .try_into()
+            .unwrap_or(0);
+        row_offset * self.view.cols + col_offset
+    }
+
+    pub fn set_view_to_byte_offset(&mut self, offset: usize) {
+        let (row, col) = self.view.offset_row_col(offset);
+        self.view_x = (col * self.col_width as usize) as i64;
+        self.view_y = ((row * self.row_height as usize) as i64) - self.top_gap;
     }
 }
 

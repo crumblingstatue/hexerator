@@ -196,7 +196,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                             app.view_x /= 2;
                             app.view.cols /= 2;
                         } else {
-                            app.view.cols -= 1;
+                            app.dec_cols();
                         }
                     }
                 }
@@ -208,7 +208,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                             app.view_y /= 2;
                             app.view.cols *= 2;
                         } else {
-                            app.view.cols += 1;
+                            app.inc_cols();
                         }
                     }
                 }

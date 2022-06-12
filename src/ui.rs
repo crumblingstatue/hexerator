@@ -109,6 +109,15 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                         app.center_view_on_offset(app.cursor);
                         ui.close_menu();
                     }
+                    ui.horizontal(|ui| {
+                        ui.label("Seek to byte offset");
+                        let re = ui.text_edit_singleline(&mut app.seek_byte_offset_input);
+                        if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
+                            app.set_view_to_byte_offset(
+                                app.seek_byte_offset_input.parse().unwrap_or(0),
+                            );
+                        }
+                    });
                 });
                 ui.with_layout(Layout::right_to_left(), |ui| {
                     ui.label(app.args.file.canonicalize().unwrap().display().to_string());
@@ -227,6 +236,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     InteractMode::View => {
                         ui.label(format!("offset: {}", app.view.start_offset));
                         ui.label(format!("columns: {}", app.view.cols));
+                        ui.label(format!("view byte offset: {}", app.view_byte_offset()));
                         let re = ui.add(
                             TextEdit::singleline(&mut app.center_offset_input)
                                 .hint_text("Center view on offset"),
