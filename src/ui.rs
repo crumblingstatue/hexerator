@@ -7,9 +7,7 @@ use egui_sfml::{
 };
 use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
 
-use crate::{
-    app::App, color::ColorMethod, msg_if_fail, msg_warn, slice_ext::SliceExt, InteractMode, Region,
-};
+use crate::{app::App, color::ColorMethod, msg_if_fail, slice_ext::SliceExt, InteractMode, Region};
 
 #[expect(
     clippy::significant_drop_in_scrutinee,
@@ -306,21 +304,10 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     }
                     ui.separator();
                     if ui.button("Restore").clicked() {
-                        match &app.args.file {
-                            Some(file) => {
-                                std::fs::copy(&app.backup_path().unwrap(), file).unwrap();
-                                msg_if_fail(app.reload(), "Failed to reload");
-                            }
-                            None => msg_warn("No file to reload"),
-                        }
+                        msg_if_fail(app.restore_backup(), "Failed to restore backup");
                     }
                     if ui.button("Backup").clicked() {
-                        match &app.args.file {
-                            Some(file) => {
-                                std::fs::copy(file, &app.backup_path().unwrap()).unwrap();
-                            }
-                            None => msg_warn("No file to backup"),
-                        };
+                        msg_if_fail(app.create_backup(), "Failed to create backup");
                     }
                 })
             })

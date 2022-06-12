@@ -1,4 +1,5 @@
 use std::{
+    ffi::OsString,
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
@@ -234,10 +235,11 @@ impl App {
     }
 
     pub(crate) fn backup_path(&self) -> Option<PathBuf> {
-        self.args
-            .file
-            .as_ref()
-            .map(|file| file.join(".hexerator_bak"))
+        self.args.file.as_ref().map(|file| {
+            let mut os_string = OsString::from(file);
+            os_string.push(".hexerator_bak");
+            os_string.into()
+        })
     }
 
     pub(crate) fn widen_dirty_region(&mut self, begin: usize, end: Option<usize>) {
@@ -314,6 +316,22 @@ impl App {
         self.data = Vec::new();
         self.args.file = None;
         self.file = None;
+    }
+
+    pub(crate) fn restore_backup(&mut self) -> Result<(), anyhow::Error> {
+        std::fs::copy(
+            &self.backup_path().context("Failed to get backup path")?,
+            self.args.file.as_ref().context("No file open")?,
+        )?;
+        self.reload()
+    }
+
+    pub(crate) fn create_backup(&self) -> Result<(), anyhow::Error> {
+        std::fs::copy(
+            self.args.file.as_ref().context("No file open")?,
+            &self.backup_path().context("Failed to get backup path")?,
+        )?;
+        Ok(())
     }
 }
 
