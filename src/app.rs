@@ -70,6 +70,8 @@ pub struct App {
     pub col_change_lock_y: bool,
     #[opaque]
     flash_cursor_timer: Timer,
+    pub window_height: u32,
+    bottom_gap: i64,
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
@@ -99,7 +101,7 @@ pub struct View {
 }
 
 impl App {
-    pub fn new(args: Args) -> anyhow::Result<Self> {
+    pub fn new(args: Args, window_height: u32) -> anyhow::Result<Self> {
         let data;
         let opt_file;
         match &args.file {
@@ -165,6 +167,8 @@ impl App {
             col_change_lock_x: false,
             col_change_lock_y: true,
             flash_cursor_timer: Timer::default(),
+            window_height,
+            bottom_gap: 25,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -372,6 +376,16 @@ impl App {
         } else {
             Some(elapsed.as_millis() as u32)
         }
+    }
+
+    pub(crate) fn data_height(&self) -> i64 {
+        let len = self.data.len();
+        let rows = len as i64 / self.view.cols as i64;
+        rows * self.row_height as i64
+    }
+
+    pub(crate) fn view_area(&self) -> i64 {
+        self.window_height as i64 - self.top_gap - self.bottom_gap
     }
 }
 

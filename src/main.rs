@@ -98,7 +98,7 @@ fn main() -> anyhow::Result<()> {
     window.set_position(Vector2::new(0, 0));
     let mut sf_egui = SfEgui::new(&window);
     let font = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
-    let mut app = App::new(args)?;
+    let mut app = App::new(args, window.size().y)?;
 
     while window.is_open() {
         do_frame(&mut app, &mut sf_egui, &mut window, &font);
@@ -311,7 +311,14 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
             }
         },
         Key::PageDown => match app.interact_mode {
-            InteractMode::View => app.view_y += 1040,
+            InteractMode::View => {
+                let view_area = app.view_area();
+                app.view_y += view_area;
+                let data_h = app.data_height();
+                if app.view_y + view_area > data_h {
+                    app.view_y = data_h - view_area;
+                }
+            }
             InteractMode::Edit => {
                 let amount = app.view.rows * app.view.cols;
                 if app.view.start_offset + amount < app.data.len() {
