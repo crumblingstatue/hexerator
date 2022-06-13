@@ -259,18 +259,24 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                         ui.add(DragValue::new(&mut app.view.start_offset));
                         ui.label("columns");
                         ui.add(DragValue::new(&mut app.view.cols));
-                        let offsets = app.view_offsets();
-                        ui.label(format!(
-                            "view offset: row {} col {} byte {}",
-                            offsets.row, offsets.col, offsets.byte
-                        ));
-                        let re = ui.add(
-                            TextEdit::singleline(&mut app.center_offset_input)
-                                .hint_text("Center view on offset"),
-                        );
-                        if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
-                            if let Ok(offset) = app.center_offset_input.parse() {
-                                app.center_view_on_offset(offset);
+                        let data_len = app.data.len();
+                        if data_len != 0 {
+                            let offsets = app.view_offsets();
+                            ui.label(format!(
+                                "view offset: row {} col {} byte {} ({:.2}%)",
+                                offsets.row,
+                                offsets.col,
+                                offsets.byte,
+                                (offsets.byte as f64 / data_len as f64) * 100.0
+                            ));
+                            let re = ui.add(
+                                TextEdit::singleline(&mut app.center_offset_input)
+                                    .hint_text("Center view on offset"),
+                            );
+                            if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
+                                if let Ok(offset) = app.center_offset_input.parse() {
+                                    app.center_view_on_offset(offset);
+                                }
                             }
                         }
                     }
