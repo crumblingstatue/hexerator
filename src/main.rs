@@ -262,7 +262,10 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                     }
                 },
                 Key::Home => match app.interact_mode {
-                    InteractMode::View => app.view_y = -app.top_gap,
+                    InteractMode::View => {
+                        app.view_x = -10;
+                        app.view_y = -app.top_gap - 10;
+                    }
                     InteractMode::Edit => {
                         app.view.start_offset = 0;
                         app.cursor = 0;
