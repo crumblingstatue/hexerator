@@ -273,9 +273,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                 },
                 Key::End => match app.interact_mode {
                     InteractMode::View => {
-                        let data_pix_size =
-                            (app.data.len() / app.view.cols) as i64 * i64::from(app.row_height);
-                        app.view_y = data_pix_size - 1040;
+                        app.center_view_on_offset(app.data.len());
                     }
                     InteractMode::Edit => {
                         let pos = app.data.len() - app.view.rows * app.view.cols;
