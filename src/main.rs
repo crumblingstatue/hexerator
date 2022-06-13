@@ -273,7 +273,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                 },
                 Key::End => match app.interact_mode {
                     InteractMode::View => {
-                        app.center_view_on_offset(app.data.len());
+                        app.center_view_on_offset(app.data.len() - 1);
                     }
                     InteractMode::Edit => {
                         let pos = app.data.len() - app.view.rows * app.view.cols;
