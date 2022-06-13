@@ -186,124 +186,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             Event::Closed => window.close(),
             Event::KeyPressed {
                 code, shift, ctrl, ..
-            } => match code {
-                Key::Up => match app.interact_mode {
-                    InteractMode::View => {
-                        if ctrl {
-                            app.view.start_offset = app.view.start_offset.saturating_sub(1);
-                        }
-                    }
-                    InteractMode::Edit => {
-                        app.cursor = app.cursor.saturating_sub(app.view.cols);
-                    }
-                },
-                Key::Down => match app.interact_mode {
-                    InteractMode::View => {
-                        if ctrl {
-                            app.view.start_offset += 1;
-                        }
-                    }
-                    InteractMode::Edit => {
-                        if app.cursor + app.view.cols < app.data.len() {
-                            app.cursor += app.view.cols;
-                        }
-                    }
-                },
-                Key::Left => {
-                    if app.interact_mode == InteractMode::Edit {
-                        app.cursor = app.cursor.saturating_sub(1)
-                    } else if ctrl {
-                        if shift {
-                            app.halve_cols();
-                        } else {
-                            app.dec_cols();
-                        }
-                    }
-                }
-                Key::Right => {
-                    if app.interact_mode == InteractMode::Edit && app.cursor + 1 < app.data.len() {
-                        app.cursor += 1;
-                    } else if ctrl {
-                        if shift {
-                            app.double_cols();
-                        } else {
-                            app.inc_cols();
-                        }
-                    }
-                }
-                Key::PageUp => match app.interact_mode {
-                    InteractMode::View => {
-                        app.view_y -= 1040;
-                    }
-                    InteractMode::Edit => {
-                        let amount = app.view.rows * app.view.cols;
-                        if app.view.start_offset >= amount {
-                            app.view.start_offset -= amount;
-                            if app.interact_mode == InteractMode::Edit {
-                                app.cursor = app.cursor.saturating_sub(amount);
-                            }
-                        } else {
-                            app.view.start_offset = 0
-                        }
-                    }
-                },
-                Key::PageDown => match app.interact_mode {
-                    InteractMode::View => app.view_y += 1040,
-                    InteractMode::Edit => {
-                        let amount = app.view.rows * app.view.cols;
-                        if app.view.start_offset + amount < app.data.len() {
-                            app.view.start_offset += amount;
-                            if app.interact_mode == InteractMode::Edit
-                                && app.cursor + amount < app.data.len()
-                            {
-                                app.cursor += amount;
-                            }
-                        }
-                    }
-                },
-                Key::Home => match app.interact_mode {
-                    InteractMode::View => {
-                        app.view_x = -10;
-                        app.view_y = -app.top_gap - 10;
-                    }
-                    InteractMode::Edit => {
-                        app.view.start_offset = 0;
-                        app.cursor = 0;
-                    }
-                },
-                Key::End => match app.interact_mode {
-                    InteractMode::View => {
-                        app.center_view_on_offset(app.data.len() - 1);
-                    }
-                    InteractMode::Edit => {
-                        let pos = app.data.len() - app.view.rows * app.view.cols;
-                        app.view.start_offset = pos;
-                        if app.interact_mode == InteractMode::Edit {
-                            app.cursor = pos;
-                        }
-                    }
-                },
-                Key::Tab if shift => {
-                    app.edit_target.switch();
-                    app.hex_edit_half_digit = None;
-                }
-                Key::F1 => app.interact_mode = InteractMode::View,
-                Key::F2 => app.interact_mode = InteractMode::Edit,
-                Key::F12 => app.toggle_debug(),
-                Key::Escape => {
-                    app.hex_edit_half_digit = None;
-                }
-                Key::F if ctrl => {
-                    app.find_dialog.open ^= true;
-                }
-                Key::S if ctrl => {
-                    msg_if_fail(app.save(), "Failed to save");
-                }
-                Key::R if ctrl => {
-                    msg_if_fail(app.reload(), "Failed to reload");
-                }
-                _ => {}
-            },
+            } => handle_key_events(code, app, ctrl, shift),
             Event::TextEntered { unicode } => match app.interact_mode {
                 InteractMode::Edit => match app.edit_target {
                     EditTarget::Hex => {
@@ -359,5 +242,129 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             }
             _ => {}
         }
+    }
+}
+
+fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
+    if app.data.is_empty() {
+        return;
+    }
+    match code {
+        Key::Up => match app.interact_mode {
+            InteractMode::View => {
+                if ctrl {
+                    app.view.start_offset = app.view.start_offset.saturating_sub(1);
+                }
+            }
+            InteractMode::Edit => {
+                app.cursor = app.cursor.saturating_sub(app.view.cols);
+            }
+        },
+        Key::Down => match app.interact_mode {
+            InteractMode::View => {
+                if ctrl {
+                    app.view.start_offset += 1;
+                }
+            }
+            InteractMode::Edit => {
+                if app.cursor + app.view.cols < app.data.len() {
+                    app.cursor += app.view.cols;
+                }
+            }
+        },
+        Key::Left => {
+            if app.interact_mode == InteractMode::Edit {
+                app.cursor = app.cursor.saturating_sub(1)
+            } else if ctrl {
+                if shift {
+                    app.halve_cols();
+                } else {
+                    app.dec_cols();
+                }
+            }
+        }
+        Key::Right => {
+            if app.interact_mode == InteractMode::Edit && app.cursor + 1 < app.data.len() {
+                app.cursor += 1;
+            } else if ctrl {
+                if shift {
+                    app.double_cols();
+                } else {
+                    app.inc_cols();
+                }
+            }
+        }
+        Key::PageUp => match app.interact_mode {
+            InteractMode::View => {
+                app.view_y -= 1040;
+            }
+            InteractMode::Edit => {
+                let amount = app.view.rows * app.view.cols;
+                if app.view.start_offset >= amount {
+                    app.view.start_offset -= amount;
+                    if app.interact_mode == InteractMode::Edit {
+                        app.cursor = app.cursor.saturating_sub(amount);
+                    }
+                } else {
+                    app.view.start_offset = 0
+                }
+            }
+        },
+        Key::PageDown => match app.interact_mode {
+            InteractMode::View => app.view_y += 1040,
+            InteractMode::Edit => {
+                let amount = app.view.rows * app.view.cols;
+                if app.view.start_offset + amount < app.data.len() {
+                    app.view.start_offset += amount;
+                    if app.interact_mode == InteractMode::Edit
+                        && app.cursor + amount < app.data.len()
+                    {
+                        app.cursor += amount;
+                    }
+                }
+            }
+        },
+        Key::Home => match app.interact_mode {
+            InteractMode::View => {
+                app.view_x = -10;
+                app.view_y = -app.top_gap - 10;
+            }
+            InteractMode::Edit => {
+                app.view.start_offset = 0;
+                app.cursor = 0;
+            }
+        },
+        Key::End => match app.interact_mode {
+            InteractMode::View => {
+                app.center_view_on_offset(app.data.len() - 1);
+            }
+            InteractMode::Edit => {
+                let pos = app.data.len() - app.view.rows * app.view.cols;
+                app.view.start_offset = pos;
+                if app.interact_mode == InteractMode::Edit {
+                    app.cursor = pos;
+                }
+            }
+        },
+        Key::Tab if shift => {
+            app.edit_target.switch();
+            app.hex_edit_half_digit = None;
+        }
+        Key::F1 => app.interact_mode = InteractMode::View,
+        Key::F2 => app.interact_mode = InteractMode::Edit,
+        Key::F12 => app.toggle_debug(),
+        Key::Escape => {
+            app.hex_edit_half_digit = None;
+        }
+        Key::F if ctrl => {
+            app.find_dialog.open ^= true;
+        }
+        Key::S if ctrl => {
+            msg_if_fail(app.save(), "Failed to save");
+        }
+        Key::R if ctrl => {
+            msg_if_fail(app.reload(), "Failed to reload");
+        }
+        _ => {}
     }
 }
