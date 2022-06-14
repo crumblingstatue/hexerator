@@ -367,7 +367,11 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
             app.find_dialog.open ^= true;
         }
         Key::S if ctrl => {
-            msg_if_fail(app.save(), "Failed to save");
+            if app.args.read_only {
+                msg_warn("File opened as read-only");
+            } else {
+                msg_if_fail(app.save(), "Failed to save");
+            }
         }
         Key::R if ctrl => {
             msg_if_fail(app.reload(), "Failed to reload");

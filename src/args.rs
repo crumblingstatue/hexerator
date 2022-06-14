@@ -15,4 +15,7 @@ pub struct Args {
     /// Read only this many bytes
     #[clap(long)]
     pub take: Option<u64>,
+    /// Open file as read-only, without writing privileges
+    #[clap(long)]
+    pub read_only: bool,
 }

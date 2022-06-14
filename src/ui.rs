@@ -315,7 +315,10 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                         msg_if_fail(app.reload(), "Failed to reload");
                     }
                     if ui
-                        .add_enabled(app.dirty_region.is_some(), Button::new("Save (ctrl+S)"))
+                        .add_enabled(
+                            !app.args.read_only && app.dirty_region.is_some(),
+                            Button::new("Save (ctrl+S)"),
+                        )
                         .clicked()
                     {
                         msg_if_fail(app.save(), "Failed to save");

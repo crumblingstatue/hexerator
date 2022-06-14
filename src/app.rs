@@ -106,7 +106,7 @@ impl App {
         let opt_file;
         match &args.file {
             Some(file_arg) => {
-                let mut file = open_file(file_arg)?;
+                let mut file = open_file(file_arg, args.read_only)?;
                 data = read_contents(&args, &mut file)?;
                 opt_file = Some(file);
             }
@@ -330,7 +330,7 @@ impl App {
     }
 
     pub(crate) fn load_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
-        let mut file = open_file(&path)?;
+        let mut file = open_file(&path, self.args.read_only)?;
         self.data = read_contents(&self.args, &mut file)?;
         self.file = Some(file);
         self.args.file = Some(path);
@@ -416,10 +416,10 @@ pub struct ViewOffsets {
     pub byte: usize,
 }
 
-fn open_file(path: &Path) -> Result<File, anyhow::Error> {
+fn open_file(path: &Path, read_only: bool) -> Result<File, anyhow::Error> {
     OpenOptions::new()
         .read(true)
-        .write(true)
+        .write(!read_only)
         .open(path)
         .context("Failed to open file")
 }
