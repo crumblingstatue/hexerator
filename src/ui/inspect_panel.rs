@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, str::FromStr};
 
 use egui_sfml::egui::{self, Ui};
 use sfml::system::Vector2i;
@@ -6,7 +6,9 @@ use sfml::system::Vector2i;
 use crate::{app::App, damage_region::DamageRegion, InteractMode};
 
 pub struct InspectPanel {
-    input_thingies: [Box<dyn InputThingyTrait>; 3],
+    input_thingies: [Box<dyn InputThingyTrait>; 9],
+    /// True if an input thingy was changed by the user. Should update the others
+    changed_one: bool,
 }
 
 impl std::fmt::Debug for InspectPanel {
@@ -19,10 +21,17 @@ impl Default for InspectPanel {
     fn default() -> Self {
         Self {
             input_thingies: [
+                Box::new(InputThingy::<i8>::default()),
                 Box::new(InputThingy::<u8>::default()),
+                Box::new(InputThingy::<i16>::default()),
                 Box::new(InputThingy::<u16>::default()),
+                Box::new(InputThingy::<i32>::default()),
+                Box::new(InputThingy::<u32>::default()),
+                Box::new(InputThingy::<i64>::default()),
+                Box::new(InputThingy::<u64>::default()),
                 Box::new(InputThingy::<Ascii>::default()),
             ],
+            changed_one: false,
         }
     }
 }
@@ -51,50 +60,104 @@ impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
     }
 }
 
-impl BytesManip for u8 {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize) {
-        if let Some(byte) = data.get(offset) {
-            *buf = byte.to_string();
-        }
-    }
+trait NumBytesManip: std::fmt::Display + FromStr {
+    type ToBytes: AsRef<[u8]>;
+    fn label() -> &'static str;
+    fn from_bytes(bytes: &[u8]) -> Self;
+    fn to_bytes(&self) -> Self::ToBytes;
+}
+
+impl NumBytesManip for u8 {
+    type ToBytes = [u8; 1];
 
     fn label() -> &'static str {
         "u8"
     }
 
-    fn convert_and_write(buf: &str, data: &mut [u8], offset: usize) -> Option<DamageRegion> {
-        match buf.parse() {
-            Ok(num) => {
-                data[offset] = num;
-                Some(DamageRegion::Single(offset))
-            }
-            Err(_) => None,
-        }
+    fn from_bytes(bytes: &[u8]) -> Self {
+        bytes.first().cloned().unwrap_or_default()
+    }
+
+    fn to_bytes(&self) -> Self::ToBytes {
+        [*self]
     }
 }
-impl BytesManip for u16 {
+
+impl NumBytesManip for i8 {
+    type ToBytes = [u8; 1];
+
+    fn label() -> &'static str {
+        "i8"
+    }
+
+    fn from_bytes(bytes: &[u8]) -> Self {
+        bytes.first().cloned().unwrap_or_default() as i8
+    }
+
+    fn to_bytes(&self) -> Self::ToBytes {
+        [*self as u8]
+    }
+}
+
+macro_rules! num_bytes_manip_impl {
+    ($t:ty) => {
+        impl NumBytesManip for $t {
+            type ToBytes = [u8; <$t>::BITS as usize / 8];
+
+            fn label() -> &'static str {
+                stringify!($t)
+            }
+
+            fn from_bytes(bytes: &[u8]) -> Self {
+                match bytes.get(..<$t>::BITS as usize / 8) {
+                    Some(slice) => Self::from_le_bytes(slice.try_into().unwrap()),
+                    None => Self::default(),
+                }
+            }
+
+            fn to_bytes(&self) -> Self::ToBytes {
+                self.to_le_bytes()
+            }
+        }
+    };
+}
+
+num_bytes_manip_impl!(i16);
+num_bytes_manip_impl!(u16);
+num_bytes_manip_impl!(i32);
+num_bytes_manip_impl!(u32);
+num_bytes_manip_impl!(i64);
+num_bytes_manip_impl!(u64);
+
+impl<T: NumBytesManip> BytesManip for T {
     fn update_buf(buf: &mut String, data: &[u8], offset: usize) {
-        if let Some(slice) = data.get(offset..offset + 2) {
-            let u16 = u16::from_le_bytes(slice.try_into().unwrap());
-            *buf = u16.to_string();
+        if let Some(slice) = &data.get(offset..) {
+            *buf = T::from_bytes(slice).to_string();
         }
     }
 
     fn label() -> &'static str {
-        "u16"
+        <Self as NumBytesManip>::label()
     }
 
     fn convert_and_write(buf: &str, data: &mut [u8], offset: usize) -> Option<DamageRegion> {
-        match buf.parse::<u16>() {
-            Ok(num) => {
-                let range = offset..offset + 2;
-                data[range.clone()].copy_from_slice(&num.to_le_bytes());
-                Some(DamageRegion::Range(range))
+        match buf.parse::<Self>() {
+            Ok(this) => {
+                let bytes = this.to_bytes();
+                let range = offset..offset + bytes.as_ref().len();
+                match data.get_mut(range.clone()) {
+                    Some(slice) => {
+                        slice.copy_from_slice(bytes.as_ref());
+                        Some(DamageRegion::Range(range))
+                    }
+                    None => None,
+                }
             }
             Err(_) => None,
         }
     }
 }
+
 impl BytesManip for Ascii {
     fn update_buf(buf: &mut String, data: &[u8], offset: usize) {
         if let Some(slice) = &data.get(offset..) {
@@ -152,11 +215,13 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
     if app.data.is_empty() {
         return;
     }
-    if offset != app.prev_frame_inspect_offset || app.just_reloaded {
+    if offset != app.prev_frame_inspect_offset || app.just_reloaded || app.inspect_panel.changed_one
+    {
         for thingy in &mut app.inspect_panel.input_thingies {
             thingy.update(&app.data[..], offset);
         }
     }
+    app.inspect_panel.changed_one = false;
     let mut damages = Vec::new();
     for thingy in &mut app.inspect_panel.input_thingies {
         ui.label(thingy.label());
@@ -164,6 +229,7 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
             && ui.input().key_pressed(egui::Key::Enter)
         {
             if let Some(range) = thingy.write_data(&mut app.data, offset) {
+                app.inspect_panel.changed_one = true;
                 damages.push(range);
             }
         }
