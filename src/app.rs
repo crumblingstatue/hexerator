@@ -90,6 +90,7 @@ pub struct App {
     pub window_height: u32,
     bottom_gap: i64,
     stream_end: bool,
+    pub just_reloaded: bool,
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
@@ -198,6 +199,7 @@ impl App {
             window_height,
             bottom_gap: 25,
             stream_end: false,
+            just_reloaded: true,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -217,6 +219,7 @@ impl App {
             }
             None => bail!("No file to reload"),
         }
+        self.just_reloaded = true;
         Ok(())
     }
     pub fn save(&mut self) -> anyhow::Result<()> {

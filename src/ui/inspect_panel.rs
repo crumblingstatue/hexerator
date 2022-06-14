@@ -146,7 +146,7 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
     if app.data.is_empty() {
         return;
     }
-    if offset != app.prev_frame_inspect_offset {
+    if offset != app.prev_frame_inspect_offset || app.just_reloaded {
         for thingy in &mut app.inspect_panel.input_thingies {
             thingy.update(&app.data[..], offset);
         }

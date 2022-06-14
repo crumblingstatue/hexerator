@@ -126,6 +126,8 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font
     draw(app, window, font);
     sf_egui.draw(window, None);
     window.display();
+    // Should only be true on the frame right after reloading
+    app.just_reloaded = false;
     gamedebug_core::inc_frame();
 }
 
