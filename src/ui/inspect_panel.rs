@@ -334,11 +334,19 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
                 clipboard::set_string(&*thingy.buf_mut());
             }
             if ui.button("⬇").on_hover_text("go to offset").clicked() {
-                let offset = thingy.buf_mut().parse().unwrap();
+                let offset = if app.inspect_panel.hex {
+                    usize::from_str_radix(thingy.buf_mut(), 16).unwrap()
+                } else {
+                    thingy.buf_mut().parse().unwrap()
+                };
                 actions.push(Action::GoToOffset(offset));
             }
             if ui.button("➡").on_hover_text("jump forward").clicked() {
-                let offset = thingy.buf_mut().parse().unwrap();
+                let offset = if app.inspect_panel.hex {
+                    usize::from_str_radix(thingy.buf_mut(), 16).unwrap()
+                } else {
+                    thingy.buf_mut().parse().unwrap()
+                };
                 actions.push(Action::JumpForward(offset));
             }
         });
