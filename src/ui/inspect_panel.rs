@@ -53,7 +53,9 @@ impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
 
 impl BytesManip for u8 {
     fn update_buf(buf: &mut String, data: &[u8], offset: usize) {
-        *buf = data[offset].to_string()
+        if let Some(byte) = data.get(offset) {
+            *buf = byte.to_string();
+        }
     }
 
     fn label() -> &'static str {
@@ -72,8 +74,10 @@ impl BytesManip for u8 {
 }
 impl BytesManip for u16 {
     fn update_buf(buf: &mut String, data: &[u8], offset: usize) {
-        let u16 = u16::from_le_bytes(data[offset..offset + 2].try_into().unwrap());
-        *buf = u16.to_string();
+        if let Some(slice) = data.get(offset..offset + 2) {
+            let u16 = u16::from_le_bytes(slice.try_into().unwrap());
+            *buf = u16.to_string();
+        }
     }
 
     fn label() -> &'static str {
@@ -93,8 +97,10 @@ impl BytesManip for u16 {
 }
 impl BytesManip for Ascii {
     fn update_buf(buf: &mut String, data: &[u8], offset: usize) {
-        let valid_ascii_end = find_valid_ascii_end(&data[offset..]);
-        *buf = String::from_utf8(data[offset..offset + valid_ascii_end].to_vec()).unwrap();
+        if let Some(slice) = &data.get(offset..) {
+            let valid_ascii_end = find_valid_ascii_end(slice);
+            *buf = String::from_utf8(data[offset..offset + valid_ascii_end].to_vec()).unwrap();
+        }
     }
 
     fn label() -> &'static str {
