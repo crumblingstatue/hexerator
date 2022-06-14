@@ -9,10 +9,15 @@ use std::{
 use anyhow::{bail, Context};
 use egui_inspect::{derive::Inspect, UiExt};
 use egui_sfml::egui::{self, Ui};
+use gamedebug_core::per_msg;
 use sfml::graphics::Vertex;
 
 use crate::{
-    args::Args, color::ColorMethod, input::Input, EditTarget, FindDialog, InteractMode, Region,
+    args::Args,
+    color::ColorMethod,
+    input::Input,
+    ui::{DamageRegion, InspectPanel},
+    EditTarget, FindDialog, InteractMode, Region,
 };
 
 #[derive(Debug)]
@@ -61,7 +66,7 @@ pub struct App {
     pub invert_color: bool,
     pub bg_color: [f32; 3],
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
-    pub cursor_prev_frame: usize,
+    pub prev_frame_inspect_offset: usize,
     pub edit_target: EditTarget,
     pub row_height: u8,
     pub show_hex: bool,
@@ -69,7 +74,8 @@ pub struct App {
     pub show_block: bool,
     // The half digit when the user begins to type into a hex view
     pub hex_edit_half_digit: Option<u8>,
-    pub u8_buf: String,
+    #[opaque]
+    pub inspect_panel: InspectPanel,
     pub find_dialog: FindDialog,
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
@@ -172,7 +178,7 @@ impl App {
             invert_color: false,
             bg_color: [0.; 3],
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
-            cursor_prev_frame: cursor,
+            prev_frame_inspect_offset: cursor,
             edit_target: EditTarget::Hex,
             row_height: 16,
             show_hex: true,
@@ -180,7 +186,7 @@ impl App {
             show_block: false,
             // The half digit when the user begins to type into a hex view
             hex_edit_half_digit: None,
-            u8_buf: String::new(),
+            inspect_panel: InspectPanel::default(),
             find_dialog: FindDialog::default(),
             selection: None,
             select_begin: None,
@@ -286,16 +292,17 @@ impl App {
         })
     }
 
-    pub(crate) fn widen_dirty_region(&mut self, begin: usize, end: Option<usize>) {
+    pub(crate) fn widen_dirty_region(&mut self, damage: DamageRegion) {
         match &mut self.dirty_region {
             Some(dirty_region) => {
-                if begin < dirty_region.begin {
-                    dirty_region.begin = begin;
+                if damage.begin() < dirty_region.begin {
+                    dirty_region.begin = damage.begin();
                 }
-                if begin > dirty_region.end {
-                    dirty_region.end = begin;
+                if damage.begin() > dirty_region.end {
+                    dirty_region.end = damage.begin();
                 }
-                if let Some(end) = end {
+                let end = damage.end();
+                {
                     if end < dirty_region.begin {
                         panic!("Wait, what?");
                     }
@@ -306,8 +313,8 @@ impl App {
             }
             None => {
                 self.dirty_region = Some(Region {
-                    begin,
-                    end: end.unwrap_or(begin),
+                    begin: damage.begin(),
+                    end: damage.end(),
                 })
             }
         }
@@ -442,6 +449,24 @@ impl App {
         } else {
             self.data.extend_from_slice(&buf[..amount]);
         }
+    }
+    // Byte offset of a pixel position in the view
+    pub fn pixel_pos_byte_offset(&mut self, x: i32, y: i32) -> usize {
+        let x: i64 = self.view_x + i64::from(x);
+        let y: i64 = self.view_y + i64::from(y);
+        per_msg!("x: {}, y: {}", x, y);
+        let ascii_display_x_offset = self.ascii_display_x_offset();
+        let col_x;
+        let col_y = y / i64::from(self.row_height);
+        if x < ascii_display_x_offset {
+            col_x = x / i64::from(self.col_width);
+            per_msg!("col_x: {}, col_y: {}", col_x, col_y);
+        } else {
+            let x_rel = x - ascii_display_x_offset;
+            col_x = x_rel / i64::from(self.col_width / 2);
+        }
+        (usize::try_from(col_y).unwrap_or(0) * self.view.cols + usize::try_from(col_x).unwrap_or(0))
+            + self.view.start_offset
     }
 }
 

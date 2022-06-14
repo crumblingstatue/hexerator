@@ -14,12 +14,12 @@ use args::Args;
 use clap::Parser;
 use egui_inspect::derive::Inspect;
 use egui_sfml::{egui, SfEgui};
-use gamedebug_core::per_msg;
 use sfml::{
     graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow},
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style},
 };
+use ui::DamageRegion;
 
 fn msg_if_fail(result: anyhow::Result<()>, prefix: &str) {
     if let Err(e) = result {
@@ -115,7 +115,7 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font
     handle_events(app, window, sf_egui);
     update(app);
     app.clamp_view();
-    ui::do_egui(sf_egui, app);
+    ui::do_egui(sf_egui, app, window.mouse_position());
     let [r, g, b] = app.bg_color;
     window.clear(Color::rgb(
         (r * 255.) as u8,
@@ -126,7 +126,6 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font
     sf_egui.draw(window, None);
     window.display();
     gamedebug_core::inc_frame();
-    app.cursor_prev_frame = app.cursor;
 }
 
 fn update(app: &mut App) {
@@ -152,10 +151,6 @@ fn update(app: &mut App) {
         } else if app.input.key_down(Key::Down) {
             app.view_y += spd;
         }
-    }
-    let cursor_changed = app.cursor != app.cursor_prev_frame;
-    if cursor_changed {
-        app.u8_buf = app.data[app.cursor].to_string();
     }
 }
 
@@ -205,7 +200,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                                     Some(half) => {
                                         app.data[app.cursor] =
                                             hex_conv::merge_hex_halves(half, ascii);
-                                        app.widen_dirty_region(app.cursor, None);
+                                        app.widen_dirty_region(DamageRegion::Single(app.cursor));
                                         if app.cursor + 1 < app.data.len() {
                                             app.cursor += 1;
                                         }
@@ -219,7 +214,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                     EditTarget::Text => {
                         if unicode.is_ascii() {
                             app.data[app.cursor] = unicode as u8;
-                            app.widen_dirty_region(app.cursor, None);
+                            app.widen_dirty_region(DamageRegion::Single(app.cursor));
                             if app.cursor + 1 < app.data.len() {
                                 app.cursor += 1;
                             }
@@ -230,22 +225,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             },
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 if button == mouse::Button::Left {
-                    let x: i64 = app.view_x + i64::from(x);
-                    let y: i64 = app.view_y + i64::from(y);
-                    per_msg!("x: {}, y: {}", x, y);
-                    let ascii_display_x_offset = app.ascii_display_x_offset();
-                    let col_x;
-                    let col_y = y / i64::from(app.row_height);
-                    if x < ascii_display_x_offset {
-                        col_x = x / i64::from(app.col_width);
-                        per_msg!("col_x: {}, col_y: {}", col_x, col_y);
-                    } else {
-                        let x_rel = x - ascii_display_x_offset;
-                        col_x = x_rel / i64::from(app.col_width / 2);
-                    }
-                    let new_cursor = usize::try_from(col_y).unwrap_or(0) * app.view.cols
-                        + usize::try_from(col_x).unwrap_or(0);
-                    app.cursor = app.view.start_offset + new_cursor;
+                    app.cursor = app.pixel_pos_byte_offset(x, y);
                 }
             }
             _ => {}
