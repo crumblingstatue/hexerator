@@ -13,6 +13,7 @@ use sfml::system::Vector2i;
 use crate::{
     app::{App, Source},
     color::ColorMethod,
+    damage_region::DamageRegion,
     msg_if_fail,
     slice_ext::SliceExt,
     InteractMode, Region,
@@ -350,28 +351,4 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
         });
         egui::SidePanel::right("right_panel").show(ctx, |ui| inspect_panel_ui(ui, app, mouse_pos));
     });
-}
-
-pub enum DamageRegion {
-    Single(usize),
-    Range(std::ops::Range<usize>),
-    RangeInclusive(std::ops::RangeInclusive<usize>),
-}
-
-impl DamageRegion {
-    pub(crate) fn begin(&self) -> usize {
-        match self {
-            DamageRegion::Single(offset) => *offset,
-            DamageRegion::Range(range) => range.start,
-            DamageRegion::RangeInclusive(range) => *range.start(),
-        }
-    }
-
-    pub(crate) fn end(&self) -> usize {
-        match self {
-            DamageRegion::Single(offset) => *offset,
-            DamageRegion::Range(range) => range.end - 1,
-            DamageRegion::RangeInclusive(range) => *range.end(),
-        }
-    }
 }

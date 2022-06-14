@@ -13,11 +13,8 @@ use gamedebug_core::per_msg;
 use sfml::graphics::Vertex;
 
 use crate::{
-    args::Args,
-    color::ColorMethod,
-    input::Input,
-    ui::{inspect_panel::InspectPanel, DamageRegion},
-    EditTarget, FindDialog, InteractMode, Region,
+    args::Args, color::ColorMethod, damage_region::DamageRegion, input::Input,
+    ui::inspect_panel::InspectPanel, EditTarget, FindDialog, InteractMode, Region,
 };
 
 #[derive(Debug)]

@@ -3,6 +3,7 @@
 mod app;
 mod args;
 mod color;
+mod damage_region;
 mod hex_conv;
 mod input;
 mod slice_ext;
@@ -12,6 +13,7 @@ mod views;
 use crate::app::App;
 use args::Args;
 use clap::Parser;
+use damage_region::DamageRegion;
 use egui_inspect::derive::Inspect;
 use egui_sfml::{egui, SfEgui};
 use sfml::{
@@ -19,7 +21,6 @@ use sfml::{
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style},
 };
-use ui::DamageRegion;
 
 fn msg_if_fail(result: anyhow::Result<()>, prefix: &str) {
     if let Err(e) = result {
