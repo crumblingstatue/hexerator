@@ -71,6 +71,7 @@ pub fn ascii(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow, fo
             }
             let glyph = match byte {
                 0x00 => '∅' as u32,
+                0x20 => '␣' as u32,
                 0xFF => '■' as u32,
                 _ => byte as u32,
             };
