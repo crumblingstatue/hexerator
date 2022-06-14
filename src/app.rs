@@ -72,6 +72,7 @@ pub struct App {
     flash_cursor_timer: Timer,
     pub window_height: u32,
     bottom_gap: i64,
+    stream_end: bool,
 }
 
 fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
@@ -107,7 +108,11 @@ impl App {
         match &args.file {
             Some(file_arg) => {
                 let mut file = open_file(file_arg, args.read_only)?;
-                data = read_contents(&args, &mut file)?;
+                if !args.stream {
+                    data = read_contents(&args, &mut file)?;
+                } else {
+                    data = Vec::new();
+                }
                 opt_file = Some(file);
             }
             None => {
@@ -169,6 +174,7 @@ impl App {
             flash_cursor_timer: Timer::default(),
             window_height,
             bottom_gap: 25,
+            stream_end: false,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -386,6 +392,27 @@ impl App {
 
     pub(crate) fn view_area(&self) -> i64 {
         self.window_height as i64 - self.top_gap - self.bottom_gap
+    }
+
+    pub(crate) fn try_read_stream(&mut self) {
+        let view_byte_offset = self.view_offsets().byte;
+        let bytes_per_page = self.view.rows * self.view.cols;
+        // Don't read past what we need for our current view offset
+        if view_byte_offset + bytes_per_page < self.data.len() {
+            return;
+        }
+        if self.stream_end {
+            return;
+        }
+        let Some(file) = &mut self.file else { return };
+        let buffer_size = 1024;
+        let mut buf = vec![0; buffer_size];
+        let amount = file.read(&mut buf).unwrap();
+        if amount == 0 {
+            self.stream_end = true;
+        } else {
+            self.data.extend_from_slice(&buf[..amount]);
+        }
     }
 }
 

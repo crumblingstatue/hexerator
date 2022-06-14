@@ -139,12 +139,17 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     ui.checkbox(&mut app.col_change_lock_x, "Lock x on column change");
                     ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
                 });
-                ui.with_layout(Layout::right_to_left(), |ui| match &app.args.file {
-                    Some(file) => match file.canonicalize() {
-                        Ok(path) => ui.label(path.display().to_string()),
-                        Err(e) => ui.label(format!("path error: {}", e)),
-                    },
-                    None => ui.label("No file loaded"),
+                ui.with_layout(Layout::right_to_left(), |ui| {
+                    match &app.args.file {
+                        Some(file) => match file.canonicalize() {
+                            Ok(path) => ui.label(path.display().to_string()),
+                            Err(e) => ui.label(format!("path error: {}", e)),
+                        },
+                        None => ui.label("No file loaded"),
+                    };
+                    if app.args.stream {
+                        ui.label("[stream]");
+                    }
                 });
             });
             ui.horizontal(|ui| {

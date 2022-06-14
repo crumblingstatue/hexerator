@@ -18,4 +18,8 @@ pub struct Args {
     /// Open file as read-only, without writing privileges
     #[clap(long)]
     pub read_only: bool,
+    #[clap(long)]
+    /// Specify source as a streaming source (for example, standard streams).
+    /// Sets read-only attribute.
+    pub stream: bool,
 }

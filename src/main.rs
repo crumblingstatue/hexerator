@@ -1,4 +1,4 @@
-#![feature(let_chains, lint_reasons, label_break_value)]
+#![feature(let_chains, lint_reasons, label_break_value, let_else)]
 
 mod app;
 mod args;
@@ -87,7 +87,12 @@ pub struct Region {
 }
 
 fn main() -> anyhow::Result<()> {
-    let args = Args::parse();
+    let mut args = Args::parse();
+    // Streaming sources should be read-only.
+    // Opening them as write blocks at EOF, which we don't want.
+    if args.stream {
+        args.read_only = true;
+    }
     let mut window = RenderWindow::new(
         (1920, 1080),
         "Hexerator",
@@ -125,6 +130,9 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font
 }
 
 fn update(app: &mut App) {
+    if app.args.stream {
+        app.try_read_stream();
+    }
     if app.data.is_empty() {
         return;
     }
