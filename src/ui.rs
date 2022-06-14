@@ -330,5 +330,8 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                 })
             })
         });
+        egui::SidePanel::right("right_panel").show(ctx, |ui| {
+            ui.label("Hello world");
+        });
     });
 }
