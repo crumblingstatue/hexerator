@@ -9,6 +9,7 @@ pub struct InspectPanel {
     input_thingies: [Box<dyn InputThingyTrait>; 11],
     /// True if an input thingy was changed by the user. Should update the others
     changed_one: bool,
+    big_endian: bool,
 }
 
 impl std::fmt::Debug for InspectPanel {
@@ -34,20 +35,21 @@ impl Default for InspectPanel {
                 Box::new(InputThingy::<Ascii>::default()),
             ],
             changed_one: false,
+            big_endian: false,
         }
     }
 }
 
 trait InputThingyTrait {
-    fn update(&mut self, data: &[u8], offset: usize);
+    fn update(&mut self, data: &[u8], offset: usize, be: bool);
     fn label(&self) -> &'static str;
     fn buf_mut(&mut self) -> &mut String;
-    fn write_data(&self, data: &mut [u8], offset: usize) -> Option<DamageRegion>;
+    fn write_data(&self, data: &mut [u8], offset: usize, be: bool) -> Option<DamageRegion>;
 }
 
 impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
-    fn update(&mut self, data: &[u8], offset: usize) {
-        T::update_buf(&mut self.string, data, offset);
+    fn update(&mut self, data: &[u8], offset: usize, be: bool) {
+        T::update_buf(&mut self.string, data, offset, be);
     }
     fn label(&self) -> &'static str {
         T::label()
@@ -57,48 +59,18 @@ impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
         &mut self.string
     }
 
-    fn write_data(&self, data: &mut [u8], offset: usize) -> Option<DamageRegion> {
-        T::convert_and_write(&self.string, data, offset)
+    fn write_data(&self, data: &mut [u8], offset: usize, be: bool) -> Option<DamageRegion> {
+        T::convert_and_write(&self.string, data, offset, be)
     }
 }
 
 trait NumBytesManip: std::fmt::Display + FromStr {
     type ToBytes: AsRef<[u8]>;
     fn label() -> &'static str;
-    fn from_bytes(bytes: &[u8]) -> Self;
-    fn to_bytes(&self) -> Self::ToBytes;
-}
-
-impl NumBytesManip for u8 {
-    type ToBytes = [u8; 1];
-
-    fn label() -> &'static str {
-        "u8"
-    }
-
-    fn from_bytes(bytes: &[u8]) -> Self {
-        bytes.first().cloned().unwrap_or_default()
-    }
-
-    fn to_bytes(&self) -> Self::ToBytes {
-        [*self]
-    }
-}
-
-impl NumBytesManip for i8 {
-    type ToBytes = [u8; 1];
-
-    fn label() -> &'static str {
-        "i8"
-    }
-
-    fn from_bytes(bytes: &[u8]) -> Self {
-        bytes.first().cloned().unwrap_or_default() as i8
-    }
-
-    fn to_bytes(&self) -> Self::ToBytes {
-        [*self as u8]
-    }
+    fn from_le_bytes(bytes: &[u8]) -> Self;
+    fn from_be_bytes(bytes: &[u8]) -> Self;
+    fn to_le_bytes(&self) -> Self::ToBytes;
+    fn to_be_bytes(&self) -> Self::ToBytes;
 }
 
 macro_rules! num_bytes_manip_impl {
@@ -110,20 +82,33 @@ macro_rules! num_bytes_manip_impl {
                 stringify!($t)
             }
 
-            fn from_bytes(bytes: &[u8]) -> Self {
+            fn from_le_bytes(bytes: &[u8]) -> Self {
                 match bytes.get(..<$t>::BITS as usize / 8) {
                     Some(slice) => Self::from_le_bytes(slice.try_into().unwrap()),
                     None => Self::default(),
                 }
             }
 
-            fn to_bytes(&self) -> Self::ToBytes {
-                self.to_le_bytes()
+            fn from_be_bytes(bytes: &[u8]) -> Self {
+                match bytes.get(..<$t>::BITS as usize / 8) {
+                    Some(slice) => Self::from_be_bytes(slice.try_into().unwrap()),
+                    None => Self::default(),
+                }
+            }
+
+            fn to_le_bytes(&self) -> Self::ToBytes {
+                <$t>::to_le_bytes(*self)
+            }
+
+            fn to_be_bytes(&self) -> Self::ToBytes {
+                <$t>::to_be_bytes(*self)
             }
         }
     };
 }
 
+num_bytes_manip_impl!(i8);
+num_bytes_manip_impl!(u8);
 num_bytes_manip_impl!(i16);
 num_bytes_manip_impl!(u16);
 num_bytes_manip_impl!(i32);
@@ -138,15 +123,26 @@ impl NumBytesManip for f32 {
         "f32"
     }
 
-    fn from_bytes(bytes: &[u8]) -> Self {
+    fn from_le_bytes(bytes: &[u8]) -> Self {
         match bytes.get(..32 / 8) {
             Some(slice) => Self::from_le_bytes(slice.try_into().unwrap()),
             None => Self::default(),
         }
     }
 
-    fn to_bytes(&self) -> Self::ToBytes {
-        self.to_le_bytes()
+    fn from_be_bytes(bytes: &[u8]) -> Self {
+        match bytes.get(..32 / 8) {
+            Some(slice) => Self::from_be_bytes(slice.try_into().unwrap()),
+            None => Self::default(),
+        }
+    }
+
+    fn to_le_bytes(&self) -> Self::ToBytes {
+        f32::to_le_bytes(*self)
+    }
+
+    fn to_be_bytes(&self) -> Self::ToBytes {
+        f32::to_be_bytes(*self)
     }
 }
 
@@ -157,22 +153,37 @@ impl NumBytesManip for f64 {
         "f64"
     }
 
-    fn from_bytes(bytes: &[u8]) -> Self {
+    fn from_le_bytes(bytes: &[u8]) -> Self {
         match bytes.get(..64 / 8) {
             Some(slice) => Self::from_le_bytes(slice.try_into().unwrap()),
             None => Self::default(),
         }
     }
 
-    fn to_bytes(&self) -> Self::ToBytes {
-        self.to_le_bytes()
+    fn from_be_bytes(bytes: &[u8]) -> Self {
+        match bytes.get(..64 / 8) {
+            Some(slice) => Self::from_be_bytes(slice.try_into().unwrap()),
+            None => Self::default(),
+        }
+    }
+
+    fn to_le_bytes(&self) -> Self::ToBytes {
+        f64::to_le_bytes(*self)
+    }
+
+    fn to_be_bytes(&self) -> Self::ToBytes {
+        f64::to_le_bytes(*self)
     }
 }
 
 impl<T: NumBytesManip> BytesManip for T {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize) {
+    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool) {
         if let Some(slice) = &data.get(offset..) {
-            *buf = T::from_bytes(slice).to_string();
+            if be {
+                *buf = T::from_be_bytes(slice).to_string();
+            } else {
+                *buf = T::from_le_bytes(slice).to_string();
+            }
         }
     }
 
@@ -180,10 +191,19 @@ impl<T: NumBytesManip> BytesManip for T {
         <Self as NumBytesManip>::label()
     }
 
-    fn convert_and_write(buf: &str, data: &mut [u8], offset: usize) -> Option<DamageRegion> {
+    fn convert_and_write(
+        buf: &str,
+        data: &mut [u8],
+        offset: usize,
+        be: bool,
+    ) -> Option<DamageRegion> {
         match buf.parse::<Self>() {
             Ok(this) => {
-                let bytes = this.to_bytes();
+                let bytes = if be {
+                    this.to_be_bytes()
+                } else {
+                    this.to_le_bytes()
+                };
                 let range = offset..offset + bytes.as_ref().len();
                 match data.get_mut(range.clone()) {
                     Some(slice) => {
@@ -199,7 +219,7 @@ impl<T: NumBytesManip> BytesManip for T {
 }
 
 impl BytesManip for Ascii {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize) {
+    fn update_buf(buf: &mut String, data: &[u8], offset: usize, _be: bool) {
         if let Some(slice) = &data.get(offset..) {
             let valid_ascii_end = find_valid_ascii_end(slice);
             *buf = String::from_utf8(data[offset..offset + valid_ascii_end].to_vec()).unwrap();
@@ -210,7 +230,12 @@ impl BytesManip for Ascii {
         "ascii"
     }
 
-    fn convert_and_write(buf: &str, data: &mut [u8], offset: usize) -> Option<DamageRegion> {
+    fn convert_and_write(
+        buf: &str,
+        data: &mut [u8],
+        offset: usize,
+        _be: bool,
+    ) -> Option<DamageRegion> {
         let len = buf.len();
         let range = offset..offset + len;
         data[range.clone()].copy_from_slice(buf.as_bytes());
@@ -233,9 +258,14 @@ impl<T> Default for InputThingy<T> {
 }
 
 trait BytesManip {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize);
+    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool);
     fn label() -> &'static str;
-    fn convert_and_write(buf: &str, data: &mut [u8], offset: usize) -> Option<DamageRegion>;
+    fn convert_and_write(
+        buf: &str,
+        data: &mut [u8],
+        offset: usize,
+        be: bool,
+    ) -> Option<DamageRegion>;
 }
 
 struct Ascii;
@@ -258,7 +288,7 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
     if offset != app.prev_frame_inspect_offset || app.just_reloaded || app.inspect_panel.changed_one
     {
         for thingy in &mut app.inspect_panel.input_thingies {
-            thingy.update(&app.data[..], offset);
+            thingy.update(&app.data[..], offset, app.inspect_panel.big_endian);
         }
     }
     app.inspect_panel.changed_one = false;
@@ -268,11 +298,20 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
         if ui.text_edit_singleline(thingy.buf_mut()).lost_focus()
             && ui.input().key_pressed(egui::Key::Enter)
         {
-            if let Some(range) = thingy.write_data(&mut app.data, offset) {
+            if let Some(range) =
+                thingy.write_data(&mut app.data, offset, app.inspect_panel.big_endian)
+            {
                 app.inspect_panel.changed_one = true;
                 damages.push(range);
             }
         }
+    }
+    if ui
+        .checkbox(&mut app.inspect_panel.big_endian, "Big endian")
+        .clicked()
+    {
+        // Changing endianness should refresh everything
+        app.inspect_panel.changed_one = true;
     }
     for damage in damages {
         app.widen_dirty_region(damage);
