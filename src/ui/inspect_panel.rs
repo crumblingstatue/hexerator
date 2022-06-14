@@ -6,7 +6,7 @@ use sfml::system::Vector2i;
 use crate::{app::App, damage_region::DamageRegion, InteractMode};
 
 pub struct InspectPanel {
-    input_thingies: [Box<dyn InputThingyTrait>; 9],
+    input_thingies: [Box<dyn InputThingyTrait>; 11],
     /// True if an input thingy was changed by the user. Should update the others
     changed_one: bool,
 }
@@ -29,6 +29,8 @@ impl Default for InspectPanel {
                 Box::new(InputThingy::<u32>::default()),
                 Box::new(InputThingy::<i64>::default()),
                 Box::new(InputThingy::<u64>::default()),
+                Box::new(InputThingy::<f32>::default()),
+                Box::new(InputThingy::<f64>::default()),
                 Box::new(InputThingy::<Ascii>::default()),
             ],
             changed_one: false,
@@ -128,6 +130,44 @@ num_bytes_manip_impl!(i32);
 num_bytes_manip_impl!(u32);
 num_bytes_manip_impl!(i64);
 num_bytes_manip_impl!(u64);
+
+impl NumBytesManip for f32 {
+    type ToBytes = [u8; 32 / 8];
+
+    fn label() -> &'static str {
+        "f32"
+    }
+
+    fn from_bytes(bytes: &[u8]) -> Self {
+        match bytes.get(..32 / 8) {
+            Some(slice) => Self::from_le_bytes(slice.try_into().unwrap()),
+            None => Self::default(),
+        }
+    }
+
+    fn to_bytes(&self) -> Self::ToBytes {
+        self.to_le_bytes()
+    }
+}
+
+impl NumBytesManip for f64 {
+    type ToBytes = [u8; 64 / 8];
+
+    fn label() -> &'static str {
+        "f64"
+    }
+
+    fn from_bytes(bytes: &[u8]) -> Self {
+        match bytes.get(..64 / 8) {
+            Some(slice) => Self::from_le_bytes(slice.try_into().unwrap()),
+            None => Self::default(),
+        }
+    }
+
+    fn to_bytes(&self) -> Self::ToBytes {
+        self.to_le_bytes()
+    }
+}
 
 impl<T: NumBytesManip> BytesManip for T {
     fn update_buf(buf: &mut String, data: &[u8], offset: usize) {
