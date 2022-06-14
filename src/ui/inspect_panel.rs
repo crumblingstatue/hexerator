@@ -1,7 +1,7 @@
 use std::{marker::PhantomData, str::FromStr};
 
 use egui_sfml::egui::{self, Ui};
-use sfml::system::Vector2i;
+use sfml::{system::Vector2i, window::clipboard};
 
 use crate::{app::App, damage_region::DamageRegion, InteractMode};
 
@@ -290,15 +290,21 @@ trait BytesManip {
 
 struct Ascii;
 
+enum Action {
+    GoToOffset(usize),
+    AddDirty(DamageRegion),
+    JumpForward(usize),
+}
+
 pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
     let offset = match app.interact_mode {
         InteractMode::View => {
             let off = app.pixel_pos_byte_offset(mouse_pos.x, mouse_pos.y);
-            ui.label(format!("Pointer at {} (0x{:x})", off, off));
+            ui.label(format!("offset: {} (0x{:x})", off, off));
             off
         }
         InteractMode::Edit => {
-            ui.label(format!("Cursor at {} ({:x}h)", app.cursor, app.cursor));
+            ui.label(format!("offset: {} ({:x}h)", app.cursor, app.cursor));
             app.cursor
         }
     };
@@ -317,9 +323,22 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
         }
     }
     app.inspect_panel.changed_one = false;
-    let mut damages = Vec::new();
+    let mut actions = Vec::new();
     for thingy in &mut app.inspect_panel.input_thingies {
-        ui.label(thingy.label());
+        ui.horizontal(|ui| {
+            ui.label(thingy.label());
+            if ui.button("📋").on_hover_text("copy to clipboard").clicked() {
+                clipboard::set_string(&*thingy.buf_mut());
+            }
+            if ui.button("⬇").on_hover_text("go to offset").clicked() {
+                let offset = thingy.buf_mut().parse().unwrap();
+                actions.push(Action::GoToOffset(offset));
+            }
+            if ui.button("➡").on_hover_text("jump forward").clicked() {
+                let offset = thingy.buf_mut().parse().unwrap();
+                actions.push(Action::JumpForward(offset));
+            }
+        });
         if ui.text_edit_singleline(thingy.buf_mut()).lost_focus()
             && ui.input().key_pressed(egui::Key::Enter)
         {
@@ -327,7 +346,7 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
                 thingy.write_data(&mut app.data, offset, app.inspect_panel.big_endian)
             {
                 app.inspect_panel.changed_one = true;
-                damages.push(range);
+                actions.push(Action::AddDirty(range));
             }
         }
     }
@@ -345,8 +364,20 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
         }
     });
 
-    for damage in damages {
-        app.widen_dirty_region(damage);
+    for action in actions {
+        match action {
+            Action::GoToOffset(offset) => {
+                app.cursor = offset;
+                app.center_view_on_offset(offset);
+                app.flash_cursor();
+            }
+            Action::AddDirty(damage) => app.widen_dirty_region(damage),
+            Action::JumpForward(amount) => {
+                app.cursor += amount;
+                app.center_view_on_offset(app.cursor);
+                app.flash_cursor();
+            }
+        }
     }
     app.prev_frame_inspect_offset = offset;
 }
