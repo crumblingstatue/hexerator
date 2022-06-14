@@ -16,7 +16,7 @@ use crate::{
     args::Args,
     color::ColorMethod,
     input::Input,
-    ui::{DamageRegion, InspectPanel},
+    ui::{inspect_panel::InspectPanel, DamageRegion},
     EditTarget, FindDialog, InteractMode, Region,
 };
 
