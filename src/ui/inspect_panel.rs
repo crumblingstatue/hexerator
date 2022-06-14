@@ -10,6 +10,7 @@ pub struct InspectPanel {
     /// True if an input thingy was changed by the user. Should update the others
     changed_one: bool,
     big_endian: bool,
+    hex: bool,
 }
 
 impl std::fmt::Debug for InspectPanel {
@@ -36,20 +37,21 @@ impl Default for InspectPanel {
             ],
             changed_one: false,
             big_endian: false,
+            hex: false,
         }
     }
 }
 
 trait InputThingyTrait {
-    fn update(&mut self, data: &[u8], offset: usize, be: bool);
+    fn update(&mut self, data: &[u8], offset: usize, be: bool, hex: bool);
     fn label(&self) -> &'static str;
     fn buf_mut(&mut self) -> &mut String;
     fn write_data(&self, data: &mut [u8], offset: usize, be: bool) -> Option<DamageRegion>;
 }
 
 impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
-    fn update(&mut self, data: &[u8], offset: usize, be: bool) {
-        T::update_buf(&mut self.string, data, offset, be);
+    fn update(&mut self, data: &[u8], offset: usize, be: bool, hex: bool) {
+        T::update_buf(&mut self.string, data, offset, be, hex);
     }
     fn label(&self) -> &'static str {
         T::label()
@@ -71,6 +73,7 @@ trait NumBytesManip: std::fmt::Display + FromStr {
     fn from_be_bytes(bytes: &[u8]) -> Self;
     fn to_le_bytes(&self) -> Self::ToBytes;
     fn to_be_bytes(&self) -> Self::ToBytes;
+    fn to_hex_string(&self) -> String;
 }
 
 macro_rules! num_bytes_manip_impl {
@@ -102,6 +105,10 @@ macro_rules! num_bytes_manip_impl {
 
             fn to_be_bytes(&self) -> Self::ToBytes {
                 <$t>::to_be_bytes(*self)
+            }
+
+            fn to_hex_string(&self) -> String {
+                format!("{:x}", self)
             }
         }
     };
@@ -144,6 +151,10 @@ impl NumBytesManip for f32 {
     fn to_be_bytes(&self) -> Self::ToBytes {
         f32::to_be_bytes(*self)
     }
+
+    fn to_hex_string(&self) -> String {
+        "<no hex output>".into()
+    }
 }
 
 impl NumBytesManip for f64 {
@@ -174,15 +185,24 @@ impl NumBytesManip for f64 {
     fn to_be_bytes(&self) -> Self::ToBytes {
         f64::to_le_bytes(*self)
     }
+
+    fn to_hex_string(&self) -> String {
+        "<no hex output>".into()
+    }
 }
 
 impl<T: NumBytesManip> BytesManip for T {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool) {
+    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool, hex: bool) {
         if let Some(slice) = &data.get(offset..) {
-            if be {
-                *buf = T::from_be_bytes(slice).to_string();
+            let value = if be {
+                T::from_be_bytes(slice)
             } else {
-                *buf = T::from_le_bytes(slice).to_string();
+                T::from_le_bytes(slice)
+            };
+            if hex {
+                *buf = value.to_hex_string();
+            } else {
+                *buf = value.to_string();
             }
         }
     }
@@ -219,7 +239,7 @@ impl<T: NumBytesManip> BytesManip for T {
 }
 
 impl BytesManip for Ascii {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize, _be: bool) {
+    fn update_buf(buf: &mut String, data: &[u8], offset: usize, _be: bool, _hex: bool) {
         if let Some(slice) = &data.get(offset..) {
             let valid_ascii_end = find_valid_ascii_end(slice);
             *buf = String::from_utf8(data[offset..offset + valid_ascii_end].to_vec()).unwrap();
@@ -258,7 +278,7 @@ impl<T> Default for InputThingy<T> {
 }
 
 trait BytesManip {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool);
+    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool, hex: bool);
     fn label() -> &'static str;
     fn convert_and_write(
         buf: &str,
@@ -288,7 +308,12 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
     if offset != app.prev_frame_inspect_offset || app.just_reloaded || app.inspect_panel.changed_one
     {
         for thingy in &mut app.inspect_panel.input_thingies {
-            thingy.update(&app.data[..], offset, app.inspect_panel.big_endian);
+            thingy.update(
+                &app.data[..],
+                offset,
+                app.inspect_panel.big_endian,
+                app.inspect_panel.hex,
+            );
         }
     }
     app.inspect_panel.changed_one = false;
@@ -306,13 +331,20 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
             }
         }
     }
-    if ui
-        .checkbox(&mut app.inspect_panel.big_endian, "Big endian")
-        .clicked()
-    {
-        // Changing endianness should refresh everything
-        app.inspect_panel.changed_one = true;
-    }
+    ui.horizontal(|ui| {
+        if ui
+            .checkbox(&mut app.inspect_panel.big_endian, "Big endian")
+            .clicked()
+        {
+            // Changing this should refresh everything
+            app.inspect_panel.changed_one = true;
+        }
+        if ui.checkbox(&mut app.inspect_panel.hex, "Hex").clicked() {
+            // Changing this should refresh everything
+            app.inspect_panel.changed_one = true;
+        }
+    });
+
     for damage in damages {
         app.widen_dirty_region(damage);
     }
