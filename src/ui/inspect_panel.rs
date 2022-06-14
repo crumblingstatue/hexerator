@@ -307,8 +307,8 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
             off
         }
         InteractMode::Edit => {
-            ui.label(format!("offset: {} ({:x}h)", app.cursor, app.cursor));
-            app.cursor
+            ui.label(format!("offset: {} ({:x}h)", app.cursor(), app.cursor()));
+            app.cursor()
         }
     };
     if app.data.is_empty() {
@@ -376,17 +376,17 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
         match action {
             Action::GoToOffset(offset) => {
                 if app.inspect_panel.go_to_offset_relative {
-                    app.cursor = offset - app.args.hard_seek.unwrap_or(0) as usize;
+                    app.set_cursor(offset - app.args.hard_seek.unwrap_or(0) as usize);
                 } else {
-                    app.cursor = offset;
+                    app.set_cursor(offset);
                 }
-                app.center_view_on_offset(app.cursor);
+                app.center_view_on_offset(app.cursor());
                 app.flash_cursor();
             }
             Action::AddDirty(damage) => app.widen_dirty_region(damage),
             Action::JumpForward(amount) => {
-                app.cursor += amount;
-                app.center_view_on_offset(app.cursor);
+                app.set_cursor(app.cursor() + amount);
+                app.center_view_on_offset(app.cursor());
                 app.flash_cursor();
             }
         }

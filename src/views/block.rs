@@ -47,7 +47,7 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
             };
             if selected || (app.find_dialog.open && app.find_dialog.result_offsets.contains(&idx)) {
             }
-            if idx == app.cursor {
+            if idx == app.cursor() {
                 draw_cursor(
                     pix_x,
                     pix_y,

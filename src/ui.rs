@@ -135,7 +135,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                         ui.close_menu();
                     }
                     if ui.button("Center view on cursor").clicked() {
-                        app.center_view_on_offset(app.cursor);
+                        app.center_view_on_offset(app.cursor());
                         app.flash_cursor();
                         ui.close_menu();
                     }
@@ -185,7 +185,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                 if ui.button("set").clicked() {
                     match &mut app.selection {
                         Some(sel) => sel.begin = app.cursor,
-                        None => app.select_begin = Some(app.cursor),
+                        None => app.select_begin = Some(app.cursor()),
                     }
                 }
                 let end_text = match app.selection {
@@ -199,7 +199,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                             None => {
                                 app.selection = Some(Region {
                                     begin,
-                                    end: app.cursor,
+                                    end: app.cursor(),
                                 })
                             }
                             Some(sel) => sel.end = app.cursor,
@@ -317,7 +317,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                         if app.data.is_empty() {
                             break 'edit;
                         }
-                        ui.label(format!("cursor: {}", app.cursor));
+                        ui.label(format!("cursor: {}", app.cursor()));
                         ui.separator();
                     }
                 }

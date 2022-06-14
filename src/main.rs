@@ -191,8 +191,12 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
         match event {
             Event::Closed => window.close(),
             Event::KeyPressed {
-                code, shift, ctrl, ..
-            } => handle_key_events(code, app, ctrl, shift),
+                code,
+                shift,
+                ctrl,
+                alt,
+                ..
+            } => handle_key_events(code, app, ctrl, shift, alt),
             Event::TextEntered { unicode } => match app.interact_mode {
                 InteractMode::Edit => match app.edit_target {
                     EditTarget::Hex => {
@@ -203,9 +207,9 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                                     Some(half) => {
                                         app.data[app.cursor] =
                                             hex_conv::merge_hex_halves(half, ascii);
-                                        app.widen_dirty_region(DamageRegion::Single(app.cursor));
-                                        if app.cursor + 1 < app.data.len() {
-                                            app.cursor += 1;
+                                        app.widen_dirty_region(DamageRegion::Single(app.cursor()));
+                                        if app.cursor() + 1 < app.data.len() {
+                                            app.step_cursor_forward();
                                         }
                                         app.hex_edit_half_digit = None;
                                     }
@@ -217,9 +221,9 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                     EditTarget::Text => {
                         if unicode.is_ascii() {
                             app.data[app.cursor] = unicode as u8;
-                            app.widen_dirty_region(DamageRegion::Single(app.cursor));
-                            if app.cursor + 1 < app.data.len() {
-                                app.cursor += 1;
+                            app.widen_dirty_region(DamageRegion::Single(app.cursor()));
+                            if app.cursor() + 1 < app.data.len() {
+                                app.step_cursor_forward()
                             }
                         }
                     }
@@ -228,7 +232,8 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             },
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 if button == mouse::Button::Left {
-                    app.cursor = app.pixel_pos_byte_offset(x, y);
+                    let off = app.pixel_pos_byte_offset(x, y);
+                    app.set_cursor(off);
                 }
             }
             _ => {}
@@ -236,7 +241,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
     }
 }
 
-fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
+fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: bool) {
     if app.data.is_empty() {
         return;
     }
@@ -248,7 +253,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
                 }
             }
             InteractMode::Edit => {
-                app.cursor = app.cursor.saturating_sub(app.view.cols);
+                app.set_cursor_no_history(app.cursor().saturating_sub(app.view.cols));
             }
         },
         Key::Down => match app.interact_mode {
@@ -258,14 +263,18 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
                 }
             }
             InteractMode::Edit => {
-                if app.cursor + app.view.cols < app.data.len() {
-                    app.cursor += app.view.cols;
+                if app.cursor() + app.view.cols < app.data.len() {
+                    app.offset_cursor(app.view.cols);
                 }
             }
         },
-        Key::Left => {
+        Key::Left => 'block: {
+            if alt {
+                app.cursor_history_back();
+                break 'block;
+            }
             if app.interact_mode == InteractMode::Edit {
-                app.cursor = app.cursor.saturating_sub(1)
+                app.step_cursor_back();
             } else if ctrl {
                 if shift {
                     app.halve_cols();
@@ -274,9 +283,13 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
                 }
             }
         }
-        Key::Right => {
-            if app.interact_mode == InteractMode::Edit && app.cursor + 1 < app.data.len() {
-                app.cursor += 1;
+        Key::Right => 'block: {
+            if alt {
+                app.cursor_history_forward();
+                break 'block;
+            }
+            if app.interact_mode == InteractMode::Edit && app.cursor() + 1 < app.data.len() {
+                app.step_cursor_forward();
             } else if ctrl {
                 if shift {
                     app.double_cols();
@@ -294,7 +307,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
                 if app.view.start_offset >= amount {
                     app.view.start_offset -= amount;
                     if app.interact_mode == InteractMode::Edit {
-                        app.cursor = app.cursor.saturating_sub(amount);
+                        app.set_cursor_no_history(app.cursor().saturating_sub(amount));
                     }
                 } else {
                     app.view.start_offset = 0
@@ -315,9 +328,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
                 if app.view.start_offset + amount < app.data.len() {
                     app.view.start_offset += amount;
                     if app.interact_mode == InteractMode::Edit
-                        && app.cursor + amount < app.data.len()
+                        && app.cursor() + amount < app.data.len()
                     {
-                        app.cursor += amount;
+                        app.offset_cursor(amount);
                     }
                 }
             }
@@ -329,7 +342,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
             }
             InteractMode::Edit => {
                 app.view.start_offset = 0;
-                app.cursor = 0;
+                app.set_cursor_no_history(0)
             }
         },
         Key::End => match app.interact_mode {
@@ -340,7 +353,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool) {
                 let pos = app.data.len() - app.view.rows * app.view.cols;
                 app.view.start_offset = pos;
                 if app.interact_mode == InteractMode::Edit {
-                    app.cursor = pos;
+                    app.set_cursor_no_history(pos);
                 }
             }
         },

@@ -54,13 +54,13 @@ pub fn ascii(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow, fo
                     app.row_height as f32,
                 ));
                 rs.set_fill_color(Color::rgb(150, 150, 150));
-                if app.cursor == idx {
+                if app.cursor() == idx {
                     rs.set_outline_color(Color::WHITE);
                     rs.set_outline_thickness(-2.0);
                 }
                 window.draw(&rs);
             }
-            if idx == app.cursor {
+            if idx == app.cursor() {
                 draw_cursor(
                     pix_x,
                     pix_y,

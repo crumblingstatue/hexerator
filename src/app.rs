@@ -50,6 +50,8 @@ pub struct App {
     pub col_width: u8,
     // The editing byte offset
     pub cursor: usize,
+    cursor_history: Vec<usize>,
+    cursor_history_current: usize,
     #[inspect_with(inspect_vertices)]
     pub vertices: Vec<Vertex>,
     pub input: Input,
@@ -160,6 +162,8 @@ impl App {
             show_debug_panel: false,
             col_width: 26,
             cursor,
+            cursor_history: Vec::new(),
+            cursor_history_current: 0,
             vertices: Vec::new(),
             input: Input::default(),
             interact_mode: InteractMode::View,
@@ -343,6 +347,49 @@ impl App {
         self.view.cols *= 2;
         self.clamp_cols();
         self.set_view_to_byte_offset(prev_offset.byte);
+    }
+    /// Set cursor and save history
+    pub fn set_cursor(&mut self, offset: usize) {
+        self.cursor_history.truncate(self.cursor_history_current);
+        self.cursor_history.push(self.cursor);
+        self.cursor = offset;
+        self.cursor_history_current += 1;
+    }
+    /// Set cursor, don't save history
+    pub fn set_cursor_no_history(&mut self, offset: usize) {
+        self.cursor = offset;
+    }
+    /// Step cursor forward without saving history
+    pub fn step_cursor_forward(&mut self) {
+        self.cursor += 1;
+    }
+    /// Step cursor back without saving history
+    pub fn step_cursor_back(&mut self) {
+        self.cursor = self.cursor.saturating_sub(1)
+    }
+    /// Offset cursor by amount, not saving history
+    pub fn offset_cursor(&mut self, amount: usize) {
+        self.cursor += amount;
+    }
+    pub fn cursor(&self) -> usize {
+        self.cursor
+    }
+    pub fn cursor_history_back(&mut self) {
+        if self.cursor_history_current > 0 {
+            self.cursor_history.push(self.cursor);
+            self.cursor_history_current -= 1;
+            self.cursor = self.cursor_history[self.cursor_history_current];
+            self.center_view_on_offset(self.cursor);
+            self.flash_cursor();
+        }
+    }
+    pub fn cursor_history_forward(&mut self) {
+        if self.cursor_history_current + 1 < self.cursor_history.len() {
+            self.cursor_history_current += 1;
+            self.cursor = self.cursor_history[self.cursor_history_current];
+            self.center_view_on_offset(self.cursor);
+            self.flash_cursor();
+        }
     }
     fn clamp_cols(&mut self) {
         self.view.cols = self.view.cols.clamp(1, self.data.len());
