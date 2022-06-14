@@ -1,20 +1,34 @@
 use std::{
     ffi::OsString,
     fs::{File, OpenOptions},
-    io::{Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom, Stdin, Write},
     path::{Path, PathBuf},
     time::{Duration, Instant},
 };
 
-use anyhow::Context;
+use anyhow::{bail, Context};
 use egui_inspect::{derive::Inspect, UiExt};
 use egui_sfml::egui::{self, Ui};
 use sfml::graphics::Vertex;
 
 use crate::{
-    args::Args, color::ColorMethod, input::Input, msg_warn, EditTarget, FindDialog, InteractMode,
-    Region,
+    args::Args, color::ColorMethod, input::Input, EditTarget, FindDialog, InteractMode, Region,
 };
+
+#[derive(Debug)]
+pub enum Source {
+    File(File),
+    Stdin(Stdin),
+}
+
+impl Read for Source {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        match self {
+            Source::File(f) => f.read(buf),
+            Source::Stdin(stdin) => stdin.read(buf),
+        }
+    }
+}
 
 /// The hexerator application state
 #[derive(Inspect, Debug)]
@@ -65,7 +79,7 @@ pub struct App {
     #[opaque]
     pub args: Args,
     #[opaque]
-    file: Option<File>,
+    pub source: Option<Source>,
     pub col_change_lock_x: bool,
     pub col_change_lock_y: bool,
     #[opaque]
@@ -102,22 +116,28 @@ pub struct View {
 }
 
 impl App {
-    pub fn new(args: Args, window_height: u32) -> anyhow::Result<Self> {
+    pub fn new(mut args: Args, window_height: u32) -> anyhow::Result<Self> {
         let data;
-        let opt_file;
+        let source;
         match &args.file {
             Some(file_arg) => {
-                let mut file = open_file(file_arg, args.read_only)?;
-                if !args.stream {
-                    data = read_contents(&args, &mut file)?;
-                } else {
+                if file_arg.as_os_str() == "-" {
+                    source = Some(Source::Stdin(std::io::stdin()));
                     data = Vec::new();
+                    args.stream = true;
+                } else {
+                    let mut file = open_file(file_arg, args.read_only)?;
+                    if !args.stream {
+                        data = read_contents(&args, &mut file)?;
+                    } else {
+                        data = Vec::new();
+                    }
+                    source = Some(Source::File(file));
                 }
-                opt_file = Some(file);
             }
             None => {
                 data = Vec::new();
-                opt_file = None;
+                source = None;
             }
         }
         let top_gap = 46;
@@ -168,7 +188,7 @@ impl App {
             center_offset_input: String::new(),
             seek_byte_offset_input: String::new(),
             args,
-            file: opt_file,
+            source,
             col_change_lock_x: false,
             col_change_lock_y: true,
             flash_cursor_timer: Timer::default(),
@@ -184,17 +204,26 @@ impl App {
         Ok(this)
     }
     pub fn reload(&mut self) -> anyhow::Result<()> {
-        match &mut self.file {
-            Some(file) => {
+        match &mut self.source {
+            Some(Source::File(file)) => {
                 self.data = read_contents(&self.args, file)?;
                 self.dirty_region = None;
             }
-            None => msg_warn("No file to reload"),
+            Some(Source::Stdin(_)) => {
+                bail!("Can't reload streaming sources like standard input");
+            }
+            None => bail!("No file to reload"),
         }
         Ok(())
     }
     pub fn save(&mut self) -> anyhow::Result<()> {
-        let file = self.file.as_mut().context("No file to save")?;
+        let file = match &mut self.source {
+            Some(src) => match src {
+                Source::File(file) => file,
+                Source::Stdin(_) => bail!("Standard input doesn't support saving"),
+            },
+            None => bail!("No source opened, nothing to save"),
+        };
         let offset = self.args.hard_seek.unwrap_or(0);
         file.seek(SeekFrom::Start(offset))?;
         let data_to_write = match self.dirty_region {
@@ -338,7 +367,7 @@ impl App {
     pub(crate) fn load_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
         let mut file = open_file(&path, self.args.read_only)?;
         self.data = read_contents(&self.args, &mut file)?;
-        self.file = Some(file);
+        self.source = Some(Source::File(file));
         self.args.file = Some(path);
         Ok(())
     }
@@ -347,7 +376,7 @@ impl App {
         // We potentially had large data, free it instead of clearing the Vec
         self.data = Vec::new();
         self.args.file = None;
-        self.file = None;
+        self.source = None;
     }
 
     pub(crate) fn restore_backup(&mut self) -> Result<(), anyhow::Error> {
@@ -404,10 +433,10 @@ impl App {
         if self.stream_end {
             return;
         }
-        let Some(file) = &mut self.file else { return };
+        let Some(src) = &mut self.source else { return };
         let buffer_size = 1024;
         let mut buf = vec![0; buffer_size];
-        let amount = file.read(&mut buf).unwrap();
+        let amount = src.read(&mut buf).unwrap();
         if amount == 0 {
             self.stream_end = true;
         } else {

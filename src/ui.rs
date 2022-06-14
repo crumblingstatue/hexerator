@@ -7,7 +7,13 @@ use egui_sfml::{
 };
 use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
 
-use crate::{app::App, color::ColorMethod, msg_if_fail, slice_ext::SliceExt, InteractMode, Region};
+use crate::{
+    app::{App, Source},
+    color::ColorMethod,
+    msg_if_fail,
+    slice_ext::SliceExt,
+    InteractMode, Region,
+};
 
 #[expect(
     clippy::significant_drop_in_scrutinee,
@@ -140,13 +146,25 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
                 });
                 ui.with_layout(Layout::right_to_left(), |ui| {
-                    match &app.args.file {
-                        Some(file) => match file.canonicalize() {
-                            Ok(path) => ui.label(path.display().to_string()),
-                            Err(e) => ui.label(format!("path error: {}", e)),
+                    match &app.source {
+                        Some(src) => match src {
+                            Source::File(_) => {
+                                match &app.args.file {
+                                    Some(file) => match file.canonicalize() {
+                                        Ok(path) => ui.label(path.display().to_string()),
+                                        Err(e) => ui.label(format!("path error: {}", e)),
+                                    },
+                                    None => ui.label("File path unknown"),
+                                };
+                            }
+                            Source::Stdin(_) => {
+                                ui.label("Standard input");
+                            }
                         },
-                        None => ui.label("No file loaded"),
-                    };
+                        None => {
+                            ui.label("No source loaded");
+                        }
+                    }
                     if app.args.stream {
                         ui.label("[stream]");
                     }
