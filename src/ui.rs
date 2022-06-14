@@ -140,7 +140,10 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App) {
                     ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
                 });
                 ui.with_layout(Layout::right_to_left(), |ui| match &app.args.file {
-                    Some(file) => ui.label(file.canonicalize().unwrap().display().to_string()),
+                    Some(file) => match file.canonicalize() {
+                        Ok(path) => ui.label(path.display().to_string()),
+                        Err(e) => ui.label(format!("path error: {}", e)),
+                    },
                     None => ui.label("No file loaded"),
                 });
             });
