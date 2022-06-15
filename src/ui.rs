@@ -8,6 +8,7 @@ use egui_sfml::{
     SfEgui,
 };
 use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
+use rand::{thread_rng, RngCore};
 use sfml::system::Vector2i;
 
 use crate::{
@@ -228,6 +229,13 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                                 per_msg!("Fill parse error: {}", e);
                             }
                         }
+                    }
+                }
+                if ui.button("fill random").clicked() {
+                    if let Some(sel) = app.selection {
+                        let range = sel.begin..=sel.end;
+                        thread_rng().fill_bytes(&mut app.data[range.clone()]);
+                        app.widen_dirty_region(DamageRegion::RangeInclusive(range));
                     }
                 }
                 ui.with_layout(Layout::right_to_left(), |ui| {
