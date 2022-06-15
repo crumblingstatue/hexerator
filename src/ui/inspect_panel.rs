@@ -12,7 +12,7 @@ pub struct InspectPanel {
     big_endian: bool,
     hex: bool,
     /// If true, go to offset action is relative to the hard seek argument
-    go_to_offset_relative: bool,
+    offset_relative: bool,
 }
 
 impl std::fmt::Debug for InspectPanel {
@@ -40,7 +40,7 @@ impl Default for InspectPanel {
             changed_one: false,
             big_endian: false,
             hex: false,
-            go_to_offset_relative: false,
+            offset_relative: false,
         }
     }
 }
@@ -303,14 +303,24 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
     let offset = match app.interact_mode {
         InteractMode::View => {
             let off = app.pixel_pos_byte_offset(mouse_pos.x, mouse_pos.y);
-            ui.label(format!("offset: {} (0x{:x})", off, off));
+            let mut add = 0;
+            if app.inspect_panel.offset_relative {
+                add = app.args.hard_seek.unwrap_or(0) as usize;
+            }
+            ui.label(format!("offset: {} (0x{:x})", off + add, off + add));
             off
         }
         InteractMode::Edit => {
-            ui.label(format!("offset: {} ({:x}h)", app.cursor(), app.cursor()));
+            let mut off = app.cursor();
+            if app.inspect_panel.offset_relative {
+                off += app.args.hard_seek.unwrap_or(0) as usize;
+            }
+            ui.label(format!("offset: {} ({:x}h)", off, off));
             app.cursor()
         }
     };
+    ui.checkbox(&mut app.inspect_panel.offset_relative, "Relative offset")
+        .on_hover_text("Offset relative to --hard-seek");
     if app.data.is_empty() {
         return;
     }
@@ -374,16 +384,11 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
             app.inspect_panel.changed_one = true;
         }
     });
-    ui.checkbox(
-        &mut app.inspect_panel.go_to_offset_relative,
-        "Relative go to offset",
-    )
-    .on_hover_text("Go to offset relative to --hard-seek");
 
     for action in actions {
         match action {
             Action::GoToOffset(offset) => {
-                if app.inspect_panel.go_to_offset_relative {
+                if app.inspect_panel.offset_relative {
                     app.set_cursor(offset - app.args.hard_seek.unwrap_or(0) as usize);
                 } else {
                     app.set_cursor(offset);
