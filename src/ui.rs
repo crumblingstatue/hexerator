@@ -9,7 +9,7 @@ use egui_sfml::{
 };
 use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
 use rand::{thread_rng, RngCore};
-use sfml::system::Vector2i;
+use sfml::{system::Vector2i, window::clipboard};
 
 use crate::{
     app::{App, Source},
@@ -236,6 +236,16 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                         let range = sel.begin..=sel.end;
                         thread_rng().fill_bytes(&mut app.data[range.clone()]);
                         app.widen_dirty_region(DamageRegion::RangeInclusive(range));
+                    }
+                }
+                if ui.button("copy as hex pattern").clicked() {
+                    if let Some(sel) = app.selection {
+                        use std::fmt::Write;
+                        let mut s = String::new();
+                        for &byte in &app.data[sel.begin..=sel.end] {
+                            write!(&mut s, "{:02x} ", byte).unwrap();
+                        }
+                        clipboard::set_string(s.trim_end());
                     }
                 }
                 ui.with_layout(Layout::right_to_left(), |ui| {
