@@ -311,12 +311,12 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
             off
         }
         InteractMode::Edit => {
-            let mut off = app.cursor();
+            let mut off = app.edit_state.cursor;
             if app.ui.inspect_panel.offset_relative {
                 off += app.args.hard_seek.unwrap_or(0) as usize;
             }
             ui.label(format!("offset: {} ({:x}h)", off, off));
-            app.cursor()
+            app.edit_state.cursor
         }
     };
     ui.checkbox(&mut app.ui.inspect_panel.offset_relative, "Relative offset")
@@ -395,13 +395,13 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
                 } else {
                     app.set_cursor(offset);
                 }
-                app.center_view_on_offset(app.cursor());
+                app.center_view_on_offset(app.edit_state.cursor);
                 app.flash_cursor();
             }
             Action::AddDirty(damage) => app.widen_dirty_region(damage),
             Action::JumpForward(amount) => {
-                app.set_cursor(app.cursor() + amount);
-                app.center_view_on_offset(app.cursor());
+                app.set_cursor(app.edit_state.cursor + amount);
+                app.center_view_on_offset(app.edit_state.cursor);
                 app.flash_cursor();
             }
         }

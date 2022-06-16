@@ -214,9 +214,10 @@ fn handle_text_entered(app: &mut App, unicode: char) {
                     if matches!(ascii, b'0'..=b'9' | b'a'..=b'f') {
                         match app.hex_edit_half_digit {
                             Some(half) => {
-                                app.data[app.cursor] = hex_conv::merge_hex_halves(half, ascii);
-                                app.widen_dirty_region(DamageRegion::Single(app.cursor()));
-                                if app.cursor() + 1 < app.data.len() {
+                                app.data[app.edit_state.cursor] =
+                                    hex_conv::merge_hex_halves(half, ascii);
+                                app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                                if app.edit_state.cursor + 1 < app.data.len() {
                                     app.step_cursor_forward();
                                 }
                                 app.hex_edit_half_digit = None;
@@ -228,9 +229,9 @@ fn handle_text_entered(app: &mut App, unicode: char) {
             }
             EditTarget::Text => {
                 if unicode.is_ascii() {
-                    app.data[app.cursor] = unicode as u8;
-                    app.widen_dirty_region(DamageRegion::Single(app.cursor()));
-                    if app.cursor() + 1 < app.data.len() {
+                    app.data[app.edit_state.cursor] = unicode as u8;
+                    app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                    if app.edit_state.cursor + 1 < app.data.len() {
                         app.step_cursor_forward()
                     }
                 }
@@ -252,7 +253,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 }
             }
             InteractMode::Edit => {
-                app.set_cursor_no_history(app.cursor().saturating_sub(app.view.cols));
+                app.set_cursor_no_history(app.edit_state.cursor.saturating_sub(app.view.cols));
             }
         },
         Key::Down => match app.interact_mode {
@@ -262,7 +263,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 }
             }
             InteractMode::Edit => {
-                if app.cursor() + app.view.cols < app.data.len() {
+                if app.edit_state.cursor + app.view.cols < app.data.len() {
                     app.offset_cursor(app.view.cols);
                 }
             }
@@ -287,7 +288,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 app.cursor_history_forward();
                 break 'block;
             }
-            if app.interact_mode == InteractMode::Edit && app.cursor() + 1 < app.data.len() {
+            if app.interact_mode == InteractMode::Edit && app.edit_state.cursor + 1 < app.data.len()
+            {
                 app.step_cursor_forward();
             } else if ctrl {
                 if shift {
@@ -306,7 +308,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 if app.view.start_offset >= amount {
                     app.view.start_offset -= amount;
                     if app.interact_mode == InteractMode::Edit {
-                        app.set_cursor_no_history(app.cursor().saturating_sub(amount));
+                        app.set_cursor_no_history(app.edit_state.cursor.saturating_sub(amount));
                     }
                 } else {
                     app.view.start_offset = 0
@@ -327,7 +329,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 if app.view.start_offset + amount < app.data.len() {
                     app.view.start_offset += amount;
                     if app.interact_mode == InteractMode::Edit
-                        && app.cursor() + amount < app.data.len()
+                        && app.edit_state.cursor + amount < app.data.len()
                     {
                         app.offset_cursor(amount);
                     }

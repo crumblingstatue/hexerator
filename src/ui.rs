@@ -144,12 +144,12 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
                         ui.close_menu();
                     }
                     if ui.button("Center view on cursor").clicked() {
-                        app.center_view_on_offset(app.cursor());
+                        app.center_view_on_offset(app.edit_state.cursor);
                         app.flash_cursor();
                         ui.close_menu();
                     }
                     if ui.button("Set view offset to cursor").clicked() {
-                        app.view.start_offset = app.cursor;
+                        app.view.start_offset = app.edit_state.cursor;
                     }
                     ui.horizontal(|ui| {
                         ui.label("Seek to byte offset");
@@ -196,8 +196,8 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
                 ui.label(format!("Select begin: {}", begin_text));
                 if ui.button("set").clicked() {
                     match &mut app.selection {
-                        Some(sel) => sel.begin = app.cursor,
-                        None => app.select_begin = Some(app.cursor()),
+                        Some(sel) => sel.begin = app.edit_state.cursor,
+                        None => app.select_begin = Some(app.edit_state.cursor),
                     }
                 }
                 let end_text = match app.selection {
@@ -211,10 +211,10 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
                             None => {
                                 app.selection = Some(Region {
                                     begin,
-                                    end: app.cursor(),
+                                    end: app.edit_state.cursor,
                                 })
                             }
-                            Some(sel) => sel.end = app.cursor,
+                            Some(sel) => sel.end = app.edit_state.cursor,
                         },
                         None => {}
                     }
@@ -346,7 +346,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
                         if app.data.is_empty() {
                             break 'edit;
                         }
-                        ui.label(format!("cursor: {}", app.cursor()));
+                        ui.label(format!("cursor: {}", app.edit_state.cursor));
                         ui.separator();
                     }
                 }

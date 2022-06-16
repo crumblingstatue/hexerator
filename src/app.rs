@@ -1,3 +1,4 @@
+mod edit_state;
 mod presentation;
 
 use std::{
@@ -16,7 +17,7 @@ use crate::{
     Region,
 };
 
-use self::presentation::Presentation;
+use self::{edit_state::EditState, presentation::Presentation};
 
 #[derive(Debug)]
 pub enum Source {
@@ -48,8 +49,7 @@ pub struct App {
     pub dirty_region: Option<Region>,
     pub data: Vec<u8>,
     pub col_width: u8,
-    // The editing byte offset
-    pub cursor: usize,
+    pub edit_state: EditState,
     cursor_history: Vec<usize>,
     cursor_history_current: usize,
     pub vertices: Vec<Vertex>,
@@ -137,7 +137,7 @@ impl App {
             dirty_region: None,
             data,
             col_width: 26,
-            cursor,
+            edit_state: EditState::default(),
             cursor_history: Vec::new(),
             cursor_history_current: 0,
             vertices: Vec::new(),
@@ -180,7 +180,7 @@ impl App {
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
-            this.cursor = offset;
+            this.edit_state.cursor = offset;
             this.flash_cursor();
         }
         Ok(this)
@@ -238,7 +238,7 @@ impl App {
         self.view.cols as i64 * i64::from(self.col_width) + 12
     }
     pub fn search_focus(&mut self, offset: usize) {
-        self.cursor = offset;
+        self.edit_state.cursor = offset;
         self.center_view_on_offset(offset);
     }
 
@@ -324,43 +324,40 @@ impl App {
     /// Set cursor and save history
     pub fn set_cursor(&mut self, offset: usize) {
         self.cursor_history.truncate(self.cursor_history_current);
-        self.cursor_history.push(self.cursor);
-        self.cursor = offset;
+        self.cursor_history.push(self.edit_state.cursor);
+        self.edit_state.cursor = offset;
         self.cursor_history_current += 1;
     }
     /// Set cursor, don't save history
     pub fn set_cursor_no_history(&mut self, offset: usize) {
-        self.cursor = offset;
+        self.edit_state.cursor = offset;
     }
     /// Step cursor forward without saving history
     pub fn step_cursor_forward(&mut self) {
-        self.cursor += 1;
+        self.edit_state.cursor += 1;
     }
     /// Step cursor back without saving history
     pub fn step_cursor_back(&mut self) {
-        self.cursor = self.cursor.saturating_sub(1)
+        self.edit_state.cursor = self.edit_state.cursor.saturating_sub(1)
     }
     /// Offset cursor by amount, not saving history
     pub fn offset_cursor(&mut self, amount: usize) {
-        self.cursor += amount;
-    }
-    pub fn cursor(&self) -> usize {
-        self.cursor
+        self.edit_state.cursor += amount;
     }
     pub fn cursor_history_back(&mut self) {
         if self.cursor_history_current > 0 {
-            self.cursor_history.push(self.cursor);
+            self.cursor_history.push(self.edit_state.cursor);
             self.cursor_history_current -= 1;
-            self.cursor = self.cursor_history[self.cursor_history_current];
-            self.center_view_on_offset(self.cursor);
+            self.edit_state.cursor = self.cursor_history[self.cursor_history_current];
+            self.center_view_on_offset(self.edit_state.cursor);
             self.flash_cursor();
         }
     }
     pub fn cursor_history_forward(&mut self) {
         if self.cursor_history_current + 1 < self.cursor_history.len() {
             self.cursor_history_current += 1;
-            self.cursor = self.cursor_history[self.cursor_history_current];
-            self.center_view_on_offset(self.cursor);
+            self.edit_state.cursor = self.cursor_history[self.cursor_history_current];
+            self.center_view_on_offset(self.edit_state.cursor);
             self.flash_cursor();
         }
     }
@@ -423,8 +420,8 @@ impl App {
     }
 
     pub(crate) fn set_cursor_init(&mut self) {
-        self.cursor = self.args.jump.unwrap_or(0);
-        self.center_view_on_offset(self.cursor);
+        self.edit_state.cursor = self.args.jump.unwrap_or(0);
+        self.center_view_on_offset(self.edit_state.cursor);
         self.flash_cursor();
     }
     pub fn flash_cursor(&mut self) {

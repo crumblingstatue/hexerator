@@ -49,13 +49,13 @@ pub fn hex(
                     app.row_height as f32,
                 ));
                 rs.set_fill_color(Color::rgb(150, 150, 150));
-                if app.cursor() == idx {
+                if app.edit_state.cursor == idx {
                     rs.set_outline_color(Color::WHITE);
                     rs.set_outline_thickness(-2.0);
                 }
                 window.draw(&rs);
             }
-            if idx == app.cursor() {
+            if idx == app.edit_state.cursor {
                 let extra_x = if app.hex_edit_half_digit.is_none() {
                     0
                 } else {
@@ -70,7 +70,7 @@ pub fn hex(
                 );
             }
             let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);
-            if let Some(half) = app.hex_edit_half_digit && app.cursor() == idx {
+            if let Some(half) = app.hex_edit_half_digit && app.edit_state.cursor == idx {
                 g1 = half.to_ascii_uppercase();
             }
             let c = app

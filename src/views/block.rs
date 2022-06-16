@@ -52,7 +52,7 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
                 || (app.ui.find_dialog.open && app.ui.find_dialog.result_offsets.contains(&idx))
             {
             }
-            if idx == app.cursor() {
+            if idx == app.edit_state.cursor {
                 draw_cursor(
                     pix_x,
                     pix_y,
