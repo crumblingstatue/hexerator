@@ -267,42 +267,42 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                     }
                 }
                 ui.with_layout(Layout::right_to_left(), |ui| {
-                    ui.checkbox(&mut app.invert_color, "invert");
+                    ui.checkbox(&mut app.presentation.invert_color, "invert");
                     ComboBox::new("color_combo", "Color")
-                        .selected_text(app.color_method.name())
+                        .selected_text(app.presentation.color_method.name())
                         .show_ui(ui, |ui| {
                             ui.selectable_value(
-                                &mut app.color_method,
+                                &mut app.presentation.color_method,
                                 ColorMethod::Default,
                                 ColorMethod::Default.name(),
                             );
                             ui.selectable_value(
-                                &mut app.color_method,
+                                &mut app.presentation.color_method,
                                 ColorMethod::Mono,
                                 ColorMethod::Mono.name(),
                             );
                             ui.selectable_value(
-                                &mut app.color_method,
+                                &mut app.presentation.color_method,
                                 ColorMethod::Rgb332,
                                 ColorMethod::Rgb332.name(),
                             );
                             ui.selectable_value(
-                                &mut app.color_method,
+                                &mut app.presentation.color_method,
                                 ColorMethod::Vga13h,
                                 ColorMethod::Vga13h.name(),
                             );
                             ui.selectable_value(
-                                &mut app.color_method,
+                                &mut app.presentation.color_method,
                                 ColorMethod::Grayscale,
                                 ColorMethod::Grayscale.name(),
                             );
                             ui.selectable_value(
-                                &mut app.color_method,
+                                &mut app.presentation.color_method,
                                 ColorMethod::Aitd,
                                 ColorMethod::Aitd.name(),
                             );
                         });
-                    ui.color_edit_button_rgb(&mut app.bg_color);
+                    ui.color_edit_button_rgb(&mut app.presentation.bg_color);
                     ui.label("Bg color");
                 });
             });

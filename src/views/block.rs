@@ -36,7 +36,10 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
                 (x + app.view.cols * 2 + 1) as f32 * f32::from(app.block_size) - app.view_x as f32;
             let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.block_size) - app.view_y as f32;
             let byte = app.data[idx];
-            let c = app.color_method.byte_color(byte, app.invert_color);
+            let c = app
+                .presentation
+                .color_method
+                .byte_color(byte, app.presentation.invert_color);
             let idxx = (y * app.view.cols + x) * 4;
             pixels[idxx] = c.red();
             pixels[idxx + 1] = c.green();

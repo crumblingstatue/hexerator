@@ -73,7 +73,10 @@ pub fn hex(
             if let Some(half) = app.hex_edit_half_digit && app.cursor() == idx {
                 g1 = half.to_ascii_uppercase();
             }
-            let c = app.color_method.byte_color(byte, app.invert_color);
+            let c = app
+                .presentation
+                .color_method
+                .byte_color(byte, app.presentation.invert_color);
             draw_glyph(
                 font,
                 app.font_size,

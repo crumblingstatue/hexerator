@@ -41,7 +41,10 @@ pub fn ascii(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow, fo
             //let pix_y = y as f32 * f32::from(app.row_height) - app.view_y as f32;
             let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.row_height) - app.view_y as f32;
             let byte = app.data[idx];
-            let c = app.color_method.byte_color(byte, app.invert_color);
+            let c = app
+                .presentation
+                .color_method
+                .byte_color(byte, app.presentation.invert_color);
             let selected = match app.selection {
                 Some(sel) => (sel.begin..=sel.end).contains(&idx),
                 None => false,

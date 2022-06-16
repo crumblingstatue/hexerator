@@ -1,3 +1,5 @@
+mod presentation;
+
 use std::{
     ffi::OsString,
     fs::{File, OpenOptions},
@@ -13,9 +15,10 @@ use gamedebug_core::per_msg;
 use sfml::graphics::Vertex;
 
 use crate::{
-    args::Args, color::ColorMethod, damage_region::DamageRegion, input::Input, EditTarget,
-    InteractMode, Region,
+    args::Args, damage_region::DamageRegion, input::Input, EditTarget, InteractMode, Region,
 };
+
+use self::presentation::Presentation;
 
 #[derive(Debug)]
 pub enum Source {
@@ -60,9 +63,8 @@ pub struct App {
     pub view_y: i64,
     // The amount scrolled per frame in view mode
     pub scroll_speed: i64,
-    pub color_method: ColorMethod,
-    pub invert_color: bool,
-    pub bg_color: [f32; 3],
+    #[opaque]
+    pub presentation: Presentation,
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
     pub edit_target: EditTarget,
@@ -173,9 +175,7 @@ impl App {
             view_y: -top_gap,
             // The amount scrolled per frame in view mode
             scroll_speed: 4,
-            color_method: ColorMethod::Default,
-            invert_color: false,
-            bg_color: [0.; 3],
+            presentation: Presentation::default(),
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             prev_frame_inspect_offset: cursor,
             edit_target: EditTarget::Hex,

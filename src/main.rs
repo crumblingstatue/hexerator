@@ -106,7 +106,7 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font
     update(app);
     app.clamp_view();
     ui::do_egui(sf_egui, app, window.mouse_position());
-    let [r, g, b] = app.bg_color;
+    let [r, g, b] = app.presentation.bg_color;
     window.clear(Color::rgb(
         (r * 255.) as u8,
         (g * 255.) as u8,
