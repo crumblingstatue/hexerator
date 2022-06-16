@@ -3,7 +3,10 @@ use std::{marker::PhantomData, str::FromStr};
 use egui_sfml::egui::{self, Ui};
 use sfml::{system::Vector2i, window::clipboard};
 
-use crate::{app::App, damage_region::DamageRegion, InteractMode};
+use crate::{
+    app::{interact_mode::InteractMode, App},
+    damage_region::DamageRegion,
+};
 
 pub struct InspectPanel {
     input_thingies: [Box<dyn InputThingyTrait>; 11],

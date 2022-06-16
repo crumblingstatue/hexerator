@@ -1,7 +1,10 @@
 use gamedebug_core::imm_msg;
 use sfml::graphics::{RenderTarget, RenderWindow, Sprite, Texture, Transformable, Vertex};
 
-use crate::{app::App, views::draw_cursor, EditTarget, InteractMode};
+use crate::{
+    app::{edit_target::EditTarget, interact_mode::InteractMode, App},
+    views::draw_cursor,
+};
 
 pub fn block(
     app: &mut App,

@@ -2,9 +2,8 @@ use gamedebug_core::imm_msg;
 use sfml::graphics::{Font, Vertex};
 
 use crate::{
-    app::App,
+    app::{edit_target::EditTarget, interact_mode::InteractMode, App},
     views::{draw_cursor, draw_glyph},
-    EditTarget, InteractMode,
 };
 
 pub fn ascii(app: &mut App, view_idx_off_y: usize, font: &Font, vertex_buffer: &mut Vec<Vertex>) {

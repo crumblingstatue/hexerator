@@ -1,4 +1,6 @@
 mod edit_state;
+pub mod edit_target;
+pub mod interact_mode;
 mod layout;
 pub mod presentation;
 mod view;
@@ -15,10 +17,13 @@ use anyhow::{bail, Context};
 
 use crate::{
     args::Args, damage_region::DamageRegion, input::Input, region::Region, source::Source,
-    timer::Timer, EditTarget, InteractMode,
+    timer::Timer,
 };
 
-use self::{edit_state::EditState, layout::Layout, presentation::Presentation, view::View};
+use self::{
+    edit_state::EditState, edit_target::EditTarget, interact_mode::InteractMode, layout::Layout,
+    presentation::Presentation, view::View,
+};
 
 /// The hexerator application state
 #[derive(Debug)]

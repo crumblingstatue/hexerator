@@ -14,6 +14,7 @@ mod ui;
 mod views;
 
 use crate::app::App;
+use app::{edit_target::EditTarget, interact_mode::InteractMode};
 use args::Args;
 use clap::Parser;
 use damage_region::DamageRegion;
@@ -40,36 +41,6 @@ fn msg_warn(msg: &str) {
         .set_title("Warning")
         .set_description(msg)
         .show();
-}
-
-#[derive(PartialEq, Eq, Debug)]
-pub enum EditTarget {
-    Hex,
-    Text,
-}
-
-impl EditTarget {
-    fn switch(&mut self) {
-        *self = match self {
-            EditTarget::Hex => EditTarget::Text,
-            EditTarget::Text => EditTarget::Hex,
-        }
-    }
-}
-
-/// User interaction mode
-///
-/// There are 2 modes: View and Edit
-#[derive(PartialEq, Eq, Debug)]
-pub enum InteractMode {
-    /// Mode optimized for viewing the contents
-    ///
-    /// For example arrow keys scroll the content
-    View,
-    /// Mode optimized for editing the contents
-    ///
-    /// For example arrow keys move the cursor
-    Edit,
 }
 
 fn main() -> anyhow::Result<()> {

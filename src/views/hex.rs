@@ -2,10 +2,9 @@ use gamedebug_core::imm_msg;
 use sfml::graphics::{Font, Vertex};
 
 use crate::{
-    app::App,
+    app::{edit_target::EditTarget, interact_mode::InteractMode, App},
     hex_conv,
     views::{draw_cursor, draw_glyph},
-    EditTarget, InteractMode,
 };
 
 pub fn hex(
