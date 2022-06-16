@@ -13,7 +13,7 @@ use sfml::{system::Vector2i, window::clipboard};
 
 use crate::{
     app::App, color::ColorMethod, damage_region::DamageRegion, msg_if_fail, msg_warn,
-    slice_ext::SliceExt, source::Source, InteractMode, Region,
+    region::Region, slice_ext::SliceExt, source::Source, InteractMode,
 };
 
 #[derive(Debug, Default)]

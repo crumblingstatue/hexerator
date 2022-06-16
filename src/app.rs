@@ -14,8 +14,8 @@ use std::{
 use anyhow::{bail, Context};
 
 use crate::{
-    args::Args, damage_region::DamageRegion, input::Input, source::Source, timer::Timer,
-    EditTarget, InteractMode, Region,
+    args::Args, damage_region::DamageRegion, input::Input, region::Region, source::Source,
+    timer::Timer, EditTarget, InteractMode,
 };
 
 use self::{edit_state::EditState, layout::Layout, presentation::Presentation, view::View};

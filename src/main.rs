@@ -6,6 +6,7 @@ mod color;
 mod damage_region;
 mod hex_conv;
 mod input;
+mod region;
 mod slice_ext;
 mod source;
 mod timer;
@@ -69,12 +70,6 @@ pub enum InteractMode {
     ///
     /// For example arrow keys move the cursor
     Edit,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Region {
-    begin: usize,
-    end: usize,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -398,11 +393,5 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             msg_if_fail(app.reload(), "Failed to reload");
         }
         _ => {}
-    }
-}
-impl Region {
-    pub fn size(&self) -> usize {
-        // Inclusive, so add 1 to end
-        (self.end + 1) - self.begin
     }
 }
