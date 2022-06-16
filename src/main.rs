@@ -197,39 +197,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                 alt,
                 ..
             } => handle_key_events(code, app, ctrl, shift, alt),
-            Event::TextEntered { unicode } => match app.interact_mode {
-                InteractMode::Edit => match app.edit_target {
-                    EditTarget::Hex => {
-                        if unicode.is_ascii() {
-                            let ascii = unicode as u8;
-                            if (b'0'..=b'f').contains(&ascii) {
-                                match app.hex_edit_half_digit {
-                                    Some(half) => {
-                                        app.data[app.cursor] =
-                                            hex_conv::merge_hex_halves(half, ascii);
-                                        app.widen_dirty_region(DamageRegion::Single(app.cursor()));
-                                        if app.cursor() + 1 < app.data.len() {
-                                            app.step_cursor_forward();
-                                        }
-                                        app.hex_edit_half_digit = None;
-                                    }
-                                    None => app.hex_edit_half_digit = Some(ascii),
-                                }
-                            }
-                        }
-                    }
-                    EditTarget::Text => {
-                        if unicode.is_ascii() {
-                            app.data[app.cursor] = unicode as u8;
-                            app.widen_dirty_region(DamageRegion::Single(app.cursor()));
-                            if app.cursor() + 1 < app.data.len() {
-                                app.step_cursor_forward()
-                            }
-                        }
-                    }
-                },
-                InteractMode::View => {}
-            },
+            Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 if button == mouse::Button::Left {
                     let off = app.pixel_pos_byte_offset(x, y);
@@ -238,6 +206,76 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             }
             _ => {}
         }
+    }
+}
+
+fn handle_text_entered(app: &mut App, unicode: char) {
+    if Key::LControl.is_pressed() || Key::LAlt.is_pressed() {
+        return;
+    }
+    match app.interact_mode {
+        InteractMode::Edit => match app.edit_target {
+            EditTarget::Hex => {
+                if unicode.is_ascii() {
+                    let ascii = unicode as u8;
+                    if (b'0'..=b'f').contains(&ascii) {
+                        match app.hex_edit_half_digit {
+                            Some(half) => {
+                                app.data[app.cursor] = hex_conv::merge_hex_halves(half, ascii);
+                                app.widen_dirty_region(DamageRegion::Single(app.cursor()));
+                                if app.cursor() + 1 < app.data.len() {
+                                    app.step_cursor_forward();
+                                }
+                                app.hex_edit_half_digit = None;
+                            }
+                            None => app.hex_edit_half_digit = Some(ascii),
+                        }
+                    }
+                }
+            }
+            EditTarget::Text => {
+                if unicode.is_ascii() {
+                    app.data[app.cursor] = unicode as u8;
+                    app.widen_dirty_region(DamageRegion::Single(app.cursor()));
+                    if app.cursor() + 1 < app.data.len() {
+                        app.step_cursor_forward()
+                    }
+                }
+            }
+        },
+        InteractMode::View => {}
+    }
+    match app.interact_mode {
+        InteractMode::Edit => match app.edit_target {
+            EditTarget::Hex => {
+                if unicode.is_ascii() {
+                    let ascii = unicode as u8;
+                    if (b'0'..=b'f').contains(&ascii) {
+                        match app.hex_edit_half_digit {
+                            Some(half) => {
+                                app.data[app.cursor] = hex_conv::merge_hex_halves(half, ascii);
+                                app.widen_dirty_region(DamageRegion::Single(app.cursor()));
+                                if app.cursor() + 1 < app.data.len() {
+                                    app.step_cursor_forward();
+                                }
+                                app.hex_edit_half_digit = None;
+                            }
+                            None => app.hex_edit_half_digit = Some(ascii),
+                        }
+                    }
+                }
+            }
+            EditTarget::Text => {
+                if unicode.is_ascii() {
+                    app.data[app.cursor] = unicode as u8;
+                    app.widen_dirty_region(DamageRegion::Single(app.cursor()));
+                    if app.cursor() + 1 < app.data.len() {
+                        app.step_cursor_forward()
+                    }
+                }
+            }
+        },
+        InteractMode::View => {}
     }
 }
 
