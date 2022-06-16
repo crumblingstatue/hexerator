@@ -7,7 +7,7 @@ use egui_sfml::{
     },
     SfEgui,
 };
-use gamedebug_core::{per_msg, Info, PerEntry, IMMEDIATE, PERSISTENT};
+use gamedebug_core::{Info, PerEntry, IMMEDIATE, PERSISTENT};
 use rand::{thread_rng, RngCore};
 use sfml::{system::Vector2i, window::clipboard};
 
@@ -15,7 +15,7 @@ use crate::{
     app::{App, Source},
     color::ColorMethod,
     damage_region::DamageRegion,
-    msg_if_fail,
+    msg_if_fail, msg_warn,
     slice_ext::SliceExt,
     InteractMode, Region,
 };
@@ -237,7 +237,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
                                 app.widen_dirty_region(DamageRegion::RangeInclusive(range));
                             }
                             Err(e) => {
-                                per_msg!("Fill parse error: {}", e);
+                                msg_warn(&format!("Fill parse error: {}", e));
                             }
                         }
                     }

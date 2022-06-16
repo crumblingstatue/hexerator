@@ -9,7 +9,6 @@ use std::{
 };
 
 use anyhow::{bail, Context};
-use gamedebug_core::per_msg;
 use sfml::graphics::Vertex;
 
 use crate::{
@@ -474,17 +473,14 @@ impl App {
     pub fn pixel_pos_byte_offset(&mut self, x: i32, y: i32) -> usize {
         let x: i64 = self.view_x + i64::from(x);
         let y: i64 = self.view_y + i64::from(y);
-        per_msg!("x: {}, y: {}", x, y);
         let ascii_display_x_offset = self.ascii_display_x_offset();
-        let col_x;
         let col_y = y / i64::from(self.row_height);
-        if x < ascii_display_x_offset {
-            col_x = x / i64::from(self.col_width);
-            per_msg!("col_x: {}, col_y: {}", col_x, col_y);
+        let col_x = if x < ascii_display_x_offset {
+            x / i64::from(self.col_width)
         } else {
             let x_rel = x - ascii_display_x_offset;
-            col_x = x_rel / i64::from(self.col_width / 2);
-        }
+            x_rel / i64::from(self.col_width / 2)
+        };
         (usize::try_from(col_y).unwrap_or(0) * self.view.cols + usize::try_from(col_x).unwrap_or(0))
             + self.view.start_offset
     }
