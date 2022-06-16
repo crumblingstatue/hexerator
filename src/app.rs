@@ -5,14 +5,15 @@ use std::{
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Stdin, Write},
     path::{Path, PathBuf},
-    time::{Duration, Instant},
+    time::Duration,
 };
 
 use anyhow::{bail, Context};
 use sfml::graphics::Vertex;
 
 use crate::{
-    args::Args, damage_region::DamageRegion, input::Input, EditTarget, InteractMode, Region,
+    args::Args, damage_region::DamageRegion, input::Input, timer::Timer, EditTarget, InteractMode,
+    Region,
 };
 
 use self::presentation::Presentation;
@@ -431,12 +432,9 @@ impl App {
     }
     /// If the cursor should be flashing, returns a timer value that can be used to color cursor
     pub fn cursor_flash_timer(&self) -> Option<u32> {
-        let elapsed = self.flash_cursor_timer.init_point.elapsed();
-        if elapsed > self.flash_cursor_timer.duration {
-            None
-        } else {
-            Some(elapsed.as_millis() as u32)
-        }
+        self.flash_cursor_timer
+            .overtime()
+            .map(|dur| dur.as_millis() as u32)
     }
 
     pub(crate) fn data_height(&self) -> i64 {
@@ -483,27 +481,6 @@ impl App {
         };
         (usize::try_from(col_y).unwrap_or(0) * self.view.cols + usize::try_from(col_x).unwrap_or(0))
             + self.view.start_offset
-    }
-}
-
-#[derive(Debug)]
-struct Timer {
-    init_point: Instant,
-    duration: Duration,
-}
-
-impl Timer {
-    fn set(duration: Duration) -> Self {
-        Self {
-            init_point: Instant::now(),
-            duration,
-        }
-    }
-}
-
-impl Default for Timer {
-    fn default() -> Self {
-        Timer::set(Duration::ZERO)
     }
 }
 
