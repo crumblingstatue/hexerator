@@ -5,7 +5,7 @@ mod presentation;
 use std::{
     ffi::OsString,
     fs::{File, OpenOptions},
-    io::{Read, Seek, SeekFrom, Stdin, Write},
+    io::{Read, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
     time::Duration,
 };
@@ -13,26 +13,11 @@ use std::{
 use anyhow::{bail, Context};
 
 use crate::{
-    args::Args, damage_region::DamageRegion, input::Input, timer::Timer, EditTarget, InteractMode,
-    Region,
+    args::Args, damage_region::DamageRegion, input::Input, source::Source, timer::Timer,
+    EditTarget, InteractMode, Region,
 };
 
 use self::{edit_state::EditState, layout::Layout, presentation::Presentation};
-
-#[derive(Debug)]
-pub enum Source {
-    File(File),
-    Stdin(Stdin),
-}
-
-impl Read for Source {
-    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        match self {
-            Source::File(f) => f.read(buf),
-            Source::Stdin(stdin) => stdin.read(buf),
-        }
-    }
-}
 
 /// The hexerator application state
 #[derive(Debug)]

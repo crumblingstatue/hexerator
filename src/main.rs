@@ -7,6 +7,7 @@ mod damage_region;
 mod hex_conv;
 mod input;
 mod slice_ext;
+mod source;
 mod timer;
 mod ui;
 mod views;

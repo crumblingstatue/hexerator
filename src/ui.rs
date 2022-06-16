@@ -12,12 +12,8 @@ use rand::{thread_rng, RngCore};
 use sfml::{system::Vector2i, window::clipboard};
 
 use crate::{
-    app::{App, Source},
-    color::ColorMethod,
-    damage_region::DamageRegion,
-    msg_if_fail, msg_warn,
-    slice_ext::SliceExt,
-    InteractMode, Region,
+    app::App, color::ColorMethod, damage_region::DamageRegion, msg_if_fail, msg_warn,
+    slice_ext::SliceExt, source::Source, InteractMode, Region,
 };
 
 #[derive(Debug, Default)]
