@@ -204,6 +204,10 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                     app.set_cursor(off);
                 }
             }
+            Event::LostFocus => {
+                // When alt-tabbing, keys held down can get "stuck", because the key release events won't reach us
+                app.input.clear();
+            }
             _ => {}
         }
     }

@@ -33,4 +33,8 @@ impl Input {
     pub fn key_down(&self, key: Key) -> bool {
         self.key_down.contains(&key)
     }
+
+    pub(crate) fn clear(&mut self) {
+        self.key_down.clear();
+    }
 }
