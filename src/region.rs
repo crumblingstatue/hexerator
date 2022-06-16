@@ -1,4 +1,6 @@
-#[derive(Clone, Copy, Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Region {
     pub begin: usize,
     pub end: usize,

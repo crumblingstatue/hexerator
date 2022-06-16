@@ -14,10 +14,11 @@ use std::{
 };
 
 use anyhow::{bail, Context};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    args::Args, damage_region::DamageRegion, input::Input, region::Region, source::Source,
-    timer::Timer,
+    args::Args, damage_region::DamageRegion, input::Input, metafile::Metafile, msg_if_fail,
+    region::Region, source::Source, timer::Timer,
 };
 
 use self::{
@@ -60,7 +61,7 @@ pub struct App {
     pub regions: Vec<NamedRegion>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NamedRegion {
     pub name: String,
     pub region: Region,
@@ -136,6 +137,13 @@ impl App {
             this.center_view_on_offset(offset);
             this.edit_state.cursor = offset;
             this.flash_cursor();
+        }
+        if let Some(path) = this.meta_path() {
+            if path.exists() {
+                let data = std::fs::read(path)?;
+                let meta = rmp_serde::from_slice(&data)?;
+                this.consume_meta(meta);
+            }
         }
         Ok(this)
     }
@@ -219,6 +227,14 @@ impl App {
         self.args.file.as_ref().map(|file| {
             let mut os_string = OsString::from(file);
             os_string.push(".hexerator_bak");
+            os_string.into()
+        })
+    }
+
+    pub(crate) fn meta_path(&self) -> Option<PathBuf> {
+        self.args.file.as_ref().map(|file| {
+            let mut os_string = OsString::from(file);
+            os_string.push(".hexerator_meta");
             os_string.into()
         })
     }
@@ -327,6 +343,7 @@ impl App {
     pub fn close_file(&mut self) {
         // We potentially had large data, free it instead of clearing the Vec
         self.data = Vec::new();
+        msg_if_fail(self.save_meta(), "Failed to save .hexerator_meta");
         self.args.file = None;
         self.source = None;
     }
@@ -406,6 +423,22 @@ impl App {
         };
         (usize::try_from(col_y).unwrap_or(0) * self.view.cols + usize::try_from(col_x).unwrap_or(0))
             + self.view.start_offset
+    }
+    pub fn consume_meta(&mut self, meta: Metafile) {
+        self.regions = meta.named_regions;
+    }
+    pub fn make_meta(&self) -> Metafile {
+        Metafile {
+            named_regions: self.regions.clone(),
+        }
+    }
+    pub fn save_meta(&self) -> anyhow::Result<()> {
+        if let Some(path) = self.meta_path() {
+            let meta = self.make_meta();
+            let data = rmp_serde::to_vec(&meta)?;
+            std::fs::write(path, &data)?;
+        }
+        Ok(())
     }
 }
 

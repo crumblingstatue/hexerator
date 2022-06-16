@@ -6,6 +6,7 @@ mod color;
 mod damage_region;
 mod hex_conv;
 mod input;
+mod metafile;
 mod region;
 mod slice_ext;
 mod source;
@@ -72,6 +73,7 @@ fn main() -> anyhow::Result<()> {
             &mut vertex_buffer,
         );
     }
+    app.close_file();
     Ok(())
 }
 
