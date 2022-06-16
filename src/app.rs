@@ -9,8 +9,6 @@ use std::{
 };
 
 use anyhow::{bail, Context};
-use egui_inspect::{derive::Inspect, UiExt};
-use egui_sfml::egui::{self, Ui};
 use gamedebug_core::per_msg;
 use sfml::graphics::Vertex;
 
@@ -36,7 +34,7 @@ impl Read for Source {
 }
 
 /// The hexerator application state
-#[derive(Inspect, Debug)]
+#[derive(Debug)]
 pub struct App {
     /// Font size
     pub font_size: u32,
@@ -54,7 +52,6 @@ pub struct App {
     pub cursor: usize,
     cursor_history: Vec<usize>,
     cursor_history_current: usize,
-    #[inspect_with(inspect_vertices)]
     pub vertices: Vec<Vertex>,
     pub input: Input,
     pub interact_mode: InteractMode,
@@ -63,7 +60,6 @@ pub struct App {
     pub view_y: i64,
     // The amount scrolled per frame in view mode
     pub scroll_speed: i64,
-    #[opaque]
     pub presentation: Presentation,
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
@@ -74,20 +70,16 @@ pub struct App {
     pub show_block: bool,
     // The half digit when the user begins to type into a hex view
     pub hex_edit_half_digit: Option<u8>,
-    #[opaque]
     pub ui: crate::ui::Ui,
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
     pub fill_text: String,
     pub center_offset_input: String,
     pub seek_byte_offset_input: String,
-    #[opaque]
     pub args: Args,
-    #[opaque]
     pub source: Option<Source>,
     pub col_change_lock_x: bool,
     pub col_change_lock_y: bool,
-    #[opaque]
     flash_cursor_timer: Timer,
     pub window_height: u32,
     bottom_gap: i64,
@@ -95,23 +87,8 @@ pub struct App {
     pub just_reloaded: bool,
 }
 
-fn inspect_vertices(vertices: &mut Vec<Vertex>, ui: &mut Ui, mut id_source: u64) {
-    ui.inspect_iter_with_mut(
-        &format!("Vec<Vertex> [{}]", vertices.len()),
-        vertices,
-        &mut id_source,
-        |ui, i, vert, id_source| {
-            ui.horizontal(|ui| {
-                ui.label(i.to_string());
-                ui.property("x", &mut vert.position.x, id_source);
-                ui.property("y", &mut vert.position.y, id_source);
-            });
-        },
-    );
-}
-
 /// A view into the data
-#[derive(Inspect, Debug)]
+#[derive(Debug)]
 pub struct View {
     /// The starting offset where the view starts from
     pub start_offset: usize,

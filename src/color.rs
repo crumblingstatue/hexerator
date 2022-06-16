@@ -1,8 +1,7 @@
-use egui_inspect::derive::Inspect;
 use egui_sfml::egui;
 use sfml::graphics::Color;
 
-#[derive(Debug, PartialEq, Eq, Inspect)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ColorMethod {
     Mono,
     Default,

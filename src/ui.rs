@@ -1,7 +1,6 @@
 mod find_dialog;
 pub mod inspect_panel;
 
-use egui_inspect::inspect;
 use egui_sfml::{
     egui::{
         self, Button, ComboBox, DragValue, Layout, ScrollArea, TextEdit, TopBottomPanel, Window,
@@ -38,16 +37,10 @@ use self::{
     reason = "this isn't a useful lint for for loops"
 )]
 // https://github.com/rust-lang/rust-clippy/issues/8987
-pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
+pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
     sf_egui.do_frame(|ctx| {
         let mut open = app.ui.show_debug_panel;
         Window::new("Debug").open(&mut open).show(ctx, |ui| {
-            inspect! {
-                ui,
-                app
-            }
-            ui.separator();
-            ui.heading("More Debug");
             for info in IMMEDIATE.lock().unwrap().iter() {
                 if let Info::Msg(msg) = info {
                     ui.label(msg);

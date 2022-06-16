@@ -14,8 +14,7 @@ use crate::app::App;
 use args::Args;
 use clap::Parser;
 use damage_region::DamageRegion;
-use egui_inspect::derive::Inspect;
-use egui_sfml::{egui, SfEgui};
+use egui_sfml::SfEgui;
 use sfml::{
     graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow},
     system::Vector2,
@@ -40,7 +39,7 @@ fn msg_warn(msg: &str) {
         .show();
 }
 
-#[derive(PartialEq, Eq, Debug, Inspect)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum EditTarget {
     Hex,
     Text,
@@ -58,7 +57,7 @@ impl EditTarget {
 /// User interaction mode
 ///
 /// There are 2 modes: View and Edit
-#[derive(PartialEq, Eq, Debug, Inspect)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum InteractMode {
     /// Mode optimized for viewing the contents
     ///
@@ -70,7 +69,7 @@ pub enum InteractMode {
     Edit,
 }
 
-#[derive(Clone, Copy, Debug, Inspect)]
+#[derive(Clone, Copy, Debug)]
 pub struct Region {
     begin: usize,
     end: usize,

@@ -219,25 +219,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "egui-inspect"
-version = "0.1.0"
-source = "git+https://github.com/crumblingstatue/egui-inspect.git#daa80cbca5635abbdbd06f01bd15e4245d097334"
-dependencies = [
- "egui",
- "egui-inspect-derive",
-]
-
-[[package]]
-name = "egui-inspect-derive"
-version = "0.1.0"
-source = "git+https://github.com/crumblingstatue/egui-inspect.git#daa80cbca5635abbdbd06f01bd15e4245d097334"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
 name = "egui-sfml"
 version = "0.1.0"
 source = "git+https://github.com/crumblingstatue/egui-sfml.git#8e34593cc66f5f8a21e52ea8e2b7db8d1b995778"
@@ -408,7 +389,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "clap",
- "egui-inspect",
  "egui-sfml",
  "gamedebug_core",
  "rand",
