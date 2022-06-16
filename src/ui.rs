@@ -60,7 +60,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
         TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app));
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel::ui(ui, app));
         egui::SidePanel::right("right_panel").show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos));
-        let mut dialogs: Vec<_> = app.ui.dialogs.drain(..).collect();
+        let mut dialogs: Vec<_> = std::mem::take(&mut app.ui.dialogs);
         dialogs.retain_mut(|dialog| {
             let mut retain = true;
             Window::new(dialog.title()).show(ctx, |ui| {
