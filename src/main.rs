@@ -218,7 +218,7 @@ fn handle_text_entered(app: &mut App, unicode: char) {
             EditTarget::Hex => {
                 if unicode.is_ascii() {
                     let ascii = unicode as u8;
-                    if (b'0'..=b'f').contains(&ascii) {
+                    if matches!(ascii, b'0'..=b'9' | b'a'..=b'f') {
                         match app.hex_edit_half_digit {
                             Some(half) => {
                                 app.data[app.cursor] = hex_conv::merge_hex_halves(half, ascii);
