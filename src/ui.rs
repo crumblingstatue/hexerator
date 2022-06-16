@@ -25,6 +25,7 @@ pub struct Ui {
     pub inspect_panel: InspectPanel,
     pub find_dialog: FindDialog,
     pub show_debug_panel: bool,
+    pub fill_text: String,
 }
 
 use self::{
@@ -222,10 +223,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
                 if ui.button("deselect").clicked() {
                     app.selection = None;
                 }
-                ui.text_edit_singleline(&mut app.fill_text);
+                ui.text_edit_singleline(&mut app.ui.fill_text);
                 if ui.button("fill").clicked() {
                     if let Some(sel) = app.selection {
                         let values: Result<Vec<u8>, _> = app
+                            .ui
                             .fill_text
                             .split(' ')
                             .map(|token| u8::from_str_radix(token, 16))
