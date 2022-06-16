@@ -1,6 +1,7 @@
 mod edit_state;
 mod layout;
 mod presentation;
+mod view;
 
 use std::{
     ffi::OsString,
@@ -17,7 +18,7 @@ use crate::{
     EditTarget, InteractMode, Region,
 };
 
-use self::{edit_state::EditState, layout::Layout, presentation::Presentation};
+use self::{edit_state::EditState, layout::Layout, presentation::Presentation, view::View};
 
 /// The hexerator application state
 #[derive(Debug)]
@@ -51,17 +52,6 @@ pub struct App {
     stream_end: bool,
     pub just_reloaded: bool,
     pub layout: Layout,
-}
-
-/// A view into the data
-#[derive(Debug)]
-pub struct View {
-    /// The starting offset where the view starts from
-    pub start_offset: usize,
-    /// How many rows the view displays (how tall it is)
-    pub rows: usize,
-    /// How many columns the view displays (how wide it is)
-    pub cols: usize,
 }
 
 impl App {
