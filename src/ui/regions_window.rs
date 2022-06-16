@@ -26,6 +26,10 @@ impl RegionsWindow {
         }
         ui.separator();
         let mut idx = 0;
+        enum Action {
+            SetCursor(usize),
+        }
+        let mut action = None;
         app.regions.retain_mut(|region| {
             let mut retain = true;
             ui.horizontal(|ui| {
@@ -41,7 +45,14 @@ impl RegionsWindow {
                         app.selection = Some(region.region);
                     }
                 }
-                ui.label(format!("{}..={}", region.region.begin, region.region.end));
+                if ui.button(region.region.begin.to_string()).clicked() {
+                    action = Some(Action::SetCursor(region.region.begin))
+                }
+                ui.label("..=");
+                if ui.button(region.region.end.to_string()).clicked() {
+                    action = Some(Action::SetCursor(region.region.end))
+                }
+                ui.label(format!("Size: {}", region.region.size()));
                 if ui.button("🗑").clicked() {
                     retain = false;
                 }
@@ -49,5 +60,13 @@ impl RegionsWindow {
             idx += 1;
             retain
         });
+        if let Some(action) = action {
+            match action {
+                Action::SetCursor(offset) => {
+                    app.edit_state.cursor = offset;
+                    app.center_view_on_offset(offset);
+                }
+            }
+        }
     }
 }
