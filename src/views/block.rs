@@ -11,7 +11,7 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
         .saturating_sub(view_offset)
         .try_into()
         .unwrap_or(0)
-        / app.col_width as usize;
+        / app.layout.col_width as usize;
     let view_idx_off = view_idx_off_y * app.view.cols + view_idx_off_x;
     imm_msg!("block");
     imm_msg!(view_idx_off_x);
@@ -32,9 +32,10 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
             if idx >= app.data.len() {
                 break 'display;
             }
-            let pix_x =
-                (x + app.view.cols * 2 + 1) as f32 * f32::from(app.block_size) - app.view_x as f32;
-            let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.block_size) - app.view_y as f32;
+            let pix_x = (x + app.view.cols * 2 + 1) as f32 * f32::from(app.layout.block_size)
+                - app.view_x as f32;
+            let pix_y =
+                (y + view_idx_off_y) as f32 * f32::from(app.layout.block_size) - app.view_y as f32;
             let byte = app.data[idx];
             let c = app
                 .presentation
@@ -72,8 +73,11 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
         t.update_from_pixels(&pixels, app.view.cols as _, rows as _, 0, 0);
     }
     let mut s = Sprite::with_texture(&t);
-    s.set_position((-app.view_x as _, app.top_gap as f32 - app.view_y as f32));
-    s.set_scale((app.block_size as _, app.block_size as _));
+    s.set_position((
+        -app.view_x as _,
+        app.layout.top_gap as f32 - app.view_y as f32,
+    ));
+    s.set_scale((app.layout.block_size as _, app.layout.block_size as _));
     window.draw(&s);
     imm_msg!(block_rows_rendered);
     block_cols_rendered = block_cols_rendered

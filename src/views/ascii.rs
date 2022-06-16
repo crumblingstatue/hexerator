@@ -24,7 +24,7 @@ pub fn ascii(
         .saturating_sub(ascii_display_x_offset)
         .try_into()
         .unwrap_or(0)
-        / app.col_width as usize;
+        / app.layout.col_width as usize;
     //let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
     let view_idx_off = view_idx_off_y * app.view.cols + view_idx_off_x;
     imm_msg!("ascii");
@@ -37,17 +37,20 @@ pub fn ascii(
     imm_msg!(idx);
     'asciidisplay: for y in 0..app.view.rows {
         for x in 0..app.view.cols {
-            if x == app.max_visible_cols * 2 || x >= app.view.cols.saturating_sub(view_idx_off_x) {
+            if x == app.layout.max_visible_cols * 2
+                || x >= app.view.cols.saturating_sub(view_idx_off_x)
+            {
                 idx += app.view.cols - x;
                 break;
             }
             if idx >= app.data.len() {
                 break 'asciidisplay;
             }
-            let pix_x = (x + app.view.cols * 2 + 1) as f32 * f32::from(app.col_width / 2)
+            let pix_x = (x + app.view.cols * 2 + 1) as f32 * f32::from(app.layout.col_width / 2)
                 - app.view_x as f32;
             //let pix_y = y as f32 * f32::from(app.row_height) - app.view_y as f32;
-            let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.row_height) - app.view_y as f32;
+            let pix_y =
+                (y + view_idx_off_y) as f32 * f32::from(app.layout.row_height) - app.view_y as f32;
             let byte = app.data[idx];
             let c = app
                 .presentation
@@ -63,8 +66,8 @@ pub fn ascii(
                 let mut rs = RectangleShape::from_rect(Rect::new(
                     pix_x,
                     pix_y,
-                    (app.col_width / 2) as f32,
-                    app.row_height as f32,
+                    (app.layout.col_width / 2) as f32,
+                    app.layout.row_height as f32,
                 ));
                 rs.set_fill_color(Color::rgb(150, 150, 150));
                 if app.edit_state.cursor == idx {
@@ -88,7 +91,15 @@ pub fn ascii(
                 0xFF => '■' as u32,
                 _ => byte as u32,
             };
-            draw_glyph(font, app.font_size, vertex_buffer, pix_x, pix_y, glyph, c);
+            draw_glyph(
+                font,
+                app.layout.font_size,
+                vertex_buffer,
+                pix_x,
+                pix_y,
+                glyph,
+                c,
+            );
             idx += 1;
             ascii_cols_rendered += 1;
         }

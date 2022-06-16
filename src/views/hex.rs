@@ -28,15 +28,18 @@ pub fn hex(
     let mut cols_rendered: u32 = 0;
     'display: for y in 0..app.view.rows {
         for x in 0..app.view.cols {
-            if x == app.max_visible_cols || x >= app.view.cols.saturating_sub(view_idx_off_x) {
+            if x == app.layout.max_visible_cols || x >= app.view.cols.saturating_sub(view_idx_off_x)
+            {
                 idx += app.view.cols - x;
                 break;
             }
             if idx >= app.data.len() {
                 break 'display;
             }
-            let pix_x = (x + view_idx_off_x) as f32 * f32::from(app.col_width) - app.view_x as f32;
-            let pix_y = (y + view_idx_off_y) as f32 * f32::from(app.row_height) - app.view_y as f32;
+            let pix_x =
+                (x + view_idx_off_x) as f32 * f32::from(app.layout.col_width) - app.view_x as f32;
+            let pix_y =
+                (y + view_idx_off_y) as f32 * f32::from(app.layout.row_height) - app.view_y as f32;
             let byte = app.data[idx];
             let selected = match app.selection {
                 Some(sel) => (sel.begin..=sel.end).contains(&idx),
@@ -48,8 +51,8 @@ pub fn hex(
                 let mut rs = RectangleShape::from_rect(Rect::new(
                     pix_x,
                     pix_y,
-                    app.col_width as f32,
-                    app.row_height as f32,
+                    app.layout.col_width as f32,
+                    app.layout.row_height as f32,
                 ));
                 rs.set_fill_color(Color::rgb(150, 150, 150));
                 if app.edit_state.cursor == idx {
@@ -62,7 +65,7 @@ pub fn hex(
                 let extra_x = if app.edit_state.hex_edit_half_digit.is_none() {
                     0
                 } else {
-                    app.col_width / 2
+                    app.layout.col_width / 2
                 };
                 draw_cursor(
                     pix_x + extra_x as f32,
@@ -82,7 +85,7 @@ pub fn hex(
                 .byte_color(byte, app.presentation.invert_color);
             draw_glyph(
                 font,
-                app.font_size,
+                app.layout.font_size,
                 vertex_buffer,
                 pix_x,
                 pix_y,
@@ -91,7 +94,7 @@ pub fn hex(
             );
             draw_glyph(
                 font,
-                app.font_size,
+                app.layout.font_size,
                 vertex_buffer,
                 pix_x + 11.0,
                 pix_y,

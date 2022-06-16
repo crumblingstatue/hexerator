@@ -1,4 +1,5 @@
 mod edit_state;
+mod layout;
 mod presentation;
 
 use std::{
@@ -16,7 +17,7 @@ use crate::{
     Region,
 };
 
-use self::{edit_state::EditState, presentation::Presentation};
+use self::{edit_state::EditState, layout::Layout, presentation::Presentation};
 
 #[derive(Debug)]
 pub enum Source {
@@ -36,22 +37,13 @@ impl Read for Source {
 /// The hexerator application state
 #[derive(Debug)]
 pub struct App {
-    /// Font size
-    pub font_size: u32,
-    /// Block size for block view
-    pub block_size: u8,
     /// The default view
     pub view: View,
-    // Maximum number of visible hex columns that can be shown on screen.
-    // ascii is double this amount.
-    pub max_visible_cols: usize,
     pub dirty_region: Option<Region>,
     pub data: Vec<u8>,
-    pub col_width: u8,
     pub edit_state: EditState,
     pub input: Input,
     pub interact_mode: InteractMode,
-    pub top_gap: i64,
     pub view_x: i64,
     pub view_y: i64,
     // The amount scrolled per frame in view mode
@@ -60,7 +52,6 @@ pub struct App {
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
     pub edit_target: EditTarget,
-    pub row_height: u8,
     pub show_hex: bool,
     pub show_text: bool,
     pub show_block: bool,
@@ -72,10 +63,9 @@ pub struct App {
     pub col_change_lock_x: bool,
     pub col_change_lock_y: bool,
     flash_cursor_timer: Timer,
-    pub window_height: u32,
-    bottom_gap: i64,
     stream_end: bool,
     pub just_reloaded: bool,
+    pub layout: Layout,
 }
 
 /// A view into the data
@@ -114,37 +104,31 @@ impl App {
                 source = None;
             }
         }
-        let top_gap = 46;
+        let layout = Layout::new(window_height);
         let cursor = 0;
         let mut this = Self {
-            font_size: 14,
-            block_size: 4,
             view: View {
                 start_offset: 0,
                 rows: 67,
                 cols: 48,
             },
-            max_visible_cols: 75,
             dirty_region: None,
             data,
-            col_width: 26,
             edit_state: EditState::default(),
             input: Input::default(),
             interact_mode: InteractMode::View,
             // The top part where the top panel is. You should try to position stuff so it's not overdrawn
             // by the top panel
-            top_gap,
             // The x pixel offset of the scrollable view
             view_x: 0,
             // The y pixel offset of the scrollable view
-            view_y: -top_gap,
+            view_y: -layout.top_gap,
             // The amount scrolled per frame in view mode
             scroll_speed: 4,
             presentation: Presentation::default(),
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             prev_frame_inspect_offset: cursor,
             edit_target: EditTarget::Hex,
-            row_height: 16,
             show_hex: true,
             show_text: true,
             show_block: false,
@@ -156,10 +140,9 @@ impl App {
             col_change_lock_x: false,
             col_change_lock_y: true,
             flash_cursor_timer: Timer::default(),
-            window_height,
-            bottom_gap: 25,
             stream_end: false,
             just_reloaded: true,
+            layout,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -218,7 +201,7 @@ impl App {
         gamedebug_core::toggle();
     }
     pub fn ascii_display_x_offset(&self) -> i64 {
-        self.view.cols as i64 * i64::from(self.col_width) + 12
+        self.view.cols as i64 * i64::from(self.layout.col_width) + 12
     }
     pub fn search_focus(&mut self, offset: usize) {
         self.edit_state.cursor = offset;
@@ -240,8 +223,8 @@ impl App {
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
         let (row, col) = self.view.offset_row_col(offset);
-        self.view_x = (col as i64 * self.col_width as i64) - 200;
-        self.view_y = (row as i64 * self.row_height as i64) - 200;
+        self.view_x = (col as i64 * self.layout.col_width as i64) - 200;
+        self.view_y = (row as i64 * self.layout.row_height as i64) - 200;
     }
 
     pub(crate) fn backup_path(&self) -> Option<PathBuf> {
@@ -321,9 +304,11 @@ impl App {
     }
     /// Calculate the (row, col, byte) offset where the view starts showing from
     pub fn view_offsets(&self) -> ViewOffsets {
-        let view_y = self.view_y + self.top_gap;
-        let row_offset: usize = (view_y / self.row_height as i64).try_into().unwrap_or(0);
-        let col_offset: usize = (self.view_x / self.col_width as i64)
+        let view_y = self.view_y + self.layout.top_gap;
+        let row_offset: usize = (view_y / self.layout.row_height as i64)
+            .try_into()
+            .unwrap_or(0);
+        let col_offset: usize = (self.view_x / self.layout.col_width as i64)
             .try_into()
             .unwrap_or(0);
         ViewOffsets {
@@ -336,10 +321,10 @@ impl App {
     pub fn set_view_to_byte_offset(&mut self, offset: usize) {
         let (row, col) = self.view.offset_row_col(offset);
         if self.col_change_lock_x {
-            self.view_x = (col * self.col_width as usize) as i64;
+            self.view_x = (col * self.layout.col_width as usize) as i64;
         }
         if self.col_change_lock_y {
-            self.view_y = ((row * self.row_height as usize) as i64) - self.top_gap;
+            self.view_y = ((row * self.layout.row_height as usize) as i64) - self.layout.top_gap;
         }
     }
 
@@ -392,11 +377,11 @@ impl App {
     pub(crate) fn data_height(&self) -> i64 {
         let len = self.data.len();
         let rows = len as i64 / self.view.cols as i64;
-        rows * self.row_height as i64
+        rows * self.layout.row_height as i64
     }
 
     pub(crate) fn view_area(&self) -> i64 {
-        self.window_height as i64 - self.top_gap - self.bottom_gap
+        self.layout.window_height as i64 - self.layout.top_gap - self.layout.bottom_gap
     }
 
     pub(crate) fn try_read_stream(&mut self) {
@@ -424,12 +409,12 @@ impl App {
         let x: i64 = self.view_x + i64::from(x);
         let y: i64 = self.view_y + i64::from(y);
         let ascii_display_x_offset = self.ascii_display_x_offset();
-        let col_y = y / i64::from(self.row_height);
+        let col_y = y / i64::from(self.layout.row_height);
         let col_x = if x < ascii_display_x_offset {
-            x / i64::from(self.col_width)
+            x / i64::from(self.layout.col_width)
         } else {
             let x_rel = x - ascii_display_x_offset;
-            x_rel / i64::from(self.col_width / 2)
+            x_rel / i64::from(self.layout.col_width / 2)
         };
         (usize::try_from(col_y).unwrap_or(0) * self.view.cols + usize::try_from(col_x).unwrap_or(0))
             + self.view.start_offset
