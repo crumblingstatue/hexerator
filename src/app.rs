@@ -10,7 +10,6 @@ use std::{
 };
 
 use anyhow::{bail, Context};
-use sfml::graphics::Vertex;
 
 use crate::{
     args::Args, damage_region::DamageRegion, input::Input, timer::Timer, EditTarget, InteractMode,
@@ -50,7 +49,6 @@ pub struct App {
     pub data: Vec<u8>,
     pub col_width: u8,
     pub edit_state: EditState,
-    pub vertices: Vec<Vertex>,
     pub input: Input,
     pub interact_mode: InteractMode,
     pub top_gap: i64,
@@ -134,7 +132,6 @@ impl App {
             data,
             col_width: 26,
             edit_state: EditState::default(),
-            vertices: Vec::new(),
             input: Input::default(),
             interact_mode: InteractMode::View,
             // The top part where the top panel is. You should try to position stuff so it's not overdrawn

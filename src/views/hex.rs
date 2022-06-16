@@ -1,5 +1,7 @@
 use gamedebug_core::imm_msg;
-use sfml::graphics::{Color, Font, Rect, RectangleShape, RenderTarget, RenderWindow, Shape};
+use sfml::graphics::{
+    Color, Font, Rect, RectangleShape, RenderTarget, RenderWindow, Shape, Vertex,
+};
 
 use crate::{
     app::App,
@@ -14,6 +16,7 @@ pub fn hex(
     view_idx_off_x: usize,
     window: &mut RenderWindow,
     font: &Font,
+    vertex_buffer: &mut Vec<Vertex>,
 ) {
     let view_idx_off = view_idx_off_y * app.view.cols + view_idx_off_x;
     // The ascii view has a different offset indexing
@@ -80,7 +83,7 @@ pub fn hex(
             draw_glyph(
                 font,
                 app.font_size,
-                &mut app.vertices,
+                vertex_buffer,
                 pix_x,
                 pix_y,
                 g1 as u32,
@@ -89,7 +92,7 @@ pub fn hex(
             draw_glyph(
                 font,
                 app.font_size,
-                &mut app.vertices,
+                vertex_buffer,
                 pix_x + 11.0,
                 pix_y,
                 g2 as u32,

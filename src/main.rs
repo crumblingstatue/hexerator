@@ -17,7 +17,7 @@ use clap::Parser;
 use damage_region::DamageRegion;
 use egui_sfml::SfEgui;
 use sfml::{
-    graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow},
+    graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style},
 };
@@ -94,14 +94,27 @@ fn main() -> anyhow::Result<()> {
     let mut sf_egui = SfEgui::new(&window);
     let font = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
     let mut app = App::new(args, window.size().y)?;
+    let mut vertex_buffer = Vec::new();
 
     while window.is_open() {
-        do_frame(&mut app, &mut sf_egui, &mut window, &font);
+        do_frame(
+            &mut app,
+            &mut sf_egui,
+            &mut window,
+            &font,
+            &mut vertex_buffer,
+        );
     }
     Ok(())
 }
 
-fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font: &Font) {
+fn do_frame(
+    app: &mut App,
+    sf_egui: &mut SfEgui,
+    window: &mut RenderWindow,
+    font: &Font,
+    vertex_buffer: &mut Vec<Vertex>,
+) {
     handle_events(app, window, sf_egui);
     update(app);
     app.clamp_view();
@@ -112,7 +125,7 @@ fn do_frame(app: &mut App, sf_egui: &mut SfEgui, window: &mut RenderWindow, font
         (g * 255.) as u8,
         (b * 255.) as u8,
     ));
-    draw(app, window, font);
+    draw(app, window, font, vertex_buffer);
     sf_egui.draw(window, None);
     window.display();
     // Should only be true on the frame right after reloading
@@ -146,20 +159,27 @@ fn update(app: &mut App) {
     }
 }
 
-fn draw(app: &mut App, window: &mut RenderWindow, font: &Font) {
-    app.vertices.clear();
+fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
+    vertex_buffer.clear();
     // The offset for the hex display imposed by the view
     let view_idx_off_x: usize = app.view_x.try_into().unwrap_or(0) / app.col_width as usize;
     let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.row_height as usize;
     if app.show_hex {
-        views::hex(view_idx_off_y, app, view_idx_off_x, window, font);
+        views::hex(
+            view_idx_off_y,
+            app,
+            view_idx_off_x,
+            window,
+            font,
+            vertex_buffer,
+        );
     }
     if app.show_text {
-        views::ascii(app, view_idx_off_y, window, font);
+        views::ascii(app, view_idx_off_y, window, font, vertex_buffer);
     }
     let mut rs = RenderStates::default();
     rs.set_texture(Some(font.texture(app.font_size)));
-    window.draw_primitives(&app.vertices, PrimitiveType::QUADS, &rs);
+    window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
     if app.show_block {
         views::block(app, view_idx_off_y, window);
     }

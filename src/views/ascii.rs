@@ -1,5 +1,7 @@
 use gamedebug_core::imm_msg;
-use sfml::graphics::{Color, Font, Rect, RectangleShape, RenderTarget, RenderWindow, Shape};
+use sfml::graphics::{
+    Color, Font, Rect, RectangleShape, RenderTarget, RenderWindow, Shape, Vertex,
+};
 
 use crate::{
     app::App,
@@ -7,7 +9,13 @@ use crate::{
     EditTarget, InteractMode,
 };
 
-pub fn ascii(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow, font: &Font) {
+pub fn ascii(
+    app: &mut App,
+    view_idx_off_y: usize,
+    window: &mut RenderWindow,
+    font: &Font,
+    vertex_buffer: &mut Vec<Vertex>,
+) {
     // The offset for the ascii display imposed by the view
     let ascii_display_x_offset = app.ascii_display_x_offset();
     imm_msg!(ascii_display_x_offset);
@@ -80,15 +88,7 @@ pub fn ascii(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow, fo
                 0xFF => '■' as u32,
                 _ => byte as u32,
             };
-            draw_glyph(
-                font,
-                app.font_size,
-                &mut app.vertices,
-                pix_x,
-                pix_y,
-                glyph,
-                c,
-            );
+            draw_glyph(font, app.font_size, vertex_buffer, pix_x, pix_y, glyph, c);
             idx += 1;
             ascii_cols_rendered += 1;
         }
