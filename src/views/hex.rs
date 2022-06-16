@@ -56,7 +56,7 @@ pub fn hex(
                 window.draw(&rs);
             }
             if idx == app.edit_state.cursor {
-                let extra_x = if app.hex_edit_half_digit.is_none() {
+                let extra_x = if app.edit_state.hex_edit_half_digit.is_none() {
                     0
                 } else {
                     app.col_width / 2
@@ -70,7 +70,7 @@ pub fn hex(
                 );
             }
             let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);
-            if let Some(half) = app.hex_edit_half_digit && app.edit_state.cursor == idx {
+            if let Some(half) = app.edit_state.hex_edit_half_digit && app.edit_state.cursor == idx {
                 g1 = half.to_ascii_uppercase();
             }
             let c = app

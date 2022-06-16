@@ -68,8 +68,6 @@ pub struct App {
     pub show_hex: bool,
     pub show_text: bool,
     pub show_block: bool,
-    // The half digit when the user begins to type into a hex view
-    pub hex_edit_half_digit: Option<u8>,
     pub ui: crate::ui::Ui,
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
@@ -160,8 +158,6 @@ impl App {
             show_hex: true,
             show_text: true,
             show_block: false,
-            // The half digit when the user begins to type into a hex view
-            hex_edit_half_digit: None,
             ui: crate::ui::Ui::default(),
             selection: None,
             select_begin: None,

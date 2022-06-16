@@ -212,7 +212,7 @@ fn handle_text_entered(app: &mut App, unicode: char) {
                 if unicode.is_ascii() {
                     let ascii = unicode as u8;
                     if matches!(ascii, b'0'..=b'9' | b'a'..=b'f') {
-                        match app.hex_edit_half_digit {
+                        match app.edit_state.hex_edit_half_digit {
                             Some(half) => {
                                 app.data[app.edit_state.cursor] =
                                     hex_conv::merge_hex_halves(half, ascii);
@@ -220,9 +220,9 @@ fn handle_text_entered(app: &mut App, unicode: char) {
                                 if app.edit_state.cursor + 1 < app.data.len() {
                                     app.step_cursor_forward();
                                 }
-                                app.hex_edit_half_digit = None;
+                                app.edit_state.hex_edit_half_digit = None;
                             }
-                            None => app.hex_edit_half_digit = Some(ascii),
+                            None => app.edit_state.hex_edit_half_digit = Some(ascii),
                         }
                     }
                 }
@@ -360,13 +360,13 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::Tab if shift => {
             app.edit_target.switch();
-            app.hex_edit_half_digit = None;
+            app.edit_state.hex_edit_half_digit = None;
         }
         Key::F1 => app.interact_mode = InteractMode::View,
         Key::F2 => app.interact_mode = InteractMode::Edit,
         Key::F12 => app.toggle_debug(),
         Key::Escape => {
-            app.hex_edit_half_digit = None;
+            app.edit_state.hex_edit_half_digit = None;
         }
         Key::F if ctrl => {
             app.ui.find_dialog.open ^= true;
