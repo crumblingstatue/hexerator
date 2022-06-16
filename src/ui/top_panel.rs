@@ -53,6 +53,9 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             ui.checkbox(&mut app.col_change_lock_x, "Lock x on column change");
             ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
         });
+        if ui.button("Regions").clicked() {
+            app.ui.regions_window.open ^= true;
+        }
         ui.with_layout(Layout::right_to_left(), |ui| {
             match &app.source {
                 Some(src) => match src {

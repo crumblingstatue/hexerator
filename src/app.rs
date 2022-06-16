@@ -57,6 +57,13 @@ pub struct App {
     stream_end: bool,
     pub just_reloaded: bool,
     pub layout: Layout,
+    pub regions: Vec<NamedRegion>,
+}
+
+#[derive(Debug)]
+pub struct NamedRegion {
+    pub name: String,
+    pub region: Region,
 }
 
 impl App {
@@ -123,6 +130,7 @@ impl App {
             stream_end: false,
             just_reloaded: true,
             layout,
+            regions: Vec::new(),
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
