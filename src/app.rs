@@ -50,8 +50,6 @@ pub struct App {
     pub data: Vec<u8>,
     pub col_width: u8,
     pub edit_state: EditState,
-    cursor_history: Vec<usize>,
-    cursor_history_current: usize,
     pub vertices: Vec<Vertex>,
     pub input: Input,
     pub interact_mode: InteractMode,
@@ -136,8 +134,6 @@ impl App {
             data,
             col_width: 26,
             edit_state: EditState::default(),
-            cursor_history: Vec::new(),
-            cursor_history_current: 0,
             vertices: Vec::new(),
             input: Input::default(),
             interact_mode: InteractMode::View,
@@ -317,42 +313,14 @@ impl App {
         self.clamp_cols();
         self.set_view_to_byte_offset(prev_offset.byte);
     }
-    /// Set cursor and save history
-    pub fn set_cursor(&mut self, offset: usize) {
-        self.cursor_history.truncate(self.cursor_history_current);
-        self.cursor_history.push(self.edit_state.cursor);
-        self.edit_state.cursor = offset;
-        self.cursor_history_current += 1;
-    }
-    /// Set cursor, don't save history
-    pub fn set_cursor_no_history(&mut self, offset: usize) {
-        self.edit_state.cursor = offset;
-    }
-    /// Step cursor forward without saving history
-    pub fn step_cursor_forward(&mut self) {
-        self.edit_state.cursor += 1;
-    }
-    /// Step cursor back without saving history
-    pub fn step_cursor_back(&mut self) {
-        self.edit_state.cursor = self.edit_state.cursor.saturating_sub(1)
-    }
-    /// Offset cursor by amount, not saving history
-    pub fn offset_cursor(&mut self, amount: usize) {
-        self.edit_state.cursor += amount;
-    }
     pub fn cursor_history_back(&mut self) {
-        if self.cursor_history_current > 0 {
-            self.cursor_history.push(self.edit_state.cursor);
-            self.cursor_history_current -= 1;
-            self.edit_state.cursor = self.cursor_history[self.cursor_history_current];
+        if self.edit_state.cursor_history_back() {
             self.center_view_on_offset(self.edit_state.cursor);
             self.flash_cursor();
         }
     }
     pub fn cursor_history_forward(&mut self) {
-        if self.cursor_history_current + 1 < self.cursor_history.len() {
-            self.cursor_history_current += 1;
-            self.edit_state.cursor = self.cursor_history[self.cursor_history_current];
+        if self.edit_state.cursor_history_forward() {
             self.center_view_on_offset(self.edit_state.cursor);
             self.flash_cursor();
         }

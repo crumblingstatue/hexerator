@@ -391,16 +391,17 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
         match action {
             Action::GoToOffset(offset) => {
                 if app.ui.inspect_panel.offset_relative {
-                    app.set_cursor(offset - app.args.hard_seek.unwrap_or(0) as usize);
+                    app.edit_state
+                        .set_cursor(offset - app.args.hard_seek.unwrap_or(0) as usize);
                 } else {
-                    app.set_cursor(offset);
+                    app.edit_state.set_cursor(offset);
                 }
                 app.center_view_on_offset(app.edit_state.cursor);
                 app.flash_cursor();
             }
             Action::AddDirty(damage) => app.widen_dirty_region(damage),
             Action::JumpForward(amount) => {
-                app.set_cursor(app.edit_state.cursor + amount);
+                app.edit_state.set_cursor(app.edit_state.cursor + amount);
                 app.center_view_on_offset(app.edit_state.cursor);
                 app.flash_cursor();
             }

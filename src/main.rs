@@ -190,7 +190,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 if button == mouse::Button::Left {
                     let off = app.pixel_pos_byte_offset(x, y);
-                    app.set_cursor(off);
+                    app.edit_state.set_cursor(off);
                 }
             }
             Event::LostFocus => {
@@ -218,7 +218,7 @@ fn handle_text_entered(app: &mut App, unicode: char) {
                                     hex_conv::merge_hex_halves(half, ascii);
                                 app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
                                 if app.edit_state.cursor + 1 < app.data.len() {
-                                    app.step_cursor_forward();
+                                    app.edit_state.step_cursor_forward();
                                 }
                                 app.edit_state.hex_edit_half_digit = None;
                             }
@@ -232,7 +232,7 @@ fn handle_text_entered(app: &mut App, unicode: char) {
                     app.data[app.edit_state.cursor] = unicode as u8;
                     app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
                     if app.edit_state.cursor + 1 < app.data.len() {
-                        app.step_cursor_forward()
+                        app.edit_state.step_cursor_forward()
                     }
                 }
             }
@@ -253,7 +253,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 }
             }
             InteractMode::Edit => {
-                app.set_cursor_no_history(app.edit_state.cursor.saturating_sub(app.view.cols));
+                app.edit_state
+                    .set_cursor_no_history(app.edit_state.cursor.saturating_sub(app.view.cols));
             }
         },
         Key::Down => match app.interact_mode {
@@ -264,7 +265,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
             InteractMode::Edit => {
                 if app.edit_state.cursor + app.view.cols < app.data.len() {
-                    app.offset_cursor(app.view.cols);
+                    app.edit_state.offset_cursor(app.view.cols);
                 }
             }
         },
@@ -274,7 +275,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 break 'block;
             }
             if app.interact_mode == InteractMode::Edit {
-                app.step_cursor_back();
+                app.edit_state.step_cursor_back();
             } else if ctrl {
                 if shift {
                     app.halve_cols();
@@ -290,7 +291,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
             if app.interact_mode == InteractMode::Edit && app.edit_state.cursor + 1 < app.data.len()
             {
-                app.step_cursor_forward();
+                app.edit_state.step_cursor_forward();
             } else if ctrl {
                 if shift {
                     app.double_cols();
@@ -308,7 +309,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 if app.view.start_offset >= amount {
                     app.view.start_offset -= amount;
                     if app.interact_mode == InteractMode::Edit {
-                        app.set_cursor_no_history(app.edit_state.cursor.saturating_sub(amount));
+                        app.edit_state
+                            .set_cursor_no_history(app.edit_state.cursor.saturating_sub(amount));
                     }
                 } else {
                     app.view.start_offset = 0
@@ -331,7 +333,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                     if app.interact_mode == InteractMode::Edit
                         && app.edit_state.cursor + amount < app.data.len()
                     {
-                        app.offset_cursor(amount);
+                        app.edit_state.offset_cursor(amount);
                     }
                 }
             }
@@ -343,7 +345,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
             InteractMode::Edit => {
                 app.view.start_offset = 0;
-                app.set_cursor_no_history(0)
+                app.edit_state.set_cursor_no_history(0)
             }
         },
         Key::End => match app.interact_mode {
@@ -354,7 +356,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 let pos = app.data.len() - app.view.rows * app.view.cols;
                 app.view.start_offset = pos;
                 if app.interact_mode == InteractMode::Edit {
-                    app.set_cursor_no_history(pos);
+                    app.edit_state.set_cursor_no_history(pos);
                 }
             }
         },
