@@ -26,6 +26,8 @@ pub struct Ui {
     pub find_dialog: FindDialog,
     pub show_debug_panel: bool,
     pub fill_text: String,
+    pub center_offset_input: String,
+    pub seek_byte_offset_input: String,
 }
 
 use self::{
@@ -154,10 +156,10 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
                     }
                     ui.horizontal(|ui| {
                         ui.label("Seek to byte offset");
-                        let re = ui.text_edit_singleline(&mut app.seek_byte_offset_input);
+                        let re = ui.text_edit_singleline(&mut app.ui.seek_byte_offset_input);
                         if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
                             app.set_view_to_byte_offset(
-                                app.seek_byte_offset_input.parse().unwrap_or(0),
+                                app.ui.seek_byte_offset_input.parse().unwrap_or(0),
                             );
                         }
                     });
@@ -334,11 +336,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
                                 (offsets.byte as f64 / data_len as f64) * 100.0
                             ));
                             let re = ui.add(
-                                TextEdit::singleline(&mut app.center_offset_input)
+                                TextEdit::singleline(&mut app.ui.center_offset_input)
                                     .hint_text("Center view on offset"),
                             );
                             if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
-                                if let Ok(offset) = app.center_offset_input.parse() {
+                                if let Ok(offset) = app.ui.center_offset_input.parse() {
                                     app.center_view_on_offset(offset);
                                 }
                             }
