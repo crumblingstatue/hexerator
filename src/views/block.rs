@@ -65,6 +65,7 @@ pub fn block(
                     vertex_buffer,
                     app.edit_target == EditTarget::Text && app.interact_mode == InteractMode::Edit,
                     app.cursor_flash_timer(),
+                    &app.presentation,
                 );
             }
             idx += 1;

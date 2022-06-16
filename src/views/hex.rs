@@ -1,5 +1,5 @@
 use gamedebug_core::imm_msg;
-use sfml::graphics::{Color, Font, Vertex};
+use sfml::graphics::{Font, Vertex};
 
 use crate::{
     app::App,
@@ -51,7 +51,7 @@ pub fn hex(
                     pix_y,
                     app.layout.col_width as f32,
                     app.layout.row_height as f32,
-                    Color::rgb(150, 150, 150),
+                    app.presentation.sel_color,
                 );
             }
             if idx == app.edit_state.cursor {
@@ -66,6 +66,7 @@ pub fn hex(
                     vertex_buffer,
                     app.edit_target == EditTarget::Hex && app.interact_mode == InteractMode::Edit,
                     app.cursor_flash_timer(),
+                    &app.presentation,
                 );
             }
             let [mut g1, g2] = hex_conv::byte_to_hex_digits(byte);

@@ -9,16 +9,25 @@ use sfml::{
     system::Vector2,
 };
 
-fn draw_cursor(x: f32, y: f32, vertices: &mut Vec<Vertex>, active: bool, flash_timer: Option<u32>) {
+use crate::app::presentation::Presentation;
+
+fn draw_cursor(
+    x: f32,
+    y: f32,
+    vertices: &mut Vec<Vertex>,
+    active: bool,
+    flash_timer: Option<u32>,
+    presentation: &Presentation,
+) {
     let color = if active {
         match flash_timer {
             Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
-            None => Color::WHITE,
+            None => presentation.cursor_active_color,
         }
     } else {
         match flash_timer {
             Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
-            None => Color::rgb(150, 150, 150),
+            None => presentation.cursor_color,
         }
     };
     draw_rect_outline(vertices, x, y, 10.0, 10.0, color, 2.0);

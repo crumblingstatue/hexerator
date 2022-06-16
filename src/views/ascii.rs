@@ -1,5 +1,5 @@
 use gamedebug_core::imm_msg;
-use sfml::graphics::{Color, Font, Vertex};
+use sfml::graphics::{Font, Vertex};
 
 use crate::{
     app::App,
@@ -61,7 +61,7 @@ pub fn ascii(app: &mut App, view_idx_off_y: usize, font: &Font, vertex_buffer: &
                     pix_y,
                     (app.layout.col_width / 2) as f32,
                     app.layout.row_height as f32,
-                    Color::rgb(150, 100, 50),
+                    app.presentation.sel_color,
                 )
             }
             if idx == app.edit_state.cursor {
@@ -71,6 +71,7 @@ pub fn ascii(app: &mut App, view_idx_off_y: usize, font: &Font, vertex_buffer: &
                     vertex_buffer,
                     app.edit_target == EditTarget::Text && app.interact_mode == InteractMode::Edit,
                     app.cursor_flash_timer(),
+                    &app.presentation,
                 );
             }
             let glyph = match byte {

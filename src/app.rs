@@ -1,6 +1,6 @@
 mod edit_state;
 mod layout;
-mod presentation;
+pub mod presentation;
 mod view;
 
 use std::{
