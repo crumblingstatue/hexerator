@@ -1,7 +1,5 @@
 use gamedebug_core::imm_msg;
-use sfml::graphics::{
-    Color, Font, Rect, RectangleShape, RenderTarget, RenderWindow, Shape, Vertex,
-};
+use sfml::graphics::{Color, Font, Vertex};
 
 use crate::{
     app::App,
@@ -9,13 +7,7 @@ use crate::{
     EditTarget, InteractMode,
 };
 
-pub fn ascii(
-    app: &mut App,
-    view_idx_off_y: usize,
-    window: &mut RenderWindow,
-    font: &Font,
-    vertex_buffer: &mut Vec<Vertex>,
-) {
+pub fn ascii(app: &mut App, view_idx_off_y: usize, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
     // The offset for the ascii display imposed by the view
     let ascii_display_x_offset = app.ascii_display_x_offset();
     imm_msg!(ascii_display_x_offset);
@@ -63,24 +55,20 @@ pub fn ascii(
             if selected
                 || (app.ui.find_dialog.open && app.ui.find_dialog.result_offsets.contains(&idx))
             {
-                let mut rs = RectangleShape::from_rect(Rect::new(
+                super::draw_rect(
+                    vertex_buffer,
                     pix_x,
                     pix_y,
                     (app.layout.col_width / 2) as f32,
                     app.layout.row_height as f32,
-                ));
-                rs.set_fill_color(Color::rgb(150, 150, 150));
-                if app.edit_state.cursor == idx {
-                    rs.set_outline_color(Color::WHITE);
-                    rs.set_outline_thickness(-2.0);
-                }
-                window.draw(&rs);
+                    Color::rgb(150, 100, 50),
+                )
             }
             if idx == app.edit_state.cursor {
                 draw_cursor(
                     pix_x,
                     pix_y,
-                    window,
+                    vertex_buffer,
                     app.edit_target == EditTarget::Text && app.interact_mode == InteractMode::Edit,
                     app.cursor_flash_timer(),
                 );

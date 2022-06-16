@@ -5,31 +5,23 @@ pub use ascii::ascii;
 pub use block::block;
 pub use hex::hex;
 use sfml::{
-    graphics::{Color, Font, Rect, RectangleShape, RenderTarget, RenderWindow, Shape, Vertex},
+    graphics::{Color, Font, Vertex},
     system::Vector2,
 };
 
-fn draw_cursor(x: f32, y: f32, window: &mut RenderWindow, active: bool, flash_timer: Option<u32>) {
-    let mut rs = RectangleShape::from_rect(Rect {
-        left: x,
-        top: y,
-        width: 10.0,
-        height: 10.0,
-    });
-    rs.set_fill_color(Color::TRANSPARENT);
-    rs.set_outline_thickness(2.0);
-    if active {
+fn draw_cursor(x: f32, y: f32, vertices: &mut Vec<Vertex>, active: bool, flash_timer: Option<u32>) {
+    let color = if active {
         match flash_timer {
-            Some(timer) => rs.set_outline_color(Color::rgb(timer as u8, timer as u8, timer as u8)),
-            None => rs.set_outline_color(Color::WHITE),
+            Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
+            None => Color::WHITE,
         }
     } else {
         match flash_timer {
-            Some(timer) => rs.set_outline_color(Color::rgb(timer as u8, timer as u8, timer as u8)),
-            None => rs.set_outline_color(Color::rgb(150, 150, 150)),
+            Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
+            None => Color::rgb(150, 150, 150),
         }
-    }
-    window.draw(&rs);
+    };
+    draw_rect_outline(vertices, x, y, 10.0, 10.0, color, 2.0);
 }
 
 fn draw_glyph(
@@ -77,4 +69,76 @@ fn draw_glyph(
             texture_rect.top as f32,
         ),
     });
+}
+
+fn draw_rect(vertices: &mut Vec<Vertex>, x: f32, y: f32, w: f32, h: f32, color: Color) {
+    vertices.extend([
+        Vertex {
+            position: Vector2::new(x, y),
+            color,
+            tex_coords: Vector2::default(),
+        },
+        Vertex {
+            position: Vector2::new(x, y + h),
+            color,
+            tex_coords: Vector2::default(),
+        },
+        Vertex {
+            position: Vector2::new(x + w, y + h),
+            color,
+            tex_coords: Vector2::default(),
+        },
+        Vertex {
+            position: Vector2::new(x + w, y),
+            color,
+            tex_coords: Vector2::default(),
+        },
+    ]);
+}
+
+fn draw_rect_outline(
+    vertices: &mut Vec<Vertex>,
+    x: f32,
+    y: f32,
+    w: f32,
+    h: f32,
+    color: Color,
+    thickness: f32,
+) {
+    // top
+    draw_rect(
+        vertices,
+        x - thickness,
+        y - thickness,
+        w + thickness,
+        thickness,
+        color,
+    );
+    // right
+    draw_rect(
+        vertices,
+        x + w,
+        y - thickness,
+        thickness,
+        h + thickness,
+        color,
+    );
+    // bottom
+    draw_rect(
+        vertices,
+        x - thickness,
+        y + h,
+        w + thickness * 2.0,
+        thickness,
+        color,
+    );
+    // left
+    draw_rect(
+        vertices,
+        x - thickness,
+        y - thickness,
+        thickness,
+        h + thickness,
+        color,
+    );
 }

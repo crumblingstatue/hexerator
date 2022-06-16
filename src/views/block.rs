@@ -1,9 +1,14 @@
 use gamedebug_core::imm_msg;
-use sfml::graphics::{RenderTarget, RenderWindow, Sprite, Texture, Transformable};
+use sfml::graphics::{RenderTarget, RenderWindow, Sprite, Texture, Transformable, Vertex};
 
 use crate::{app::App, views::draw_cursor, EditTarget, InteractMode};
 
-pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
+pub fn block(
+    app: &mut App,
+    view_idx_off_y: usize,
+    window: &mut RenderWindow,
+    vertex_buffer: &mut Vec<Vertex>,
+) {
     let view_offset = app.block_display_x_offset();
     imm_msg!(view_offset);
     let view_idx_off_x: usize = app
@@ -57,7 +62,7 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
                 draw_cursor(
                     pix_x,
                     pix_y,
-                    window,
+                    vertex_buffer,
                     app.edit_target == EditTarget::Text && app.interact_mode == InteractMode::Edit,
                     app.cursor_flash_timer(),
                 );
