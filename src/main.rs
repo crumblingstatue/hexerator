@@ -400,3 +400,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         _ => {}
     }
 }
+impl Region {
+    pub fn size(&self) -> usize {
+        // Inclusive, so add 1 to end
+        (self.end + 1) - self.begin
+    }
+}

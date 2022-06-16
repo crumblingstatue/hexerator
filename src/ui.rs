@@ -218,6 +218,9 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
                         None => {}
                     }
                 }
+                if let Some(sel) = &app.selection {
+                    ui.label(format!("Size: {}", sel.size()));
+                }
                 if ui.button("deselect").clicked() {
                     app.selection = None;
                 }
