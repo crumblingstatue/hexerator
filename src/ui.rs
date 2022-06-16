@@ -1,4 +1,5 @@
 mod bottom_panel;
+mod debug_window;
 mod find_dialog;
 pub mod inspect_panel;
 mod top_panel;
@@ -7,7 +8,6 @@ use egui_sfml::{
     egui::{self, TopBottomPanel, Window},
     SfEgui,
 };
-use gamedebug_core::{Info, PerEntry, IMMEDIATE, PERSISTENT};
 use sfml::system::Vector2i;
 
 use crate::app::App;
@@ -24,28 +24,12 @@ pub struct Ui {
 
 use self::{find_dialog::FindDialog, inspect_panel::InspectPanel};
 
-#[expect(
-    clippy::significant_drop_in_scrutinee,
-    reason = "this isn't a useful lint for for loops"
-)]
-// https://github.com/rust-lang/rust-clippy/issues/8987
 pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
     sf_egui.do_frame(|ctx| {
         let mut open = app.ui.show_debug_panel;
-        Window::new("Debug").open(&mut open).show(ctx, |ui| {
-            for info in IMMEDIATE.lock().unwrap().iter() {
-                if let Info::Msg(msg) = info {
-                    ui.label(msg);
-                }
-            }
-            gamedebug_core::clear_immediates();
-            ui.separator();
-            for PerEntry { frame, info } in PERSISTENT.lock().unwrap().iter() {
-                if let Info::Msg(msg) = info {
-                    ui.label(format!("{}: {}", frame, msg));
-                }
-            }
-        });
+        Window::new("Debug")
+            .open(&mut open)
+            .show(ctx, debug_window::ui);
         app.ui.show_debug_panel = open;
         open = app.ui.find_dialog.open;
         Window::new("Find")
