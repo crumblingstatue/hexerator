@@ -1,10 +1,10 @@
-use egui_sfml::egui::{self, ComboBox, Layout, Ui};
+use egui_sfml::egui::{self, ComboBox, DragValue, Layout, Ui};
 use rand::{thread_rng, RngCore};
 use sfml::window::clipboard;
 
 use crate::{
     app::App, color::ColorMethod, damage_region::DamageRegion, msg_if_fail, msg_warn,
-    region::Region, slice_ext::SliceExt, source::Source,
+    region::Region, slice_ext::SliceExt, source::Source, ui::Dialog,
 };
 
 pub fn ui(ui: &mut Ui, app: &mut App) {
@@ -28,6 +28,33 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             if re.clicked() {
                 app.set_cursor_init();
                 ui.close_menu();
+            }
+            if ui.button("Set cursor position").clicked() {
+                ui.close_menu();
+                #[derive(Debug, Default)]
+                struct SetCursorDialog {
+                    offset: usize,
+                }
+                impl Dialog for SetCursorDialog {
+                    fn title(&self) -> &str {
+                        "Set cursor"
+                    }
+
+                    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+                        ui.horizontal(|ui| {
+                            ui.label("Offset");
+                            ui.add(DragValue::new(&mut self.offset));
+                        });
+                        if ui.input().key_pressed(egui::Key::Enter) {
+                            app.edit_state.cursor = self.offset;
+                            app.center_view_on_offset(self.offset);
+                            false
+                        } else {
+                            true
+                        }
+                    }
+                }
+                app.ui.add_dialog(SetCursorDialog::default());
             }
         });
         ui.menu_button("View", |ui| {
