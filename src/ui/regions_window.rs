@@ -1,11 +1,25 @@
-use egui_sfml::egui::{self, Ui};
+use egui_sfml::egui::{self, DragValue, Ui};
 
 use crate::app::{App, NamedRegion};
 
 #[derive(Debug, Default)]
 pub struct RegionsWindow {
     pub open: bool,
-    pub rename_idx: Option<usize>,
+    pub status: Status,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Status {
+    Init,
+    Rename(usize),
+    EditBegin(usize),
+    EditEnd(usize),
+}
+
+impl Default for Status {
+    fn default() -> Self {
+        Self::Init
+    }
 }
 
 impl RegionsWindow {
@@ -33,24 +47,45 @@ impl RegionsWindow {
         app.regions.retain_mut(|region| {
             let mut retain = true;
             ui.horizontal(|ui| {
-                if app.ui.regions_window.rename_idx == Some(idx) {
+                if app.ui.regions_window.status == Status::Rename(idx) {
                     if ui.text_edit_singleline(&mut region.name).lost_focus() {
-                        app.ui.regions_window.rename_idx = None;
+                        app.ui.regions_window.status = Status::Init;
                     }
                 } else {
                     let re = ui.button(&region.name);
                     if re.double_clicked() {
-                        app.ui.regions_window.rename_idx = Some(idx);
+                        app.ui.regions_window.status = Status::Rename(idx);
                     } else if re.clicked() {
                         app.selection = Some(region.region);
                     }
                 }
-                if ui.button(region.region.begin.to_string()).clicked() {
-                    action = Some(Action::SetCursor(region.region.begin))
+                if app.ui.regions_window.status == Status::EditBegin(idx) {
+                    if ui
+                        .add(DragValue::new(&mut region.region.begin))
+                        .lost_focus()
+                    {
+                        app.ui.regions_window.status = Status::Init;
+                    }
+                } else {
+                    let re = ui.button(region.region.begin.to_string());
+                    if re.double_clicked() {
+                        app.ui.regions_window.status = Status::EditBegin(idx);
+                    } else if re.clicked() {
+                        action = Some(Action::SetCursor(region.region.begin))
+                    }
                 }
                 ui.label("..=");
-                if ui.button(region.region.end.to_string()).clicked() {
-                    action = Some(Action::SetCursor(region.region.end))
+                if app.ui.regions_window.status == Status::EditEnd(idx) {
+                    if ui.add(DragValue::new(&mut region.region.end)).lost_focus() {
+                        app.ui.regions_window.status = Status::Init;
+                    }
+                } else {
+                    let re = ui.button(region.region.end.to_string());
+                    if re.double_clicked() {
+                        app.ui.regions_window.status = Status::EditEnd(idx);
+                    } else if re.clicked() {
+                        action = Some(Action::SetCursor(region.region.end))
+                    }
                 }
                 ui.label(format!("Size: {}", region.region.size()));
                 if ui.button("🗑").clicked() {
