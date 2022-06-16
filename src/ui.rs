@@ -140,6 +140,9 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                         app.flash_cursor();
                         ui.close_menu();
                     }
+                    if ui.button("Set view offset to cursor").clicked() {
+                        app.view.start_offset = app.cursor;
+                    }
                     ui.horizontal(|ui| {
                         ui.label("Seek to byte offset");
                         let re = ui.text_edit_singleline(&mut app.seek_byte_offset_input);
