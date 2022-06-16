@@ -304,7 +304,7 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
         InteractMode::View => {
             let off = app.pixel_pos_byte_offset(mouse_pos.x, mouse_pos.y);
             let mut add = 0;
-            if app.inspect_panel.offset_relative {
+            if app.ui.inspect_panel.offset_relative {
                 add = app.args.hard_seek.unwrap_or(0) as usize;
             }
             ui.label(format!("offset: {} (0x{:x})", off + add, off + add));
@@ -312,39 +312,41 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
         }
         InteractMode::Edit => {
             let mut off = app.cursor();
-            if app.inspect_panel.offset_relative {
+            if app.ui.inspect_panel.offset_relative {
                 off += app.args.hard_seek.unwrap_or(0) as usize;
             }
             ui.label(format!("offset: {} ({:x}h)", off, off));
             app.cursor()
         }
     };
-    ui.checkbox(&mut app.inspect_panel.offset_relative, "Relative offset")
+    ui.checkbox(&mut app.ui.inspect_panel.offset_relative, "Relative offset")
         .on_hover_text("Offset relative to --hard-seek");
     if app.data.is_empty() {
         return;
     }
-    if offset != app.prev_frame_inspect_offset || app.just_reloaded || app.inspect_panel.changed_one
+    if offset != app.prev_frame_inspect_offset
+        || app.just_reloaded
+        || app.ui.inspect_panel.changed_one
     {
-        for thingy in &mut app.inspect_panel.input_thingies {
+        for thingy in &mut app.ui.inspect_panel.input_thingies {
             thingy.update(
                 &app.data[..],
                 offset,
-                app.inspect_panel.big_endian,
-                app.inspect_panel.hex,
+                app.ui.inspect_panel.big_endian,
+                app.ui.inspect_panel.hex,
             );
         }
     }
-    app.inspect_panel.changed_one = false;
+    app.ui.inspect_panel.changed_one = false;
     let mut actions = Vec::new();
-    for thingy in &mut app.inspect_panel.input_thingies {
+    for thingy in &mut app.ui.inspect_panel.input_thingies {
         ui.horizontal(|ui| {
             ui.label(thingy.label());
             if ui.button("📋").on_hover_text("copy to clipboard").clicked() {
                 clipboard::set_string(&*thingy.buf_mut());
             }
             if ui.button("⬇").on_hover_text("go to offset").clicked() {
-                let offset = if app.inspect_panel.hex {
+                let offset = if app.ui.inspect_panel.hex {
                     usize::from_str_radix(thingy.buf_mut(), 16).unwrap()
                 } else {
                     thingy.buf_mut().parse().unwrap()
@@ -352,7 +354,7 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
                 actions.push(Action::GoToOffset(offset));
             }
             if ui.button("➡").on_hover_text("jump forward").clicked() {
-                let offset = if app.inspect_panel.hex {
+                let offset = if app.ui.inspect_panel.hex {
                     usize::from_str_radix(thingy.buf_mut(), 16).unwrap()
                 } else {
                     thingy.buf_mut().parse().unwrap()
@@ -364,31 +366,31 @@ pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
             && ui.input().key_pressed(egui::Key::Enter)
         {
             if let Some(range) =
-                thingy.write_data(&mut app.data, offset, app.inspect_panel.big_endian)
+                thingy.write_data(&mut app.data, offset, app.ui.inspect_panel.big_endian)
             {
-                app.inspect_panel.changed_one = true;
+                app.ui.inspect_panel.changed_one = true;
                 actions.push(Action::AddDirty(range));
             }
         }
     }
     ui.horizontal(|ui| {
         if ui
-            .checkbox(&mut app.inspect_panel.big_endian, "Big endian")
+            .checkbox(&mut app.ui.inspect_panel.big_endian, "Big endian")
             .clicked()
         {
             // Changing this should refresh everything
-            app.inspect_panel.changed_one = true;
+            app.ui.inspect_panel.changed_one = true;
         }
-        if ui.checkbox(&mut app.inspect_panel.hex, "Hex").clicked() {
+        if ui.checkbox(&mut app.ui.inspect_panel.hex, "Hex").clicked() {
             // Changing this should refresh everything
-            app.inspect_panel.changed_one = true;
+            app.ui.inspect_panel.changed_one = true;
         }
     });
 
     for action in actions {
         match action {
             Action::GoToOffset(offset) => {
-                if app.inspect_panel.offset_relative {
+                if app.ui.inspect_panel.offset_relative {
                     app.set_cursor(offset - app.args.hard_seek.unwrap_or(0) as usize);
                 } else {
                     app.set_cursor(offset);

@@ -13,8 +13,8 @@ use gamedebug_core::per_msg;
 use sfml::graphics::Vertex;
 
 use crate::{
-    args::Args, color::ColorMethod, damage_region::DamageRegion, input::Input,
-    ui::inspect_panel::InspectPanel, EditTarget, FindDialog, InteractMode, Region,
+    args::Args, color::ColorMethod, damage_region::DamageRegion, input::Input, EditTarget,
+    InteractMode, Region,
 };
 
 #[derive(Debug)]
@@ -74,8 +74,7 @@ pub struct App {
     // The half digit when the user begins to type into a hex view
     pub hex_edit_half_digit: Option<u8>,
     #[opaque]
-    pub inspect_panel: InspectPanel,
-    pub find_dialog: FindDialog,
+    pub ui: crate::ui::Ui,
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
     pub fill_text: String,
@@ -188,8 +187,7 @@ impl App {
             show_block: false,
             // The half digit when the user begins to type into a hex view
             hex_edit_half_digit: None,
-            inspect_panel: InspectPanel::default(),
-            find_dialog: FindDialog::default(),
+            ui: crate::ui::Ui::default(),
             selection: None,
             select_begin: None,
             fill_text: String::new(),

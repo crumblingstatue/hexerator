@@ -70,17 +70,6 @@ pub enum InteractMode {
     Edit,
 }
 
-#[derive(Default, Debug, Inspect)]
-pub struct FindDialog {
-    open: bool,
-    input: String,
-    result_offsets: Vec<usize>,
-    /// Used to keep track of previous/next result to go to
-    result_cursor: usize,
-    /// When Some, the results list should be scrolled to the offset of that result
-    scroll_to: Option<usize>,
-}
-
 #[derive(Clone, Copy, Debug, Inspect)]
 pub struct Region {
     begin: usize,
@@ -378,7 +367,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             app.hex_edit_half_digit = None;
         }
         Key::F if ctrl => {
-            app.find_dialog.open ^= true;
+            app.ui.find_dialog.open ^= true;
         }
         Key::S if ctrl => {
             if app.args.read_only {

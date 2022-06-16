@@ -45,7 +45,9 @@ pub fn block(app: &mut App, view_idx_off_y: usize, window: &mut RenderWindow) {
                 Some(sel) => (sel.begin..=sel.end).contains(&idx),
                 None => false,
             };
-            if selected || (app.find_dialog.open && app.find_dialog.result_offsets.contains(&idx)) {
+            if selected
+                || (app.ui.find_dialog.open && app.ui.find_dialog.result_offsets.contains(&idx))
+            {
             }
             if idx == app.cursor() {
                 draw_cursor(

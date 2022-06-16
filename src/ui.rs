@@ -1,3 +1,4 @@
+mod find_dialog;
 pub mod inspect_panel;
 
 use egui_inspect::inspect;
@@ -20,7 +21,16 @@ use crate::{
     InteractMode, Region,
 };
 
-use self::inspect_panel::inspect_panel_ui;
+#[derive(Debug, Default)]
+pub struct Ui {
+    pub inspect_panel: InspectPanel,
+    pub find_dialog: FindDialog,
+}
+
+use self::{
+    find_dialog::FindDialog,
+    inspect_panel::{inspect_panel_ui, InspectPanel},
+};
 
 #[expect(
     clippy::significant_drop_in_scrutinee,
@@ -51,62 +61,66 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
             }
         });
         app.show_debug_panel = open;
-        open = app.find_dialog.open;
+        open = app.ui.find_dialog.open;
         Window::new("Find").open(&mut open).show(ctx, |ui| {
             if ui
-                .text_edit_singleline(&mut app.find_dialog.input)
+                .text_edit_singleline(&mut app.ui.find_dialog.input)
                 .lost_focus()
                 && ui.input().key_pressed(egui::Key::Enter)
             {
-                let needle = app.find_dialog.input.parse().unwrap();
-                app.find_dialog.result_offsets.clear();
+                let needle = app.ui.find_dialog.input.parse().unwrap();
+                app.ui.find_dialog.result_offsets.clear();
                 for (offset, &byte) in app.data.iter().enumerate() {
                     if byte == needle {
-                        app.find_dialog.result_offsets.push(offset);
+                        app.ui.find_dialog.result_offsets.push(offset);
                     }
                 }
-                if let Some(&off) = app.find_dialog.result_offsets.first() {
+                if let Some(&off) = app.ui.find_dialog.result_offsets.first() {
                     app.search_focus(off);
                 }
             }
             ScrollArea::vertical().max_height(480.).show(ui, |ui| {
-                for (i, &off) in app.find_dialog.result_offsets.iter().enumerate() {
+                for (i, &off) in app.ui.find_dialog.result_offsets.iter().enumerate() {
                     let re =
-                        ui.selectable_label(app.find_dialog.result_cursor == i, off.to_string());
-                    if let Some(scroll_off) = app.find_dialog.scroll_to && scroll_off == i {
+                        ui.selectable_label(app.ui.find_dialog.result_cursor == i, off.to_string());
+                    if let Some(scroll_off) = app.ui.find_dialog.scroll_to && scroll_off == i {
                         re.scroll_to_me(None);
-                        app.find_dialog.scroll_to = None;
+                        app.ui.find_dialog.scroll_to = None;
                     }
                     if re.clicked() {
                         app.search_focus(off);
-                        app.find_dialog.result_cursor = i;
+                        app.ui.find_dialog.result_cursor = i;
                         break;
                     }
                 }
             });
             ui.horizontal(|ui| {
-                ui.set_enabled(!app.find_dialog.result_offsets.is_empty());
+                ui.set_enabled(!app.ui.find_dialog.result_offsets.is_empty());
                 if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
-                    && app.find_dialog.result_cursor > 0
+                    && app.ui.find_dialog.result_cursor > 0
                 {
-                    app.find_dialog.result_cursor -= 1;
-                    let off = app.find_dialog.result_offsets[app.find_dialog.result_cursor];
+                    app.ui.find_dialog.result_cursor -= 1;
+                    let off = app.ui.find_dialog.result_offsets[app.ui.find_dialog.result_cursor];
                     app.search_focus(off);
-                    app.find_dialog.scroll_to = Some(app.find_dialog.result_cursor);
+                    app.ui.find_dialog.scroll_to = Some(app.ui.find_dialog.result_cursor);
                 }
-                ui.label((app.find_dialog.result_cursor + 1).to_string());
+                ui.label((app.ui.find_dialog.result_cursor + 1).to_string());
                 if (ui.button("Next (N)").clicked() || ui.input().key_pressed(egui::Key::N))
-                    && app.find_dialog.result_cursor + 1 < app.find_dialog.result_offsets.len()
+                    && app.ui.find_dialog.result_cursor + 1
+                        < app.ui.find_dialog.result_offsets.len()
                 {
-                    app.find_dialog.result_cursor += 1;
-                    let off = app.find_dialog.result_offsets[app.find_dialog.result_cursor];
+                    app.ui.find_dialog.result_cursor += 1;
+                    let off = app.ui.find_dialog.result_offsets[app.ui.find_dialog.result_cursor];
                     app.search_focus(off);
-                    app.find_dialog.scroll_to = Some(app.find_dialog.result_cursor);
+                    app.ui.find_dialog.scroll_to = Some(app.ui.find_dialog.result_cursor);
                 }
-                ui.label(format!("{} results", app.find_dialog.result_offsets.len()));
+                ui.label(format!(
+                    "{} results",
+                    app.ui.find_dialog.result_offsets.len()
+                ));
             });
         });
-        app.find_dialog.open = open;
+        app.ui.find_dialog.open = open;
         TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.menu_button("File", |ui| {
