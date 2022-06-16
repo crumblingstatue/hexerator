@@ -245,38 +245,6 @@ fn handle_text_entered(app: &mut App, unicode: char) {
         },
         InteractMode::View => {}
     }
-    match app.interact_mode {
-        InteractMode::Edit => match app.edit_target {
-            EditTarget::Hex => {
-                if unicode.is_ascii() {
-                    let ascii = unicode as u8;
-                    if (b'0'..=b'f').contains(&ascii) {
-                        match app.hex_edit_half_digit {
-                            Some(half) => {
-                                app.data[app.cursor] = hex_conv::merge_hex_halves(half, ascii);
-                                app.widen_dirty_region(DamageRegion::Single(app.cursor()));
-                                if app.cursor() + 1 < app.data.len() {
-                                    app.step_cursor_forward();
-                                }
-                                app.hex_edit_half_digit = None;
-                            }
-                            None => app.hex_edit_half_digit = Some(ascii),
-                        }
-                    }
-                }
-            }
-            EditTarget::Text => {
-                if unicode.is_ascii() {
-                    app.data[app.cursor] = unicode as u8;
-                    app.widen_dirty_region(DamageRegion::Single(app.cursor()));
-                    if app.cursor() + 1 < app.data.len() {
-                        app.step_cursor_forward()
-                    }
-                }
-            }
-        },
-        InteractMode::View => {}
-    }
 }
 
 fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: bool) {
