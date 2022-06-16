@@ -25,6 +25,7 @@ use crate::{
 pub struct Ui {
     pub inspect_panel: InspectPanel,
     pub find_dialog: FindDialog,
+    pub show_debug_panel: bool,
 }
 
 use self::{
@@ -39,7 +40,7 @@ use self::{
 // https://github.com/rust-lang/rust-clippy/issues/8987
 pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
     sf_egui.do_frame(|ctx| {
-        let mut open = app.show_debug_panel;
+        let mut open = app.ui.show_debug_panel;
         Window::new("Debug").open(&mut open).show(ctx, |ui| {
             inspect! {
                 ui,
@@ -60,7 +61,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                 }
             }
         });
-        app.show_debug_panel = open;
+        app.ui.show_debug_panel = open;
         open = app.ui.find_dialog.open;
         Window::new("Find").open(&mut open).show(ctx, |ui| {
             if ui
@@ -357,7 +358,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, mut app: &mut App, mouse_pos: Vector2i) {
                     }
                 }
                 ui.with_layout(Layout::right_to_left(), |ui| {
-                    ui.checkbox(&mut app.show_debug_panel, "debug (F12)");
+                    ui.checkbox(&mut app.ui.show_debug_panel, "debug (F12)");
                     ui.checkbox(&mut app.show_block, "block");
                     ui.checkbox(&mut app.show_text, "text");
                     ui.checkbox(&mut app.show_hex, "hex");

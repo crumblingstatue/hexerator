@@ -46,7 +46,6 @@ pub struct App {
     pub max_visible_cols: usize,
     pub dirty_region: Option<Region>,
     pub data: Vec<u8>,
-    pub show_debug_panel: bool,
     pub col_width: u8,
     // The editing byte offset
     pub cursor: usize,
@@ -158,7 +157,6 @@ impl App {
             max_visible_cols: 75,
             dirty_region: None,
             data,
-            show_debug_panel: false,
             col_width: 26,
             cursor,
             cursor_history: Vec::new(),
@@ -256,7 +254,7 @@ impl App {
         Ok(())
     }
     pub fn toggle_debug(&mut self) {
-        self.show_debug_panel ^= true;
+        self.ui.show_debug_panel ^= true;
         gamedebug_core::toggle();
     }
     pub fn ascii_display_x_offset(&self) -> i64 {
