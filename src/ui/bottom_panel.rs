@@ -5,7 +5,7 @@ use crate::{
     msg_if_fail,
 };
 
-pub fn bottom_panel_ui(ui: &mut Ui, app: &mut App) {
+pub fn ui(ui: &mut Ui, app: &mut App) {
     ui.horizontal(|ui| {
         if ui
             .selectable_label(app.interact_mode == InteractMode::View, "View (F1)")

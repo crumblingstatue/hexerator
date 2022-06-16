@@ -7,7 +7,7 @@ use crate::{
     region::Region, slice_ext::SliceExt, source::Source,
 };
 
-pub fn top_panel_ui(ui: &mut Ui, app: &mut App) {
+pub fn ui(ui: &mut Ui, app: &mut App) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
             if ui.button("Open").clicked() {

@@ -302,7 +302,7 @@ enum Action {
     JumpForward(usize),
 }
 
-pub fn inspect_panel_ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
+pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
     let offset = match app.interact_mode {
         InteractMode::View => {
             let off = app.pixel_pos_byte_offset(mouse_pos.x, mouse_pos.y);

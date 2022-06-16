@@ -22,12 +22,7 @@ pub struct Ui {
     pub seek_byte_offset_input: String,
 }
 
-use self::{
-    bottom_panel::bottom_panel_ui,
-    find_dialog::FindDialog,
-    inspect_panel::{inspect_panel_ui, InspectPanel},
-    top_panel::top_panel_ui,
-};
+use self::{find_dialog::FindDialog, inspect_panel::InspectPanel};
 
 #[expect(
     clippy::significant_drop_in_scrutinee,
@@ -57,8 +52,8 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
             .open(&mut open)
             .show(ctx, |ui| FindDialog::ui(ui, app));
         app.ui.find_dialog.open = open;
-        TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel_ui(ui, app));
-        TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel_ui(ui, app));
-        egui::SidePanel::right("right_panel").show(ctx, |ui| inspect_panel_ui(ui, app, mouse_pos));
+        TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app));
+        TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel::ui(ui, app));
+        egui::SidePanel::right("right_panel").show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos));
     });
 }
