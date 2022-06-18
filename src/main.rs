@@ -14,12 +14,16 @@ mod timer;
 mod ui;
 mod views;
 
+use std::io::{Read, Write};
+
 use crate::app::App;
 use app::{edit_target::EditTarget, interact_mode::InteractMode};
 use args::Args;
 use clap::Parser;
 use damage_region::DamageRegion;
 use egui_sfml::SfEgui;
+use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
+use serde::{Deserialize, Serialize};
 use sfml::{
     graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
     system::Vector2,
@@ -44,8 +48,27 @@ fn msg_warn(msg: &str) {
         .show();
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct InstanceRequest {
+    args: Args,
+}
+
 fn main() -> anyhow::Result<()> {
     let mut args = Args::parse();
+    if args.instance {
+        match LocalSocketStream::connect("/tmp/hexerator.sock") {
+            Ok(mut stream) => {
+                let vec = rmp_serde::to_vec(&InstanceRequest { args })?;
+                stream.write_all(&vec)?;
+                return Ok(());
+            }
+            Err(e) => {
+                eprintln!("Failed to connect to instance: {}", e);
+            }
+        }
+    }
+    let listener = LocalSocketListener::bind("/tmp/hexerator.sock")?;
+    listener.set_nonblocking(true)?;
     // Streaming sources should be read-only.
     // Opening them as write blocks at EOF, which we don't want.
     if args.stream {
@@ -65,6 +88,13 @@ fn main() -> anyhow::Result<()> {
     let mut vertex_buffer = Vec::new();
 
     while window.is_open() {
+        if let Ok(mut stream) = listener.accept() {
+            let mut buf = Vec::new();
+            stream.read_to_end(&mut buf)?;
+            let req: InstanceRequest = rmp_serde::from_slice(&buf)?;
+            app = App::new(req.args, window.size().y)?;
+            window.request_focus();
+        }
         do_frame(
             &mut app,
             &mut sf_egui,
@@ -74,6 +104,7 @@ fn main() -> anyhow::Result<()> {
         );
     }
     app.close_file();
+    std::fs::remove_file("/tmp/hexerator.sock").unwrap();
     Ok(())
 }
 
