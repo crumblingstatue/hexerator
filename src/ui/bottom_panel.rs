@@ -23,7 +23,7 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
         match app.interact_mode {
             InteractMode::View => {
                 ui.label("offset");
-                ui.add(DragValue::new(&mut app.view.start_offset));
+                ui.add(DragValue::new(&mut app.view.region.begin));
                 ui.label("columns");
                 ui.add(DragValue::new(&mut app.view.cols));
                 let data_len = app.data.len();

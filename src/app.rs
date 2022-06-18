@@ -99,7 +99,10 @@ impl App {
         let cursor = 0;
         let mut this = Self {
             view: View {
-                start_offset: 0,
+                region: Region {
+                    begin: 0,
+                    end: data.len(),
+                },
                 rows: 67,
                 cols: 48,
             },
@@ -426,7 +429,7 @@ impl App {
             x_rel / i64::from(self.layout.col_width / 2)
         };
         (usize::try_from(col_y).unwrap_or(0) * self.view.cols + usize::try_from(col_x).unwrap_or(0))
-            + self.view.start_offset
+            + self.view.region.begin
     }
     pub fn consume_meta(&mut self, meta: Metafile) {
         self.regions = meta.named_regions;

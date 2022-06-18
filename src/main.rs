@@ -272,7 +272,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::Up => match app.interact_mode {
             InteractMode::View => {
                 if ctrl {
-                    app.view.start_offset = app.view.start_offset.saturating_sub(1);
+                    app.view.region.begin = app.view.region.begin.saturating_sub(1);
                 }
             }
             InteractMode::Edit => {
@@ -283,7 +283,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::Down => match app.interact_mode {
             InteractMode::View => {
                 if ctrl {
-                    app.view.start_offset += 1;
+                    app.view.region.begin += 1;
                 }
             }
             InteractMode::Edit => {
@@ -329,14 +329,14 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
             InteractMode::Edit => {
                 let amount = app.view.rows * app.view.cols;
-                if app.view.start_offset >= amount {
-                    app.view.start_offset -= amount;
+                if app.view.region.begin >= amount {
+                    app.view.region.begin -= amount;
                     if app.interact_mode == InteractMode::Edit {
                         app.edit_state
                             .set_cursor_no_history(app.edit_state.cursor.saturating_sub(amount));
                     }
                 } else {
-                    app.view.start_offset = 0
+                    app.view.region.begin = 0
                 }
             }
         },
@@ -351,8 +351,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
             InteractMode::Edit => {
                 let amount = app.view.rows * app.view.cols;
-                if app.view.start_offset + amount < app.data.len() {
-                    app.view.start_offset += amount;
+                if app.view.region.begin + amount < app.data.len() {
+                    app.view.region.begin += amount;
                     if app.interact_mode == InteractMode::Edit
                         && app.edit_state.cursor + amount < app.data.len()
                     {
@@ -367,7 +367,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 app.view_y = -app.layout.top_gap - 10;
             }
             InteractMode::Edit => {
-                app.view.start_offset = 0;
+                app.view.region.begin = 0;
                 app.edit_state.set_cursor_no_history(0)
             }
         },
@@ -377,7 +377,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
             InteractMode::Edit => {
                 let pos = app.data.len() - app.view.rows * app.view.cols;
-                app.view.start_offset = pos;
+                app.view.region.begin = pos;
                 if app.interact_mode == InteractMode::Edit {
                     app.edit_state.set_cursor_no_history(pos);
                 }

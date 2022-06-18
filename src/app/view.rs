@@ -1,8 +1,10 @@
+use crate::region::Region;
+
 /// A view into the data
 #[derive(Debug)]
 pub struct View {
-    /// The starting offset where the view starts from
-    pub start_offset: usize,
+    /// The region this view shows
+    pub region: Region,
     /// How many rows the view displays (how tall it is)
     pub rows: usize,
     /// How many columns the view displays (how wide it is)

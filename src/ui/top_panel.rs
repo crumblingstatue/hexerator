@@ -68,7 +68,7 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 ui.close_menu();
             }
             if ui.button("Set view offset to cursor").clicked() {
-                app.view.start_offset = app.edit_state.cursor;
+                app.view.region.begin = app.edit_state.cursor;
             }
             ui.horizontal(|ui| {
                 ui.label("Seek to byte offset");

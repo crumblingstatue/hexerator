@@ -24,7 +24,7 @@ pub fn ascii(app: &mut App, view_idx_off_y: usize, font: &Font, vertex_buffer: &
     imm_msg!(view_idx_off);
     let mut ascii_rows_rendered: u32 = 0;
     let mut ascii_cols_rendered: u32 = 0;
-    let mut idx = app.view.start_offset + view_idx_off;
+    let mut idx = app.view.region.begin + view_idx_off;
     imm_msg!(idx);
     'asciidisplay: for y in 0..app.view.rows {
         for x in 0..app.view.cols {

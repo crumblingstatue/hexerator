@@ -19,7 +19,7 @@ pub fn hex(
     imm_msg!(view_idx_off_x);
     imm_msg!(view_idx_off_y);
     imm_msg!(view_idx_off);
-    let mut idx = app.view.start_offset + view_idx_off;
+    let mut idx = app.view.region.begin + view_idx_off;
     let mut rows_rendered: u32 = 0;
     let mut cols_rendered: u32 = 0;
     'display: for y in 0..app.view.rows {

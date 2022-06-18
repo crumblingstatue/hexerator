@@ -26,7 +26,7 @@ pub fn block(
     imm_msg!(view_idx_off);
     let mut block_rows_rendered: u32 = 0;
     let mut block_cols_rendered: u32 = 0;
-    let mut idx = app.view.start_offset + view_idx_off;
+    let mut idx = app.view.region.begin + view_idx_off;
     imm_msg!(idx);
     let rows = 240;
     let mut pixels = vec![255; app.view.cols * rows * 4];
