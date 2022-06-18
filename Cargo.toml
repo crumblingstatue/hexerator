@@ -11,7 +11,8 @@ rfd = "0.8.4"
 rand = "0.8.5"
 rmp-serde = "1.1.0"
 serde = { version = "1.0.137", features = ["derive"] }
-interprocess = { version = "1.1.1", default-features = false }
+# Need git version because 1.1.1 blocks on 2nd listener.accept() on windows
+interprocess = { git = "https://github.com/kotauskas/interprocess.git", default-features = false }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

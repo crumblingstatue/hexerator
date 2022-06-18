@@ -55,8 +55,9 @@ struct InstanceRequest {
 
 fn main() -> anyhow::Result<()> {
     let mut args = Args::parse();
+    let sock_path = std::env::temp_dir().join("hexerator.sock");
     if args.instance {
-        match LocalSocketStream::connect("/tmp/hexerator.sock") {
+        match LocalSocketStream::connect(&*sock_path) {
             Ok(mut stream) => {
                 let vec = rmp_serde::to_vec(&InstanceRequest { args })?;
                 stream.write_all(&vec)?;
@@ -67,7 +68,7 @@ fn main() -> anyhow::Result<()> {
             }
         }
     }
-    let listener = LocalSocketListener::bind("/tmp/hexerator.sock")?;
+    let listener = LocalSocketListener::bind(&*sock_path)?;
     listener.set_nonblocking(true)?;
     // Streaming sources should be read-only.
     // Opening them as write blocks at EOF, which we don't want.
@@ -104,7 +105,7 @@ fn main() -> anyhow::Result<()> {
         );
     }
     app.close_file();
-    std::fs::remove_file("/tmp/hexerator.sock").unwrap();
+    std::fs::remove_file(&sock_path)?;
     Ok(())
 }
 
