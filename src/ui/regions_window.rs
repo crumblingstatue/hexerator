@@ -31,7 +31,8 @@ impl RegionsWindow {
                     app.regions.push(NamedRegion {
                         name: String::from("<Unnamed>"),
                         region: sel,
-                    })
+                    });
+                    app.meta_dirty = true;
                 }
             }
             None => {
@@ -90,6 +91,7 @@ impl RegionsWindow {
                 ui.label(format!("Size: {}", region.region.size()));
                 if ui.button("🗑").clicked() {
                     retain = false;
+                    app.meta_dirty = true;
                 }
             });
             idx += 1;

@@ -14,6 +14,7 @@ use std::{
 };
 
 use anyhow::{bail, Context};
+use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -59,6 +60,8 @@ pub struct App {
     pub just_reloaded: bool,
     pub layout: Layout,
     pub regions: Vec<NamedRegion>,
+    /// Whether metafile needs saving
+    pub meta_dirty: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -132,6 +135,7 @@ impl App {
             just_reloaded: true,
             layout,
             regions: Vec::new(),
+            meta_dirty: false,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -433,7 +437,21 @@ impl App {
         }
     }
     pub fn save_meta(&self) -> anyhow::Result<()> {
+        if !self.meta_dirty {
+            return Ok(());
+        }
         if let Some(path) = self.meta_path() {
+            if !path.exists() {
+                let ans = rfd::MessageDialog::new()
+                    .set_buttons(MessageButtons::YesNo)
+                    .set_description(
+                        "You have added some meta information. Would you like to save a metafile?",
+                    )
+                    .show();
+                if !ans {
+                    return Ok(());
+                }
+            }
             let meta = self.make_meta();
             let data = rmp_serde::to_vec(&meta)?;
             std::fs::write(path, &data)?;
