@@ -14,7 +14,10 @@ mod timer;
 mod ui;
 mod views;
 
-use std::io::{Read, Write};
+use std::{
+    ffi::OsStr,
+    io::{Read, Write},
+};
 
 use crate::app::App;
 use app::{edit_target::EditTarget, interact_mode::InteractMode};
@@ -53,11 +56,10 @@ struct InstanceRequest {
     args: Args,
 }
 
-fn main() -> anyhow::Result<()> {
+fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     let mut args = Args::parse();
-    let sock_path = std::env::temp_dir().join("hexerator.sock");
     if args.instance {
-        match LocalSocketStream::connect(&*sock_path) {
+        match LocalSocketStream::connect(sock_path) {
             Ok(mut stream) => {
                 let vec = rmp_serde::to_vec(&InstanceRequest { args })?;
                 stream.write_all(&vec)?;
@@ -68,7 +70,7 @@ fn main() -> anyhow::Result<()> {
             }
         }
     }
-    let listener = LocalSocketListener::bind(&*sock_path)?;
+    let listener = LocalSocketListener::bind(sock_path)?;
     listener.set_nonblocking(true)?;
     // Streaming sources should be read-only.
     // Opening them as write blocks at EOF, which we don't want.
@@ -105,8 +107,15 @@ fn main() -> anyhow::Result<()> {
         );
     }
     app.close_file();
-    std::fs::remove_file(&sock_path)?;
     Ok(())
+}
+
+fn main() {
+    let sock_path = std::env::temp_dir().join("hexerator.sock");
+    if let Err(e) = try_main(sock_path.as_os_str()) {
+        eprintln!("Fatal error: {}", e);
+    }
+    let _ = std::fs::remove_file(&sock_path);
 }
 
 fn do_frame(
