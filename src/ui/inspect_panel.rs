@@ -414,7 +414,10 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
 }
 
 fn find_valid_ascii_end(data: &[u8]) -> usize {
+    // Don't try to take too many characters, as that degrades performance
+    const MAX_TAKE: usize = 50;
     data.iter()
+        .take(MAX_TAKE)
         .position(|&b| b == 0 || b > 127)
-        .unwrap_or(data.len())
+        .unwrap_or(MAX_TAKE)
 }
