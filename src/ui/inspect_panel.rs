@@ -419,5 +419,5 @@ fn find_valid_ascii_end(data: &[u8]) -> usize {
     data.iter()
         .take(MAX_TAKE)
         .position(|&b| b == 0 || b > 127)
-        .unwrap_or(MAX_TAKE)
+        .unwrap_or_else(|| std::cmp::min(MAX_TAKE, data.len()))
 }
