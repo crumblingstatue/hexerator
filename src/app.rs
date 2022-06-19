@@ -10,6 +10,8 @@ use std::{
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
+    sync::mpsc::Receiver,
+    thread,
     time::Duration,
 };
 
@@ -56,12 +58,13 @@ pub struct App {
     pub col_change_lock_x: bool,
     pub col_change_lock_y: bool,
     flash_cursor_timer: Timer,
-    stream_end: bool,
+    pub stream_end: bool,
     pub just_reloaded: bool,
     pub layout: Layout,
     pub regions: Vec<NamedRegion>,
     /// Whether metafile needs saving
     pub meta_dirty: bool,
+    pub stream_read_recv: Option<Receiver<Vec<u8>>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -139,6 +142,7 @@ impl App {
             layout,
             regions: Vec::new(),
             meta_dirty: false,
+            stream_read_recv: None,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -406,14 +410,33 @@ impl App {
         if self.stream_end {
             return;
         }
-        let Some(src) = &mut self.source else { return };
-        let buffer_size = 1024;
-        let mut buf = vec![0; buffer_size];
-        let amount = src.read(&mut buf).unwrap();
-        if amount == 0 {
-            self.stream_end = true;
-        } else {
-            self.data.extend_from_slice(&buf[..amount]);
+        match &self.stream_read_recv {
+            Some(recv) => match recv.try_recv() {
+                Ok(buf) => {
+                    if buf.is_empty() {
+                        self.stream_end = true;
+                    } else {
+                        self.data.extend_from_slice(&buf[..]);
+                    }
+                }
+                Err(e) => match e {
+                    std::sync::mpsc::TryRecvError::Empty => {}
+                    std::sync::mpsc::TryRecvError::Disconnected => self.stream_read_recv = None,
+                },
+            },
+            None => {
+                let (tx, rx) = std::sync::mpsc::channel();
+                let Some(src) = &mut self.source else { return };
+                let mut src_clone = src.clone();
+                self.stream_read_recv = Some(rx);
+                thread::spawn(move || {
+                    let buffer_size = 1024;
+                    let mut buf = vec![0; buffer_size];
+                    let amount = src_clone.read(&mut buf).unwrap();
+                    buf.truncate(amount);
+                    tx.send(buf).unwrap();
+                });
+            }
         }
     }
     // Byte offset of a pixel position in the view

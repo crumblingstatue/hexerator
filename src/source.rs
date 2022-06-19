@@ -9,6 +9,15 @@ pub enum Source {
     Stdin(Stdin),
 }
 
+impl Clone for Source {
+    fn clone(&self) -> Self {
+        match self {
+            Self::File(file) => Self::File(file.try_clone().unwrap()),
+            Self::Stdin(_) => Self::Stdin(std::io::stdin()),
+        }
+    }
+}
+
 impl Read for Source {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         match self {

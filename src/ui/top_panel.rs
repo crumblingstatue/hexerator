@@ -104,7 +104,12 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 }
             }
             if app.args.stream {
-                ui.label("[stream]");
+                if app.stream_end {
+                    ui.label("[finished stream]");
+                } else {
+                    ui.spinner();
+                    ui.label("[streaming]");
+                }
             }
         });
     });
