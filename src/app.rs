@@ -204,7 +204,6 @@ impl App {
         Ok(())
     }
     pub fn toggle_debug(&mut self) {
-        self.ui.show_debug_panel ^= true;
         gamedebug_core::toggle();
     }
     pub fn ascii_display_x_offset(&self) -> i64 {

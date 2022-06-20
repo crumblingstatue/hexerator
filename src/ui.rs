@@ -19,7 +19,6 @@ use crate::app::App;
 pub struct Ui {
     pub inspect_panel: InspectPanel,
     pub find_dialog: FindDialog,
-    pub show_debug_panel: bool,
     pub fill_text: String,
     pub center_offset_input: String,
     pub seek_byte_offset_input: String,
@@ -42,11 +41,14 @@ use self::{find_dialog::FindDialog, inspect_panel::InspectPanel, regions_window:
 
 pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
     sf_egui.do_frame(|ctx| {
-        let mut open = app.ui.show_debug_panel;
+        let mut open = gamedebug_core::enabled();
+        let was_open = open;
         Window::new("Debug")
             .open(&mut open)
             .show(ctx, debug_window::ui);
-        app.ui.show_debug_panel = open;
+        if was_open && !open {
+            gamedebug_core::toggle();
+        }
         open = app.ui.find_dialog.open;
         Window::new("Find")
             .open(&mut open)

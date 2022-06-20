@@ -56,7 +56,12 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             }
         }
         ui.with_layout(Layout::right_to_left(), |ui| {
-            ui.checkbox(&mut app.ui.show_debug_panel, "debug (F12)");
+            if ui
+                .checkbox(&mut gamedebug_core::enabled(), "debug (F12)")
+                .clicked()
+            {
+                gamedebug_core::toggle();
+            }
             ui.checkbox(&mut app.show_block, "block");
             ui.checkbox(&mut app.show_text, "text");
             ui.checkbox(&mut app.show_hex, "hex");
