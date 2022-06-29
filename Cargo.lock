@@ -165,9 +165,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "3.2.5"
+version = "3.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d53da17d37dba964b9b3ecb5c5a1f193a2762c700e6829201e645b9381c99dc7"
+checksum = "5b7b16274bb247b45177db843202209b12191b631a14a9d06e41b3777d6ecf14"
 dependencies = [
  "atty",
  "bitflags",
@@ -182,9 +182,9 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "3.2.5"
+version = "3.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c11d40217d16aee8508cc8e5fde8b4ff24639758608e5374e731b53f85749fb9"
+checksum = "759bf187376e1afa7b85b959e6a664a3e7a95203415dba952ad19139e798f902"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -195,9 +195,9 @@ dependencies = [
 
 [[package]]
 name = "clap_lex"
-version = "0.2.2"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5538cd660450ebeb4234cfecf8f2284b844ffc4c50531e66d584ad5b91293613"
+checksum = "2850f2f5a82cbf437dd5af4d49848fbdfc27c157c3d010345776f952765261c5"
 dependencies = [
  "os_str_bytes",
 ]
@@ -217,7 +217,7 @@ checksum = "bd0c93bb4b0c6d9b77f4435b0ae98c24d17f1c45b2ff844c6151a07256ca923b"
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/emilk/egui.git#bd5f553c3a33fd9de0f396634044117bd519342d"
+source = "git+https://github.com/emilk/egui.git#eeae485629fca24a81a7251739460b671e1420f7"
 dependencies = [
  "ahash",
  "epaint",
@@ -227,7 +227,7 @@ dependencies = [
 [[package]]
 name = "egui-sfml"
 version = "0.1.0"
-source = "git+https://github.com/crumblingstatue/egui-sfml.git#be7e09a5f1cfe9895f7bc7ab1abb0c4896ade50c"
+source = "git+https://github.com/crumblingstatue/egui-sfml.git#8d166a3b23fc07474a2ed04a13d8464113dc56bd"
 dependencies = [
  "egui",
  "glu-sys",
@@ -237,7 +237,7 @@ dependencies = [
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/emilk/egui.git#bd5f553c3a33fd9de0f396634044117bd519342d"
+source = "git+https://github.com/emilk/egui.git#eeae485629fca24a81a7251739460b671e1420f7"
 
 [[package]]
 name = "embed-resource"
@@ -255,7 +255,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/emilk/egui.git#bd5f553c3a33fd9de0f396634044117bd519342d"
+source = "git+https://github.com/emilk/egui.git#eeae485629fca24a81a7251739460b671e1420f7"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -417,9 +417,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "1.9.0"
+version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c6392766afd7964e2531940894cffe4bd8d7d17dbc3c1c4857040fd4b33bdb3"
+checksum = "10a35a97730320ffe8e2d410b5d3b69279b98d2c14bdb8b70ea89ecf7888d41e"
 dependencies = [
  "autocfg",
  "hashbrown",
@@ -822,9 +822,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "semver"
-version = "1.0.10"
+version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a41d061efea015927ac527063765e73601444cdc344ba855bc7bd44578b25e1c"
+checksum = "3d92beeab217753479be2f74e54187a6aed4c125ff0703a866c3147a02f0c6dd"
 
 [[package]]
 name = "serde"
@@ -849,7 +849,7 @@ dependencies = [
 [[package]]
 name = "sfml"
 version = "0.16.0"
-source = "git+https://github.com/jeremyletang/rust-sfml.git#eb5d938324ade26e5568ce668c5907600e0708ac"
+source = "git+https://github.com/jeremyletang/rust-sfml.git#0bb7c96f8f63b2ca49cb9c4a943b89f70dd371a1"
 dependencies = [
  "bindgen",
  "bitflags",
@@ -868,9 +868,9 @@ checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
 
 [[package]]
 name = "smallvec"
-version = "1.8.0"
+version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
+checksum = "cc88c725d61fc6c3132893370cac4a0200e3fedf5da8331c570664b1987f5ca2"
 
 [[package]]
 name = "strsim"
