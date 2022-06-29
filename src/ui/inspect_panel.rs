@@ -8,12 +8,29 @@ use crate::{
     damage_region::DamageRegion,
 };
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+enum Format {
+    Decimal,
+    Hex,
+    Bin,
+}
+
+impl Format {
+    fn label(&self) -> &'static str {
+        match self {
+            Format::Decimal => "Decimal",
+            Format::Hex => "Hex",
+            Format::Bin => "Binary",
+        }
+    }
+}
+
 pub struct InspectPanel {
     input_thingies: [Box<dyn InputThingyTrait>; 11],
     /// True if an input thingy was changed by the user. Should update the others
     changed_one: bool,
     big_endian: bool,
-    hex: bool,
+    format: Format,
     /// If true, go to offset action is relative to the hard seek argument
     offset_relative: bool,
 }
@@ -42,22 +59,22 @@ impl Default for InspectPanel {
             ],
             changed_one: false,
             big_endian: false,
-            hex: false,
+            format: Format::Decimal,
             offset_relative: false,
         }
     }
 }
 
 trait InputThingyTrait {
-    fn update(&mut self, data: &[u8], offset: usize, be: bool, hex: bool);
+    fn update(&mut self, data: &[u8], offset: usize, be: bool, format: Format);
     fn label(&self) -> &'static str;
     fn buf_mut(&mut self) -> &mut String;
     fn write_data(&self, data: &mut [u8], offset: usize, be: bool) -> Option<DamageRegion>;
 }
 
 impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
-    fn update(&mut self, data: &[u8], offset: usize, be: bool, hex: bool) {
-        T::update_buf(&mut self.string, data, offset, be, hex);
+    fn update(&mut self, data: &[u8], offset: usize, be: bool, format: Format) {
+        T::update_buf(&mut self.string, data, offset, be, format);
     }
     fn label(&self) -> &'static str {
         T::label()
@@ -80,6 +97,7 @@ trait NumBytesManip: std::fmt::Display + FromStr {
     fn to_le_bytes(&self) -> Self::ToBytes;
     fn to_be_bytes(&self) -> Self::ToBytes;
     fn to_hex_string(&self) -> String;
+    fn to_bin_string(&self) -> String;
 }
 
 macro_rules! num_bytes_manip_impl {
@@ -115,6 +133,12 @@ macro_rules! num_bytes_manip_impl {
 
             fn to_hex_string(&self) -> String {
                 format!("{:x}", self)
+            }
+
+            fn to_bin_string(&self) -> String {
+                // TODO: Different paddings for different integer sizes
+                // For now pad to 8 bits
+                format!("{:08b}", self)
             }
         }
     };
@@ -161,6 +185,10 @@ impl NumBytesManip for f32 {
     fn to_hex_string(&self) -> String {
         "<no hex output>".into()
     }
+
+    fn to_bin_string(&self) -> String {
+        "<no bin output>".into()
+    }
 }
 
 impl NumBytesManip for f64 {
@@ -195,21 +223,25 @@ impl NumBytesManip for f64 {
     fn to_hex_string(&self) -> String {
         "<no hex output>".into()
     }
+
+    fn to_bin_string(&self) -> String {
+        "<no bin output>".into()
+    }
 }
 
 impl<T: NumBytesManip> BytesManip for T {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool, hex: bool) {
+    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool, format: Format) {
         if let Some(slice) = &data.get(offset..) {
             let value = if be {
                 T::from_be_bytes(slice)
             } else {
                 T::from_le_bytes(slice)
             };
-            if hex {
-                *buf = value.to_hex_string();
-            } else {
-                *buf = value.to_string();
-            }
+            *buf = match format {
+                Format::Decimal => value.to_string(),
+                Format::Hex => value.to_hex_string(),
+                Format::Bin => value.to_bin_string(),
+            };
         }
     }
 
@@ -245,7 +277,7 @@ impl<T: NumBytesManip> BytesManip for T {
 }
 
 impl BytesManip for Ascii {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize, _be: bool, _hex: bool) {
+    fn update_buf(buf: &mut String, data: &[u8], offset: usize, _be: bool, _format: Format) {
         if let Some(slice) = &data.get(offset..) {
             let valid_ascii_end = find_valid_ascii_end(slice);
             *buf = String::from_utf8(data[offset..offset + valid_ascii_end].to_vec()).unwrap();
@@ -284,7 +316,7 @@ impl<T> Default for InputThingy<T> {
 }
 
 trait BytesManip {
-    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool, hex: bool);
+    fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool, format: Format);
     fn label() -> &'static str;
     fn convert_and_write(
         buf: &str,
@@ -336,7 +368,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
                 &app.data[..],
                 offset,
                 app.ui.inspect_panel.big_endian,
-                app.ui.inspect_panel.hex,
+                app.ui.inspect_panel.format,
             );
         }
     }
@@ -349,18 +381,18 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
                 clipboard::set_string(&*thingy.buf_mut());
             }
             if ui.button("⬇").on_hover_text("go to offset").clicked() {
-                let offset = if app.ui.inspect_panel.hex {
-                    usize::from_str_radix(thingy.buf_mut(), 16).unwrap()
-                } else {
-                    thingy.buf_mut().parse().unwrap()
+                let offset = match app.ui.inspect_panel.format {
+                    Format::Decimal => thingy.buf_mut().parse().unwrap(),
+                    Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16).unwrap(),
+                    Format::Bin => todo!(),
                 };
                 actions.push(Action::GoToOffset(offset));
             }
             if ui.button("➡").on_hover_text("jump forward").clicked() {
-                let offset = if app.ui.inspect_panel.hex {
-                    usize::from_str_radix(thingy.buf_mut(), 16).unwrap()
-                } else {
-                    thingy.buf_mut().parse().unwrap()
+                let offset = match app.ui.inspect_panel.format {
+                    Format::Decimal => thingy.buf_mut().parse().unwrap(),
+                    Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16).unwrap(),
+                    Format::Bin => todo!(),
                 };
                 actions.push(Action::JumpForward(offset));
             }
@@ -384,8 +416,29 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
             // Changing this should refresh everything
             app.ui.inspect_panel.changed_one = true;
         }
-        if ui.checkbox(&mut app.ui.inspect_panel.hex, "Hex").clicked() {
-            // Changing this should refresh everything
+        let prev_fmt = app.ui.inspect_panel.format;
+        egui::ComboBox::new("format_combo", "format")
+            .selected_text(app.ui.inspect_panel.format.label())
+            .show_ui(ui, |ui| {
+                ui.selectable_value(
+                    &mut app.ui.inspect_panel.format,
+                    Format::Decimal,
+                    Format::Decimal.label(),
+                );
+                ui.selectable_value(
+                    &mut app.ui.inspect_panel.format,
+                    Format::Hex,
+                    Format::Hex.label(),
+                );
+                ui.selectable_value(
+                    &mut app.ui.inspect_panel.format,
+                    Format::Bin,
+                    Format::Bin.label(),
+                );
+            });
+
+        if app.ui.inspect_panel.format != prev_fmt {
+            // Changing the format should refresh everything
             app.ui.inspect_panel.changed_one = true;
         }
     });
