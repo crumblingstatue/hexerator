@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, str::FromStr};
+use std::marker::PhantomData;
 
 use egui_sfml::egui::{self, Ui};
 use sfml::{system::Vector2i, window::clipboard};
@@ -6,6 +6,7 @@ use sfml::{system::Vector2i, window::clipboard};
 use crate::{
     app::{interact_mode::InteractMode, App},
     damage_region::DamageRegion,
+    msg_warn,
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -69,7 +70,13 @@ trait InputThingyTrait {
     fn update(&mut self, data: &[u8], offset: usize, be: bool, format: Format);
     fn label(&self) -> &'static str;
     fn buf_mut(&mut self) -> &mut String;
-    fn write_data(&self, data: &mut [u8], offset: usize, be: bool) -> Option<DamageRegion>;
+    fn write_data(
+        &self,
+        data: &mut [u8],
+        offset: usize,
+        be: bool,
+        format: Format,
+    ) -> Option<DamageRegion>;
 }
 
 impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
@@ -84,12 +91,18 @@ impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
         &mut self.string
     }
 
-    fn write_data(&self, data: &mut [u8], offset: usize, be: bool) -> Option<DamageRegion> {
-        T::convert_and_write(&self.string, data, offset, be)
+    fn write_data(
+        &self,
+        data: &mut [u8],
+        offset: usize,
+        be: bool,
+        format: Format,
+    ) -> Option<DamageRegion> {
+        T::convert_and_write(&self.string, data, offset, be, format)
     }
 }
 
-trait NumBytesManip: std::fmt::Display + FromStr {
+trait NumBytesManip: std::fmt::Display + Sized {
     type ToBytes: AsRef<[u8]>;
     fn label() -> &'static str;
     fn from_le_bytes(bytes: &[u8]) -> Self;
@@ -98,6 +111,7 @@ trait NumBytesManip: std::fmt::Display + FromStr {
     fn to_be_bytes(&self) -> Self::ToBytes;
     fn to_hex_string(&self) -> String;
     fn to_bin_string(&self) -> String;
+    fn from_str(input: &str, format: Format) -> Result<Self, anyhow::Error>;
 }
 
 macro_rules! num_bytes_manip_impl {
@@ -139,6 +153,15 @@ macro_rules! num_bytes_manip_impl {
                 // TODO: Different paddings for different integer sizes
                 // For now pad to 8 bits
                 format!("{:08b}", self)
+            }
+
+            fn from_str(input: &str, format: Format) -> Result<Self, anyhow::Error> {
+                let this = match format {
+                    Format::Decimal => input.parse()?,
+                    Format::Hex => Self::from_str_radix(input, 16)?,
+                    Format::Bin => Self::from_str_radix(input, 2)?,
+                };
+                Ok(this)
             }
         }
     };
@@ -189,6 +212,15 @@ impl NumBytesManip for f32 {
     fn to_bin_string(&self) -> String {
         "<no bin output>".into()
     }
+
+    fn from_str(input: &str, format: Format) -> Result<Self, anyhow::Error> {
+        let this = match format {
+            Format::Decimal => input.parse()?,
+            Format::Hex => todo!(),
+            Format::Bin => todo!(),
+        };
+        Ok(this)
+    }
 }
 
 impl NumBytesManip for f64 {
@@ -227,6 +259,15 @@ impl NumBytesManip for f64 {
     fn to_bin_string(&self) -> String {
         "<no bin output>".into()
     }
+
+    fn from_str(input: &str, format: Format) -> Result<Self, anyhow::Error> {
+        let this = match format {
+            Format::Decimal => input.parse()?,
+            Format::Hex => todo!(),
+            Format::Bin => todo!(),
+        };
+        Ok(this)
+    }
 }
 
 impl<T: NumBytesManip> BytesManip for T {
@@ -254,8 +295,9 @@ impl<T: NumBytesManip> BytesManip for T {
         data: &mut [u8],
         offset: usize,
         be: bool,
+        format: Format,
     ) -> Option<DamageRegion> {
-        match buf.parse::<Self>() {
+        match Self::from_str(buf, format) {
             Ok(this) => {
                 let bytes = if be {
                     this.to_be_bytes()
@@ -271,7 +313,10 @@ impl<T: NumBytesManip> BytesManip for T {
                     None => None,
                 }
             }
-            Err(_) => None,
+            Err(e) => {
+                msg_warn(&format!("Convert error: {:?}", e));
+                None
+            }
         }
     }
 }
@@ -293,6 +338,7 @@ impl BytesManip for Ascii {
         data: &mut [u8],
         offset: usize,
         _be: bool,
+        _format: Format,
     ) -> Option<DamageRegion> {
         let len = buf.len();
         let range = offset..offset + len;
@@ -323,6 +369,7 @@ trait BytesManip {
         data: &mut [u8],
         offset: usize,
         be: bool,
+        format: Format,
     ) -> Option<DamageRegion>;
 }
 
@@ -400,9 +447,12 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
         if ui.text_edit_singleline(thingy.buf_mut()).lost_focus()
             && ui.input().key_pressed(egui::Key::Enter)
         {
-            if let Some(range) =
-                thingy.write_data(&mut app.data, offset, app.ui.inspect_panel.big_endian)
-            {
+            if let Some(range) = thingy.write_data(
+                &mut app.data,
+                offset,
+                app.ui.inspect_panel.big_endian,
+                app.ui.inspect_panel.format,
+            ) {
                 app.ui.inspect_panel.changed_one = true;
                 actions.push(Action::AddDirty(range));
             }
