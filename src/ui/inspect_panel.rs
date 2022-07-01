@@ -342,8 +342,16 @@ impl BytesManip for Ascii {
     ) -> Option<DamageRegion> {
         let len = buf.len();
         let range = offset..offset + len;
-        data[range.clone()].copy_from_slice(buf.as_bytes());
-        Some(DamageRegion::Range(range))
+        match data.get_mut(range.clone()) {
+            Some(slice) => {
+                slice.copy_from_slice(buf.as_bytes());
+                Some(DamageRegion::Range(range))
+            }
+            None => {
+                msg_warn("Failed to write data: Out of bounds");
+                None
+            }
+        }
     }
 }
 
