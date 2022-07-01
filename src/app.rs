@@ -342,8 +342,12 @@ impl App {
         }
     }
 
-    pub(crate) fn load_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
-        let mut file = open_file(&path, self.args.read_only)?;
+    pub(crate) fn load_file(
+        &mut self,
+        path: PathBuf,
+        read_only: bool,
+    ) -> Result<(), anyhow::Error> {
+        let mut file = open_file(&path, read_only)?;
         self.data = read_contents(&self.args, &mut file)?;
         self.source = Some(Source::File(file));
         self.args.file = Some(path);

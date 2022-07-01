@@ -12,7 +12,16 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
         ui.menu_button("File", |ui| {
             if ui.button("Open").clicked() {
                 if let Some(file) = rfd::FileDialog::new().pick_file() {
-                    msg_if_fail(app.load_file(file), "Failed to load file");
+                    msg_if_fail(
+                        app.load_file(file, false),
+                        "Failed to load file (read-write)",
+                    );
+                }
+                ui.close_menu();
+            }
+            if ui.button("Open (read only)").clicked() {
+                if let Some(file) = rfd::FileDialog::new().pick_file() {
+                    msg_if_fail(app.load_file(file, true), "Failed to load file (read-only)");
                 }
                 ui.close_menu();
             }
