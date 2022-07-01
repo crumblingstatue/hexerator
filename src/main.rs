@@ -28,9 +28,11 @@ use egui_sfml::SfEgui;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use serde::{Deserialize, Serialize};
 use sfml::{
-    graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
+    graphics::{
+        Color, Font, PrimitiveType, Rect, RenderStates, RenderTarget, RenderWindow, Vertex, View,
+    },
     system::Vector2,
-    window::{mouse, ContextSettings, Event, Key, Style},
+    window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };
 
 fn msg_if_fail(result: anyhow::Result<()>, prefix: &str) {
@@ -77,10 +79,11 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     if args.stream {
         args.read_only = true;
     }
+    let desktop_mode = VideoMode::desktop_mode();
     let mut window = RenderWindow::new(
-        (1920, 1080),
+        desktop_mode,
         "Hexerator",
-        Style::NONE,
+        Style::RESIZE,
         &ContextSettings::default(),
     );
     window.set_vertical_sync_enabled(true);
@@ -219,6 +222,14 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             Event::LostFocus => {
                 // When alt-tabbing, keys held down can get "stuck", because the key release events won't reach us
                 app.input.clear();
+            }
+            Event::Resized { width, height } => {
+                window.set_view(&View::from_rect(&Rect::new(
+                    0.,
+                    0.,
+                    width as f32,
+                    height as f32,
+                )));
             }
             _ => {}
         }
