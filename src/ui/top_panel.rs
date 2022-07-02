@@ -154,8 +154,8 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
         };
         ui.label(format!("end: {}", end_text));
         if ui.button("set").clicked() {
-            match app.select_begin {
-                Some(begin) => match &mut app.selection {
+            if let Some(begin) = app.select_begin {
+                match &mut app.selection {
                     None => {
                         app.selection = Some(Region {
                             begin,
@@ -163,8 +163,7 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                         })
                     }
                     Some(sel) => sel.end = app.edit_state.cursor,
-                },
-                None => {}
+                }
             }
         }
         if let Some(sel) = &app.selection {
