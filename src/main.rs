@@ -13,7 +13,7 @@ mod slice_ext;
 mod source;
 mod timer;
 mod ui;
-mod views;
+mod lens;
 
 use std::{
     ffi::OsStr,
@@ -181,16 +181,16 @@ fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &m
     let view_idx_off_x: usize = app.view_x.try_into().unwrap_or(0) / app.layout.col_width as usize;
     let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.layout.row_height as usize;
     if app.show_hex {
-        views::hex(view_idx_off_y, app, view_idx_off_x, font, vertex_buffer);
+        lens::hex(view_idx_off_y, app, view_idx_off_x, font, vertex_buffer);
     }
     if app.show_text {
-        views::ascii(app, view_idx_off_y, font, vertex_buffer);
+        lens::ascii(app, view_idx_off_y, font, vertex_buffer);
     }
     let mut rs = RenderStates::default();
     rs.set_texture(Some(font.texture(app.layout.font_size)));
     window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
     if app.show_block {
-        views::block(app, view_idx_off_y, window, vertex_buffer);
+        lens::block(app, view_idx_off_y, window, vertex_buffer);
     }
 }
 

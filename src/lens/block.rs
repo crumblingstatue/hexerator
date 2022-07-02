@@ -3,7 +3,7 @@ use sfml::graphics::{RenderTarget, RenderWindow, Sprite, Texture, Transformable,
 
 use crate::{
     app::{edit_target::EditTarget, interact_mode::InteractMode, App},
-    views::draw_cursor,
+    lens::draw_cursor,
 };
 
 pub fn block(

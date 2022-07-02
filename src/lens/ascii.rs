@@ -3,7 +3,7 @@ use sfml::graphics::{Font, Vertex};
 
 use crate::{
     app::{edit_target::EditTarget, interact_mode::InteractMode, App},
-    views::{draw_cursor, draw_glyph},
+    lens::{draw_cursor, draw_glyph},
 };
 
 pub fn ascii(app: &mut App, view_idx_off_y: usize, font: &Font, vertex_buffer: &mut Vec<Vertex>) {

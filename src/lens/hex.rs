@@ -4,7 +4,7 @@ use sfml::graphics::{Font, Vertex};
 use crate::{
     app::{edit_target::EditTarget, interact_mode::InteractMode, App},
     hex_conv,
-    views::{draw_cursor, draw_glyph},
+    lens::{draw_cursor, draw_glyph},
 };
 
 pub fn hex(
