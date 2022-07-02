@@ -15,6 +15,7 @@ serde = { version = "1.0.137", features = ["derive"] }
 interprocess = { git = "https://github.com/kotauskas/interprocess.git", default-features = false }
 directories = "4.0.1"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
+memchr = "2.5.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

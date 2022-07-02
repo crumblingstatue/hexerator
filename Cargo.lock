@@ -429,6 +429,7 @@ dependencies = [
  "egui-sfml",
  "gamedebug_core",
  "interprocess",
+ "memchr",
  "rand",
  "recently_used_list",
  "rfd",

@@ -2,6 +2,22 @@ use egui_sfml::egui::{self, ScrollArea, Ui};
 
 use crate::app::App;
 
+#[derive(Default, Debug, PartialEq, Eq)]
+pub enum FindType {
+    #[default]
+    U8,
+    Ascii,
+}
+
+impl FindType {
+    fn label(&self) -> &str {
+        match self {
+            FindType::U8 => "u8",
+            FindType::Ascii => "ascii",
+        }
+    }
+}
+
 #[derive(Default, Debug)]
 pub struct FindDialog {
     pub open: bool,
@@ -11,20 +27,44 @@ pub struct FindDialog {
     pub result_cursor: usize,
     /// When Some, the results list should be scrolled to the offset of that result
     pub scroll_to: Option<usize>,
+    pub find_type: FindType,
 }
 
 impl FindDialog {
     pub fn ui(ui: &mut Ui, app: &mut App) {
+        egui::ComboBox::new("type_combo", "Data type")
+            .selected_text(app.ui.find_dialog.find_type.label())
+            .show_ui(ui, |ui| {
+                ui.selectable_value(
+                    &mut app.ui.find_dialog.find_type,
+                    FindType::U8,
+                    FindType::U8.label(),
+                );
+                ui.selectable_value(
+                    &mut app.ui.find_dialog.find_type,
+                    FindType::Ascii,
+                    FindType::Ascii.label(),
+                );
+            });
         if ui
             .text_edit_singleline(&mut app.ui.find_dialog.input)
             .lost_focus()
             && ui.input().key_pressed(egui::Key::Enter)
         {
-            let needle = app.ui.find_dialog.input.parse().unwrap();
             app.ui.find_dialog.result_offsets.clear();
-            for (offset, &byte) in app.data.iter().enumerate() {
-                if byte == needle {
-                    app.ui.find_dialog.result_offsets.push(offset);
+            match app.ui.find_dialog.find_type {
+                FindType::U8 => {
+                    let needle = app.ui.find_dialog.input.parse().unwrap();
+                    for (offset, &byte) in app.data.iter().enumerate() {
+                        if byte == needle {
+                            app.ui.find_dialog.result_offsets.push(offset);
+                        }
+                    }
+                }
+                FindType::Ascii => {
+                    for offset in memchr::memmem::find_iter(&app.data, &app.ui.find_dialog.input) {
+                        app.ui.find_dialog.result_offsets.push(offset);
+                    }
                 }
             }
             if let Some(&off) = app.ui.find_dialog.result_offsets.first() {
