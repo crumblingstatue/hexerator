@@ -44,6 +44,12 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 ui.close_menu();
             }
         });
+        ui.menu_button("Edit", |ui| {
+            if ui.button("Find (ctrl+F)").clicked() {
+                app.ui.find_dialog.open ^= true;
+                ui.close_menu();
+            }
+        });
         ui.menu_button("Seek", |ui| {
             let re = ui
                 .button("Set cursor to initial position")
