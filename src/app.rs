@@ -78,6 +78,9 @@ impl App {
     pub fn new(mut args: Args, window_height: u32, mut cfg: Config) -> anyhow::Result<Self> {
         let data;
         let source;
+        if args.load_recent && let Some(recent) = cfg.recent.most_recent() {
+            args.file = Some(recent.clone());
+        }
         match &args.file {
             Some(file_arg) => {
                 cfg.recent.use_(file_arg.clone());

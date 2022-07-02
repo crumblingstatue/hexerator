@@ -26,4 +26,7 @@ pub struct Args {
     /// Open content in existing instance
     #[clap(long)]
     pub instance: bool,
+    /// Load most recently used file
+    #[clap(long)]
+    pub load_recent: bool,
 }
