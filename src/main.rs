@@ -3,6 +3,7 @@
 mod app;
 mod args;
 mod color;
+mod config;
 mod damage_region;
 mod hex_conv;
 mod input;
@@ -23,6 +24,7 @@ use crate::app::App;
 use app::{edit_target::EditTarget, interact_mode::InteractMode};
 use args::Args;
 use clap::Parser;
+use config::Config;
 use damage_region::DamageRegion;
 use egui_sfml::SfEgui;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
@@ -90,7 +92,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     window.set_position(Vector2::new(0, 0));
     let mut sf_egui = SfEgui::new(&window);
     let font = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
-    let mut app = App::new(args, window.size().y)?;
+    let mut app = App::new(args, window.size().y, Config::load_or_default())?;
     let mut vertex_buffer = Vec::new();
 
     while window.is_open() {
@@ -98,7 +100,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
             let mut buf = Vec::new();
             stream.read_to_end(&mut buf)?;
             let req: InstanceRequest = rmp_serde::from_slice(&buf)?;
-            app = App::new(req.args, window.size().y)?;
+            app = App::new(req.args, window.size().y, Config::load_or_default())?;
             window.request_focus();
         }
         do_frame(
@@ -110,6 +112,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
         );
     }
     app.close_file();
+    app.cfg.save();
     Ok(())
 }
 

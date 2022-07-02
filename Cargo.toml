@@ -13,6 +13,8 @@ rmp-serde = "1.1.0"
 serde = { version = "1.0.137", features = ["derive"] }
 # Need git version because 1.1.1 blocks on 2nd listener.accept() on windows
 interprocess = { git = "https://github.com/kotauskas/interprocess.git", default-features = false }
+directories = "4.0.1"
+recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

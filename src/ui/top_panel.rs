@@ -25,6 +25,20 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 }
                 ui.close_menu();
             }
+            ui.menu_button("Recent", |ui| {
+                let mut load = None;
+                for entry in app.cfg.recent.iter() {
+                    if ui.button(entry.display().to_string()).clicked() {
+                        load = Some(entry.clone());
+                        ui.close_menu();
+                        break;
+                    }
+                    ui.separator();
+                }
+                if let Some(path) = load {
+                    app.load_file(path, false).unwrap();
+                }
+            });
             if ui.button("Close").clicked() {
                 app.close_file();
                 ui.close_menu();

@@ -20,8 +20,8 @@ use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    args::Args, damage_region::DamageRegion, input::Input, metafile::Metafile, msg_if_fail,
-    region::Region, source::Source, timer::Timer,
+    args::Args, config::Config, damage_region::DamageRegion, input::Input, metafile::Metafile,
+    msg_if_fail, region::Region, source::Source, timer::Timer,
 };
 
 use self::{
@@ -65,6 +65,7 @@ pub struct App {
     /// Whether metafile needs saving
     pub meta_dirty: bool,
     pub stream_read_recv: Option<Receiver<Vec<u8>>>,
+    pub cfg: Config,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -74,11 +75,12 @@ pub struct NamedRegion {
 }
 
 impl App {
-    pub fn new(mut args: Args, window_height: u32) -> anyhow::Result<Self> {
+    pub fn new(mut args: Args, window_height: u32, mut cfg: Config) -> anyhow::Result<Self> {
         let data;
         let source;
         match &args.file {
             Some(file_arg) => {
+                cfg.recent.use_(file_arg.clone());
                 if file_arg.as_os_str() == "-" {
                     source = Some(Source::Stdin(std::io::stdin()));
                     data = Vec::new();
@@ -143,6 +145,7 @@ impl App {
             regions: Vec::new(),
             meta_dirty: false,
             stream_read_recv: None,
+            cfg,
         };
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
@@ -347,6 +350,7 @@ impl App {
         path: PathBuf,
         read_only: bool,
     ) -> Result<(), anyhow::Error> {
+        self.cfg.recent.use_(path.clone());
         let mut file = open_file(&path, read_only)?;
         self.data = read_contents(&self.args, &mut file)?;
         self.source = Some(Source::File(file));
