@@ -55,6 +55,16 @@ pub fn hex(lens: &Lens, app: &mut App, font: &Font, vertex_buffer: &mut Vec<Vert
                 d2.into(),
                 c,
             );
+            if idx == app.edit_state.cursor {
+                draw_cursor(
+                    xx,
+                    yy,
+                    vertex_buffer,
+                    true,
+                    app.cursor_flash_timer(),
+                    &app.presentation,
+                );
+            }
             idx += 1;
         }
     }
