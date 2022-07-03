@@ -62,9 +62,6 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             {
                 gamedebug_core::toggle();
             }
-            ui.checkbox(&mut app.show_block, "block");
-            ui.checkbox(&mut app.show_text, "text");
-            ui.checkbox(&mut app.show_hex, "hex");
             ui.separator();
             if ui.add(Button::new("Reload (ctrl+R)")).clicked() {
                 msg_if_fail(app.reload(), "Failed to reload");

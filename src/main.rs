@@ -7,13 +7,13 @@ mod config;
 mod damage_region;
 mod hex_conv;
 mod input;
+mod lens;
 mod metafile;
 mod region;
 mod slice_ext;
 mod source;
 mod timer;
 mod ui;
-mod lens;
 
 use std::{
     ffi::OsStr,
@@ -176,22 +176,11 @@ fn update(app: &mut App) {
 }
 
 fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
-    vertex_buffer.clear();
-    // The offset for the hex display imposed by the view
-    let view_idx_off_x: usize = app.view_x.try_into().unwrap_or(0) / app.layout.col_width as usize;
-    let view_idx_off_y: usize = app.view_y.try_into().unwrap_or(0) / app.layout.row_height as usize;
-    if app.show_hex {
-        lens::hex(view_idx_off_y, app, view_idx_off_x, font, vertex_buffer);
+    let lenses = std::mem::take(&mut app.lenses);
+    for lens in &lenses {
+        lens.draw(app, window, vertex_buffer, font);
     }
-    if app.show_text {
-        lens::ascii(app, view_idx_off_y, font, vertex_buffer);
-    }
-    let mut rs = RenderStates::default();
-    rs.set_texture(Some(font.texture(app.layout.font_size)));
-    window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
-    if app.show_block {
-        lens::block(app, view_idx_off_y, window, vertex_buffer);
-    }
+    app.lenses = lenses;
 }
 
 fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui) {
@@ -378,7 +367,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::Home => match app.interact_mode {
             InteractMode::View => {
                 app.view_x = -10;
-                app.view_y = -app.layout.top_gap - 10;
+                app.view_y = i64::from(-app.layout.top_gap) - 10;
             }
             InteractMode::Edit => {
                 app.view.region.begin = 0;

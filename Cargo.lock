@@ -428,6 +428,7 @@ dependencies = [
  "directories",
  "egui-sfml",
  "gamedebug_core",
+ "glu-sys",
  "interprocess",
  "memchr",
  "rand",

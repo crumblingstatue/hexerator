@@ -12,6 +12,7 @@ pub enum ColorMethod {
 }
 
 impl ColorMethod {
+    #[must_use]
     pub fn byte_color(&self, byte: u8, invert: bool) -> Color {
         let color = match self {
             ColorMethod::Mono => Color::WHITE,

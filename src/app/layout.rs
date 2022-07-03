@@ -1,7 +1,7 @@
 #[derive(Debug)]
 pub struct Layout {
-    pub top_gap: i64,
-    pub bottom_gap: i64,
+    pub top_gap: i16,
+    pub bottom_gap: i16,
     pub window_height: u32,
     pub row_height: u8,
     pub col_width: u8,
@@ -9,7 +9,7 @@ pub struct Layout {
     // ascii is double this amount.
     pub max_visible_cols: usize,
     /// Font size
-    pub font_size: u32,
+    pub font_size: u8,
     /// Block size for block view
     pub block_size: u8,
 }

@@ -10,3 +10,6 @@ pub struct View {
     /// How many columns the view displays (how wide it is)
     pub cols: usize,
 }
+
+/// Unbounded row/column size
+pub const UNBOUNDED: usize = usize::MAX;

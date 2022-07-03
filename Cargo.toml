@@ -16,6 +16,7 @@ interprocess = { git = "https://github.com/kotauskas/interprocess.git", default-
 directories = "4.0.1"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 memchr = "2.5.0"
+glu-sys = "0.1.4"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

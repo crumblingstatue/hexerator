@@ -3,13 +3,97 @@ mod block;
 mod hex;
 pub use ascii::ascii;
 pub use block::block;
+use gamedebug_core::imm_msg;
+use glu_sys::GLint;
 pub use hex::hex;
 use sfml::{
-    graphics::{Color, Font, Vertex},
+    graphics::{
+        Color, Font, PrimitiveType, Rect, RenderStates, RenderTarget, RenderWindow, Vertex, View,
+    },
     system::Vector2,
 };
 
-use crate::app::presentation::Presentation;
+use crate::app::{presentation::Presentation, App};
+
+/// A rendering of data in a view.
+///
+/// There can be different lenses into the same view, like a hex lens, ascii lens, block lens...
+/// They all sync on the same view offset, but each lens can show different amounts of data
+/// depending on block size of its items, and its relative size in the viewport.
+///
+/// The positions all count from the window, so they're always the position relative to the window.
+#[derive(Debug)]
+pub struct Lens {
+    /// X position in the window
+    pub x: i16,
+    /// Y position in the window
+    pub y: i16,
+    /// Width in the window
+    pub w: i16,
+    /// Height in the window
+    pub h: i16,
+    /// The kind of lens (hex, ascii, block, etc)
+    pub kind: LensKind,
+    /// Width of a column
+    pub col_w: u8,
+    /// Height of a row
+    pub row_h: u8,
+}
+
+/// The kind of lens (hex, ascii, block, etc)
+#[derive(Debug)]
+pub enum LensKind {
+    Hex,
+    Ascii,
+    Block,
+}
+
+impl Lens {
+    pub fn draw(
+        &self,
+        app: &mut App,
+        window: &mut RenderWindow,
+        vertex_buffer: &mut Vec<Vertex>,
+        font: &Font,
+    ) {
+        //app.scissor_lenses = false;
+        vertex_buffer.clear();
+        let mut rs = RenderStates::default();
+        match self.kind {
+            LensKind::Hex => {
+                hex::hex(self, app, font, vertex_buffer);
+                rs.set_texture(Some(font.texture(app.layout.font_size.into())));
+            }
+            LensKind::Ascii => {
+                ascii::ascii(self, app, font, vertex_buffer);
+                rs.set_texture(Some(font.texture(app.layout.font_size.into())));
+            }
+            LensKind::Block => block::block(self, app, window, vertex_buffer),
+        }
+        draw_rect_outline(
+            vertex_buffer,
+            self.x.into(),
+            self.y.into(),
+            self.w.into(),
+            self.h.into(),
+            Color::WHITE,
+            -1.0,
+        );
+        if app.scissor_lenses {
+            unsafe {
+                glu_sys::glEnable(glu_sys::GL_SCISSOR_TEST);
+                let y = window.size().y as GLint - GLint::from(self.y + self.h);
+                glu_sys::glScissor(self.x.into(), y, self.w.into(), self.h.into());
+            }
+        }
+        window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
+        if app.scissor_lenses {
+            unsafe {
+                glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
+            }
+        }
+    }
+}
 
 fn draw_cursor(
     x: f32,

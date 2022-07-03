@@ -20,13 +20,25 @@ use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    args::Args, config::Config, damage_region::DamageRegion, input::Input, metafile::Metafile,
-    msg_if_fail, region::Region, source::Source, timer::Timer,
+    args::Args,
+    config::Config,
+    damage_region::DamageRegion,
+    input::Input,
+    lens::{Lens, LensKind},
+    metafile::Metafile,
+    msg_if_fail,
+    region::Region,
+    source::Source,
+    timer::Timer,
 };
 
 use self::{
-    edit_state::EditState, edit_target::EditTarget, interact_mode::InteractMode, layout::Layout,
-    presentation::Presentation, view::View,
+    edit_state::EditState,
+    edit_target::EditTarget,
+    interact_mode::InteractMode,
+    layout::Layout,
+    presentation::Presentation,
+    view::{View, UNBOUNDED},
 };
 
 /// The hexerator application state
@@ -47,9 +59,7 @@ pub struct App {
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
     pub edit_target: EditTarget,
-    pub show_hex: bool,
-    pub show_text: bool,
-    pub show_block: bool,
+    pub lenses: Vec<Lens>,
     pub ui: crate::ui::Ui,
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
@@ -66,6 +76,8 @@ pub struct App {
     pub meta_dirty: bool,
     pub stream_read_recv: Option<Receiver<Vec<u8>>>,
     pub cfg: Config,
+    /// Whether to scissor lenses when drawing them. Useful to disable when debugging rendering.
+    pub scissor_lenses: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -105,13 +117,45 @@ impl App {
         }
         let layout = Layout::new(window_height);
         let cursor = 0;
+        let default_lenses = vec![
+            Lens {
+                x: 200,
+                y: layout.top_gap + 50,
+                w: 300,
+                /*h: window_height as i16 - layout.bottom_gap*/ h: 600,
+                kind: LensKind::Hex,
+                col_w: layout.font_size * 2,
+                row_h: layout.font_size,
+            },
+            Lens {
+                x: 600,
+                y: layout.top_gap + 150,
+                w: 321,
+                /*h: window_height as i16 - layout.bottom_gap*/ h: 713,
+                kind: LensKind::Hex,
+                col_w: layout.font_size * 2,
+                row_h: layout.font_size,
+            },
+            Lens {
+                x: 1000,
+                y: layout.top_gap + 350,
+                w: 459,
+                /*h: window_height as i16 - layout.bottom_gap*/ h: 367,
+                kind: LensKind::Hex,
+                col_w: layout.font_size * 2,
+                row_h: layout.font_size,
+            },
+            //Lens { x: 10, y: 70, w: 1620, h: 920, kind: LensKind::Hex, col_w: layout.font_size * 2, row_h: layout.font_size }
+            //Lens{ x: 400, y: layout.top_gap, w: 300, h: window_height as i16 - layout.bottom_gap, kind: LensKind::Ascii },
+        ];
         let mut this = Self {
+            scissor_lenses: true,
             view: View {
                 region: Region {
                     begin: 0,
                     end: data.len(),
                 },
-                rows: 67,
+                rows: UNBOUNDED,
                 cols: 48,
             },
             dirty_region: None,
@@ -124,16 +168,14 @@ impl App {
             // The x pixel offset of the scrollable view
             view_x: 0,
             // The y pixel offset of the scrollable view
-            view_y: -layout.top_gap,
+            view_y: -i64::from(layout.top_gap),
             // The amount scrolled per frame in view mode
             scroll_speed: 4,
             presentation: Presentation::default(),
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             prev_frame_inspect_offset: cursor,
             edit_target: EditTarget::Hex,
-            show_hex: true,
-            show_text: true,
-            show_block: false,
+            lenses: default_lenses,
             ui: crate::ui::Ui::default(),
             selection: None,
             select_begin: None,
@@ -324,7 +366,7 @@ impl App {
     }
     /// Calculate the (row, col, byte) offset where the view starts showing from
     pub fn view_offsets(&self) -> ViewOffsets {
-        let view_y = self.view_y + self.layout.top_gap;
+        let view_y = self.view_y + i64::from(self.layout.top_gap);
         let row_offset: usize = (view_y / self.layout.row_height as i64)
             .try_into()
             .unwrap_or(0);
@@ -344,7 +386,8 @@ impl App {
             self.view_x = (col * self.layout.col_width as usize) as i64;
         }
         if self.col_change_lock_y {
-            self.view_y = ((row * self.layout.row_height as usize) as i64) - self.layout.top_gap;
+            self.view_y =
+                ((row * self.layout.row_height as usize) as i64) - i64::from(self.layout.top_gap);
         }
     }
 
@@ -407,7 +450,9 @@ impl App {
     }
 
     pub(crate) fn view_area(&self) -> i64 {
-        self.layout.window_height as i64 - self.layout.top_gap - self.layout.bottom_gap
+        self.layout.window_height as i64
+            - i64::from(self.layout.top_gap)
+            - i64::from(self.layout.bottom_gap)
     }
 
     pub(crate) fn try_read_stream(&mut self) {
