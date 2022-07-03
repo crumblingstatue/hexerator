@@ -168,7 +168,7 @@ impl App {
             // The x pixel offset of the scrollable view
             view_x: 0,
             // The y pixel offset of the scrollable view
-            view_y: -i64::from(layout.top_gap),
+            view_y: 0,
             // The amount scrolled per frame in view mode
             scroll_speed: 4,
             presentation: Presentation::default(),
