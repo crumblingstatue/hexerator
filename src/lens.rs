@@ -3,13 +3,11 @@ mod block;
 mod hex;
 pub use ascii::ascii;
 pub use block::block;
-use gamedebug_core::imm_msg;
+
 use glu_sys::GLint;
 pub use hex::hex;
 use sfml::{
-    graphics::{
-        Color, Font, PrimitiveType, Rect, RenderStates, RenderTarget, RenderWindow, Vertex, View,
-    },
+    graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
     system::Vector2,
 };
 

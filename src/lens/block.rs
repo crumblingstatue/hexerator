@@ -1,17 +1,13 @@
-use gamedebug_core::imm_msg;
-use sfml::graphics::{RenderTarget, RenderWindow, Sprite, Texture, Transformable, Vertex};
+use sfml::graphics::{RenderWindow, Vertex};
 
-use crate::{
-    app::{edit_target::EditTarget, interact_mode::InteractMode, App},
-    lens::draw_cursor,
-};
+use crate::{app::App, lens::draw_cursor};
 
 use super::{draw_rect, Lens};
 
 pub fn block(
     lens: &Lens,
     app: &mut App,
-    window: &mut RenderWindow,
+    _window: &mut RenderWindow,
     vertex_buffer: &mut Vec<Vertex>,
 ) {
     let mut idx = app.view.region.begin;

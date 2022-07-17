@@ -30,9 +30,7 @@ use egui_sfml::SfEgui;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use serde::{Deserialize, Serialize};
 use sfml::{
-    graphics::{
-        Color, Font, PrimitiveType, Rect, RenderStates, RenderTarget, RenderWindow, Vertex, View,
-    },
+    graphics::{Color, Font, Rect, RenderTarget, RenderWindow, Vertex, View},
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };

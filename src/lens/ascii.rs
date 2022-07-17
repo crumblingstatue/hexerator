@@ -1,8 +1,7 @@
-use gamedebug_core::imm_msg;
 use sfml::graphics::{Font, Vertex};
 
 use crate::{
-    app::{edit_target::EditTarget, interact_mode::InteractMode, App},
+    app::App,
     lens::{draw_cursor, draw_glyph},
 };
 
