@@ -14,7 +14,7 @@ pub fn hex(lens: &Lens, app: &mut App, font: &Font, vertex_buffer: &mut Vec<Vert
     idx += start_row * app.view.cols;
     'rows: for row in start_row.. {
         let y = row as f32 * f32::from(lens.row_h);
-        let yy = (lens.y as f32 + y) - app.view_y as f32;
+        let yy = (lens.viewport_rect.y as f32 + y) - app.view_y as f32;
         let start_col = app.view_x.try_into().unwrap_or(0) / lens.col_w as usize;
         if start_col >= app.view.cols {
             break;
@@ -22,12 +22,12 @@ pub fn hex(lens: &Lens, app: &mut App, font: &Font, vertex_buffer: &mut Vec<Vert
         idx += start_col;
         for col in start_col..app.view.cols {
             let x = col as f32 * f32::from(lens.col_w);
-            let xx = (lens.x as f32 + x) - app.view_x as f32;
-            if xx > (lens.x + lens.w) as f32 {
+            let xx = (lens.viewport_rect.x as f32 + x) - app.view_x as f32;
+            if xx > (lens.viewport_rect.x + lens.viewport_rect.w) as f32 {
                 idx += app.view.cols - col;
                 break;
             }
-            if yy > (lens.y + lens.h) as f32 || idx >= app.data.len() {
+            if yy > (lens.viewport_rect.y + lens.viewport_rect.h) as f32 || idx >= app.data.len() {
                 break 'rows;
             }
             let byte = app.data[idx];

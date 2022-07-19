@@ -22,20 +22,22 @@ use crate::app::{presentation::Presentation, App};
 /// The positions all count from the window, so they're always the position relative to the window.
 #[derive(Debug)]
 pub struct Lens {
-    /// X position in the window
-    pub x: i16,
-    /// Y position in the window
-    pub y: i16,
-    /// Width in the window
-    pub w: i16,
-    /// Height in the window
-    pub h: i16,
+    /// The rectangle to occupy in the viewport
+    pub viewport_rect: ViewportRect,
     /// The kind of lens (hex, ascii, block, etc)
     pub kind: LensKind,
     /// Width of a column
     pub col_w: u8,
     /// Height of a row
     pub row_h: u8,
+}
+
+#[derive(Debug)]
+pub struct ViewportRect {
+    pub x: i16,
+    pub y: i16,
+    pub w: i16,
+    pub h: i16,
 }
 
 /// The kind of lens (hex, ascii, block, etc)
@@ -70,18 +72,24 @@ impl Lens {
         }
         draw_rect_outline(
             vertex_buffer,
-            self.x.into(),
-            self.y.into(),
-            self.w.into(),
-            self.h.into(),
+            self.viewport_rect.x.into(),
+            self.viewport_rect.y.into(),
+            self.viewport_rect.w.into(),
+            self.viewport_rect.h.into(),
             Color::WHITE,
             -1.0,
         );
         if app.scissor_lenses {
             unsafe {
                 glu_sys::glEnable(glu_sys::GL_SCISSOR_TEST);
-                let y = window.size().y as GLint - GLint::from(self.y + self.h);
-                glu_sys::glScissor(self.x.into(), y, self.w.into(), self.h.into());
+                let y = window.size().y as GLint
+                    - GLint::from(self.viewport_rect.y + self.viewport_rect.h);
+                glu_sys::glScissor(
+                    self.viewport_rect.x.into(),
+                    y,
+                    self.viewport_rect.w.into(),
+                    self.viewport_rect.h.into(),
+                );
             }
         }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
