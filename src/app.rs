@@ -109,7 +109,7 @@ impl App {
         }
         let layout = Layout::new(window_height);
         let cursor = 0;
-        let default_lenses = vec![
+        let default_views = vec![
             View {
                 viewport_rect: ViewportRect {
                     x: 0,
@@ -185,7 +185,7 @@ impl App {
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             prev_frame_inspect_offset: cursor,
             edit_target: EditTarget::Hex,
-            views: default_lenses,
+            views: default_views,
             ui: crate::ui::Ui::default(),
             selection: None,
             select_begin: None,

@@ -17,7 +17,7 @@ use crate::app::{presentation::Presentation, App};
 /// of rendering/interaction (hex/ascii/block/etc.)
 ///
 /// There can be different views through the same perspective.
-/// By default they sync their offsets, but each lens can show different amounts of data
+/// By default they sync their offsets, but each view can show different amounts of data
 /// depending on block size of its items, and its relative size in the viewport.
 #[derive(Debug)]
 pub struct View {
@@ -55,7 +55,7 @@ pub struct ViewportRect {
     pub h: i16,
 }
 
-/// The kind of lens (hex, ascii, block, etc)
+/// The kind of view (hex, ascii, block, etc)
 #[derive(Debug)]
 pub enum ViewKind {
     Hex,
@@ -71,7 +71,7 @@ impl View {
         vertex_buffer: &mut Vec<Vertex>,
         font: &Font,
     ) {
-        //app.scissor_lenses = false;
+        //app.scissor_views = false;
         vertex_buffer.clear();
         let mut rs = RenderStates::default();
         match self.kind {

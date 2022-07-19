@@ -173,11 +173,11 @@ fn update(app: &mut App) {
 }
 
 fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
-    let lenses = std::mem::take(&mut app.views);
-    for lens in &lenses {
-        lens.draw(app, window, vertex_buffer, font);
+    let views = std::mem::take(&mut app.views);
+    for view in &views {
+        view.draw(app, window, vertex_buffer, font);
     }
-    app.views = lenses;
+    app.views = views;
 }
 
 fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui) {
