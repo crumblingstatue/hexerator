@@ -314,28 +314,28 @@ impl App {
     }
 
     pub(crate) fn dec_cols(&mut self) {
-        let prev_offset = self.view_offsets();
+        //let prev_offset = self.view_offsets();
         self.perspective.cols -= 1;
         self.clamp_cols();
-        self.set_view_to_byte_offset(prev_offset.byte);
+        //self.set_view_to_byte_offset(prev_offset.byte);
     }
     pub(crate) fn inc_cols(&mut self) {
-        let prev_offset = self.view_offsets();
+        //let prev_offset = self.view_offsets();
         self.perspective.cols += 1;
         self.clamp_cols();
-        self.set_view_to_byte_offset(prev_offset.byte);
+        //self.set_view_to_byte_offset(prev_offset.byte);
     }
     pub(crate) fn halve_cols(&mut self) {
-        let prev_offset = self.view_offsets();
+        //let prev_offset = self.view_offsets();
         self.perspective.cols /= 2;
         self.clamp_cols();
-        self.set_view_to_byte_offset(prev_offset.byte);
+        //self.set_view_to_byte_offset(prev_offset.byte);
     }
     pub(crate) fn double_cols(&mut self) {
-        let prev_offset = self.view_offsets();
+        //let prev_offset = self.view_offsets();
         self.perspective.cols *= 2;
         self.clamp_cols();
-        self.set_view_to_byte_offset(prev_offset.byte);
+        //self.set_view_to_byte_offset(prev_offset.byte);
     }
     pub fn cursor_history_back(&mut self) {
         if self.edit_state.cursor_history_back() {
