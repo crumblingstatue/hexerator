@@ -9,8 +9,8 @@ use crate::{
 use super::View;
 
 pub fn hex(view: &View, app: &mut App, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
-    let view_x = 0;
-    let view_y = 0;
+    let view_x = view.scroll_offset.col_x as i64 + view.scroll_offset.pix_x as i64;
+    let view_y = view.scroll_offset.row_y as i64 + view.scroll_offset.pix_y as i64;
     let mut idx = app.perspective.region.begin;
     let start_row = view_y.try_into().unwrap_or(0) / view.row_h as usize;
     idx += start_row * app.perspective.cols;

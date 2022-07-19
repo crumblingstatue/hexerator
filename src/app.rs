@@ -18,6 +18,7 @@ use std::{
 use anyhow::{bail, Context};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
+use slotmap::{new_key_type, SlotMap};
 
 use crate::{
     args::Args,
@@ -37,6 +38,11 @@ use self::{
     perspective::Perspective, presentation::Presentation,
 };
 
+new_key_type! {
+    /// Key for a view
+    pub struct ViewKey;
+}
+
 /// The hexerator application state
 #[derive(Debug)]
 pub struct App {
@@ -51,7 +57,8 @@ pub struct App {
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
     pub edit_target: EditTarget,
-    pub views: Vec<View>,
+    pub views: SlotMap<ViewKey, View>,
+    pub focused_view: Option<ViewKey>,
     pub ui: crate::ui::Ui,
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
@@ -109,62 +116,61 @@ impl App {
         }
         let layout = Layout::new(window_height);
         let cursor = 0;
-        let default_views = vec![
-            View {
-                viewport_rect: ViewportRect {
-                    x: 0,
-                    y: layout.top_gap,
-                    w: 960,
-                    h: window_height as i16 - layout.bottom_gap,
-                },
-                kind: ViewKind::Hex,
-                col_w: layout.font_size * 2,
-                row_h: layout.font_size,
-                scroll_offset: ScrollOffset {
-                    col_x: 0,
-                    pix_x: 0,
-                    row_y: 0,
-                    pix_y: 0,
-                },
-                scroll_speed: 1,
+        let mut views = SlotMap::with_key();
+        let hex = views.insert(View {
+            viewport_rect: ViewportRect {
+                x: 0,
+                y: layout.top_gap,
+                w: 960,
+                h: window_height as i16 - layout.bottom_gap,
             },
-            View {
-                viewport_rect: ViewportRect {
-                    x: 962,
-                    y: layout.top_gap,
-                    w: 480,
-                    h: window_height as i16 - layout.bottom_gap,
-                },
-                kind: ViewKind::Ascii,
-                col_w: layout.font_size,
-                row_h: layout.font_size,
-                scroll_offset: ScrollOffset {
-                    col_x: 0,
-                    pix_x: 0,
-                    row_y: 0,
-                    pix_y: 0,
-                },
-                scroll_speed: 1,
+            kind: ViewKind::Hex,
+            col_w: layout.font_size * 2,
+            row_h: layout.font_size,
+            scroll_offset: ScrollOffset {
+                col_x: 0,
+                pix_x: 0,
+                row_y: 0,
+                pix_y: 0,
             },
-            View {
-                viewport_rect: ViewportRect {
-                    x: 1444,
-                    y: layout.top_gap,
-                    w: 200,
-                    h: window_height as i16 - layout.bottom_gap,
-                },
-                kind: ViewKind::Block,
-                col_w: 4,
-                row_h: 4,
-                scroll_offset: ScrollOffset {
-                    col_x: 0,
-                    pix_x: 0,
-                    row_y: 0,
-                    pix_y: 0,
-                },
-                scroll_speed: 1,
+            scroll_speed: 1,
+        });
+        views.insert(View {
+            viewport_rect: ViewportRect {
+                x: 962,
+                y: layout.top_gap,
+                w: 480,
+                h: window_height as i16 - layout.bottom_gap,
             },
-        ];
+            kind: ViewKind::Ascii,
+            col_w: layout.font_size,
+            row_h: layout.font_size,
+            scroll_offset: ScrollOffset {
+                col_x: 0,
+                pix_x: 0,
+                row_y: 0,
+                pix_y: 0,
+            },
+            scroll_speed: 1,
+        });
+        views.insert(View {
+            viewport_rect: ViewportRect {
+                x: 1444,
+                y: layout.top_gap,
+                w: 200,
+                h: window_height as i16 - layout.bottom_gap,
+            },
+            kind: ViewKind::Block,
+            col_w: 4,
+            row_h: 4,
+            scroll_offset: ScrollOffset {
+                col_x: 0,
+                pix_x: 0,
+                row_y: 0,
+                pix_y: 0,
+            },
+            scroll_speed: 1,
+        });
         let mut this = Self {
             scissor_views: true,
             perspective: Perspective {
@@ -183,7 +189,8 @@ impl App {
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             prev_frame_inspect_offset: cursor,
             edit_target: EditTarget::Hex,
-            views: default_views,
+            views,
+            focused_view: Some(hex),
             ui: crate::ui::Ui::default(),
             selection: None,
             select_begin: None,

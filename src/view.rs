@@ -66,6 +66,7 @@ pub enum ViewKind {
 impl View {
     pub fn draw(
         &self,
+        key: crate::app::ViewKey,
         app: &mut App,
         window: &mut RenderWindow,
         vertex_buffer: &mut Vec<Vertex>,
@@ -91,7 +92,11 @@ impl View {
             self.viewport_rect.y.into(),
             self.viewport_rect.w.into(),
             self.viewport_rect.h.into(),
-            Color::WHITE,
+            if Some(key) == app.focused_view {
+                Color::rgb(255, 255, 150)
+            } else {
+                Color::rgb(120, 120, 150)
+            },
             -1.0,
         );
         if app.scissor_views {

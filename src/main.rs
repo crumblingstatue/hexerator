@@ -27,6 +27,7 @@ use clap::Parser;
 use config::Config;
 use damage_region::DamageRegion;
 use egui_sfml::SfEgui;
+use gamedebug_core::imm_msg;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use serde::{Deserialize, Serialize};
 use sfml::{
@@ -155,27 +156,30 @@ fn update(app: &mut App) {
     }
     if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
         let spd = if app.input.key_down(Key::LShift) {
-            //app.scroll_speed * 4
+            4
         } else {
-            //app.scroll_speed
+            1
         };
         if app.input.key_down(Key::Left) {
-            //app.view_x -= spd;
         } else if app.input.key_down(Key::Right) {
             //app.view_x += spd;
         }
         if app.input.key_down(Key::Up) {
             //app.view_y -= spd;
         } else if app.input.key_down(Key::Down) {
-            //app.view_y += spd;
+            if let Some(key) = app.focused_view {
+                imm_msg!("Wow happening?");
+                app.views[key].scroll_offset.row_y += 1;
+                imm_msg!(app.views[key].scroll_offset.row_y);
+            }
         }
     }
 }
 
 fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
     let views = std::mem::take(&mut app.views);
-    for view in &views {
-        view.draw(app, window, vertex_buffer, font);
+    for (k, view) in &views {
+        view.draw(k, app, window, vertex_buffer, font);
     }
     app.views = views;
 }
