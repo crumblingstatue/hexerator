@@ -164,8 +164,6 @@ impl App {
                 },
                 scroll_speed: 1,
             },
-            //Lens { x: 10, y: 70, w: 1620, h: 920, kind: LensKind::Hex, col_w: layout.font_size * 2, row_h: layout.font_size }
-            //Lens{ x: 400, y: layout.top_gap, w: 300, h: window_height as i16 - layout.bottom_gap, kind: LensKind::Ascii },
         ];
         let mut this = Self {
             scissor_views: true,
