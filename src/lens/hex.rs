@@ -12,7 +12,7 @@ pub fn hex(lens: &Lens, app: &mut App, font: &Font, vertex_buffer: &mut Vec<Vert
     let mut idx = app.view.region.begin;
     let start_row = app.view_y.try_into().unwrap_or(0) / lens.row_h as usize;
     idx += start_row * app.view.cols;
-    'rows: for row in start_row..app.view.rows {
+    'rows: for row in start_row.. {
         let y = row as f32 * f32::from(lens.row_h);
         let yy = (lens.y as f32 + y) - app.view_y as f32;
         let start_col = app.view_x.try_into().unwrap_or(0) / lens.col_w as usize;

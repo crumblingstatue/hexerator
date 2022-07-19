@@ -5,11 +5,6 @@ use crate::region::Region;
 pub struct View {
     /// The region this view shows
     pub region: Region,
-    /// How many rows the view displays (how tall it is)
-    pub rows: usize,
     /// How many columns the view displays (how wide it is)
     pub cols: usize,
 }
-
-/// Unbounded row/column size
-pub const UNBOUNDED: usize = usize::MAX;

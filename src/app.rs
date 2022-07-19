@@ -33,12 +33,8 @@ use crate::{
 };
 
 use self::{
-    edit_state::EditState,
-    edit_target::EditTarget,
-    interact_mode::InteractMode,
-    layout::Layout,
-    presentation::Presentation,
-    view::{View, UNBOUNDED},
+    edit_state::EditState, edit_target::EditTarget, interact_mode::InteractMode, layout::Layout,
+    presentation::Presentation, view::View,
 };
 
 /// The hexerator application state
@@ -155,7 +151,6 @@ impl App {
                     begin: 0,
                     end: data.len(),
                 },
-                rows: UNBOUNDED,
                 cols: 48,
             },
             dirty_region: None,
@@ -450,7 +445,10 @@ impl App {
 
     pub(crate) fn try_read_stream(&mut self) {
         let view_byte_offset = self.view_offsets().byte;
-        let bytes_per_page = self.view.rows * self.view.cols;
+        // TODO: Implement properly
+        // It should probably take the most far-reaching view and use the
+        // bytes_per_page value of that.
+        let bytes_per_page = 100;
         // Don't read past what we need for our current view offset
         if view_byte_offset + bytes_per_page < self.data.len() {
             return;

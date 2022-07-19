@@ -326,19 +326,11 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         }
         Key::PageUp => match app.interact_mode {
             InteractMode::View => {
+                // TODO: Implement properly
                 app.view_y -= 1040;
             }
             InteractMode::Edit => {
-                let amount = app.view.rows * app.view.cols;
-                if app.view.region.begin >= amount {
-                    app.view.region.begin -= amount;
-                    if app.interact_mode == InteractMode::Edit {
-                        app.edit_state
-                            .set_cursor_no_history(app.edit_state.cursor.saturating_sub(amount));
-                    }
-                } else {
-                    app.view.region.begin = 0
-                }
+                // TODO: Implement
             }
         },
         Key::PageDown => match app.interact_mode {
@@ -351,15 +343,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 }
             }
             InteractMode::Edit => {
-                let amount = app.view.rows * app.view.cols;
-                if app.view.region.begin + amount < app.data.len() {
-                    app.view.region.begin += amount;
-                    if app.interact_mode == InteractMode::Edit
-                        && app.edit_state.cursor + amount < app.data.len()
-                    {
-                        app.edit_state.offset_cursor(amount);
-                    }
-                }
+                // TODO: Implement
             }
         },
         Key::Home => match app.interact_mode {
@@ -377,11 +361,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 app.center_view_on_offset(app.data.len() - 1);
             }
             InteractMode::Edit => {
-                let pos = app.data.len() - app.view.rows * app.view.cols;
-                app.view.region.begin = pos;
-                if app.interact_mode == InteractMode::Edit {
-                    app.edit_state.set_cursor_no_history(pos);
-                }
+                // TODO: Implement
             }
         },
         Key::Tab if shift => {
