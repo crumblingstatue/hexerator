@@ -272,23 +272,24 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::Up => match app.interact_mode {
             InteractMode::View => {
                 if ctrl {
-                    app.view.region.begin = app.view.region.begin.saturating_sub(1);
+                    app.perspective.region.begin = app.perspective.region.begin.saturating_sub(1);
                 }
             }
             InteractMode::Edit => {
-                app.edit_state
-                    .set_cursor_no_history(app.edit_state.cursor.saturating_sub(app.view.cols));
+                app.edit_state.set_cursor_no_history(
+                    app.edit_state.cursor.saturating_sub(app.perspective.cols),
+                );
             }
         },
         Key::Down => match app.interact_mode {
             InteractMode::View => {
                 if ctrl {
-                    app.view.region.begin += 1;
+                    app.perspective.region.begin += 1;
                 }
             }
             InteractMode::Edit => {
-                if app.edit_state.cursor + app.view.cols < app.data.len() {
-                    app.edit_state.offset_cursor(app.view.cols);
+                if app.edit_state.cursor + app.perspective.cols < app.data.len() {
+                    app.edit_state.offset_cursor(app.perspective.cols);
                 }
             }
         },
@@ -345,7 +346,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 todo!()
             }
             InteractMode::Edit => {
-                app.view.region.begin = 0;
+                app.perspective.region.begin = 0;
                 app.edit_state.set_cursor_no_history(0)
             }
         },

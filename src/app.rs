@@ -41,7 +41,7 @@ use self::{
 #[derive(Debug)]
 pub struct App {
     /// The default view
-    pub view: Perspective,
+    pub perspective: Perspective,
     pub dirty_region: Option<Region>,
     pub data: Vec<u8>,
     pub edit_state: EditState,
@@ -169,7 +169,7 @@ impl App {
         ];
         let mut this = Self {
             scissor_lenses: true,
-            view: Perspective {
+            perspective: Perspective {
                 region: Region {
                     begin: 0,
                     end: data.len(),
@@ -319,25 +319,25 @@ impl App {
 
     pub(crate) fn dec_cols(&mut self) {
         let prev_offset = self.view_offsets();
-        self.view.cols -= 1;
+        self.perspective.cols -= 1;
         self.clamp_cols();
         self.set_view_to_byte_offset(prev_offset.byte);
     }
     pub(crate) fn inc_cols(&mut self) {
         let prev_offset = self.view_offsets();
-        self.view.cols += 1;
+        self.perspective.cols += 1;
         self.clamp_cols();
         self.set_view_to_byte_offset(prev_offset.byte);
     }
     pub(crate) fn halve_cols(&mut self) {
         let prev_offset = self.view_offsets();
-        self.view.cols /= 2;
+        self.perspective.cols /= 2;
         self.clamp_cols();
         self.set_view_to_byte_offset(prev_offset.byte);
     }
     pub(crate) fn double_cols(&mut self) {
         let prev_offset = self.view_offsets();
-        self.view.cols *= 2;
+        self.perspective.cols *= 2;
         self.clamp_cols();
         self.set_view_to_byte_offset(prev_offset.byte);
     }
@@ -354,7 +354,7 @@ impl App {
         }
     }
     fn clamp_cols(&mut self) {
-        self.view.cols = self.view.cols.clamp(1, self.data.len());
+        self.perspective.cols = self.perspective.cols.clamp(1, self.data.len());
     }
     /// Calculate the (row, col, byte) offset where the view starts showing from
     pub fn view_offsets(&self) -> ViewOffsets {
@@ -419,7 +419,7 @@ impl App {
 
     pub(crate) fn data_height(&self) -> i64 {
         let len = self.data.len();
-        let rows = len as i64 / self.view.cols as i64;
+        let rows = len as i64 / self.perspective.cols as i64;
         rows * self.layout.row_height as i64
     }
 

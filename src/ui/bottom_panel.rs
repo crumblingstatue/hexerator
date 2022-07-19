@@ -23,9 +23,9 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
         match app.interact_mode {
             InteractMode::View => {
                 ui.label("offset");
-                ui.add(DragValue::new(&mut app.view.region.begin));
+                ui.add(DragValue::new(&mut app.perspective.region.begin));
                 ui.label("columns");
-                ui.add(DragValue::new(&mut app.view.cols));
+                ui.add(DragValue::new(&mut app.perspective.cols));
                 let data_len = app.data.len();
                 if data_len != 0 {
                     let re = ui.add(
