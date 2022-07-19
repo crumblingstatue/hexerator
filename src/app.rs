@@ -2,8 +2,8 @@ mod edit_state;
 pub mod edit_target;
 pub mod interact_mode;
 mod layout;
+mod perspective;
 pub mod presentation;
-mod view;
 
 use std::{
     ffi::OsString,
@@ -34,14 +34,14 @@ use crate::{
 
 use self::{
     edit_state::EditState, edit_target::EditTarget, interact_mode::InteractMode, layout::Layout,
-    presentation::Presentation, view::View,
+    perspective::Perspective, presentation::Presentation,
 };
 
 /// The hexerator application state
 #[derive(Debug)]
 pub struct App {
     /// The default view
-    pub view: View,
+    pub view: Perspective,
     pub dirty_region: Option<Region>,
     pub data: Vec<u8>,
     pub edit_state: EditState,
@@ -146,7 +146,7 @@ impl App {
         ];
         let mut this = Self {
             scissor_lenses: true,
-            view: View {
+            view: Perspective {
                 region: Region {
                     begin: 0,
                     end: data.len(),
@@ -546,7 +546,7 @@ fn read_contents(args: &Args, file: &mut File) -> anyhow::Result<Vec<u8>> {
     };
     Ok(data)
 }
-impl View {
+impl Perspective {
     /// Calculate the row and column for a given offset when viewed through this View
     fn offset_row_col(&self, offset: usize) -> (usize, usize) {
         (offset / self.cols, offset % self.cols)
