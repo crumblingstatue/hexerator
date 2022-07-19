@@ -254,16 +254,9 @@ impl App {
     pub fn toggle_debug(&mut self) {
         gamedebug_core::toggle();
     }
-    pub fn ascii_display_x_offset(&self) -> i64 {
-        self.view.cols as i64 * i64::from(self.layout.col_width) + 12
-    }
     pub fn search_focus(&mut self, offset: usize) {
         self.edit_state.cursor = offset;
         self.center_view_on_offset(offset);
-    }
-
-    pub(crate) fn block_display_x_offset(&self) -> i64 {
-        self.ascii_display_x_offset() * 2
     }
 
     pub(crate) fn clamp_view(&mut self) {
@@ -495,19 +488,9 @@ impl App {
         }
     }
     // Byte offset of a pixel position in the view
-    pub fn pixel_pos_byte_offset(&mut self, x: i32, y: i32) -> usize {
-        let x: i64 = self.view_x + i64::from(x);
-        let y: i64 = self.view_y + i64::from(y);
-        let ascii_display_x_offset = self.ascii_display_x_offset();
-        let col_y = y / i64::from(self.layout.row_height);
-        let col_x = if x < ascii_display_x_offset {
-            x / i64::from(self.layout.col_width)
-        } else {
-            let x_rel = x - ascii_display_x_offset;
-            x_rel / i64::from(self.layout.col_width / 2)
-        };
-        (usize::try_from(col_y).unwrap_or(0) * self.view.cols + usize::try_from(col_x).unwrap_or(0))
-            + self.view.region.begin
+    pub fn pixel_pos_byte_offset(&mut self, _x: i32, _y: i32) -> usize {
+        // TODO: Implement
+        0
     }
     pub fn consume_meta(&mut self, meta: Metafile) {
         self.regions = meta.named_regions;
