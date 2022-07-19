@@ -17,7 +17,7 @@ A variable column count is very helpful for better recognizing certain patterns 
 ### View
 
 A `View` is a region on the `Viewport` that provides a look into the data presented by a perspective. A view can be one of multiple kinds, like hex, ascii, block (pixel, kind of like a minimap), and it's scrollable, allowing you to explore different parts of a perspective. You can have multiple views on the `Viewport`. There is a `focused` view that you are currently focused on and scrolling/editing, etc.
-By default, all views that share the same perspective sync their scroll offsets with the `focused` perspective. This behavior can be turned off if independent scrolling is desired.
+By default, all views that share the same perspective sync their scroll offsets with the `focused` view. This behavior can be turned off if independent scrolling is desired.
 
 ### Viewport
 
