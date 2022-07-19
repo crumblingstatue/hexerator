@@ -51,7 +51,7 @@ pub struct App {
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
     pub edit_target: EditTarget,
-    pub lenses: Vec<View>,
+    pub views: Vec<View>,
     pub ui: crate::ui::Ui,
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
@@ -68,8 +68,8 @@ pub struct App {
     pub meta_dirty: bool,
     pub stream_read_recv: Option<Receiver<Vec<u8>>>,
     pub cfg: Config,
-    /// Whether to scissor lenses when drawing them. Useful to disable when debugging rendering.
-    pub scissor_lenses: bool,
+    /// Whether to scissor views when drawing them. Useful to disable when debugging rendering.
+    pub scissor_views: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -168,7 +168,7 @@ impl App {
             //Lens{ x: 400, y: layout.top_gap, w: 300, h: window_height as i16 - layout.bottom_gap, kind: LensKind::Ascii },
         ];
         let mut this = Self {
-            scissor_lenses: true,
+            scissor_views: true,
             perspective: Perspective {
                 region: Region {
                     begin: 0,
@@ -185,7 +185,7 @@ impl App {
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             prev_frame_inspect_offset: cursor,
             edit_target: EditTarget::Hex,
-            lenses: default_lenses,
+            views: default_lenses,
             ui: crate::ui::Ui::default(),
             selection: None,
             select_begin: None,

@@ -94,7 +94,7 @@ impl View {
             Color::WHITE,
             -1.0,
         );
-        if app.scissor_lenses {
+        if app.scissor_views {
             unsafe {
                 glu_sys::glEnable(glu_sys::GL_SCISSOR_TEST);
                 let y = window.size().y as GLint
@@ -108,7 +108,7 @@ impl View {
             }
         }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
-        if app.scissor_lenses {
+        if app.scissor_views {
             unsafe {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
             }
