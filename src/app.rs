@@ -29,7 +29,7 @@ use crate::{
     region::Region,
     source::Source,
     timer::Timer,
-    view::{LensKind, View, ViewportRect},
+    view::{View, ViewKind, ViewportRect},
 };
 
 use self::{
@@ -121,7 +121,7 @@ impl App {
                     w: 960,
                     h: window_height as i16 - layout.bottom_gap,
                 },
-                kind: LensKind::Hex,
+                kind: ViewKind::Hex,
                 col_w: layout.font_size * 2,
                 row_h: layout.font_size,
             },
@@ -132,7 +132,7 @@ impl App {
                     w: 480,
                     h: window_height as i16 - layout.bottom_gap,
                 },
-                kind: LensKind::Ascii,
+                kind: ViewKind::Ascii,
                 col_w: layout.font_size,
                 row_h: layout.font_size,
             },
@@ -143,7 +143,7 @@ impl App {
                     w: 200,
                     h: window_height as i16 - layout.bottom_gap,
                 },
-                kind: LensKind::Block,
+                kind: ViewKind::Block,
                 col_w: 4,
                 row_h: 4,
             },

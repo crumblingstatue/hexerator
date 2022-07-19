@@ -13,19 +13,18 @@ use sfml::{
 
 use crate::app::{presentation::Presentation, App};
 
-/// A rendering of data in a view.
+/// A rectangular view in the viewport looking through a perspective at the data with a flavor
+/// of rendering/interaction (hex/ascii/block/etc.)
 ///
-/// There can be different lenses into the same view, like a hex lens, ascii lens, block lens...
-/// They all sync on the same view offset, but each lens can show different amounts of data
+/// There can be different views through the same perspective.
+/// By default they sync their offsets, but each lens can show different amounts of data
 /// depending on block size of its items, and its relative size in the viewport.
-///
-/// The positions all count from the window, so they're always the position relative to the window.
 #[derive(Debug)]
 pub struct View {
     /// The rectangle to occupy in the viewport
     pub viewport_rect: ViewportRect,
-    /// The kind of lens (hex, ascii, block, etc)
-    pub kind: LensKind,
+    /// The kind of view (hex, ascii, block, etc)
+    pub kind: ViewKind,
     /// Width of a column
     pub col_w: u8,
     /// Height of a row
@@ -42,7 +41,7 @@ pub struct ViewportRect {
 
 /// The kind of lens (hex, ascii, block, etc)
 #[derive(Debug)]
-pub enum LensKind {
+pub enum ViewKind {
     Hex,
     Ascii,
     Block,
@@ -60,15 +59,15 @@ impl View {
         vertex_buffer.clear();
         let mut rs = RenderStates::default();
         match self.kind {
-            LensKind::Hex => {
+            ViewKind::Hex => {
                 hex::hex(self, app, font, vertex_buffer);
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
-            LensKind::Ascii => {
+            ViewKind::Ascii => {
                 ascii::ascii(self, app, font, vertex_buffer);
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
-            LensKind::Block => block::block(self, app, window, vertex_buffer),
+            ViewKind::Block => block::block(self, app, window, vertex_buffer),
         }
         draw_rect_outline(
             vertex_buffer,
