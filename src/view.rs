@@ -1,6 +1,7 @@
 mod ascii;
 mod block;
 mod hex;
+mod generic;
 pub use ascii::ascii;
 pub use block::block;
 
@@ -11,7 +12,7 @@ use sfml::{
     system::Vector2,
 };
 
-use crate::app::{presentation::Presentation, App};
+use crate::{app::{presentation::Presentation, App}, hex_conv};
 
 /// A rectangular view in the viewport looking through a perspective at the data with a flavor
 /// of rendering/interaction (hex/ascii/block/etc.)
@@ -77,14 +78,58 @@ impl View {
         let mut rs = RenderStates::default();
         match self.kind {
             ViewKind::Hex => {
-                hex::hex(self, app, font, vertex_buffer);
+                //hex::hex(self, app, font, vertex_buffer);
+                generic::generic(self, app, window, vertex_buffer, |vertex_buffer, xx, yy, byte, c| {
+                    let [d1, d2] = hex_conv::byte_to_hex_digits(byte);
+                    draw_glyph(
+                        font,
+                        app.layout.font_size.into(),
+                        vertex_buffer,
+                        xx,
+                        yy,
+                        d1.into(),
+                        c,
+                    );
+                    draw_glyph(
+                        font,
+                        app.layout.font_size.into(),
+                        vertex_buffer,
+                        xx + (self.col_w / 2) as f32 - 4.0,
+                        yy,
+                        d2.into(),
+                        c,
+                    );
+                });
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
             ViewKind::Ascii => {
-                ascii::ascii(self, app, font, vertex_buffer);
+                //ascii::ascii(self, app, font, vertex_buffer);
+                generic::generic(self, app, window, vertex_buffer, |vertex_buffer, xx, yy, byte, c| {
+                    draw_glyph(
+                        font,
+                        app.layout.font_size.into(),
+                        vertex_buffer,
+                        xx,
+                        yy,
+                        u32::from(byte),
+                        c,
+                    );
+                });
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
-            ViewKind::Block => block::block(self, app, window, vertex_buffer),
+            ViewKind::Block => {
+                //block::block(self, app, window, vertex_buffer),
+                generic::generic(self, app, window, vertex_buffer, |vertex_buffer, xx, yy, byte, c| {
+                    draw_rect(
+                        vertex_buffer,
+                        xx,
+                        yy,
+                        self.col_w as f32,
+                        self.row_h as f32,
+                        c,
+                    );
+                });
+            }
         }
         draw_rect_outline(
             vertex_buffer,
