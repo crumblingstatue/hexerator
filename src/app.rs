@@ -1,5 +1,4 @@
 mod edit_state;
-pub mod edit_target;
 pub mod interact_mode;
 mod layout;
 mod perspective;
@@ -33,8 +32,8 @@ use crate::{
 };
 
 use self::{
-    edit_state::EditState, edit_target::EditTarget, interact_mode::InteractMode, layout::Layout,
-    perspective::Perspective, presentation::Presentation,
+    edit_state::EditState, interact_mode::InteractMode, layout::Layout, perspective::Perspective,
+    presentation::Presentation,
 };
 
 /// The hexerator application state
@@ -50,7 +49,6 @@ pub struct App {
     pub presentation: Presentation,
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
-    pub edit_target: EditTarget,
     pub views: Vec<View>,
     pub focused_view: Option<usize>,
     pub ui: crate::ui::Ui,
@@ -182,7 +180,6 @@ impl App {
             presentation: Presentation::default(),
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             prev_frame_inspect_offset: cursor,
-            edit_target: EditTarget::Hex,
             views,
             focused_view: Some(0),
             ui: crate::ui::Ui::default(),

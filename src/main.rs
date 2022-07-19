@@ -21,7 +21,7 @@ use std::{
 };
 
 use crate::app::App;
-use app::{edit_target::EditTarget, interact_mode::InteractMode};
+use app::interact_mode::InteractMode;
 use args::Args;
 use clap::Parser;
 use config::Config;
@@ -35,6 +35,7 @@ use sfml::{
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };
+use view::ViewKind;
 
 fn msg_if_fail(result: anyhow::Result<()>, prefix: &str) {
     if let Err(e) = result {
@@ -234,36 +235,45 @@ fn handle_text_entered(app: &mut App, unicode: char) {
         return;
     }
     match app.interact_mode {
-        InteractMode::Edit => match app.edit_target {
-            EditTarget::Hex => {
-                if unicode.is_ascii() {
-                    let ascii = unicode as u8;
-                    if matches!(ascii, b'0'..=b'9' | b'a'..=b'f') {
-                        match app.edit_state.hex_edit_half_digit {
-                            Some(half) => {
-                                app.data[app.edit_state.cursor] =
-                                    hex_conv::merge_hex_halves(half, ascii);
-                                app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
-                                if app.edit_state.cursor + 1 < app.data.len() {
-                                    app.edit_state.step_cursor_forward();
+        InteractMode::Edit => {
+            let Some(focused) = app.focused_view else {
+                return
+            };
+            let view = &app.views[focused];
+            match view.kind {
+                ViewKind::Hex => {
+                    if unicode.is_ascii() {
+                        let ascii = unicode as u8;
+                        if matches!(ascii, b'0'..=b'9' | b'a'..=b'f') {
+                            match app.edit_state.hex_edit_half_digit {
+                                Some(half) => {
+                                    app.data[app.edit_state.cursor] =
+                                        hex_conv::merge_hex_halves(half, ascii);
+                                    app.widen_dirty_region(DamageRegion::Single(
+                                        app.edit_state.cursor,
+                                    ));
+                                    if app.edit_state.cursor + 1 < app.data.len() {
+                                        app.edit_state.step_cursor_forward();
+                                    }
+                                    app.edit_state.hex_edit_half_digit = None;
                                 }
-                                app.edit_state.hex_edit_half_digit = None;
+                                None => app.edit_state.hex_edit_half_digit = Some(ascii),
                             }
-                            None => app.edit_state.hex_edit_half_digit = Some(ascii),
                         }
                     }
                 }
-            }
-            EditTarget::Text => {
-                if unicode.is_ascii() {
-                    app.data[app.edit_state.cursor] = unicode as u8;
-                    app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
-                    if app.edit_state.cursor + 1 < app.data.len() {
-                        app.edit_state.step_cursor_forward()
+                ViewKind::Ascii => {
+                    if unicode.is_ascii() {
+                        app.data[app.edit_state.cursor] = unicode as u8;
+                        app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                        if app.edit_state.cursor + 1 < app.data.len() {
+                            app.edit_state.step_cursor_forward()
+                        }
                     }
                 }
+                ViewKind::Block => {}
             }
-        },
+        }
         InteractMode::View => {}
     }
 }
@@ -363,7 +373,13 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
         },
         Key::Tab if shift => {
-            app.edit_target.switch();
+            if let Some(idx) = &mut app.focused_view {
+                if *idx + 1 < app.views.len() {
+                    *idx += 1;
+                } else {
+                    *idx = 0;
+                }
+            }
             app.edit_state.hex_edit_half_digit = None;
         }
         Key::F1 => app.interact_mode = InteractMode::View,
