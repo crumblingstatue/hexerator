@@ -2,12 +2,12 @@ use sfml::graphics::{Font, Vertex};
 
 use crate::{
     app::App,
-    lens::{draw_cursor, draw_glyph},
+    view::{draw_cursor, draw_glyph},
 };
 
-use super::Lens;
+use super::View;
 
-pub fn ascii(lens: &Lens, app: &mut App, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
+pub fn ascii(lens: &View, app: &mut App, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
     let mut idx = app.view.region.begin;
     let start_row = app.view_y.try_into().unwrap_or(0) / lens.row_h as usize;
     idx += start_row * app.view.cols;

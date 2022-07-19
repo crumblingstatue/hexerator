@@ -24,12 +24,12 @@ use crate::{
     config::Config,
     damage_region::DamageRegion,
     input::Input,
-    lens::{Lens, LensKind, ViewportRect},
     metafile::Metafile,
     msg_if_fail,
     region::Region,
     source::Source,
     timer::Timer,
+    view::{LensKind, View, ViewportRect},
 };
 
 use self::{
@@ -55,7 +55,7 @@ pub struct App {
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
     pub edit_target: EditTarget,
-    pub lenses: Vec<Lens>,
+    pub lenses: Vec<View>,
     pub ui: crate::ui::Ui,
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
@@ -114,7 +114,7 @@ impl App {
         let layout = Layout::new(window_height);
         let cursor = 0;
         let default_lenses = vec![
-            Lens {
+            View {
                 viewport_rect: ViewportRect {
                     x: 0,
                     y: layout.top_gap,
@@ -125,7 +125,7 @@ impl App {
                 col_w: layout.font_size * 2,
                 row_h: layout.font_size,
             },
-            Lens {
+            View {
                 viewport_rect: ViewportRect {
                     x: 962,
                     y: layout.top_gap,
@@ -136,7 +136,7 @@ impl App {
                 col_w: layout.font_size,
                 row_h: layout.font_size,
             },
-            Lens {
+            View {
                 viewport_rect: ViewportRect {
                     x: 1444,
                     y: layout.top_gap,

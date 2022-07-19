@@ -1,11 +1,11 @@
 use sfml::graphics::{RenderWindow, Vertex};
 
-use crate::{app::App, lens::draw_cursor};
+use crate::{app::App, view::draw_cursor};
 
-use super::{draw_rect, Lens};
+use super::{draw_rect, View};
 
 pub fn block(
-    lens: &Lens,
+    lens: &View,
     app: &mut App,
     _window: &mut RenderWindow,
     vertex_buffer: &mut Vec<Vertex>,

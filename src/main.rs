@@ -7,13 +7,13 @@ mod config;
 mod damage_region;
 mod hex_conv;
 mod input;
-mod lens;
 mod metafile;
 mod region;
 mod slice_ext;
 mod source;
 mod timer;
 mod ui;
+mod view;
 
 use std::{
     ffi::OsStr,

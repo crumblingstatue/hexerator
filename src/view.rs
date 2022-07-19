@@ -21,7 +21,7 @@ use crate::app::{presentation::Presentation, App};
 ///
 /// The positions all count from the window, so they're always the position relative to the window.
 #[derive(Debug)]
-pub struct Lens {
+pub struct View {
     /// The rectangle to occupy in the viewport
     pub viewport_rect: ViewportRect,
     /// The kind of lens (hex, ascii, block, etc)
@@ -48,7 +48,7 @@ pub enum LensKind {
     Block,
 }
 
-impl Lens {
+impl View {
     pub fn draw(
         &self,
         app: &mut App,
