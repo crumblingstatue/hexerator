@@ -28,14 +28,6 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 ui.add(DragValue::new(&mut app.view.cols));
                 let data_len = app.data.len();
                 if data_len != 0 {
-                    let offsets = app.view_offsets();
-                    ui.label(format!(
-                        "view offset: row {} col {} byte {} ({:.2}%)",
-                        offsets.row,
-                        offsets.col,
-                        offsets.byte,
-                        (offsets.byte as f64 / data_len as f64) * 100.0
-                    ));
                     let re = ui.add(
                         TextEdit::singleline(&mut app.ui.center_offset_input)
                             .hint_text("Center view on offset"),

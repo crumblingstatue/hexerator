@@ -29,6 +29,22 @@ pub struct View {
     pub col_w: u8,
     /// Height of a row
     pub row_h: u8,
+    /// The scrolling offset
+    pub scroll_offset: ScrollOffset,
+    /// The amount scrolled for a single scroll operation, in pixels
+    pub scroll_speed: i16,
+}
+
+#[derive(Debug)]
+pub struct ScrollOffset {
+    /// What column we are at
+    pub col_x: usize,
+    /// Additional pixel x offset
+    pub pix_x: i16,
+    /// What row we are at
+    pub row_y: usize,
+    /// Additional pixel y offset
+    pub pix_y: i16,
 }
 
 #[derive(Debug)]

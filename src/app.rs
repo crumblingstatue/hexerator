@@ -29,7 +29,7 @@ use crate::{
     region::Region,
     source::Source,
     timer::Timer,
-    view::{View, ViewKind, ViewportRect},
+    view::{ScrollOffset, View, ViewKind, ViewportRect},
 };
 
 use self::{
@@ -47,10 +47,6 @@ pub struct App {
     pub edit_state: EditState,
     pub input: Input,
     pub interact_mode: InteractMode,
-    pub view_x: i64,
-    pub view_y: i64,
-    // The amount scrolled per frame in view mode
-    pub scroll_speed: i64,
     pub presentation: Presentation,
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
@@ -124,6 +120,13 @@ impl App {
                 kind: ViewKind::Hex,
                 col_w: layout.font_size * 2,
                 row_h: layout.font_size,
+                scroll_offset: ScrollOffset {
+                    col_x: 0,
+                    pix_x: 0,
+                    row_y: 0,
+                    pix_y: 0,
+                },
+                scroll_speed: 1,
             },
             View {
                 viewport_rect: ViewportRect {
@@ -135,6 +138,13 @@ impl App {
                 kind: ViewKind::Ascii,
                 col_w: layout.font_size,
                 row_h: layout.font_size,
+                scroll_offset: ScrollOffset {
+                    col_x: 0,
+                    pix_x: 0,
+                    row_y: 0,
+                    pix_y: 0,
+                },
+                scroll_speed: 1,
             },
             View {
                 viewport_rect: ViewportRect {
@@ -146,6 +156,13 @@ impl App {
                 kind: ViewKind::Block,
                 col_w: 4,
                 row_h: 4,
+                scroll_offset: ScrollOffset {
+                    col_x: 0,
+                    pix_x: 0,
+                    row_y: 0,
+                    pix_y: 0,
+                },
+                scroll_speed: 1,
             },
             //Lens { x: 10, y: 70, w: 1620, h: 920, kind: LensKind::Hex, col_w: layout.font_size * 2, row_h: layout.font_size }
             //Lens{ x: 400, y: layout.top_gap, w: 300, h: window_height as i16 - layout.bottom_gap, kind: LensKind::Ascii },
@@ -164,14 +181,6 @@ impl App {
             edit_state: EditState::default(),
             input: Input::default(),
             interact_mode: InteractMode::View,
-            // The top part where the top panel is. You should try to position stuff so it's not overdrawn
-            // by the top panel
-            // The x pixel offset of the scrollable view
-            view_x: 0,
-            // The y pixel offset of the scrollable view
-            view_y: 0,
-            // The amount scrolled per frame in view mode
-            scroll_speed: 4,
             presentation: Presentation::default(),
             // The value of the cursor on the previous frame. Used to determine when the cursor changes
             prev_frame_inspect_offset: cursor,
@@ -260,19 +269,8 @@ impl App {
         self.center_view_on_offset(offset);
     }
 
-    pub(crate) fn clamp_view(&mut self) {
-        if self.view_x < -100 {
-            self.view_x = -100;
-        }
-        if self.view_y < -100 {
-            self.view_y = -100;
-        }
-    }
-
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
-        let (row, col) = self.view.offset_row_col(offset);
-        self.view_x = (col as i64 * self.layout.col_width as i64) - 200;
-        self.view_y = (row as i64 * self.layout.row_height as i64) - 200;
+        todo!()
     }
 
     pub(crate) fn backup_path(&self) -> Option<PathBuf> {
@@ -360,29 +358,11 @@ impl App {
     }
     /// Calculate the (row, col, byte) offset where the view starts showing from
     pub fn view_offsets(&self) -> ViewOffsets {
-        let view_y = self.view_y + i64::from(self.layout.top_gap);
-        let row_offset: usize = (view_y / self.layout.row_height as i64)
-            .try_into()
-            .unwrap_or(0);
-        let col_offset: usize = (self.view_x / self.layout.col_width as i64)
-            .try_into()
-            .unwrap_or(0);
-        ViewOffsets {
-            row: row_offset,
-            col: col_offset,
-            byte: row_offset * self.view.cols + col_offset,
-        }
+        todo!()
     }
 
     pub fn set_view_to_byte_offset(&mut self, offset: usize) {
-        let (row, col) = self.view.offset_row_col(offset);
-        if self.col_change_lock_x {
-            self.view_x = (col * self.layout.col_width as usize) as i64;
-        }
-        if self.col_change_lock_y {
-            self.view_y =
-                ((row * self.layout.row_height as usize) as i64) - i64::from(self.layout.top_gap);
-        }
+        todo!()
     }
 
     pub(crate) fn load_file(

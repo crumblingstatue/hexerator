@@ -131,7 +131,6 @@ fn do_frame(
 ) {
     handle_events(app, window, sf_egui);
     update(app);
-    app.clamp_view();
     ui::do_egui(sf_egui, app, window.mouse_position());
     let [r, g, b] = app.presentation.bg_color;
     window.clear(Color::rgb(
@@ -156,19 +155,19 @@ fn update(app: &mut App) {
     }
     if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
         let spd = if app.input.key_down(Key::LShift) {
-            app.scroll_speed * 4
+            //app.scroll_speed * 4
         } else {
-            app.scroll_speed
+            //app.scroll_speed
         };
         if app.input.key_down(Key::Left) {
-            app.view_x -= spd;
+            //app.view_x -= spd;
         } else if app.input.key_down(Key::Right) {
-            app.view_x += spd;
+            //app.view_x += spd;
         }
         if app.input.key_down(Key::Up) {
-            app.view_y -= spd;
+            //app.view_y -= spd;
         } else if app.input.key_down(Key::Down) {
-            app.view_y += spd;
+            //app.view_y += spd;
         }
     }
 }
@@ -327,7 +326,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::PageUp => match app.interact_mode {
             InteractMode::View => {
                 // TODO: Implement properly
-                app.view_y -= 1040;
+                //app.view_y -= 1040;
             }
             InteractMode::Edit => {
                 // TODO: Implement
@@ -335,12 +334,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::PageDown => match app.interact_mode {
             InteractMode::View => {
-                let view_area = app.view_area();
-                app.view_y += view_area;
-                let data_h = app.data_height();
-                if app.view_y + view_area > data_h {
-                    app.view_y = data_h - view_area;
-                }
+                todo!()
             }
             InteractMode::Edit => {
                 // TODO: Implement
@@ -348,8 +342,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::Home => match app.interact_mode {
             InteractMode::View => {
-                app.view_x = -10;
-                app.view_y = i64::from(-app.layout.top_gap) - 10;
+                todo!()
             }
             InteractMode::Edit => {
                 app.view.region.begin = 0;
