@@ -66,7 +66,7 @@ pub enum ViewKind {
 impl View {
     pub fn draw(
         &self,
-        key: crate::app::ViewKey,
+        key: usize,
         app: &mut App,
         window: &mut RenderWindow,
         vertex_buffer: &mut Vec<Vertex>,

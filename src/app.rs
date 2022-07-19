@@ -18,7 +18,6 @@ use std::{
 use anyhow::{bail, Context};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
-use slotmap::{new_key_type, SlotMap};
 
 use crate::{
     args::Args,
@@ -38,11 +37,6 @@ use self::{
     perspective::Perspective, presentation::Presentation,
 };
 
-new_key_type! {
-    /// Key for a view
-    pub struct ViewKey;
-}
-
 /// The hexerator application state
 #[derive(Debug)]
 pub struct App {
@@ -57,8 +51,8 @@ pub struct App {
     // The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
     pub edit_target: EditTarget,
-    pub views: SlotMap<ViewKey, View>,
-    pub focused_view: Option<ViewKey>,
+    pub views: Vec<View>,
+    pub focused_view: Option<usize>,
     pub ui: crate::ui::Ui,
     pub selection: Option<Region>,
     pub select_begin: Option<usize>,
@@ -116,8 +110,8 @@ impl App {
         }
         let layout = Layout::new(window_height);
         let cursor = 0;
-        let mut views = SlotMap::with_key();
-        let hex = views.insert(View {
+        let mut views = Vec::new();
+        let hex = views.push(View {
             viewport_rect: ViewportRect {
                 x: 0,
                 y: layout.top_gap,
@@ -135,7 +129,7 @@ impl App {
             },
             scroll_speed: 1,
         });
-        views.insert(View {
+        views.push(View {
             viewport_rect: ViewportRect {
                 x: 962,
                 y: layout.top_gap,
@@ -153,7 +147,7 @@ impl App {
             },
             scroll_speed: 1,
         });
-        views.insert(View {
+        views.push(View {
             viewport_rect: ViewportRect {
                 x: 1444,
                 y: layout.top_gap,
@@ -190,7 +184,7 @@ impl App {
             prev_frame_inspect_offset: cursor,
             edit_target: EditTarget::Hex,
             views,
-            focused_view: Some(hex),
+            focused_view: Some(0),
             ui: crate::ui::Ui::default(),
             selection: None,
             select_begin: None,

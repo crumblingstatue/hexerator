@@ -178,7 +178,7 @@ fn update(app: &mut App) {
 
 fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
     let views = std::mem::take(&mut app.views);
-    for (k, view) in &views {
+    for (k, view) in views.iter().enumerate() {
         view.draw(k, app, window, vertex_buffer, font);
     }
     app.views = views;
