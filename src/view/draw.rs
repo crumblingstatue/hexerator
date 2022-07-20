@@ -218,69 +218,47 @@ impl View {
         let mut rs = RenderStates::default();
         match self.kind {
             ViewKind::Hex => {
-                draw_view(
-                    self,
-                    app,
-                    vertex_buffer,
-                    |vertex_buffer, xx, yy, byte, c| {
-                        let [d1, d2] = hex_conv::byte_to_hex_digits(byte);
-                        draw_glyph(
-                            font,
-                            app.layout.font_size.into(),
-                            vertex_buffer,
-                            xx,
-                            yy,
-                            d1.into(),
-                            c,
-                        );
-                        draw_glyph(
-                            font,
-                            app.layout.font_size.into(),
-                            vertex_buffer,
-                            xx + (self.col_w / 2) as f32 - 4.0,
-                            yy,
-                            d2.into(),
-                            c,
-                        );
-                    },
-                );
+                draw_view(self, app, vertex_buffer, |vertex_buffer, x, y, byte, c| {
+                    let [d1, d2] = hex_conv::byte_to_hex_digits(byte);
+                    draw_glyph(
+                        font,
+                        app.layout.font_size.into(),
+                        vertex_buffer,
+                        x,
+                        y,
+                        d1.into(),
+                        c,
+                    );
+                    draw_glyph(
+                        font,
+                        app.layout.font_size.into(),
+                        vertex_buffer,
+                        x + (self.col_w / 2) as f32 - 4.0,
+                        y,
+                        d2.into(),
+                        c,
+                    );
+                });
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
             ViewKind::Ascii => {
-                draw_view(
-                    self,
-                    app,
-                    vertex_buffer,
-                    |vertex_buffer, xx, yy, byte, c| {
-                        draw_glyph(
-                            font,
-                            app.layout.font_size.into(),
-                            vertex_buffer,
-                            xx,
-                            yy,
-                            u32::from(byte),
-                            c,
-                        );
-                    },
-                );
+                draw_view(self, app, vertex_buffer, |vertex_buffer, x, y, byte, c| {
+                    draw_glyph(
+                        font,
+                        app.layout.font_size.into(),
+                        vertex_buffer,
+                        x,
+                        y,
+                        u32::from(byte),
+                        c,
+                    );
+                });
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
             ViewKind::Block => {
-                draw_view(
-                    self,
-                    app,
-                    vertex_buffer,
-                    |vertex_buffer, xx, yy, _byte, c| {
-                        draw_rect(
-                            vertex_buffer,
-                            xx,
-                            yy,
-                            self.col_w as f32,
-                            self.row_h as f32,
-                            c,
-                        );
-                    },
-                );
+                draw_view(self, app, vertex_buffer, |vertex_buffer, x, y, _byte, c| {
+                    draw_rect(vertex_buffer, x, y, self.col_w as f32, self.row_h as f32, c);
+                });
             }
         }
         draw_rect_outline(
