@@ -2,7 +2,7 @@ use sfml::graphics::{Color, RenderWindow, Vertex};
 
 use crate::{app::App, view::draw_cursor};
 
-use super::{draw_rect, View};
+use super::View;
 
 pub fn generic(
     view: &View,

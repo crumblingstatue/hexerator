@@ -1,12 +1,7 @@
-mod ascii;
-mod block;
 mod generic;
-mod hex;
-pub use ascii::ascii;
-pub use block::block;
 
+use gamedebug_core::imm_msg;
 use glu_sys::GLint;
-pub use hex::hex;
 use sfml::{
     graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
     system::Vector2,
@@ -179,6 +174,7 @@ impl View {
             }
         }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
+        imm_msg!(vertex_buffer.len());
         if app.scissor_views {
             unsafe {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
