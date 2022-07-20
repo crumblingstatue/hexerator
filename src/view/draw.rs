@@ -13,10 +13,9 @@ use crate::{
 
 use super::View;
 
-pub fn generic(
+pub fn draw_view(
     view: &View,
     app: &App,
-    _window: &mut RenderWindow,
     vertex_buffer: &mut Vec<Vertex>,
     mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, u8, Color),
 ) {
@@ -220,10 +219,9 @@ impl View {
         match self.kind {
             ViewKind::Hex => {
                 //hex::hex(self, app, font, vertex_buffer);
-                generic(
+                draw_view(
                     self,
                     app,
-                    window,
                     vertex_buffer,
                     |vertex_buffer, xx, yy, byte, c| {
                         let [d1, d2] = hex_conv::byte_to_hex_digits(byte);
@@ -251,10 +249,9 @@ impl View {
             }
             ViewKind::Ascii => {
                 //ascii::ascii(self, app, font, vertex_buffer);
-                generic(
+                draw_view(
                     self,
                     app,
-                    window,
                     vertex_buffer,
                     |vertex_buffer, xx, yy, byte, c| {
                         draw_glyph(
@@ -272,10 +269,9 @@ impl View {
             }
             ViewKind::Block => {
                 //block::block(self, app, window, vertex_buffer),
-                generic(
+                draw_view(
                     self,
                     app,
-                    window,
                     vertex_buffer,
                     |vertex_buffer, xx, yy, _byte, c| {
                         draw_rect(
