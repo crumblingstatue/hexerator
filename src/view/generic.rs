@@ -1,4 +1,4 @@
-use sfml::graphics::{RenderWindow, Vertex, Color};
+use sfml::graphics::{Color, RenderWindow, Vertex};
 
 use crate::{app::App, view::draw_cursor};
 

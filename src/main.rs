@@ -156,23 +156,23 @@ fn update(app: &mut App) {
         return;
     }
     if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
+        let Some(key) = app.focused_view else { return };
         let spd = if app.input.key_down(Key::LShift) {
             10
         } else {
             1
         };
         if app.input.key_down(Key::Left) {
+            app.views[key].scroll_offset.col_x =
+                app.views[key].scroll_offset.col_x.saturating_sub(spd);
         } else if app.input.key_down(Key::Right) {
-            //app.view_x += spd;
+            app.views[key].scroll_offset.col_x += spd;
         }
         if app.input.key_down(Key::Up) {
-            //app.view_y -= spd;
+            app.views[key].scroll_offset.row_y =
+                app.views[key].scroll_offset.row_y.saturating_sub(spd);
         } else if app.input.key_down(Key::Down) {
-            if let Some(key) = app.focused_view {
-                imm_msg!("Wow happening?");
-                app.views[key].scroll_offset.row_y += spd;
-                imm_msg!(app.views[key].scroll_offset.row_y);
-            }
+            app.views[key].scroll_offset.row_y += spd;
         }
     }
 }
