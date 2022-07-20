@@ -19,7 +19,10 @@ pub fn draw_view(
     vertex_buffer: &mut Vec<Vertex>,
     mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, u8, Color),
 ) {
-    imm_msg!(&view.scroll_offset);
+    // Protect against infinite loop lock up when scrolling horizontally out of view
+    if view.scroll_offset.pix_xoff <= -view.viewport_rect.w {
+        return;
+    }
     let mut idx = app.perspective.region.begin;
     let start_row: usize = view.scroll_offset.row;
     idx += start_row * app.perspective.cols;
