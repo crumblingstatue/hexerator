@@ -108,61 +108,62 @@ impl App {
         }
         let layout = Layout::new(window_height);
         let cursor = 0;
-        let mut views = Vec::new();
-        let _hex = views.push(View {
-            viewport_rect: ViewportRect {
-                x: 0,
-                y: layout.top_gap,
-                w: 960,
-                h: window_height as i16 - layout.bottom_gap,
+        let views = vec![
+            View {
+                viewport_rect: ViewportRect {
+                    x: 0,
+                    y: layout.top_gap,
+                    w: 960,
+                    h: window_height as i16 - layout.bottom_gap,
+                },
+                kind: ViewKind::Hex,
+                col_w: layout.font_size * 2,
+                row_h: layout.font_size,
+                scroll_offset: ScrollOffset {
+                    col_x: 0,
+                    pix_x: 0,
+                    row_y: 0,
+                    pix_y: 0,
+                },
+                scroll_speed: 1,
             },
-            kind: ViewKind::Hex,
-            col_w: layout.font_size * 2,
-            row_h: layout.font_size,
-            scroll_offset: ScrollOffset {
-                col_x: 0,
-                pix_x: 0,
-                row_y: 0,
-                pix_y: 0,
+            View {
+                viewport_rect: ViewportRect {
+                    x: 962,
+                    y: layout.top_gap,
+                    w: 480,
+                    h: window_height as i16 - layout.bottom_gap,
+                },
+                kind: ViewKind::Ascii,
+                col_w: layout.font_size,
+                row_h: layout.font_size,
+                scroll_offset: ScrollOffset {
+                    col_x: 0,
+                    pix_x: 0,
+                    row_y: 0,
+                    pix_y: 0,
+                },
+                scroll_speed: 1,
             },
-            scroll_speed: 1,
-        });
-        views.push(View {
-            viewport_rect: ViewportRect {
-                x: 962,
-                y: layout.top_gap,
-                w: 480,
-                h: window_height as i16 - layout.bottom_gap,
+            View {
+                viewport_rect: ViewportRect {
+                    x: 1444,
+                    y: layout.top_gap,
+                    w: 200,
+                    h: window_height as i16 - layout.bottom_gap,
+                },
+                kind: ViewKind::Block,
+                col_w: 4,
+                row_h: 4,
+                scroll_offset: ScrollOffset {
+                    col_x: 0,
+                    pix_x: 0,
+                    row_y: 0,
+                    pix_y: 0,
+                },
+                scroll_speed: 1,
             },
-            kind: ViewKind::Ascii,
-            col_w: layout.font_size,
-            row_h: layout.font_size,
-            scroll_offset: ScrollOffset {
-                col_x: 0,
-                pix_x: 0,
-                row_y: 0,
-                pix_y: 0,
-            },
-            scroll_speed: 1,
-        });
-        views.push(View {
-            viewport_rect: ViewportRect {
-                x: 1444,
-                y: layout.top_gap,
-                w: 200,
-                h: window_height as i16 - layout.bottom_gap,
-            },
-            kind: ViewKind::Block,
-            col_w: 4,
-            row_h: 4,
-            scroll_offset: ScrollOffset {
-                col_x: 0,
-                pix_x: 0,
-                row_y: 0,
-                pix_y: 0,
-            },
-            scroll_speed: 1,
-        });
+        ];
         let mut this = Self {
             scissor_views: true,
             perspective: Perspective {
