@@ -251,13 +251,21 @@ impl View {
             }
             ViewKind::Ascii => {
                 draw_view(self, app, vertex_buffer, |vertex_buffer, x, y, byte, c| {
+                    let glyph = match byte {
+                        0x00 => '∅' as u32,
+                        0x0A => '⏎' as u32,
+                        0x0D => '⇤' as u32,
+                        0x20 => '␣' as u32,
+                        0xFF => '■' as u32,
+                        _ => byte as u32,
+                    };
                     draw_glyph(
                         font,
                         app.layout.font_size.into(),
                         vertex_buffer,
                         x,
                         y,
-                        u32::from(byte),
+                        glyph,
                         c,
                     );
                 });
