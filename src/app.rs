@@ -109,7 +109,7 @@ impl App {
         let layout = Layout::new(window_height);
         let cursor = 0;
         let mut views = Vec::new();
-        let hex = views.push(View {
+        let _hex = views.push(View {
             viewport_rect: ViewportRect {
                 x: 0,
                 y: layout.top_gap,
@@ -265,7 +265,7 @@ impl App {
         self.center_view_on_offset(offset);
     }
 
-    pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
+    pub(crate) fn center_view_on_offset(&mut self, _offset: usize) {
         todo!()
     }
 
@@ -357,7 +357,7 @@ impl App {
         todo!()
     }
 
-    pub fn set_view_to_byte_offset(&mut self, offset: usize) {
+    pub fn set_view_to_byte_offset(&mut self, _offset: usize) {
         todo!()
     }
 
