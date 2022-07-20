@@ -218,7 +218,6 @@ impl View {
         let mut rs = RenderStates::default();
         match self.kind {
             ViewKind::Hex => {
-                //hex::hex(self, app, font, vertex_buffer);
                 draw_view(
                     self,
                     app,
@@ -248,7 +247,6 @@ impl View {
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
             ViewKind::Ascii => {
-                //ascii::ascii(self, app, font, vertex_buffer);
                 draw_view(
                     self,
                     app,
@@ -268,7 +266,6 @@ impl View {
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
             ViewKind::Block => {
-                //block::block(self, app, window, vertex_buffer),
                 draw_view(
                     self,
                     app,
