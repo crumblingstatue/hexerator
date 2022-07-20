@@ -45,9 +45,3 @@ A `Meta` is all the metadata about a binary format. It can include things like `
 of a binary format.
 
 ## Limits
-
-### Max data length
-The max data length supported is `isize::MAX`, not only because it's the most you can allocate in Rust,
-but also because of certain calculations that use signed numbers, and floating point precision concerns.
-That's `2^63` on 64 bit systems, which should be more than enough to view anything, and `2^31` on
-32 bit systems, which allows viewing 2 GB files, which is still more than enough for regular use cases.
