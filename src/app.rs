@@ -108,7 +108,7 @@ impl App {
         }
         let layout = Layout::new(window_height);
         let cursor = 0;
-        let views = vec![
+        let mut views = vec![
             View {
                 viewport_rect: ViewportRect {
                     x: 0,
@@ -149,6 +149,7 @@ impl App {
                 scroll_speed: 1,
             },
         ];
+        views[0].go_home();
         let mut this = Self {
             scissor_views: true,
             perspective: Perspective {

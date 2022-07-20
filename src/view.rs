@@ -56,7 +56,27 @@ impl View {
         self.scroll_offset.pix_yoff = (src_yoff as f64 / y_ratio) as i16;
         self.scroll_offset.pix_xoff = (src_xoff as f64 / x_ratio) as i16;
     }
+
+    pub(crate) fn scroll_page_down(&mut self) {
+        self.scroll_y(self.viewport_rect.h);
+    }
+
+    pub(crate) fn scroll_page_up(&mut self) {
+        self.scroll_y(-self.viewport_rect.h);
+    }
+
+    pub(crate) fn go_home(&mut self) {
+        self.scroll_offset.row = 0;
+        self.scroll_offset.col = 0;
+        self.scroll_offset.pix_xoff = COMFY_PRE_ZONE;
+        self.scroll_offset.pix_yoff = COMFY_PRE_ZONE;
+    }
 }
+
+/// It's "comfortable" to scroll a bit before the data when we're "home".
+///
+/// It visually indicates that we are at the beginning and there is no more data before.
+const COMFY_PRE_ZONE: i16 = -12;
 
 /// When scrolling past 0 whole, allows unbounded negative pixel offset
 fn scroll_impl(whole: &mut usize, pixel: &mut i16, pixels_per_whole: i16, scroll_by: i16) {

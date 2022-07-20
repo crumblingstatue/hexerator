@@ -348,7 +348,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::PageUp => match app.interact_mode {
             InteractMode::View => {
                 // TODO: Implement properly
-                //app.view_y -= 1040;
+                if let Some(idx) = app.focused_view {
+                    app.views[idx].scroll_page_up();
+                }
             }
             InteractMode::Edit => {
                 // TODO: Implement
@@ -356,7 +358,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::PageDown => match app.interact_mode {
             InteractMode::View => {
-                todo!()
+                if let Some(idx) = app.focused_view {
+                    app.views[idx].scroll_page_down();
+                }
             }
             InteractMode::Edit => {
                 // TODO: Implement
@@ -364,7 +368,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::Home => match app.interact_mode {
             InteractMode::View => {
-                todo!()
+                if let Some(idx) = app.focused_view {
+                    app.views[idx].go_home();
+                }
             }
             InteractMode::Edit => {
                 app.perspective.region.begin = 0;
