@@ -119,12 +119,7 @@ impl App {
                 kind: ViewKind::Hex,
                 col_w: layout.font_size * 2,
                 row_h: layout.font_size,
-                scroll_offset: ScrollOffset {
-                    col_x: 0,
-                    pix_x: 0,
-                    row_y: 0,
-                    pix_y: 0,
-                },
+                scroll_offset: ScrollOffset::default(),
                 scroll_speed: 1,
             },
             View {
@@ -137,12 +132,7 @@ impl App {
                 kind: ViewKind::Ascii,
                 col_w: layout.font_size,
                 row_h: layout.font_size,
-                scroll_offset: ScrollOffset {
-                    col_x: 0,
-                    pix_x: 0,
-                    row_y: 0,
-                    pix_y: 0,
-                },
+                scroll_offset: ScrollOffset::default(),
                 scroll_speed: 1,
             },
             View {
@@ -155,12 +145,7 @@ impl App {
                 kind: ViewKind::Block,
                 col_w: 4,
                 row_h: 4,
-                scroll_offset: ScrollOffset {
-                    col_x: 0,
-                    pix_x: 0,
-                    row_y: 0,
-                    pix_y: 0,
-                },
+                scroll_offset: ScrollOffset::default(),
                 scroll_speed: 1,
             },
         ];

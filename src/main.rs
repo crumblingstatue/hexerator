@@ -1,4 +1,4 @@
-#![feature(lint_reasons, label_break_value, let_else)]
+#![feature(lint_reasons, label_break_value, let_else, mixed_integer_ops)]
 
 mod app;
 mod args;
@@ -162,16 +162,14 @@ fn update(app: &mut App) {
             1
         };
         if app.input.key_down(Key::Left) {
-            app.views[key].scroll_offset.col_x =
-                app.views[key].scroll_offset.col_x.saturating_sub(spd);
+            app.views[key].scroll_x(-spd);
         } else if app.input.key_down(Key::Right) {
-            app.views[key].scroll_offset.col_x += spd;
+            app.views[key].scroll_x(spd);
         }
         if app.input.key_down(Key::Up) {
-            app.views[key].scroll_offset.row_y =
-                app.views[key].scroll_offset.row_y.saturating_sub(spd);
+            app.views[key].scroll_y(-spd);
         } else if app.input.key_down(Key::Down) {
-            app.views[key].scroll_offset.row_y += spd;
+            app.views[key].scroll_y(spd);
         }
     }
 }

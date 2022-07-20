@@ -22,16 +22,100 @@ pub struct View {
     pub scroll_speed: i16,
 }
 
-#[derive(Debug)]
+impl View {
+    pub fn scroll_x(&mut self, amount: i16) {
+        scroll_impl(
+            &mut self.scroll_offset.col_x,
+            &mut self.scroll_offset.pix_x,
+            self.col_w.into(),
+            amount,
+        )
+    }
+    pub fn scroll_y(&mut self, amount: i16) {
+        scroll_impl(
+            &mut self.scroll_offset.row_y,
+            &mut self.scroll_offset.pix_y,
+            self.row_h.into(),
+            amount,
+        )
+    }
+}
+
+/// When scrolling past 0 whole, allows unbounded negative pixel offset
+fn scroll_impl(whole: &mut usize, pixel: &mut i16, pixels_per_whole: i16, scroll_by: i16) {
+    *pixel += scroll_by;
+    if pixel.is_negative() {
+        while *pixel <= -pixels_per_whole {
+            if *whole == 0 {
+                break;
+            }
+            *whole -= 1;
+            *pixel += pixels_per_whole;
+        }
+    } else {
+        while *pixel >= pixels_per_whole {
+            *whole += 1;
+            *pixel -= pixels_per_whole;
+        }
+    }
+}
+
+#[test]
+fn test_scroll_impl_positive() {
+    let mut whole;
+    let mut pixel;
+    let px_per_whole = 32;
+    // Add 1
+    whole = 0;
+    pixel = 0;
+    scroll_impl(&mut whole, &mut pixel, px_per_whole, 1);
+    assert_eq!((whole, pixel), (0, 1));
+    // Add 1000
+    whole = 0;
+    pixel = 0;
+    scroll_impl(&mut whole, &mut pixel, px_per_whole, 1000);
+    assert_eq!((whole, pixel), (31, 8));
+    // Add 1 until we get to 1 whole
+    whole = 0;
+    pixel = 0;
+    for _ in 0..32 {
+        scroll_impl(&mut whole, &mut pixel, px_per_whole, 1);
+    }
+    assert_eq!((whole, pixel), (1, 0));
+}
+
+#[test]
+fn test_scroll_impl_negative() {
+    let mut whole;
+    let mut pixel;
+    let px_per_whole = 32;
+    // Add -1000 (negative test)
+    whole = 0;
+    pixel = 0;
+    scroll_impl(&mut whole, &mut pixel, px_per_whole, -1000);
+    assert_eq!((whole, pixel), (0, -1000));
+    // Make 10 wholes 0
+    whole = 10;
+    pixel = 0;
+    scroll_impl(&mut whole, &mut pixel, px_per_whole, -320);
+    assert_eq!((whole, pixel), (0, 0));
+    // Make 10 wholes 0, scroll remainder
+    whole = 10;
+    pixel = 0;
+    scroll_impl(&mut whole, &mut pixel, px_per_whole, -640);
+    assert_eq!((whole, pixel), (0, -320));
+}
+
+#[derive(Debug, Default)]
 pub struct ScrollOffset {
     /// What column we are at
-    pub col_x: usize,
+    col_x: usize,
     /// Additional pixel x offset
-    pub pix_x: i16,
+    pix_x: i16,
     /// What row we are at
-    pub row_y: usize,
+    row_y: usize,
     /// Additional pixel y offset
-    pub pix_y: i16,
+    pix_y: i16,
 }
 
 #[derive(Debug)]
