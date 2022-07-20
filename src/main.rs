@@ -155,21 +155,31 @@ fn update(app: &mut App) {
         return;
     }
     if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
-        let Some(key) = app.focused_view else { return };
+        let Some(idx) = app.focused_view else { return };
         let spd = if app.input.key_down(Key::LShift) {
             10
         } else {
             1
         };
         if app.input.key_down(Key::Left) {
-            app.views[key].scroll_x(-spd);
+            app.views[idx].scroll_x(-spd);
         } else if app.input.key_down(Key::Right) {
-            app.views[key].scroll_x(spd);
+            app.views[idx].scroll_x(spd);
         }
         if app.input.key_down(Key::Up) {
-            app.views[key].scroll_y(-spd);
+            app.views[idx].scroll_y(-spd);
         } else if app.input.key_down(Key::Down) {
-            app.views[key].scroll_y(spd);
+            app.views[idx].scroll_y(spd);
+        }
+    }
+    // Sync all other views to active view
+    if let Some(idx) = app.focused_view {
+        let src = &app.views[idx];
+        let (src_row, src_col) = (src.scroll_offset.row(), src.scroll_offset.col());
+        let (src_yoff, src_xoff) = (src.scroll_offset.pix_yoff(), src.scroll_offset.pix_xoff());
+        let (src_row_h, src_col_w) = (src.row_h, src.col_w);
+        for view in &mut app.views {
+            view.sync_to(src_row, src_yoff, src_col, src_xoff, src_row_h, src_col_w);
         }
     }
 }

@@ -25,19 +25,32 @@ pub struct View {
 impl View {
     pub fn scroll_x(&mut self, amount: i16) {
         scroll_impl(
-            &mut self.scroll_offset.col_x,
-            &mut self.scroll_offset.pix_x,
+            &mut self.scroll_offset.col,
+            &mut self.scroll_offset.pix_xoff,
             self.col_w.into(),
             amount,
         )
     }
     pub fn scroll_y(&mut self, amount: i16) {
         scroll_impl(
-            &mut self.scroll_offset.row_y,
-            &mut self.scroll_offset.pix_y,
+            &mut self.scroll_offset.row,
+            &mut self.scroll_offset.pix_yoff,
             self.row_h.into(),
             amount,
         )
+    }
+
+    pub(crate) fn sync_to(
+        &mut self,
+        src_row: usize,
+        src_yoff: i16,
+        src_col: usize,
+        src_xoff: i16,
+        src_row_h: u8,
+        src_col_w: u8,
+    ) {
+        self.scroll_offset.row = src_row;
+        self.scroll_offset.col = src_col;
     }
 }
 
@@ -106,16 +119,31 @@ fn test_scroll_impl_negative() {
     assert_eq!((whole, pixel), (0, -320));
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct ScrollOffset {
     /// What column we are at
-    col_x: usize,
+    col: usize,
     /// Additional pixel x offset
-    pix_x: i16,
+    pix_xoff: i16,
     /// What row we are at
-    row_y: usize,
+    row: usize,
     /// Additional pixel y offset
-    pix_y: i16,
+    pix_yoff: i16,
+}
+
+impl ScrollOffset {
+    pub fn col(&self) -> usize {
+        self.col
+    }
+    pub fn row(&self) -> usize {
+        self.row
+    }
+    pub fn pix_xoff(&self) -> i16 {
+        self.pix_xoff
+    }
+    pub fn pix_yoff(&self) -> i16 {
+        self.pix_yoff
+    }
 }
 
 #[derive(Debug)]
