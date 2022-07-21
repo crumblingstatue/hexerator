@@ -379,7 +379,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::End => match app.interact_mode {
             InteractMode::View => {
-                app.center_view_on_offset(app.data.len() - 1);
+                if let Some(idx) = app.focused_view {
+                    app.views[idx].scroll_to_end(&app.perspective);
+                }
             }
             InteractMode::Edit => {
                 // TODO: Implement

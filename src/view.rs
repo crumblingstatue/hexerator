@@ -1,3 +1,7 @@
+use gamedebug_core::per_msg;
+
+use crate::app::perspective::Perspective;
+
 mod draw;
 
 /// A rectangular view in the viewport looking through a perspective at the data with a flavor
@@ -68,15 +72,28 @@ impl View {
     pub(crate) fn go_home(&mut self) {
         self.scroll_offset.row = 0;
         self.scroll_offset.col = 0;
-        self.scroll_offset.pix_xoff = COMFY_PRE_ZONE;
-        self.scroll_offset.pix_yoff = COMFY_PRE_ZONE;
+        self.scroll_offset.pix_xoff = COMFY_MARGIN;
+        self.scroll_offset.pix_yoff = COMFY_MARGIN;
+    }
+    /// Scroll so the perspective's last row is visible
+    pub(crate) fn scroll_to_end(&mut self, perspective: &Perspective) {
+        // Needs:
+        // - row index of last byte of perspective
+        // - number of rows this view can hold
+        let last_row_idx = perspective.last_row_idx();
+        per_msg!("{}", last_row_idx);
+        self.scroll_offset.row = last_row_idx + 1;
+        self.scroll_page_up();
+        self.scroll_offset.floor();
+        self.scroll_offset.pix_xoff = COMFY_MARGIN;
+        self.scroll_offset.pix_yoff = -COMFY_MARGIN;
     }
 }
 
 /// It's "comfortable" to scroll a bit before the data when we're "home".
 ///
 /// It visually indicates that we are at the beginning and there is no more data before.
-const COMFY_PRE_ZONE: i16 = -12;
+const COMFY_MARGIN: i16 = -12;
 
 /// When scrolling past 0 whole, allows unbounded negative pixel offset
 fn scroll_impl(whole: &mut usize, pixel: &mut i16, pixels_per_whole: i16, scroll_by: i16) {
@@ -167,6 +184,11 @@ impl ScrollOffset {
     }
     pub fn pix_yoff(&self) -> i16 {
         self.pix_yoff
+    }
+    /// Discard pixel offsets
+    pub(crate) fn floor(&mut self) {
+        self.pix_xoff = 0;
+        self.pix_yoff = 0;
     }
 }
 

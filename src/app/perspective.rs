@@ -9,3 +9,9 @@ pub struct Perspective {
     /// patterns to the human eye that aren't otherwise easily recognizable.
     pub cols: usize,
 }
+impl Perspective {
+    /// Returns the index of the last row
+    pub(crate) fn last_row_idx(&self) -> usize {
+        self.region.end / self.cols
+    }
+}

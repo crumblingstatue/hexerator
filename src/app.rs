@@ -1,7 +1,7 @@
 mod edit_state;
 pub mod interact_mode;
 mod layout;
-mod perspective;
+pub mod perspective;
 pub mod presentation;
 
 use std::{
