@@ -400,18 +400,6 @@ impl App {
             .map(|dur| dur.as_millis() as u32)
     }
 
-    pub(crate) fn data_height(&self) -> i64 {
-        let len = self.data.len();
-        let rows = len as i64 / self.perspective.cols as i64;
-        rows * self.layout.row_height as i64
-    }
-
-    pub(crate) fn view_area(&self) -> i64 {
-        self.layout.window_height as i64
-            - i64::from(self.layout.top_gap)
-            - i64::from(self.layout.bottom_gap)
-    }
-
     pub(crate) fn try_read_stream(&mut self) {
         let view_byte_offset = self.view_offsets().byte;
         // TODO: Implement properly
