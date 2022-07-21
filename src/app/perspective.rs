@@ -9,6 +9,7 @@ pub struct Perspective {
     /// patterns to the human eye that aren't otherwise easily recognizable.
     pub cols: usize,
 }
+
 impl Perspective {
     /// Returns the index of the last row
     pub(crate) fn last_row_idx(&self) -> usize {
@@ -26,5 +27,14 @@ impl Perspective {
     }
     pub(crate) fn clamp_cols(&mut self) {
         self.cols = self.cols.clamp(1, self.region.len())
+    }
+}
+
+impl Default for Perspective {
+    fn default() -> Self {
+        Self {
+            region: Region { begin: 0, end: 0 },
+            cols: 0,
+        }
     }
 }

@@ -152,13 +152,7 @@ impl App {
         views[0].go_home();
         let mut this = Self {
             scissor_views: true,
-            perspective: Perspective {
-                region: Region {
-                    begin: 0,
-                    end: data.len().saturating_sub(1),
-                },
-                cols: 48,
-            },
+            perspective: Perspective::default(),
             dirty_region: None,
             data,
             edit_state: EditState::default(),
@@ -351,6 +345,13 @@ impl App {
         self.data = read_contents(&self.args, &mut file)?;
         self.source = Some(Source::File(file));
         self.args.file = Some(path);
+        self.perspective = Perspective {
+            region: Region {
+                begin: 0,
+                end: self.data.len().saturating_sub(1),
+            },
+            cols: 48,
+        };
         Ok(())
     }
 
