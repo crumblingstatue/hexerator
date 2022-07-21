@@ -28,6 +28,16 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 ui.add(DragValue::new(&mut app.perspective.cols));
                 let data_len = app.data.len();
                 if data_len != 0 {
+                    if let Some(idx) = app.focused_view {
+                        let offsets = app.views[idx].offsets(&app.perspective);
+                        ui.label(format!(
+                            "view offset: row {} col {} byte {} ({:.2}%)",
+                            offsets.row,
+                            offsets.col,
+                            offsets.byte,
+                            (offsets.byte as f64 / data_len as f64) * 100.0
+                        ));
+                    }
                     let re = ui.add(
                         TextEdit::singleline(&mut app.ui.center_offset_input)
                             .hint_text("Center view on offset"),
