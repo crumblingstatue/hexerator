@@ -252,8 +252,10 @@ impl App {
         self.center_view_on_offset(offset);
     }
 
-    pub(crate) fn center_view_on_offset(&mut self, _offset: usize) {
-        todo!()
+    pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
+        if let Some(idx) = self.focused_view {
+            self.views[idx].center_on_offset(offset, &self.perspective);
+        }
     }
 
     pub(crate) fn backup_path(&self) -> Option<PathBuf> {
@@ -508,10 +510,4 @@ fn read_contents(args: &Args, file: &mut File) -> anyhow::Result<Vec<u8>> {
         None => file.read_to_end(&mut data)?,
     };
     Ok(data)
-}
-impl Perspective {
-    /// Calculate the row and column for a given offset when viewed through this View
-    fn offset_row_col(&self, offset: usize) -> (usize, usize) {
-        (offset / self.cols, offset % self.cols)
-    }
 }

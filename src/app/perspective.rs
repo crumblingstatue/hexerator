@@ -17,6 +17,9 @@ impl Perspective {
     pub(crate) fn byte_offset_of_row_col(&self, row: usize, col: usize) -> usize {
         row * self.cols + col
     }
+    pub(crate) fn row_col_of_byte_offset(&self, offset: usize) -> (usize, usize) {
+        (offset / self.cols, offset % self.cols)
+    }
     /// Whether the columns are within `cols` and the calculated offset is within the region
     pub(crate) fn row_col_within_bound(&self, row: usize, col: usize) -> bool {
         col < self.cols && self.region.contains(self.byte_offset_of_row_col(row, col))

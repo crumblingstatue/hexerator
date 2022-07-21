@@ -126,6 +126,19 @@ impl View {
             None
         }
     }
+
+    pub(crate) fn center_on_offset(&mut self, offset: usize, perspective: &Perspective) {
+        let (row, col) = perspective.row_col_of_byte_offset(offset);
+        self.center_on_row_col(row, col);
+    }
+
+    fn center_on_row_col(&mut self, row: usize, col: usize) {
+        self.scroll_offset.row = row;
+        self.scroll_offset.col = col;
+        self.scroll_offset.floor();
+        self.scroll_x(-self.viewport_rect.w / 2);
+        self.scroll_y(-self.viewport_rect.h / 2);
+    }
 }
 
 /// It's "comfortable" to scroll a bit before the data when we're "home".
