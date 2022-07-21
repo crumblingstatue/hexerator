@@ -216,8 +216,9 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 if button == mouse::Button::Left {
-                    let off = app.pixel_pos_byte_offset(x, y);
-                    app.edit_state.set_cursor(off);
+                    if let Some(off) = app.byte_offset_at_pos(x, y) {
+                        app.edit_state.set_cursor(off);
+                    }
                 }
             }
             Event::LostFocus => {

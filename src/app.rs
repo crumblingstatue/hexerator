@@ -155,7 +155,7 @@ impl App {
             perspective: Perspective {
                 region: Region {
                     begin: 0,
-                    end: data.len(),
+                    end: data.len() - 1,
                 },
                 cols: 48,
             },
@@ -442,10 +442,16 @@ impl App {
             }
         }
     }
-    // Byte offset of a pixel position in the view
-    pub fn pixel_pos_byte_offset(&mut self, _x: i32, _y: i32) -> usize {
-        // TODO: Implement
-        0
+    // Byte offset of a pixel position in the viewport
+    pub fn byte_offset_at_pos(&mut self, x: i32, y: i32) -> Option<usize> {
+        for view in &self.views {
+            if let Some((row, col)) =
+                view.row_col_offset_of_pos(x as i16, y as i16, &self.perspective)
+            {
+                return Some(self.perspective.byte_offset_of_row_col(row, col));
+            }
+        }
+        None
     }
     pub fn consume_meta(&mut self, meta: Metafile) {
         self.regions = meta.named_regions;

@@ -11,4 +11,8 @@ impl Region {
         // Inclusive, so add 1 to end
         (self.end + 1).saturating_sub(self.begin)
     }
+
+    pub(crate) fn contains(&self, idx: usize) -> bool {
+        (self.begin..=self.end).contains(&idx)
+    }
 }

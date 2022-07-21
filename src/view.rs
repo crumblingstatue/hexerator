@@ -1,4 +1,4 @@
-use gamedebug_core::per_msg;
+use gamedebug_core::{imm_msg, per_msg};
 
 use crate::app::perspective::Perspective;
 
@@ -87,6 +87,44 @@ impl View {
         self.scroll_offset.floor();
         self.scroll_offset.pix_xoff = COMFY_MARGIN;
         self.scroll_offset.pix_yoff = -COMFY_MARGIN;
+    }
+
+    /// Row/col offset of relative position, including scrolling
+    pub(crate) fn row_col_offset_of_pos(
+        &self,
+        x: i16,
+        y: i16,
+        perspective: &Perspective,
+    ) -> Option<(usize, usize)> {
+        self.viewport_rect
+            .relative_offset_of_pos(x, y)
+            .and_then(|(x, y)| self.row_col_of_rel_pos(x, y, perspective))
+    }
+
+    fn row_col_of_rel_pos(
+        &self,
+        x: i16,
+        y: i16,
+        perspective: &Perspective,
+    ) -> Option<(usize, usize)> {
+        let rel_x = x + self.scroll_offset.pix_xoff;
+        let rel_y = y + self.scroll_offset.pix_yoff;
+        let rel_col = rel_x / i16::from(self.col_w);
+        let rel_row = rel_y / i16::from(self.row_h);
+        let row = self.scroll_offset.row;
+        let col = self.scroll_offset.col;
+        imm_msg!((row, col, rel_x, rel_y, rel_col, rel_row));
+        if rel_x.is_positive() && rel_y.is_positive() {
+            let abs_row = row + rel_row as usize;
+            let abs_col = col + rel_col as usize;
+            if perspective.row_col_within_bound(abs_row, abs_col) {
+                Some((abs_row, abs_col))
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 }
 
@@ -206,4 +244,13 @@ pub enum ViewKind {
     Hex,
     Ascii,
     Block,
+}
+impl ViewportRect {
+    fn relative_offset_of_pos(&self, x: i16, y: i16) -> Option<(i16, i16)> {
+        self.contains_pos(x, y).then_some((x - self.x, y - self.y))
+    }
+
+    fn contains_pos(&self, x: i16, y: i16) -> bool {
+        x >= self.x && y >= self.y && x <= self.x + self.w && y <= self.y + self.h
+    }
 }

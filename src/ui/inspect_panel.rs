@@ -392,22 +392,18 @@ enum Action {
 pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
     let offset = match app.interact_mode {
         InteractMode::View => {
-            let off = app.pixel_pos_byte_offset(mouse_pos.x, mouse_pos.y);
-            let mut add = 0;
-            if app.ui.inspect_panel.offset_relative {
-                add = app.args.hard_seek.unwrap_or(0) as usize;
+            if let Some(off) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
+                let mut add = 0;
+                if app.ui.inspect_panel.offset_relative {
+                    add = app.args.hard_seek.unwrap_or(0) as usize;
+                }
+                ui.label(format!("offset: {} (0x{:x})", off + add, off + add));
+                off
+            } else {
+                edit_offset(app, ui)
             }
-            ui.label(format!("offset: {} (0x{:x})", off + add, off + add));
-            off
         }
-        InteractMode::Edit => {
-            let mut off = app.edit_state.cursor;
-            if app.ui.inspect_panel.offset_relative {
-                off += app.args.hard_seek.unwrap_or(0) as usize;
-            }
-            ui.label(format!("offset: {} ({:x}h)", off, off));
-            app.edit_state.cursor
-        }
+        InteractMode::Edit => edit_offset(app, ui),
     };
     ui.checkbox(&mut app.ui.inspect_panel.offset_relative, "Relative offset")
         .on_hover_text("Offset relative to --hard-seek");
@@ -522,6 +518,15 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
         }
     }
     app.prev_frame_inspect_offset = offset;
+}
+
+fn edit_offset(app: &mut App, ui: &mut Ui) -> usize {
+    let mut off = app.edit_state.cursor;
+    if app.ui.inspect_panel.offset_relative {
+        off += app.args.hard_seek.unwrap_or(0) as usize;
+    }
+    ui.label(format!("offset: {} ({:x}h)", off, off));
+    app.edit_state.cursor
 }
 
 fn find_valid_ascii_end(data: &[u8]) -> usize {

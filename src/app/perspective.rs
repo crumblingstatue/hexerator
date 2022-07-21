@@ -14,4 +14,11 @@ impl Perspective {
     pub(crate) fn last_row_idx(&self) -> usize {
         self.region.end / self.cols
     }
+    pub(crate) fn byte_offset_of_row_col(&self, row: usize, col: usize) -> usize {
+        row * self.cols + col
+    }
+    /// Whether the columns are within `cols` and the calculated offset is within the region
+    pub(crate) fn row_col_within_bound(&self, row: usize, col: usize) -> bool {
+        col < self.cols && self.region.contains(self.byte_offset_of_row_col(row, col))
+    }
 }
