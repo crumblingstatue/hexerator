@@ -179,6 +179,7 @@ impl App {
             stream_read_recv: None,
             cfg,
         };
+        this.new_file_readjust();
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
             this.edit_state.cursor = offset;
@@ -345,6 +346,12 @@ impl App {
         self.data = read_contents(&self.args, &mut file)?;
         self.source = Some(Source::File(file));
         self.args.file = Some(path);
+        self.new_file_readjust();
+        Ok(())
+    }
+
+    /// Readjust to a new file
+    fn new_file_readjust(&mut self) {
         self.perspective = Perspective {
             region: Region {
                 begin: 0,
@@ -352,7 +359,6 @@ impl App {
             },
             cols: 48,
         };
-        Ok(())
     }
 
     pub fn close_file(&mut self) {
