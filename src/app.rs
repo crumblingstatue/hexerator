@@ -394,12 +394,10 @@ impl App {
     }
 
     pub(crate) fn try_read_stream(&mut self) {
-        // TODO: Fix unconditional views[0]
-        let view_byte_offset = self.views[0].offsets(&self.perspective).byte;
-        // TODO: Implement properly
-        // It should probably take the most far-reaching view and use the
-        // bytes_per_page value of that.
-        let bytes_per_page = 100;
+        let Some(idx) = self.focused_view else { return };
+        let view = &self.views[idx];
+        let view_byte_offset = view.offsets(&self.perspective).byte;
+        let bytes_per_page = view.bytes_per_page(&self.perspective);
         // Don't read past what we need for our current view offset
         if view_byte_offset + bytes_per_page < self.data.len() {
             return;
