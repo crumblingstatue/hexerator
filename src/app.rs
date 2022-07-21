@@ -155,7 +155,7 @@ impl App {
             perspective: Perspective {
                 region: Region {
                     begin: 0,
-                    end: data.len() - 1,
+                    end: data.len().saturating_sub(1),
                 },
                 cols: 48,
             },
