@@ -7,7 +7,10 @@ use sfml::{
 
 use crate::{
     app::{presentation::Presentation, App},
+    color::invert_color,
     hex_conv,
+    region::Region,
+    ui::Ui,
     view::ViewKind,
 };
 
@@ -17,7 +20,7 @@ pub fn draw_view(
     view: &View,
     app: &App,
     vertex_buffer: &mut Vec<Vertex>,
-    mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, u8, Color),
+    mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, u8, usize, Color),
 ) {
     // Protect against infinite loop lock up when scrolling horizontally out of view
     if view.scroll_offset.pix_xoff <= -view.viewport_rect.w {
@@ -55,7 +58,7 @@ pub fn draw_view(
                 .presentation
                 .color_method
                 .byte_color(byte, app.presentation.invert_color);
-            drawfn(vertex_buffer, viewport_x, viewport_y, byte, c);
+            drawfn(vertex_buffer, viewport_x, viewport_y, byte, idx, c);
             if idx == app.edit_state.cursor {
                 draw_cursor(
                     viewport_x,
@@ -226,55 +229,93 @@ impl View {
         let mut rs = RenderStates::default();
         match self.kind {
             ViewKind::Hex => {
-                draw_view(self, app, vertex_buffer, |vertex_buffer, x, y, byte, c| {
-                    let [d1, d2] = hex_conv::byte_to_hex_digits(byte);
-                    draw_glyph(
-                        font,
-                        app.layout.font_size.into(),
-                        vertex_buffer,
-                        x,
-                        y,
-                        d1.into(),
-                        c,
-                    );
-                    draw_glyph(
-                        font,
-                        app.layout.font_size.into(),
-                        vertex_buffer,
-                        x + (self.col_w / 2) as f32 - 4.0,
-                        y,
-                        d2.into(),
-                        c,
-                    );
-                });
+                draw_view(
+                    self,
+                    app,
+                    vertex_buffer,
+                    |vertex_buffer, x, y, byte, idx, c| {
+                        if selected_or_find_result_contains(app.selection, idx, &app.ui) {
+                            draw_rect(
+                                vertex_buffer,
+                                x,
+                                y,
+                                self.col_w as f32,
+                                self.row_h as f32,
+                                app.presentation.sel_color,
+                            )
+                        }
+                        let [d1, d2] = hex_conv::byte_to_hex_digits(byte);
+                        draw_glyph(
+                            font,
+                            app.layout.font_size.into(),
+                            vertex_buffer,
+                            x,
+                            y,
+                            d1.into(),
+                            c,
+                        );
+                        draw_glyph(
+                            font,
+                            app.layout.font_size.into(),
+                            vertex_buffer,
+                            x + (self.col_w / 2) as f32 - 4.0,
+                            y,
+                            d2.into(),
+                            c,
+                        );
+                    },
+                );
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
             ViewKind::Ascii => {
-                draw_view(self, app, vertex_buffer, |vertex_buffer, x, y, byte, c| {
-                    let glyph = match byte {
-                        0x00 => '∅' as u32,
-                        0x0A => '⏎' as u32,
-                        0x0D => '⇤' as u32,
-                        0x20 => '␣' as u32,
-                        0xFF => '■' as u32,
-                        _ => byte as u32,
-                    };
-                    draw_glyph(
-                        font,
-                        app.layout.font_size.into(),
-                        vertex_buffer,
-                        x,
-                        y,
-                        glyph,
-                        c,
-                    );
-                });
+                draw_view(
+                    self,
+                    app,
+                    vertex_buffer,
+                    |vertex_buffer, x, y, byte, idx, c| {
+                        if selected_or_find_result_contains(app.selection, idx, &app.ui) {
+                            draw_rect(
+                                vertex_buffer,
+                                x,
+                                y,
+                                self.col_w as f32,
+                                self.row_h as f32,
+                                app.presentation.sel_color,
+                            )
+                        }
+                        let glyph = match byte {
+                            0x00 => '∅' as u32,
+                            0x0A => '⏎' as u32,
+                            0x0D => '⇤' as u32,
+                            0x20 => '␣' as u32,
+                            0xFF => '■' as u32,
+                            _ => byte as u32,
+                        };
+                        draw_glyph(
+                            font,
+                            app.layout.font_size.into(),
+                            vertex_buffer,
+                            x,
+                            y,
+                            glyph,
+                            c,
+                        );
+                    },
+                );
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
             ViewKind::Block => {
-                draw_view(self, app, vertex_buffer, |vertex_buffer, x, y, _byte, c| {
-                    draw_rect(vertex_buffer, x, y, self.col_w as f32, self.row_h as f32, c);
-                });
+                draw_view(
+                    self,
+                    app,
+                    vertex_buffer,
+                    |vertex_buffer, x, y, _byte, idx, mut c| {
+                        if selected_or_find_result_contains(app.selection, idx, &app.ui) {
+                            c = invert_color(c);
+                        }
+                        draw_rect(vertex_buffer, x, y, self.col_w as f32, self.row_h as f32, c);
+                    },
+                );
             }
         }
         draw_rect_outline(
@@ -310,5 +351,24 @@ impl View {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
             }
         }
+    }
+}
+
+fn selected_or_find_result_contains(
+    app_selection: Option<Region>,
+    idx: usize,
+    app_ui: &Ui,
+) -> bool {
+    selected(app_selection, idx) || find_result_contains(app_ui, idx)
+}
+
+fn find_result_contains(app_ui: &Ui, idx: usize) -> bool {
+    app_ui.find_dialog.open && app_ui.find_dialog.result_offsets.contains(&idx)
+}
+
+fn selected(app_selection: Option<Region>, idx: usize) -> bool {
+    match app_selection {
+        Some(sel) => (sel.begin..=sel.end).contains(&idx),
+        None => false,
     }
 }

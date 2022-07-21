@@ -3,8 +3,6 @@ pub struct Layout {
     pub top_gap: i16,
     pub bottom_gap: i16,
     pub window_height: u32,
-    pub row_height: u8,
-    pub col_width: u8,
     // Maximum number of visible hex columns that can be shown on screen.
     // ascii is double this amount.
     pub max_visible_cols: usize,
@@ -20,9 +18,7 @@ impl Layout {
             font_size: 14,
             block_size: 4,
             max_visible_cols: 75,
-            col_width: 26,
             top_gap: 46,
-            row_height: 16,
             bottom_gap: 25,
             window_height,
         }

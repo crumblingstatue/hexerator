@@ -23,7 +23,7 @@ impl ColorMethod {
             ColorMethod::Aitd => aitd_color(byte),
         };
         if invert {
-            Color::rgb(!color.red(), !color.green(), !color.blue())
+            invert_color(color)
         } else {
             color
         }
@@ -39,6 +39,10 @@ impl ColorMethod {
             ColorMethod::Aitd => "aitd",
         }
     }
+}
+
+pub fn invert_color(color: Color) -> Color {
+    Color::rgb(!color.red(), !color.green(), !color.blue())
 }
 
 fn aitd_color(byte: u8) -> Color {
