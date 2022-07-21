@@ -103,7 +103,14 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 ui.label("Seek to byte offset");
                 let re = ui.text_edit_singleline(&mut app.ui.seek_byte_offset_input);
                 if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
-                    app.set_view_to_byte_offset(app.ui.seek_byte_offset_input.parse().unwrap_or(0));
+                    if let Some(idx) = app.focused_view {
+                        app.views[idx].scroll_to_byte_offset(
+                            app.ui.seek_byte_offset_input.parse().unwrap_or(0),
+                            &app.perspective,
+                            app.col_change_lock_x,
+                            app.col_change_lock_y,
+                        );
+                    }
                 }
             });
             ui.checkbox(&mut app.col_change_lock_x, "Lock x on column change");
@@ -173,7 +180,7 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             }
         }
         if let Some(sel) = &app.selection {
-            ui.label(format!("Size: {}", sel.size()));
+            ui.label(format!("Size: {}", sel.len()));
         }
         if ui.button("deselect").clicked() {
             app.selection = None;

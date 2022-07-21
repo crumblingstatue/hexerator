@@ -88,7 +88,7 @@ impl RegionsWindow {
                         action = Some(Action::SetCursor(region.region.end))
                     }
                 }
-                ui.label(format!("Size: {}", region.region.size()));
+                ui.label(format!("Size: {}", region.region.len()));
                 if ui.button("🗑").clicked() {
                     retain = false;
                     app.meta_dirty = true;

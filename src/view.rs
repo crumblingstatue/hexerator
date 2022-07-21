@@ -139,6 +139,39 @@ impl View {
         self.scroll_x(-self.viewport_rect.w / 2);
         self.scroll_y(-self.viewport_rect.h / 2);
     }
+
+    pub fn offsets(&self, perspective: &Perspective) -> Offsets {
+        let row = self.scroll_offset.row;
+        let col = self.scroll_offset.col;
+        Offsets {
+            row,
+            col,
+            byte: perspective.byte_offset_of_row_col(row, col),
+        }
+    }
+    /// Scroll to byte offset, with control of each axis individually
+    pub(crate) fn scroll_to_byte_offset(
+        &mut self,
+        offset: usize,
+        perspective: &Perspective,
+        do_col: bool,
+        do_row: bool,
+    ) {
+        let (row, col) = perspective.row_col_of_byte_offset(offset);
+        if do_row {
+            self.scroll_offset.row = row;
+        }
+        if do_col {
+            self.scroll_offset.col = col;
+        }
+        self.scroll_offset.floor();
+    }
+}
+
+pub struct Offsets {
+    pub row: usize,
+    pub col: usize,
+    pub byte: usize,
 }
 
 /// It's "comfortable" to scroll a bit before the data when we're "home".

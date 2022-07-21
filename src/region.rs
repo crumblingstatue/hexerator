@@ -7,7 +7,7 @@ pub struct Region {
 }
 
 impl Region {
-    pub fn size(&self) -> usize {
+    pub fn len(&self) -> usize {
         // Inclusive, so add 1 to end
         (self.end + 1).saturating_sub(self.begin)
     }

@@ -24,4 +24,7 @@ impl Perspective {
     pub(crate) fn row_col_within_bound(&self, row: usize, col: usize) -> bool {
         col < self.cols && self.region.contains(self.byte_offset_of_row_col(row, col))
     }
+    pub(crate) fn clamp_cols(&mut self) {
+        self.cols = self.cols.clamp(1, self.region.len())
+    }
 }

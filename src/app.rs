@@ -303,28 +303,30 @@ impl App {
     }
 
     pub(crate) fn dec_cols(&mut self) {
-        //let prev_offset = self.view_offsets();
-        self.perspective.cols -= 1;
-        self.clamp_cols();
-        //self.set_view_to_byte_offset(prev_offset.byte);
+        self.col_change_impl(|col| *col -= 1);
+    }
+    fn col_change_impl(&mut self, f: impl FnOnce(&mut usize)) {
+        if let Some(idx) = self.focused_view {
+            let view = &mut self.views[idx];
+            let prev_offset = view.offsets(&self.perspective);
+            f(&mut self.perspective.cols);
+            self.perspective.clamp_cols();
+            view.scroll_to_byte_offset(
+                prev_offset.byte,
+                &self.perspective,
+                self.col_change_lock_x,
+                self.col_change_lock_y,
+            );
+        }
     }
     pub(crate) fn inc_cols(&mut self) {
-        //let prev_offset = self.view_offsets();
-        self.perspective.cols += 1;
-        self.clamp_cols();
-        //self.set_view_to_byte_offset(prev_offset.byte);
+        self.col_change_impl(|col| *col += 1);
     }
     pub(crate) fn halve_cols(&mut self) {
-        //let prev_offset = self.view_offsets();
-        self.perspective.cols /= 2;
-        self.clamp_cols();
-        //self.set_view_to_byte_offset(prev_offset.byte);
+        self.col_change_impl(|col| *col /= 2);
     }
     pub(crate) fn double_cols(&mut self) {
-        //let prev_offset = self.view_offsets();
-        self.perspective.cols *= 2;
-        self.clamp_cols();
-        //self.set_view_to_byte_offset(prev_offset.byte);
+        self.col_change_impl(|col| *col *= 2);
     }
     pub fn cursor_history_back(&mut self) {
         if self.edit_state.cursor_history_back() {
@@ -337,17 +339,6 @@ impl App {
             self.center_view_on_offset(self.edit_state.cursor);
             self.flash_cursor();
         }
-    }
-    fn clamp_cols(&mut self) {
-        self.perspective.cols = self.perspective.cols.clamp(1, self.data.len());
-    }
-    /// Calculate the (row, col, byte) offset where the view starts showing from
-    pub fn view_offsets(&self) -> ViewOffsets {
-        todo!()
-    }
-
-    pub fn set_view_to_byte_offset(&mut self, _offset: usize) {
-        todo!()
     }
 
     pub(crate) fn load_file(
@@ -403,7 +394,8 @@ impl App {
     }
 
     pub(crate) fn try_read_stream(&mut self) {
-        let view_byte_offset = self.view_offsets().byte;
+        // TODO: Fix unconditional views[0]
+        let view_byte_offset = self.views[0].offsets(&self.perspective).byte;
         // TODO: Implement properly
         // It should probably take the most far-reaching view and use the
         // bytes_per_page value of that.
@@ -485,12 +477,6 @@ impl App {
         }
         Ok(())
     }
-}
-
-pub struct ViewOffsets {
-    pub row: usize,
-    pub col: usize,
-    pub byte: usize,
 }
 
 fn open_file(path: &Path, read_only: bool) -> Result<File, anyhow::Error> {
