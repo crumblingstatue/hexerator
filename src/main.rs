@@ -349,7 +349,6 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         }
         Key::PageUp => match app.interact_mode {
             InteractMode::View => {
-                // TODO: Implement properly
                 if let Some(idx) = app.focused_view {
                     app.views[idx].scroll_page_up();
                 }
