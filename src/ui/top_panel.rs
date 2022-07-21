@@ -216,6 +216,10 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 clipboard::set_string(s.trim_end());
             }
         }
+        if ui.button("save to file").clicked() && let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = app.selection {
+            let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
+            msg_if_fail(result, "Failed to save selection to file");
+        }
         ui.with_layout(Layout::right_to_left(), |ui| {
             ui.checkbox(&mut app.presentation.invert_color, "invert");
             ComboBox::new("color_combo", "Color")

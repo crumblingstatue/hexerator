@@ -17,6 +17,7 @@ mod view;
 
 use std::{
     ffi::OsStr,
+    fmt::Display,
     io::{Read, Write},
 };
 
@@ -36,7 +37,7 @@ use sfml::{
 };
 use view::ViewKind;
 
-fn msg_if_fail(result: anyhow::Result<()>, prefix: &str) {
+fn msg_if_fail<T, E: Display>(result: Result<T, E>, prefix: &str) {
     if let Err(e) = result {
         rfd::MessageDialog::new()
             .set_level(rfd::MessageLevel::Error)
