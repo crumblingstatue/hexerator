@@ -59,16 +59,6 @@ pub fn draw_view(
                 .color_method
                 .byte_color(byte, app.presentation.invert_color);
             drawfn(vertex_buffer, viewport_x, viewport_y, byte, idx, c);
-            if idx == app.edit_state.cursor {
-                draw_cursor(
-                    viewport_x,
-                    viewport_y,
-                    vertex_buffer,
-                    true,
-                    app.cursor_flash_timer(),
-                    &app.presentation,
-                );
-            }
             idx += 1;
         }
     }
@@ -244,7 +234,10 @@ impl View {
                                 app.presentation.sel_color,
                             )
                         }
-                        let [d1, d2] = hex_conv::byte_to_hex_digits(byte);
+                        let [mut d1, d2] = hex_conv::byte_to_hex_digits(byte);
+                        if let Some(half) = app.edit_state.hex_edit_half_digit && app.edit_state.cursor == idx {
+                            d1 = half.to_ascii_uppercase();
+                        }
                         draw_glyph(
                             font,
                             app.layout.font_size.into(),
@@ -263,6 +256,21 @@ impl View {
                             d2.into(),
                             c,
                         );
+                        let extra_x = if app.edit_state.hex_edit_half_digit.is_none() {
+                            0
+                        } else {
+                            self.col_w / 2 - 4
+                        };
+                        if idx == app.edit_state.cursor {
+                            draw_cursor(
+                                x + extra_x as f32,
+                                y,
+                                vertex_buffer,
+                                true,
+                                app.cursor_flash_timer(),
+                                &app.presentation,
+                            );
+                        }
                     },
                 );
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
@@ -300,6 +308,16 @@ impl View {
                             glyph,
                             c,
                         );
+                        if idx == app.edit_state.cursor {
+                            draw_cursor(
+                                x,
+                                y,
+                                vertex_buffer,
+                                true,
+                                app.cursor_flash_timer(),
+                                &app.presentation,
+                            );
+                        }
                     },
                 );
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
