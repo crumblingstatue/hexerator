@@ -1,6 +1,6 @@
 use egui_sfml::egui::{self, ScrollArea, Ui};
 
-use crate::app::App;
+use crate::{app::App, msg_warn};
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub enum FindType {
@@ -53,14 +53,16 @@ impl FindDialog {
         {
             app.ui.find_dialog.result_offsets.clear();
             match app.ui.find_dialog.find_type {
-                FindType::U8 => {
-                    let needle = app.ui.find_dialog.input.parse().unwrap();
-                    for (offset, &byte) in app.data.iter().enumerate() {
-                        if byte == needle {
-                            app.ui.find_dialog.result_offsets.push(offset);
+                FindType::U8 => match app.ui.find_dialog.input.parse() {
+                    Ok(needle) => {
+                        for (offset, &byte) in app.data.iter().enumerate() {
+                            if byte == needle {
+                                app.ui.find_dialog.result_offsets.push(offset);
+                            }
                         }
                     }
-                }
+                    Err(e) => msg_warn(&format!("Parse fail: {}", e)),
+                },
                 FindType::Ascii => {
                     for offset in memchr::memmem::find_iter(&app.data, &app.ui.find_dialog.input) {
                         app.ui.find_dialog.result_offsets.push(offset);

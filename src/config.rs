@@ -1,3 +1,4 @@
+use anyhow::Context;
 use directories::ProjectDirs;
 use recently_used_list::RecentlyUsedList;
 use serde::{Deserialize, Serialize};
@@ -10,42 +11,43 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn load_or_default() -> Self {
-        let proj_dirs = project_dirs();
+    pub fn load_or_default() -> anyhow::Result<Self> {
+        let proj_dirs = project_dirs().context("Failed to get project dirs")?;
         let cfg_dir = proj_dirs.config_dir();
         if !cfg_dir.exists() {
-            std::fs::create_dir_all(&cfg_dir).unwrap();
+            std::fs::create_dir_all(&cfg_dir)?;
         }
         let cfg_file = cfg_dir.join(FILENAME);
         if !cfg_file.exists() {
-            Config::default()
+            Ok(Config::default())
         } else {
-            let result: anyhow::Result<_> = try {
+            let result: anyhow::Result<Self> = try {
                 let cfg_bytes = std::fs::read(cfg_file)?;
                 rmp_serde::from_slice(&cfg_bytes)?
             };
             match result {
-                Ok(cfg) => cfg,
+                Ok(cfg) => Ok(cfg),
                 Err(e) => if rfd::MessageDialog::new().set_buttons(
                     rfd::MessageButtons::OkCancelCustom("Overwrite".into(), "Quit".into()),
                 ).set_description(&format!("Failed to load config: {:?}\n Create a new default config and overwrite, or quit?", e)).show() {
-                    Config::default()
+                    Ok(Config::default())
                 } else {
-                    panic!("Couldn't create config");
+                    anyhow::bail!("Couldn't create config");
                 },
             }
         }
     }
-    pub fn save(&self) {
-        let bytes = rmp_serde::to_vec(self).unwrap();
-        let proj_dirs = project_dirs();
+    pub fn save(&self) -> anyhow::Result<()> {
+        let bytes = rmp_serde::to_vec(self)?;
+        let proj_dirs = project_dirs().context("Failed to get project dirs")?;
         let cfg_dir = proj_dirs.config_dir();
-        std::fs::write(cfg_dir.join(FILENAME), &bytes).unwrap();
+        std::fs::write(cfg_dir.join(FILENAME), &bytes)?;
+        Ok(())
     }
 }
 
-fn project_dirs() -> ProjectDirs {
-    ProjectDirs::from("", "crumblingstatue", "hexerator").unwrap()
+fn project_dirs() -> Option<ProjectDirs> {
+    ProjectDirs::from("", "crumblingstatue", "hexerator")
 }
 
 const FILENAME: &str = "hexerator.cfg";

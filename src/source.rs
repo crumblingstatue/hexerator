@@ -10,6 +10,10 @@ pub enum Source {
 }
 
 impl Clone for Source {
+    #[expect(
+        clippy::unwrap_used,
+        reason = "Can't really do much else in clone impl"
+    )]
     fn clone(&self) -> Self {
         match self {
             Self::File(file) => Self::File(file.try_clone().unwrap()),

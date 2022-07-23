@@ -1,12 +1,13 @@
-use std::marker::PhantomData;
+use std::{array::TryFromSliceError, marker::PhantomData};
 
 use egui_sfml::egui::{self, Ui};
 use sfml::{system::Vector2i, window::clipboard};
+use thiserror::Error;
 
 use crate::{
     app::{interact_mode::InteractMode, App},
     damage_region::DamageRegion,
-    msg_warn,
+    msg_if_fail, msg_warn,
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -102,11 +103,19 @@ impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
     }
 }
 
+#[derive(Error, Debug)]
+enum FromBytesError {
+    #[error("Error converting from slice")]
+    TryFromSlice(#[from] TryFromSliceError),
+    #[error("Error indexing slice")]
+    SliceIndexError,
+}
+
 trait NumBytesManip: std::fmt::Display + Sized {
     type ToBytes: AsRef<[u8]>;
     fn label() -> &'static str;
-    fn from_le_bytes(bytes: &[u8]) -> Self;
-    fn from_be_bytes(bytes: &[u8]) -> Self;
+    fn from_le_bytes(bytes: &[u8]) -> Result<Self, FromBytesError>;
+    fn from_be_bytes(bytes: &[u8]) -> Result<Self, FromBytesError>;
     fn to_le_bytes(&self) -> Self::ToBytes;
     fn to_be_bytes(&self) -> Self::ToBytes;
     fn to_hex_string(&self) -> String;
@@ -123,17 +132,17 @@ macro_rules! num_bytes_manip_impl {
                 stringify!($t)
             }
 
-            fn from_le_bytes(bytes: &[u8]) -> Self {
+            fn from_le_bytes(bytes: &[u8]) -> Result<Self, FromBytesError> {
                 match bytes.get(..<$t>::BITS as usize / 8) {
-                    Some(slice) => Self::from_le_bytes(slice.try_into().unwrap()),
-                    None => Self::default(),
+                    Some(slice) => Ok(Self::from_le_bytes(slice.try_into()?)),
+                    None => Err(FromBytesError::SliceIndexError),
                 }
             }
 
-            fn from_be_bytes(bytes: &[u8]) -> Self {
+            fn from_be_bytes(bytes: &[u8]) -> Result<Self, FromBytesError> {
                 match bytes.get(..<$t>::BITS as usize / 8) {
-                    Some(slice) => Self::from_be_bytes(slice.try_into().unwrap()),
-                    None => Self::default(),
+                    Some(slice) => Ok(Self::from_be_bytes(slice.try_into()?)),
+                    None => Err(FromBytesError::SliceIndexError),
                 }
             }
 
@@ -183,17 +192,17 @@ impl NumBytesManip for f32 {
         "f32"
     }
 
-    fn from_le_bytes(bytes: &[u8]) -> Self {
+    fn from_le_bytes(bytes: &[u8]) -> Result<Self, FromBytesError> {
         match bytes.get(..32 / 8) {
-            Some(slice) => Self::from_le_bytes(slice.try_into().unwrap()),
-            None => Self::default(),
+            Some(slice) => Ok(Self::from_le_bytes(slice.try_into()?)),
+            None => Err(FromBytesError::SliceIndexError),
         }
     }
 
-    fn from_be_bytes(bytes: &[u8]) -> Self {
+    fn from_be_bytes(bytes: &[u8]) -> Result<Self, FromBytesError> {
         match bytes.get(..32 / 8) {
-            Some(slice) => Self::from_be_bytes(slice.try_into().unwrap()),
-            None => Self::default(),
+            Some(slice) => Ok(Self::from_be_bytes(slice.try_into()?)),
+            None => Err(FromBytesError::SliceIndexError),
         }
     }
 
@@ -224,23 +233,23 @@ impl NumBytesManip for f32 {
 }
 
 impl NumBytesManip for f64 {
-    type ToBytes = [u8; 64 / 8];
+    type ToBytes = [u8; 8];
 
     fn label() -> &'static str {
         "f64"
     }
 
-    fn from_le_bytes(bytes: &[u8]) -> Self {
-        match bytes.get(..64 / 8) {
-            Some(slice) => Self::from_le_bytes(slice.try_into().unwrap()),
-            None => Self::default(),
+    fn from_le_bytes(bytes: &[u8]) -> Result<Self, FromBytesError> {
+        match bytes.get(..8) {
+            Some(slice) => Ok(Self::from_le_bytes(slice.try_into()?)),
+            None => Err(FromBytesError::SliceIndexError),
         }
     }
 
-    fn from_be_bytes(bytes: &[u8]) -> Self {
-        match bytes.get(..64 / 8) {
-            Some(slice) => Self::from_be_bytes(slice.try_into().unwrap()),
-            None => Self::default(),
+    fn from_be_bytes(bytes: &[u8]) -> Result<Self, FromBytesError> {
+        match bytes.get(..8) {
+            Some(slice) => Ok(Self::from_be_bytes(slice.try_into()?)),
+            None => Err(FromBytesError::SliceIndexError),
         }
     }
 
@@ -273,16 +282,19 @@ impl NumBytesManip for f64 {
 impl<T: NumBytesManip> BytesManip for T {
     fn update_buf(buf: &mut String, data: &[u8], offset: usize, be: bool, format: Format) {
         if let Some(slice) = &data.get(offset..) {
-            let value = if be {
+            let result = if be {
                 T::from_be_bytes(slice)
             } else {
                 T::from_le_bytes(slice)
             };
-            *buf = match format {
-                Format::Decimal => value.to_string(),
-                Format::Hex => value.to_hex_string(),
-                Format::Bin => value.to_bin_string(),
-            };
+            *buf = match result {
+                Ok(value) => match format {
+                    Format::Decimal => value.to_string(),
+                    Format::Hex => value.to_hex_string(),
+                    Format::Bin => value.to_bin_string(),
+                },
+                Err(e) => e.to_string(),
+            }
         }
     }
 
@@ -325,7 +337,10 @@ impl BytesManip for Ascii {
     fn update_buf(buf: &mut String, data: &[u8], offset: usize, _be: bool, _format: Format) {
         if let Some(slice) = &data.get(offset..) {
             let valid_ascii_end = find_valid_ascii_end(slice);
-            *buf = String::from_utf8(data[offset..offset + valid_ascii_end].to_vec()).unwrap();
+            match String::from_utf8(data[offset..offset + valid_ascii_end].to_vec()) {
+                Ok(ascii) => *buf = ascii,
+                Err(e) => *buf = format!("[ascii error]: {}", e),
+            }
         }
     }
 
@@ -432,20 +447,26 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
                 clipboard::set_string(&*thingy.buf_mut());
             }
             if ui.button("⬇").on_hover_text("go to offset").clicked() {
-                let offset = match app.ui.inspect_panel.format {
-                    Format::Decimal => thingy.buf_mut().parse().unwrap(),
-                    Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16).unwrap(),
-                    Format::Bin => todo!(),
+                let result: anyhow::Result<()> = try {
+                    let offset = match app.ui.inspect_panel.format {
+                        Format::Decimal => thingy.buf_mut().parse()?,
+                        Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16)?,
+                        Format::Bin => todo!(),
+                    };
+                    actions.push(Action::GoToOffset(offset));
                 };
-                actions.push(Action::GoToOffset(offset));
+                msg_if_fail(result, "Failed to go to offset");
             }
             if ui.button("➡").on_hover_text("jump forward").clicked() {
-                let offset = match app.ui.inspect_panel.format {
-                    Format::Decimal => thingy.buf_mut().parse().unwrap(),
-                    Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16).unwrap(),
-                    Format::Bin => todo!(),
+                let result: anyhow::Result<()> = try {
+                    let offset = match app.ui.inspect_panel.format {
+                        Format::Decimal => thingy.buf_mut().parse()?,
+                        Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16)?,
+                        Format::Bin => todo!(),
+                    };
+                    actions.push(Action::JumpForward(offset));
                 };
-                actions.push(Action::JumpForward(offset));
+                msg_if_fail(result, "Failed to jump forward");
             }
         });
         if ui.text_edit_singleline(thingy.buf_mut()).lost_focus()

@@ -24,7 +24,7 @@ use crate::{
     damage_region::DamageRegion,
     input::Input,
     metafile::Metafile,
-    msg_if_fail,
+    msg_if_fail, msg_warn,
     region::Region,
     source::Source,
     timer::Timer,
@@ -378,9 +378,14 @@ impl App {
                 thread::spawn(move || {
                     let buffer_size = 1024;
                     let mut buf = vec![0; buffer_size];
-                    let amount = src_clone.read(&mut buf).unwrap();
-                    buf.truncate(amount);
-                    tx.send(buf).unwrap();
+                    let result: anyhow::Result<()> = try {
+                        let amount = src_clone.read(&mut buf)?;
+                        buf.truncate(amount);
+                        tx.send(buf)?;
+                    };
+                    if let Err(e) = result {
+                        msg_warn(&format!("Stream error: {}", e));
+                    }
                 });
             }
         }

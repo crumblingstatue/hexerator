@@ -1,5 +1,5 @@
 #![feature(lint_reasons, label_break_value, let_else, try_blocks)]
-#![warn(trivial_casts, trivial_numeric_casts)]
+#![warn(trivial_casts, trivial_numeric_casts, clippy::unwrap_used)]
 
 mod app;
 mod args;
@@ -23,6 +23,7 @@ use std::{
 };
 
 use crate::app::App;
+use anyhow::Context;
 use app::interact_mode::InteractMode;
 use args::Args;
 use clap::Parser;
@@ -122,8 +123,10 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     window.set_vertical_sync_enabled(true);
     window.set_position(Vector2::new(0, 0));
     let mut sf_egui = SfEgui::new(&window);
-    let font = unsafe { Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).unwrap() };
-    let mut app = App::new(args, window.size().y, Config::load_or_default())?;
+    let font = unsafe {
+        Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
+    };
+    let mut app = App::new(args, window.size().y, Config::load_or_default()?)?;
     let mut vertex_buffer = Vec::new();
 
     while window.is_open() {
@@ -131,7 +134,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
             let mut buf = Vec::new();
             stream.read_to_end(&mut buf)?;
             let req: InstanceRequest = rmp_serde::from_slice(&buf)?;
-            app = App::new(req.args, window.size().y, Config::load_or_default())?;
+            app = App::new(req.args, window.size().y, app.cfg)?;
             window.request_focus();
         }
         do_frame(
@@ -143,7 +146,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
         );
     }
     app.close_file();
-    app.cfg.save();
+    app.cfg.save()?;
     Ok(())
 }
 
