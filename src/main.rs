@@ -1,4 +1,5 @@
 #![feature(lint_reasons, label_break_value, let_else, try_blocks)]
+#![warn(trivial_casts, trivial_numeric_casts)]
 
 mod app;
 mod args;
