@@ -153,7 +153,7 @@ fn do_frame(
 ) {
     handle_events(app, window, sf_egui);
     update(app);
-    ui::do_egui(sf_egui, app, window.mouse_position());
+    ui::do_egui(sf_egui, app, window.mouse_position(), window.size().y);
     let [r, g, b] = app.presentation.bg_color;
     window.clear(Color::rgb(
         (r * 255.) as u8,

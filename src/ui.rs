@@ -39,7 +39,7 @@ impl Ui {
 
 use self::{find_dialog::FindDialog, inspect_panel::InspectPanel, regions_window::RegionsWindow};
 
-pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
+pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i, window_height: u32) {
     sf_egui.do_frame(|ctx| {
         let mut open = gamedebug_core::enabled();
         let was_open = open;
@@ -59,7 +59,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i) {
             .open(&mut open)
             .show(ctx, |ui| RegionsWindow::ui(ui, app));
         app.ui.regions_window.open = open;
-        TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app));
+        TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app, window_height));
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel::ui(ui, app));
         egui::SidePanel::right("right_panel").show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos));
         let mut dialogs: Vec<_> = std::mem::take(&mut app.ui.dialogs);

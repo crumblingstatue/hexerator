@@ -87,47 +87,7 @@ impl App {
         load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
         let layout = Layout::new(window_height);
         let cursor = 0;
-        let mut views = vec![
-            View {
-                viewport_rect: ViewportRect {
-                    x: 0,
-                    y: layout.top_gap,
-                    w: 960,
-                    h: window_height as i16 - layout.bottom_gap,
-                },
-                kind: ViewKind::Hex,
-                col_w: layout.font_size * 2,
-                row_h: layout.font_size,
-                scroll_offset: ScrollOffset::default(),
-                scroll_speed: 1,
-            },
-            View {
-                viewport_rect: ViewportRect {
-                    x: 962,
-                    y: layout.top_gap,
-                    w: 480,
-                    h: window_height as i16 - layout.bottom_gap,
-                },
-                kind: ViewKind::Ascii,
-                col_w: layout.font_size,
-                row_h: layout.font_size,
-                scroll_offset: ScrollOffset::default(),
-                scroll_speed: 1,
-            },
-            View {
-                viewport_rect: ViewportRect {
-                    x: 1444,
-                    y: layout.top_gap,
-                    w: 200,
-                    h: window_height as i16 - layout.bottom_gap,
-                },
-                kind: ViewKind::Block,
-                col_w: 4,
-                row_h: 4,
-                scroll_offset: ScrollOffset::default(),
-                scroll_speed: 1,
-            },
-        ];
+        let mut views = default_views(&layout, window_height);
         views[0].go_home();
         let mut this = Self {
             scissor_views: true,
@@ -158,7 +118,7 @@ impl App {
             stream_read_recv: None,
             cfg,
         };
-        this.new_file_readjust();
+        this.new_file_readjust(window_height);
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
             this.edit_state.cursor = offset;
@@ -319,6 +279,7 @@ impl App {
         &mut self,
         path: PathBuf,
         read_only: bool,
+        window_height: u32,
     ) -> Result<(), anyhow::Error> {
         let mut file = open_file(&path, read_only)?;
         self.data = read_contents(&self.args, &mut file)?;
@@ -326,12 +287,12 @@ impl App {
         self.args.file = Some(path);
         self.args.read_only = read_only;
         self.cfg.recent.use_(self.args.clone());
-        self.new_file_readjust();
+        self.new_file_readjust(window_height);
         Ok(())
     }
 
     /// Readjust to a new file
-    fn new_file_readjust(&mut self) {
+    fn new_file_readjust(&mut self, window_height: u32) {
         self.stream_end = false;
         self.perspective = Perspective {
             region: Region {
@@ -340,6 +301,7 @@ impl App {
             },
             cols: 48,
         };
+        self.views = default_views(&self.layout, window_height);
     }
 
     pub fn close_file(&mut self) {
@@ -465,7 +427,7 @@ impl App {
         Ok(())
     }
 
-    pub(crate) fn load_file_args(&mut self, args: Args) -> anyhow::Result<()> {
+    pub(crate) fn load_file_args(&mut self, args: Args, window_height: u32) -> anyhow::Result<()> {
         self.args = args;
         load_file_from_args(
             &mut self.args,
@@ -473,9 +435,53 @@ impl App {
             &mut self.source,
             &mut self.data,
         );
-        self.new_file_readjust();
+        self.new_file_readjust(window_height);
         Ok(())
     }
+}
+
+fn default_views(layout: &Layout, window_height: u32) -> Vec<View> {
+    vec![
+        View {
+            viewport_rect: ViewportRect {
+                x: 0,
+                y: layout.top_gap,
+                w: 960,
+                h: window_height as i16 - layout.bottom_gap,
+            },
+            kind: ViewKind::Hex,
+            col_w: layout.font_size * 2,
+            row_h: layout.font_size,
+            scroll_offset: ScrollOffset::default(),
+            scroll_speed: 1,
+        },
+        View {
+            viewport_rect: ViewportRect {
+                x: 962,
+                y: layout.top_gap,
+                w: 480,
+                h: window_height as i16 - layout.bottom_gap,
+            },
+            kind: ViewKind::Ascii,
+            col_w: layout.font_size,
+            row_h: layout.font_size,
+            scroll_offset: ScrollOffset::default(),
+            scroll_speed: 1,
+        },
+        View {
+            viewport_rect: ViewportRect {
+                x: 1444,
+                y: layout.top_gap,
+                w: 200,
+                h: window_height as i16 - layout.bottom_gap,
+            },
+            kind: ViewKind::Block,
+            col_w: 4,
+            row_h: 4,
+            scroll_offset: ScrollOffset::default(),
+            scroll_speed: 1,
+        },
+    ]
 }
 
 fn load_file_from_args(

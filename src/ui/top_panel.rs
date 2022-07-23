@@ -7,13 +7,13 @@ use crate::{
     region::Region, slice_ext::SliceExt, source::Source, ui::Dialog,
 };
 
-pub fn ui(ui: &mut Ui, app: &mut App) {
+pub fn ui(ui: &mut Ui, app: &mut App, window_height: u32) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
             if ui.button("Open").clicked() {
                 if let Some(file) = rfd::FileDialog::new().pick_file() {
                     msg_if_fail(
-                        app.load_file(file, false),
+                        app.load_file(file, false, window_height),
                         "Failed to load file (read-write)",
                     );
                 }
@@ -21,7 +21,10 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             }
             if ui.button("Open (read only)").clicked() {
                 if let Some(file) = rfd::FileDialog::new().pick_file() {
-                    msg_if_fail(app.load_file(file, true), "Failed to load file (read-only)");
+                    msg_if_fail(
+                        app.load_file(file, true, window_height),
+                        "Failed to load file (read-only)",
+                    );
                 }
                 ui.close_menu();
             }
@@ -45,7 +48,10 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                     ui.separator();
                 }
                 if let Some(args) = load {
-                    msg_if_fail(app.load_file_args(args), "Failed to load file");
+                    msg_if_fail(
+                        app.load_file_args(args, window_height),
+                        "Failed to load file",
+                    );
                 }
             });
             if ui.button("Close").clicked() {
