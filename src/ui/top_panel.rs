@@ -36,7 +36,7 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                     ui.separator();
                 }
                 if let Some(path) = load {
-                    app.load_file(path, false).unwrap();
+                    msg_if_fail(app.load_file(path, false), "Failed to load file");
                 }
             });
             if ui.button("Close").clicked() {
