@@ -29,7 +29,16 @@ pub fn draw_view(
     let mut idx = app.perspective.region.begin;
     let start_row: usize = view.scroll_offset.row;
     idx += start_row * app.perspective.cols;
-    'rows: for row in start_row.. {
+    imm_msg!(view.rows());
+    let mut orig = start_row..=start_row + view.rows();
+    let mut rev;
+    let row_range: &mut dyn Iterator<Item = usize> = if app.view_opts.flip_y {
+        rev = orig.rev();
+        &mut rev
+    } else {
+        &mut orig
+    };
+    'rows: for row in row_range {
         let y = row as f32 * f32::from(view.row_h);
         let viewport_y = (view.viewport_rect.y as f32 + y)
             - ((view.scroll_offset.row as f32 * view.row_h as f32)

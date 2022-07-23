@@ -69,6 +69,12 @@ pub struct App {
     pub cfg: Config,
     /// Whether to scissor views when drawing them. Useful to disable when debugging rendering.
     pub scissor_views: bool,
+    pub view_opts: ViewOpts,
+}
+
+#[derive(Debug)]
+pub struct ViewOpts {
+    pub flip_y: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -117,6 +123,7 @@ impl App {
             meta_dirty: false,
             stream_read_recv: None,
             cfg,
+            view_opts: ViewOpts { flip_y: false },
         };
         this.new_file_readjust(window_height);
         if let Some(offset) = this.args.jump {
