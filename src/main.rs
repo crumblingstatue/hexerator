@@ -73,7 +73,17 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
             }
         }
     }
-    let listener = LocalSocketListener::bind(sock_path)?;
+    let listener = match LocalSocketListener::bind(sock_path) {
+        Ok(listener) => listener,
+        Err(e) => {
+            msg_warn(&format!(
+                "Failed to bind IPC listener: {}\nGoing to try again.",
+                e
+            ));
+            let _ = std::fs::remove_file(&sock_path);
+            LocalSocketListener::bind(sock_path)?
+        }
+    };
     listener.set_nonblocking(true)?;
     // Streaming sources should be read-only.
     // Opening them as write blocks at EOF, which we don't want.
