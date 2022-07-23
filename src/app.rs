@@ -79,31 +79,26 @@ pub struct NamedRegion {
 
 impl App {
     pub fn new(mut args: Args, window_height: u32, mut cfg: Config) -> anyhow::Result<Self> {
-        let data;
-        let source;
+        let mut data = Vec::new();
+        let mut source = None;
         if args.load_recent && let Some(recent) = cfg.recent.most_recent() {
             args.file = Some(recent.clone());
         }
-        match &args.file {
-            Some(file_arg) => {
-                cfg.recent.use_(file_arg.clone());
-                if file_arg.as_os_str() == "-" {
-                    source = Some(Source::Stdin(std::io::stdin()));
-                    data = Vec::new();
-                    args.stream = true;
-                } else {
+        if let Some(file_arg) = &args.file {
+            cfg.recent.use_(file_arg.clone());
+            if file_arg.as_os_str() == "-" {
+                source = Some(Source::Stdin(std::io::stdin()));
+                data = Vec::new();
+                args.stream = true;
+            } else {
+                let result: Result<(), anyhow::Error> = try {
                     let mut file = open_file(file_arg, args.read_only)?;
                     if !args.stream {
                         data = read_contents(&args, &mut file)?;
-                    } else {
-                        data = Vec::new();
                     }
                     source = Some(Source::File(file));
-                }
-            }
-            None => {
-                data = Vec::new();
-                source = None;
+                };
+                msg_if_fail(result, "Failed to open file");
             }
         }
         let layout = Layout::new(window_height);

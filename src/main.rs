@@ -1,4 +1,4 @@
-#![feature(lint_reasons, label_break_value, let_else)]
+#![feature(lint_reasons, label_break_value, let_else, try_blocks)]
 
 mod app;
 mod args;
