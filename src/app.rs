@@ -85,7 +85,7 @@ impl App {
             args = recent.clone();
         }
         load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
-        let layout = Layout::new(window_height);
+        let layout = Layout::new();
         let cursor = 0;
         let mut views = default_views(&layout, window_height);
         views[0].go_home();
