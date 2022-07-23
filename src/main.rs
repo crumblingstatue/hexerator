@@ -18,6 +18,7 @@ mod view;
 use std::{
     ffi::OsStr,
     io::{Read, Write},
+    path::Path,
 };
 
 use crate::app::App;
@@ -125,10 +126,21 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     Ok(())
 }
 
+struct SocketRemoveGuard<'a> {
+    sock_path: &'a Path,
+}
+impl<'a> Drop for SocketRemoveGuard<'a> {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(self.sock_path);
+    }
+}
+
 fn main() {
     let sock_path = std::env::temp_dir().join("hexerator.sock");
+    let _guard = SocketRemoveGuard {
+        sock_path: &sock_path,
+    };
     msg_if_fail(try_main(sock_path.as_os_str()), "Fatal error");
-    let _ = std::fs::remove_file(&sock_path);
 }
 
 fn do_frame(
