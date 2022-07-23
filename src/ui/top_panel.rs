@@ -28,15 +28,24 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             ui.menu_button("Recent", |ui| {
                 let mut load = None;
                 for entry in app.cfg.recent.iter() {
-                    if ui.button(entry.display().to_string()).clicked() {
+                    if ui
+                        .button(
+                            entry
+                                .file
+                                .as_ref()
+                                .map(|path| path.display().to_string())
+                                .unwrap_or_else(|| String::from("Unnamed file")),
+                        )
+                        .clicked()
+                    {
                         load = Some(entry.clone());
                         ui.close_menu();
                         break;
                     }
                     ui.separator();
                 }
-                if let Some(path) = load {
-                    msg_if_fail(app.load_file(path, false), "Failed to load file");
+                if let Some(args) = load {
+                    msg_if_fail(app.load_file_args(args), "Failed to load file");
                 }
             });
             if ui.button("Close").clicked() {

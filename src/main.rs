@@ -28,6 +28,7 @@ use clap::Parser;
 use config::Config;
 use damage_region::DamageRegion;
 use egui_sfml::SfEgui;
+use gamedebug_core::imm_msg;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use serde::{Deserialize, Serialize};
 use sfml::{
@@ -164,6 +165,7 @@ fn do_frame(
     window.display();
     // Should only be true on the frame right after reloading
     app.just_reloaded = false;
+    imm_msg!(&app.perspective);
     gamedebug_core::inc_frame();
 }
 

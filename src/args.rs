@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 
-#[derive(Parser, Debug, Serialize, Deserialize)]
+#[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct Args {
     /// The file to read
     pub file: Option<PathBuf>,

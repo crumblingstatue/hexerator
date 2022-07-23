@@ -82,25 +82,9 @@ impl App {
         let mut data = Vec::new();
         let mut source = None;
         if args.load_recent && let Some(recent) = cfg.recent.most_recent() {
-            args.file = Some(recent.clone());
+            args = recent.clone();
         }
-        if let Some(file_arg) = &args.file {
-            cfg.recent.use_(file_arg.clone());
-            if file_arg.as_os_str() == "-" {
-                source = Some(Source::Stdin(std::io::stdin()));
-                data = Vec::new();
-                args.stream = true;
-            } else {
-                let result: Result<(), anyhow::Error> = try {
-                    let mut file = open_file(file_arg, args.read_only)?;
-                    if !args.stream {
-                        data = read_contents(&args, &mut file)?;
-                    }
-                    source = Some(Source::File(file));
-                };
-                msg_if_fail(result, "Failed to open file");
-            }
-        }
+        load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
         let layout = Layout::new(window_height);
         let cursor = 0;
         let mut views = vec![
@@ -336,17 +320,19 @@ impl App {
         path: PathBuf,
         read_only: bool,
     ) -> Result<(), anyhow::Error> {
-        self.cfg.recent.use_(path.clone());
         let mut file = open_file(&path, read_only)?;
         self.data = read_contents(&self.args, &mut file)?;
         self.source = Some(Source::File(file));
         self.args.file = Some(path);
+        self.args.read_only = read_only;
+        self.cfg.recent.use_(self.args.clone());
         self.new_file_readjust();
         Ok(())
     }
 
     /// Readjust to a new file
     fn new_file_readjust(&mut self) {
+        self.stream_end = false;
         self.perspective = Perspective {
             region: Region {
                 begin: 0,
@@ -414,6 +400,7 @@ impl App {
                         self.stream_end = true;
                     } else {
                         self.data.extend_from_slice(&buf[..]);
+                        self.perspective.region.end = self.data.len() - 1;
                     }
                 }
                 Err(e) => match e {
@@ -476,6 +463,43 @@ impl App {
             std::fs::write(path, &data)?;
         }
         Ok(())
+    }
+
+    pub(crate) fn load_file_args(&mut self, args: Args) -> anyhow::Result<()> {
+        self.args = args;
+        load_file_from_args(
+            &mut self.args,
+            &mut self.cfg,
+            &mut self.source,
+            &mut self.data,
+        );
+        self.new_file_readjust();
+        Ok(())
+    }
+}
+
+fn load_file_from_args(
+    args: &mut Args,
+    cfg: &mut Config,
+    source: &mut Option<Source>,
+    data: &mut Vec<u8>,
+) {
+    data.clear();
+    if let Some(file_arg) = &args.file {
+        cfg.recent.use_(args.clone());
+        if file_arg.as_os_str() == "-" {
+            *source = Some(Source::Stdin(std::io::stdin()));
+            args.stream = true;
+        } else {
+            let result: Result<(), anyhow::Error> = try {
+                let mut file = open_file(file_arg, args.read_only)?;
+                if !args.stream {
+                    *data = read_contents(&*args, &mut file)?;
+                }
+                *source = Some(Source::File(file));
+            };
+            msg_if_fail(result, "Failed to open file");
+        }
     }
 }
 

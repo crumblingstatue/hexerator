@@ -1,12 +1,12 @@
-use std::path::PathBuf;
-
 use directories::ProjectDirs;
 use recently_used_list::RecentlyUsedList;
 use serde::{Deserialize, Serialize};
 
+use crate::args::Args;
+
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Config {
-    pub recent: RecentlyUsedList<PathBuf>,
+    pub recent: RecentlyUsedList<Args>,
 }
 
 impl Config {
@@ -20,8 +20,20 @@ impl Config {
         if !cfg_file.exists() {
             Config::default()
         } else {
-            let cfg_bytes = std::fs::read(cfg_file).unwrap();
-            rmp_serde::from_slice(&cfg_bytes).unwrap()
+            let result: anyhow::Result<_> = try {
+                let cfg_bytes = std::fs::read(cfg_file)?;
+                rmp_serde::from_slice(&cfg_bytes)?
+            };
+            match result {
+                Ok(cfg) => cfg,
+                Err(e) => if rfd::MessageDialog::new().set_buttons(
+                    rfd::MessageButtons::OkCancelCustom("Overwrite".into(), "Quit".into()),
+                ).set_description(&format!("Failed to load config: {:?}\n Create a new default config and overwrite, or quit?", e)).show() {
+                    Config::default()
+                } else {
+                    panic!("Couldn't create config");
+                },
+            }
         }
     }
     pub fn save(&self) {
