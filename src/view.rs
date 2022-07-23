@@ -168,8 +168,12 @@ impl View {
     }
 
     pub(crate) fn bytes_per_page(&self, perspective: &Perspective) -> usize {
-        let rows = self.viewport_rect.h / i16::from(self.row_h);
-        rows as usize * perspective.cols
+        self.rows() * perspective.cols
+    }
+
+    /// Returns the number of rows this view can display
+    pub(crate) fn rows(&self) -> usize {
+        (self.viewport_rect.h / i16::from(self.row_h)) as usize
     }
 }
 
