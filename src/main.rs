@@ -30,6 +30,7 @@ use damage_region::DamageRegion;
 use egui_sfml::SfEgui;
 use gamedebug_core::imm_msg;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
+use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use sfml::{
     graphics::{Color, Font, Rect, RenderTarget, RenderWindow, Vertex, View},
@@ -66,9 +67,27 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     if args.instance {
         match LocalSocketStream::connect(sock_path) {
             Ok(mut stream) => {
-                let vec = rmp_serde::to_vec(&InstanceRequest { args })?;
-                stream.write_all(&vec)?;
-                return Ok(());
+                let result: anyhow::Result<()> = try {
+                    let vec = rmp_serde::to_vec(&InstanceRequest { args: args.clone() })?;
+                    stream.write_all(&vec)?;
+                };
+                match result {
+                    Ok(()) => return Ok(()),
+                    Err(e) => {
+                        let ans = rfd::MessageDialog::new()
+                            .set_level(rfd::MessageLevel::Error)
+                            .set_buttons(MessageButtons::YesNo)
+                            .set_title("Hexerator")
+                            .set_description(&format!(
+                                "Failed to connect to instance: {}\nOpen a new instance?",
+                                e
+                            ))
+                            .show();
+                        if !ans {
+                            anyhow::bail!("Failed to connect to instance");
+                        }
+                    }
+                }
             }
             Err(e) => {
                 eprintln!("Failed to connect to instance: {}", e);
