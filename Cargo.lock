@@ -255,6 +255,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "either"
+version = "1.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f107b87b6afc2a64fd13cac55fe06d6c8859f12d4b14cbcdd2c67d0976781be"
+
+[[package]]
 name = "emath"
 version = "0.18.0"
 source = "git+https://github.com/emilk/egui.git#eeae485629fca24a81a7251739460b671e1420f7"
@@ -427,6 +433,7 @@ dependencies = [
  "clap",
  "directories",
  "egui-sfml",
+ "either",
  "gamedebug_core",
  "glu-sys",
  "interprocess",
