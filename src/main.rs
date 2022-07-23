@@ -117,9 +117,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
 
 fn main() {
     let sock_path = std::env::temp_dir().join("hexerator.sock");
-    if let Err(e) = try_main(sock_path.as_os_str()) {
-        eprintln!("Fatal error: {}", e);
-    }
+    msg_if_fail(try_main(sock_path.as_os_str()), "Fatal error");
     let _ = std::fs::remove_file(&sock_path);
 }
 
