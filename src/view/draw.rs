@@ -32,16 +32,15 @@ pub fn draw_view(
     idx += start_row * app.perspective.cols;
     imm_msg!(view.rows());
     let orig = start_row..=start_row + view.rows();
-    let row_range = if app.view_opts.flip_y {
-        Either::Left(orig.rev())
+    let (row_range, pix_yoff) = if app.view_opts.flip_y {
+        (Either::Left(orig.rev()), -view.scroll_offset.pix_yoff)
     } else {
-        Either::Right(orig)
+        (Either::Right(orig), view.scroll_offset.pix_yoff)
     };
     'rows: for row in row_range {
         let y = row as f32 * f32::from(view.row_h);
         let viewport_y = (view.viewport_rect.y as f32 + y)
-            - ((view.scroll_offset.row as f32 * view.row_h as f32)
-                + view.scroll_offset.pix_yoff as f32);
+            - ((view.scroll_offset.row as f32 * view.row_h as f32) + pix_yoff as f32);
         let start_col = view.scroll_offset.col;
         if start_col >= app.perspective.cols {
             break;
