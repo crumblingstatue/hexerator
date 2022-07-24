@@ -56,17 +56,25 @@ pub fn draw_view(
                 break;
             }
             if viewport_y > (view.viewport_rect.y + view.viewport_rect.h) as f32
-                || idx >= app.data.len()
+                && !app.view_opts.flip_y
             {
                 break 'rows;
             }
-            let byte = app.data[idx];
-            let c = app
-                .presentation
-                .color_method
-                .byte_color(byte, app.presentation.invert_color);
-            drawfn(vertex_buffer, viewport_x, viewport_y, byte, idx, c);
-            idx += 1;
+            match app.data.get(idx) {
+                Some(&byte) => {
+                    let c = app
+                        .presentation
+                        .color_method
+                        .byte_color(byte, app.presentation.invert_color);
+                    drawfn(vertex_buffer, viewport_x, viewport_y, byte, idx, c);
+                    idx += 1;
+                }
+                None => {
+                    if !app.view_opts.flip_y {
+                        break 'rows;
+                    }
+                }
+            }
         }
     }
 }
