@@ -285,14 +285,19 @@ impl App {
         read_only: bool,
         window_height: ViewportScalar,
     ) -> Result<(), anyhow::Error> {
-        let mut file = open_file(&path, read_only)?;
-        self.data = read_contents(&self.args, &mut file)?;
-        self.source = Some(Source::File(file));
-        self.args.file = Some(path);
-        self.args.read_only = read_only;
-        self.cfg.recent.use_(self.args.clone());
-        self.new_file_readjust(window_height);
-        Ok(())
+        self.load_file_args(
+            Args {
+                file: Some(path),
+                jump: None,
+                hard_seek: None,
+                take: None,
+                read_only,
+                stream: false,
+                instance: false,
+                load_recent: false,
+            },
+            window_height,
+        )
     }
 
     /// Readjust to a new file
@@ -512,6 +517,17 @@ fn load_file_from_args(
     data: &mut Vec<u8>,
 ) {
     data.clear();
+    if let Some(path) = &mut args.file {
+        match path.canonicalize() {
+            Ok(canon) => *path = canon,
+            Err(e) => msg_warn(&format!(
+                "Failed to canonicalize path {}: {}\n\
+                 Recent use list might not be able to load it back.",
+                path.display(),
+                e
+            )),
+        }
+    }
     if let Some(file_arg) = &args.file {
         cfg.recent.use_(args.clone());
         if file_arg.as_os_str() == "-" {

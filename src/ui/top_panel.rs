@@ -147,10 +147,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
                 Some(src) => match src {
                     Source::File(_) => {
                         match &app.args.file {
-                            Some(file) => match file.canonicalize() {
-                                Ok(path) => ui.label(path.display().to_string()),
-                                Err(e) => ui.label(format!("path error: {}", e)),
-                            },
+                            Some(file) => ui.label(file.display().to_string()),
                             None => ui.label("File path unknown"),
                         };
                     }
