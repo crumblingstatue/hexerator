@@ -40,9 +40,8 @@ pub fn draw_view(
     };
     'rows: for row in row_range {
         let y = row * usize::from(view.row_h);
-        let viewport_y = ((i64::from(view.viewport_rect.y) + y as i64)
-            - ((view.scroll_offset.row as i64 * i64::from(view.row_h)) + i64::from(pix_yoff)))
-            as f32;
+        let viewport_y = (i64::from(view.viewport_rect.y) + y as i64)
+            - ((view.scroll_offset.row as i64 * i64::from(view.row_h)) + i64::from(pix_yoff));
         let start_col = view.scroll_offset.col;
         if start_col >= app.perspective.cols {
             break;
@@ -50,14 +49,14 @@ pub fn draw_view(
         idx += start_col;
         for col in start_col..app.perspective.cols {
             let x = col * usize::from(view.col_w);
-            let viewport_x = ((i64::from(view.viewport_rect.x) + x as i64)
+            let viewport_x = (i64::from(view.viewport_rect.x) + x as i64)
                 - ((view.scroll_offset.col as i64 * i64::from(view.col_w))
-                    + i64::from(view.scroll_offset.pix_xoff))) as f32;
-            if viewport_x > f32::from(view.viewport_rect.x + view.viewport_rect.w) {
+                    + i64::from(view.scroll_offset.pix_xoff));
+            if viewport_x > i64::from(view.viewport_rect.x + view.viewport_rect.w) {
                 idx += app.perspective.cols - col;
                 break;
             }
-            if viewport_y > f32::from(view.viewport_rect.y + view.viewport_rect.h)
+            if viewport_y > i64::from(view.viewport_rect.y + view.viewport_rect.h)
                 && !app.perspective.flip_row_order
             {
                 break 'rows;
@@ -68,7 +67,18 @@ pub fn draw_view(
                         .presentation
                         .color_method
                         .byte_color(byte, app.presentation.invert_color);
-                    drawfn(vertex_buffer, viewport_x, viewport_y, byte, idx, c);
+                    #[expect(
+                        clippy::cast_precision_loss,
+                        reason = "At this point, the viewport coordinates should be small enough to fit in viewport"
+                    )]
+                    drawfn(
+                        vertex_buffer,
+                        viewport_x as f32,
+                        viewport_y as f32,
+                        byte,
+                        idx,
+                        c,
+                    );
                     idx += 1;
                 }
                 None => {
