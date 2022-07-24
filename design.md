@@ -45,3 +45,7 @@ A `Meta` is all the metadata about a binary format. It can include things like `
 of a binary format.
 
 ## Limits
+To make development easier, and help keep my sanity, hexerator defines some value limits.
+
+### Resolution and mouse position
+These are i16, meaning values higher than 32767 are not supported.
