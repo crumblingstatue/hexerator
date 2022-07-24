@@ -3,7 +3,8 @@
     trivial_casts,
     trivial_numeric_casts,
     clippy::unwrap_used,
-    clippy::cast_lossless
+    clippy::cast_lossless,
+    clippy::cast_possible_truncation
 )]
 
 mod app;
@@ -23,11 +24,12 @@ mod view;
 
 use std::{
     ffi::OsStr,
+    fmt::Display,
     io::{Read, Write},
     path::Path,
 };
 
-use crate::app::App;
+use crate::{app::App, view::ViewportVec};
 use anyhow::Context;
 use app::interact_mode::InteractMode;
 use args::Args;
@@ -44,7 +46,7 @@ use sfml::{
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };
-use view::ViewKind;
+use view::{ViewKind, ViewportScalar};
 
 fn msg_if_fail<T, E: std::fmt::Debug>(result: Result<T, E>, prefix: &str) {
     if let Err(e) = result {
@@ -131,7 +133,8 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     let font = unsafe {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
-    let mut app = App::new(args, window.size().y, Config::load_or_default()?)?;
+    let win_height: ViewportScalar = try_conv_win_height_panic(&window);
+    let mut app = App::new(args, win_height, Config::load_or_default()?)?;
     let mut vertex_buffer = Vec::new();
 
     while window.is_open() {
@@ -139,7 +142,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
             let mut buf = Vec::new();
             stream.read_to_end(&mut buf)?;
             let req: InstanceRequest = rmp_serde::from_slice(&buf)?;
-            app = App::new(req.args, window.size().y, app.cfg)?;
+            app = App::new(req.args, win_height, app.cfg)?;
             window.request_focus();
         }
         do_frame(
@@ -153,6 +156,16 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     app.close_file();
     app.cfg.save()?;
     Ok(())
+}
+
+fn try_conv_win_height_panic(window: &RenderWindow) -> i16 {
+    match window.size().y.try_into() {
+        Ok(wh) => wh,
+        Err(e) => {
+            msg_warn(&format!("Window height conversion error: {}\nHexerator doesn't support resolutions higher than 32700", e));
+            panic!("Window height conversion error");
+        }
+    }
 }
 
 struct SocketRemoveGuard<'a> {
@@ -181,7 +194,9 @@ fn do_frame(
 ) {
     handle_events(app, window, sf_egui);
     update(app);
-    ui::do_egui(sf_egui, app, window.mouse_position(), window.size().y);
+    let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
+    let win_height = try_conv_win_height_panic(window);
+    ui::do_egui(sf_egui, app, mp, win_height);
     let [r, g, b] = app.presentation.bg_color;
     window.clear(Color::rgb(
         (r * 255.) as u8,
@@ -195,6 +210,22 @@ fn do_frame(
     app.just_reloaded = false;
     imm_msg!(&app.perspective);
     gamedebug_core::inc_frame();
+}
+
+/// Try to convert mouse position to ViewportVec, show error message and panic if it fails.
+///
+/// Extremly high (>32700) mouse positions are unsupported.
+fn try_conv_mp_panic<T: TryInto<ViewportVec>>(src: T) -> ViewportVec
+where
+    T::Error: Display,
+{
+    match src.try_into() {
+        Ok(mp) => mp,
+        Err(e) => {
+            msg_warn(&format!("Mouse position conversion error: {}\nHexerator doesn't support extremely high (>32700) mouse positions.", e));
+            panic!("Mouse position conversion error.");
+        }
+    }
 }
 
 fn update(app: &mut App) {
@@ -265,8 +296,9 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             } => handle_key_events(code, app, ctrl, shift, alt),
             Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
+                let mp = try_conv_mp_panic((x, y));
                 if button == mouse::Button::Left {
-                    if let Some(off) = app.byte_offset_at_pos(x, y) {
+                    if let Some(off) = app.byte_offset_at_pos(mp.x, mp.y) {
                         app.edit_state.set_cursor(off);
                     }
                 }

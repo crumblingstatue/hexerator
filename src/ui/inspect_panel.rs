@@ -1,13 +1,14 @@
 use std::{array::TryFromSliceError, marker::PhantomData};
 
 use egui_sfml::egui::{self, Ui};
-use sfml::{system::Vector2i, window::clipboard};
+use sfml::window::clipboard;
 use thiserror::Error;
 
 use crate::{
     app::{interact_mode::InteractMode, App},
     damage_region::DamageRegion,
     msg_if_fail, msg_warn,
+    view::ViewportVec,
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -404,7 +405,7 @@ enum Action {
     JumpForward(usize),
 }
 
-pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: Vector2i) {
+pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
     let offset = match app.interact_mode {
         InteractMode::View => {
             if let Some(off) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {

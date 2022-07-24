@@ -12,9 +12,11 @@ use egui_sfml::{
     egui::{self, TopBottomPanel, Window},
     SfEgui,
 };
-use sfml::system::Vector2i;
 
-use crate::app::App;
+use crate::{
+    app::App,
+    view::{ViewportScalar, ViewportVec},
+};
 
 #[derive(Debug, Default)]
 pub struct Ui {
@@ -44,7 +46,12 @@ use self::{
     views_window::ViewsWindow,
 };
 
-pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i, window_height: u32) {
+pub fn do_egui(
+    sf_egui: &mut SfEgui,
+    app: &mut App,
+    mouse_pos: ViewportVec,
+    window_height: ViewportScalar,
+) {
     sf_egui.do_frame(|ctx| {
         let mut open = gamedebug_core::enabled();
         let was_open = open;

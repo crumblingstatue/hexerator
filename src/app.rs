@@ -28,7 +28,7 @@ use crate::{
     region::Region,
     source::Source,
     timer::Timer,
-    view::{ScrollOffset, View, ViewKind, ViewportRect},
+    view::{ScrollOffset, View, ViewKind, ViewportRect, ViewportScalar},
 };
 
 use self::{
@@ -78,7 +78,11 @@ pub struct NamedRegion {
 }
 
 impl App {
-    pub fn new(mut args: Args, window_height: u32, mut cfg: Config) -> anyhow::Result<Self> {
+    pub fn new(
+        mut args: Args,
+        window_height: ViewportScalar,
+        mut cfg: Config,
+    ) -> anyhow::Result<Self> {
         let mut data = Vec::new();
         let mut source = None;
         if args.load_recent && let Some(recent) = cfg.recent.most_recent() {
@@ -279,7 +283,7 @@ impl App {
         &mut self,
         path: PathBuf,
         read_only: bool,
-        window_height: u32,
+        window_height: ViewportScalar,
     ) -> Result<(), anyhow::Error> {
         let mut file = open_file(&path, read_only)?;
         self.data = read_contents(&self.args, &mut file)?;
@@ -292,7 +296,7 @@ impl App {
     }
 
     /// Readjust to a new file
-    fn new_file_readjust(&mut self, window_height: u32) {
+    fn new_file_readjust(&mut self, window_height: ViewportScalar) {
         self.stream_end = false;
         self.perspective = Perspective {
             region: Region {
@@ -339,6 +343,15 @@ impl App {
     }
     /// If the cursor should be flashing, returns a timer value that can be used to color cursor
     pub fn cursor_flash_timer(&self) -> Option<u32> {
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "
+        The duration will never be higher than u32 limit.
+
+        It doesn't make sense to set the cursor timer to extremely high values,
+        only a few seconds at most.
+        "
+        )]
         self.flash_cursor_timer
             .overtime()
             .map(|dur| dur.as_millis() as u32)
@@ -392,11 +405,9 @@ impl App {
         }
     }
     // Byte offset of a pixel position in the viewport
-    pub fn byte_offset_at_pos(&mut self, x: i32, y: i32) -> Option<usize> {
+    pub fn byte_offset_at_pos(&mut self, x: i16, y: i16) -> Option<usize> {
         for view in &self.views {
-            if let Some((row, col)) =
-                view.row_col_offset_of_pos(x as i16, y as i16, &self.perspective)
-            {
+            if let Some((row, col)) = view.row_col_offset_of_pos(x, y, &self.perspective) {
                 return Some(self.perspective.byte_offset_of_row_col(row, col));
             }
         }
@@ -433,7 +444,11 @@ impl App {
         Ok(())
     }
 
-    pub(crate) fn load_file_args(&mut self, args: Args, window_height: u32) -> anyhow::Result<()> {
+    pub(crate) fn load_file_args(
+        &mut self,
+        args: Args,
+        window_height: ViewportScalar,
+    ) -> anyhow::Result<()> {
         self.args = args;
         load_file_from_args(
             &mut self.args,
@@ -446,14 +461,14 @@ impl App {
     }
 }
 
-fn default_views(layout: &Layout, window_height: u32) -> Vec<View> {
+fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
     vec![
         View {
             viewport_rect: ViewportRect {
                 x: 0,
                 y: layout.top_gap,
                 w: 960,
-                h: window_height as i16 - layout.bottom_gap,
+                h: window_height - layout.bottom_gap,
             },
             kind: ViewKind::Hex,
             col_w: layout.font_size * 2,
@@ -466,7 +481,7 @@ fn default_views(layout: &Layout, window_height: u32) -> Vec<View> {
                 x: 962,
                 y: layout.top_gap,
                 w: 480,
-                h: window_height as i16 - layout.bottom_gap,
+                h: window_height - layout.bottom_gap,
             },
             kind: ViewKind::Ascii,
             col_w: layout.font_size,
@@ -479,7 +494,7 @@ fn default_views(layout: &Layout, window_height: u32) -> Vec<View> {
                 x: 1444,
                 y: layout.top_gap,
                 w: 200,
-                h: window_height as i16 - layout.bottom_gap,
+                h: window_height - layout.bottom_gap,
             },
             kind: ViewKind::Block,
             col_w: 4,

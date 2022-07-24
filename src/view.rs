@@ -288,12 +288,46 @@ impl ScrollOffset {
     }
 }
 
+/// Type for representing viewport magnitudes.
+///
+/// We assume that hexerator will never run on resolutions higher than 32767x32767,
+/// or get mouse positions higher than that.
+pub type ViewportScalar = i16;
+
 #[derive(Debug)]
 pub struct ViewportRect {
-    pub x: i16,
-    pub y: i16,
-    pub w: i16,
-    pub h: i16,
+    pub x: ViewportScalar,
+    pub y: ViewportScalar,
+    pub w: ViewportScalar,
+    pub h: ViewportScalar,
+}
+
+#[derive(Debug)]
+pub struct ViewportVec {
+    pub x: ViewportScalar,
+    pub y: ViewportScalar,
+}
+
+impl TryFrom<sfml::system::Vector2<i32>> for ViewportVec {
+    type Error = <ViewportScalar as std::convert::TryFrom<i32>>::Error;
+
+    fn try_from(sf_vec: sfml::system::Vector2<i32>) -> Result<Self, Self::Error> {
+        Ok(Self {
+            x: sf_vec.x.try_into()?,
+            y: sf_vec.y.try_into()?,
+        })
+    }
+}
+
+impl TryFrom<(i32, i32)> for ViewportVec {
+    type Error = <ViewportScalar as std::convert::TryFrom<i32>>::Error;
+
+    fn try_from(src: (i32, i32)) -> Result<Self, Self::Error> {
+        Ok(Self {
+            x: src.0.try_into()?,
+            y: src.1.try_into()?,
+        })
+    }
 }
 
 /// The kind of view (hex, ascii, block, etc)
@@ -304,11 +338,15 @@ pub enum ViewKind {
     Block,
 }
 impl ViewportRect {
-    fn relative_offset_of_pos(&self, x: i16, y: i16) -> Option<(i16, i16)> {
+    fn relative_offset_of_pos(
+        &self,
+        x: ViewportScalar,
+        y: ViewportScalar,
+    ) -> Option<(ViewportScalar, ViewportScalar)> {
         self.contains_pos(x, y).then_some((x - self.x, y - self.y))
     }
 
-    fn contains_pos(&self, x: i16, y: i16) -> bool {
+    fn contains_pos(&self, x: ViewportScalar, y: ViewportScalar) -> bool {
         x >= self.x && y >= self.y && x <= self.x + self.w && y <= self.y + self.h
     }
 }

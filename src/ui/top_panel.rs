@@ -4,10 +4,10 @@ use sfml::window::clipboard;
 
 use crate::{
     app::App, color::ColorMethod, damage_region::DamageRegion, msg_if_fail, msg_warn,
-    region::Region, slice_ext::SliceExt, source::Source, ui::Dialog,
+    region::Region, slice_ext::SliceExt, source::Source, ui::Dialog, view::ViewportScalar,
 };
 
-pub fn ui(ui: &mut Ui, app: &mut App, window_height: u32) {
+pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
             if ui.button("Open").clicked() {
