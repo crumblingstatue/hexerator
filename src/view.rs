@@ -110,7 +110,10 @@ impl View {
         let rel_x = x + self.scroll_offset.pix_xoff;
         let rel_y = y + self.scroll_offset.pix_yoff;
         let rel_col = rel_x / i16::from(self.col_w);
-        let rel_row = rel_y / i16::from(self.row_h);
+        let mut rel_row = rel_y / i16::from(self.row_h);
+        if perspective.flip_row_order {
+            rel_row = self.rows() - rel_row;
+        }
         let row = self.scroll_offset.row;
         let col = self.scroll_offset.col;
         imm_msg!((row, col, rel_x, rel_y, rel_col, rel_row));
@@ -168,12 +171,12 @@ impl View {
     }
 
     pub(crate) fn bytes_per_page(&self, perspective: &Perspective) -> usize {
-        self.rows() * perspective.cols
+        self.rows() as usize * perspective.cols
     }
 
     /// Returns the number of rows this view can display
-    pub(crate) fn rows(&self) -> usize {
-        (self.viewport_rect.h / i16::from(self.row_h)) as usize
+    pub(crate) fn rows(&self) -> i16 {
+        self.viewport_rect.h / i16::from(self.row_h)
     }
 }
 

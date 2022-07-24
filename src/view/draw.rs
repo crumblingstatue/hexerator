@@ -31,7 +31,7 @@ pub fn draw_view(
     let start_row: usize = view.scroll_offset.row;
     idx += start_row * app.perspective.cols;
     imm_msg!(view.rows());
-    let orig = start_row..=start_row + view.rows();
+    let orig = start_row..=start_row + view.rows() as usize;
     let (row_range, pix_yoff) = if app.perspective.flip_row_order {
         (Either::Left(orig.rev()), -view.scroll_offset.pix_yoff)
     } else {
