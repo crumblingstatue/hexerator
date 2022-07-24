@@ -303,8 +303,9 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_panic((x, y));
                 if button == mouse::Button::Left {
-                    if let Some(off) = app.byte_offset_at_pos(mp.x, mp.y) {
+                    if let Some((off, view_idx)) = app.byte_offset_at_pos(mp.x, mp.y) {
                         app.edit_state.set_cursor(off);
+                        app.focused_view = Some(view_idx);
                     }
                 }
             }

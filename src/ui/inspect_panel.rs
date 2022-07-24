@@ -408,7 +408,7 @@ enum Action {
 pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
     let offset = match app.interact_mode {
         InteractMode::View => {
-            if let Some(off) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
+            if let Some((off, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
                 let mut add = 0;
                 if app.ui.inspect_panel.offset_relative {
                     add = app.args.hard_seek.unwrap_or(0);
