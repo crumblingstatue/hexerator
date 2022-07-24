@@ -39,8 +39,8 @@ pub fn draw_view(
     };
     'rows: for row in row_range {
         let y = row as f32 * f32::from(view.row_h);
-        let viewport_y = (view.viewport_rect.y as f32 + y)
-            - ((view.scroll_offset.row as f32 * view.row_h as f32) + pix_yoff as f32);
+        let viewport_y = (f32::from(view.viewport_rect.y) + y)
+            - ((view.scroll_offset.row as f32 * f32::from(view.row_h)) + f32::from(pix_yoff));
         let start_col = view.scroll_offset.col;
         if start_col >= app.perspective.cols {
             break;
@@ -48,14 +48,14 @@ pub fn draw_view(
         idx += start_col;
         for col in start_col..app.perspective.cols {
             let x = col as f32 * f32::from(view.col_w);
-            let viewport_x = (view.viewport_rect.x as f32 + x)
-                - ((view.scroll_offset.col as f32 * view.col_w as f32)
-                    + view.scroll_offset.pix_xoff as f32);
-            if viewport_x > (view.viewport_rect.x + view.viewport_rect.w) as f32 {
+            let viewport_x = (f32::from(view.viewport_rect.x) + x)
+                - ((view.scroll_offset.col as f32 * f32::from(view.col_w))
+                    + f32::from(view.scroll_offset.pix_xoff));
+            if viewport_x > f32::from(view.viewport_rect.x + view.viewport_rect.w) {
                 idx += app.perspective.cols - col;
                 break;
             }
-            if viewport_y > (view.viewport_rect.y + view.viewport_rect.h) as f32
+            if viewport_y > f32::from(view.viewport_rect.y + view.viewport_rect.h)
                 && !app.perspective.flip_row_order
             {
                 break 'rows;
@@ -244,8 +244,8 @@ impl View {
                                 vertex_buffer,
                                 x,
                                 y,
-                                self.col_w as f32,
-                                self.row_h as f32,
+                                f32::from(self.col_w),
+                                f32::from(self.row_h),
                                 app.presentation.sel_color,
                             )
                         }
@@ -266,7 +266,7 @@ impl View {
                             font,
                             app.layout.font_size.into(),
                             vertex_buffer,
-                            x + (self.col_w / 2) as f32 - 4.0,
+                            x + f32::from(self.col_w / 2) - 4.0,
                             y,
                             d2.into(),
                             c,
@@ -278,7 +278,7 @@ impl View {
                         };
                         if idx == app.edit_state.cursor {
                             draw_cursor(
-                                x + extra_x as f32,
+                                x + f32::from(extra_x),
                                 y,
                                 vertex_buffer,
                                 true,
@@ -301,8 +301,8 @@ impl View {
                                 vertex_buffer,
                                 x,
                                 y,
-                                self.col_w as f32,
-                                self.row_h as f32,
+                                f32::from(self.col_w),
+                                f32::from(self.row_h),
                                 app.presentation.sel_color,
                             )
                         }
@@ -312,7 +312,7 @@ impl View {
                             0x0D => '⇤' as u32,
                             0x20 => '␣' as u32,
                             0xFF => '■' as u32,
-                            _ => byte as u32,
+                            _ => u32::from(byte),
                         };
                         draw_glyph(
                             font,
@@ -346,7 +346,14 @@ impl View {
                         if selected_or_find_result_contains(app.selection, idx, &app.ui) {
                             c = invert_color(c);
                         }
-                        draw_rect(vertex_buffer, x, y, self.col_w as f32, self.row_h as f32, c);
+                        draw_rect(
+                            vertex_buffer,
+                            x,
+                            y,
+                            f32::from(self.col_w),
+                            f32::from(self.row_h),
+                            c,
+                        );
                     },
                 );
             }

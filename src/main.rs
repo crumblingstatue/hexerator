@@ -1,5 +1,10 @@
 #![feature(lint_reasons, label_break_value, let_else, try_blocks)]
-#![warn(trivial_casts, trivial_numeric_casts, clippy::unwrap_used)]
+#![warn(
+    trivial_casts,
+    trivial_numeric_casts,
+    clippy::unwrap_used,
+    clippy::cast_lossless
+)]
 
 mod app;
 mod args;

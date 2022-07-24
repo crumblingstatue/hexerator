@@ -55,10 +55,10 @@ impl View {
     ) {
         self.scroll_offset.row = src_row;
         self.scroll_offset.col = src_col;
-        let y_ratio = src_row_h as f64 / self.row_h as f64;
-        let x_ratio = src_col_w as f64 / self.col_w as f64;
-        self.scroll_offset.pix_yoff = (src_yoff as f64 / y_ratio) as i16;
-        self.scroll_offset.pix_xoff = (src_xoff as f64 / x_ratio) as i16;
+        let y_ratio = f64::from(src_row_h) / f64::from(self.row_h);
+        let x_ratio = f64::from(src_col_w) / f64::from(self.col_w);
+        self.scroll_offset.pix_yoff = (f64::from(src_yoff) / y_ratio) as i16;
+        self.scroll_offset.pix_xoff = (f64::from(src_xoff) / x_ratio) as i16;
     }
 
     pub(crate) fn scroll_page_down(&mut self) {
