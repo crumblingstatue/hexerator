@@ -20,6 +20,10 @@ impl Perspective {
     pub(crate) fn last_row_idx(&self) -> usize {
         self.region.end / self.cols
     }
+    /// Returns the index of the last column
+    pub(crate) fn last_col_idx(&self) -> usize {
+        self.region.end % self.cols
+    }
     pub(crate) fn byte_offset_of_row_col(&self, row: usize, col: usize) -> usize {
         self.region.begin + (row * self.cols + col)
     }

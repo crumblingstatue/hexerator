@@ -1,4 +1,4 @@
-use gamedebug_core::{imm_msg, per_msg};
+use gamedebug_core::imm_msg;
 
 use crate::app::perspective::Perspective;
 
@@ -69,6 +69,10 @@ impl View {
         self.scroll_y(-self.viewport_rect.h);
     }
 
+    pub(crate) fn scroll_page_left(&mut self) {
+        self.scroll_x(-self.viewport_rect.w);
+    }
+
     pub(crate) fn go_home(&mut self) {
         self.scroll_offset.row = 0;
         self.scroll_offset.col = 0;
@@ -81,11 +85,13 @@ impl View {
         // - row index of last byte of perspective
         // - number of rows this view can hold
         let last_row_idx = perspective.last_row_idx();
-        per_msg!("{}", last_row_idx);
+        let last_col_idx = perspective.last_col_idx();
         self.scroll_offset.row = last_row_idx + 1;
+        self.scroll_offset.col = last_col_idx + 1;
         self.scroll_page_up();
+        self.scroll_page_left();
         self.scroll_offset.floor();
-        self.scroll_offset.pix_xoff = COMFY_MARGIN;
+        self.scroll_offset.pix_xoff = -COMFY_MARGIN;
         self.scroll_offset.pix_yoff = -COMFY_MARGIN;
     }
 
