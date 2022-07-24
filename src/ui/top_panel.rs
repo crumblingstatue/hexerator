@@ -102,6 +102,10 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: u32) {
             }
         });
         ui.menu_button("View", |ui| {
+            if ui.button("Configure views...").clicked() {
+                app.ui.views_window.open ^= true;
+                ui.close_menu();
+            }
             if ui.button("Flash cursor").clicked() {
                 app.flash_cursor();
                 ui.close_menu();

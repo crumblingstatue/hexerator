@@ -4,6 +4,7 @@ mod find_dialog;
 pub mod inspect_panel;
 mod regions_window;
 mod top_panel;
+mod views_window;
 
 use std::fmt::Debug;
 
@@ -24,6 +25,7 @@ pub struct Ui {
     pub seek_byte_offset_input: String,
     pub regions_window: RegionsWindow,
     pub dialogs: Vec<Box<dyn Dialog>>,
+    pub views_window: ViewsWindow,
 }
 
 pub trait Dialog: Debug {
@@ -37,7 +39,10 @@ impl Ui {
     }
 }
 
-use self::{find_dialog::FindDialog, inspect_panel::InspectPanel, regions_window::RegionsWindow};
+use self::{
+    find_dialog::FindDialog, inspect_panel::InspectPanel, regions_window::RegionsWindow,
+    views_window::ViewsWindow,
+};
 
 pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i, window_height: u32) {
     sf_egui.do_frame(|ctx| {
@@ -59,6 +64,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: Vector2i, window_
             .open(&mut open)
             .show(ctx, |ui| RegionsWindow::ui(ui, app));
         app.ui.regions_window.open = open;
+        open = app.ui.views_window.open;
+        Window::new("Views")
+            .open(&mut open)
+            .show(ctx, |ui| ViewsWindow::ui(ui, app));
+        app.ui.views_window.open = open;
         TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app, window_height));
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel::ui(ui, app));
         egui::SidePanel::right("right_panel").show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos));
