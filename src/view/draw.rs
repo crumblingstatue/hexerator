@@ -302,7 +302,7 @@ impl View {
                                 x + f32::from(extra_x),
                                 y,
                                 vertex_buffer,
-                                true,
+                                app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
                                 &app.presentation,
                             );
@@ -349,7 +349,7 @@ impl View {
                                 x,
                                 y,
                                 vertex_buffer,
-                                true,
+                                app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
                                 &app.presentation,
                             );
