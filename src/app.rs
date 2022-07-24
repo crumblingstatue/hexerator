@@ -453,16 +453,12 @@ impl App {
 
     pub(crate) fn load_file_args(
         &mut self,
-        args: Args,
+        mut args: Args,
         window_height: ViewportScalar,
     ) -> anyhow::Result<()> {
-        self.args = args;
-        load_file_from_args(
-            &mut self.args,
-            &mut self.cfg,
-            &mut self.source,
-            &mut self.data,
-        );
+        if load_file_from_args(&mut args, &mut self.cfg, &mut self.source, &mut self.data) {
+            self.args = args;
+        }
         self.new_file_readjust(window_height);
         Ok(())
     }
@@ -512,39 +508,49 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
     ]
 }
 
+/// Returns if the file was actually loaded.
 fn load_file_from_args(
     args: &mut Args,
     cfg: &mut Config,
     source: &mut Option<Source>,
     data: &mut Vec<u8>,
-) {
-    data.clear();
-    if let Some(path) = &mut args.file {
-        match path.canonicalize() {
-            Ok(canon) => *path = canon,
-            Err(e) => msg_warn(&format!(
-                "Failed to canonicalize path {}: {}\n\
-                 Recent use list might not be able to load it back.",
-                path.display(),
-                e
-            )),
-        }
-    }
+) -> bool {
     if let Some(file_arg) = &args.file {
-        cfg.recent.use_(args.clone());
         if file_arg.as_os_str() == "-" {
             *source = Some(Source::Stdin(std::io::stdin()));
             args.stream = true;
+            true
         } else {
             let result: Result<(), anyhow::Error> = try {
                 let mut file = open_file(file_arg, args.read_only)?;
+                data.clear();
+                if let Some(path) = &mut args.file {
+                    match path.canonicalize() {
+                        Ok(canon) => *path = canon,
+                        Err(e) => msg_warn(&format!(
+                            "Failed to canonicalize path {}: {}\n\
+                             Recent use list might not be able to load it back.",
+                            path.display(),
+                            e
+                        )),
+                    }
+                }
+                cfg.recent.use_(args.clone());
                 if !args.stream {
                     *data = read_contents(&*args, &mut file)?;
                 }
                 *source = Some(Source::File(file));
             };
-            msg_if_fail(result, "Failed to open file");
+            match result {
+                Ok(()) => true,
+                Err(e) => {
+                    msg_warn(&format!("Failed to open file: {}", e));
+                    false
+                }
+            }
         }
+    } else {
+        false
     }
 }
 
