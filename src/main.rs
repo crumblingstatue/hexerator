@@ -313,6 +313,10 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                 app.input.clear();
             }
             Event::Resized { width, height } => {
+                #[expect(
+                    clippy::cast_precision_loss,
+                    reason = "Window sizes larger than i16::MAX aren't supported."
+                )]
                 window.set_view(&View::from_rect(&Rect::new(
                     0.,
                     0.,
