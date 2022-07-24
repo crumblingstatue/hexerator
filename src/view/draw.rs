@@ -49,10 +49,10 @@ pub fn draw_view(
         }
         idx += start_col;
         for col in start_col..app.perspective.cols {
-            let x = col as f32 * f32::from(view.col_w);
-            let viewport_x = (f32::from(view.viewport_rect.x) + x)
-                - ((view.scroll_offset.col as f32 * f32::from(view.col_w))
-                    + f32::from(view.scroll_offset.pix_xoff));
+            let x = col * usize::from(view.col_w);
+            let viewport_x = ((i64::from(view.viewport_rect.x) + x as i64)
+                - ((view.scroll_offset.col as i64 * i64::from(view.col_w))
+                    + i64::from(view.scroll_offset.pix_xoff))) as f32;
             if viewport_x > f32::from(view.viewport_rect.x + view.viewport_rect.w) {
                 idx += app.perspective.cols - col;
                 break;
