@@ -130,7 +130,10 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: u32) {
             });
             ui.checkbox(&mut app.col_change_lock_x, "Lock x on column change");
             ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
-            ui.checkbox(&mut app.view_opts.flip_y, "Flip row order (experimental)");
+            ui.checkbox(
+                &mut app.perspective.flip_row_order,
+                "Flip row order (experimental)",
+            );
         });
         if ui.button("Regions").clicked() {
             app.ui.regions_window.open ^= true;

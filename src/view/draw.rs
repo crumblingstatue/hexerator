@@ -32,7 +32,7 @@ pub fn draw_view(
     idx += start_row * app.perspective.cols;
     imm_msg!(view.rows());
     let orig = start_row..=start_row + view.rows();
-    let (row_range, pix_yoff) = if app.view_opts.flip_y {
+    let (row_range, pix_yoff) = if app.perspective.flip_row_order {
         (Either::Left(orig.rev()), -view.scroll_offset.pix_yoff)
     } else {
         (Either::Right(orig), view.scroll_offset.pix_yoff)
@@ -56,7 +56,7 @@ pub fn draw_view(
                 break;
             }
             if viewport_y > (view.viewport_rect.y + view.viewport_rect.h) as f32
-                && !app.view_opts.flip_y
+                && !app.perspective.flip_row_order
             {
                 break 'rows;
             }
@@ -70,7 +70,7 @@ pub fn draw_view(
                     idx += 1;
                 }
                 None => {
-                    if !app.view_opts.flip_y {
+                    if !app.perspective.flip_row_order {
                         break 'rows;
                     }
                 }

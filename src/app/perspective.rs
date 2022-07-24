@@ -8,6 +8,11 @@ pub struct Perspective {
     /// Column count, a.k.a alignment. The proper alignment can reveal
     /// patterns to the human eye that aren't otherwise easily recognizable.
     pub cols: usize,
+    /// Whether row order is flipped.
+    ///
+    /// Sometimes binary files store images or other data "upside-down".
+    /// A row order flipped perspective helps view and manipulate this kind of data better.
+    pub flip_row_order: bool,
 }
 
 impl Perspective {
@@ -35,6 +40,7 @@ impl Default for Perspective {
         Self {
             region: Region { begin: 0, end: 0 },
             cols: 0,
+            flip_row_order: false,
         }
     }
 }
