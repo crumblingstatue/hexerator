@@ -117,6 +117,11 @@ fn draw_cursor(
     draw_rect_outline(vertices, x, y, 10.0, 10.0, color, 2.0);
 }
 
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "These casts deal with texture rect coords.
+              These aren't expected to be larger than what fits into f32"
+)]
 fn draw_glyph(
     font: &Font,
     font_size: u32,
