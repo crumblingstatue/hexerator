@@ -29,6 +29,7 @@ pub fn draw_view(
     }
     let mut idx = app.perspective.region.begin;
     let start_row: usize = view.scroll_offset.row;
+    imm_msg!(start_row);
     idx += start_row * app.perspective.cols;
     imm_msg!(view.rows());
     let orig = start_row..=start_row + view.rows() as usize;
@@ -38,9 +39,10 @@ pub fn draw_view(
         (Either::Right(orig), view.scroll_offset.pix_yoff)
     };
     'rows: for row in row_range {
-        let y = row as f32 * f32::from(view.row_h);
-        let viewport_y = (f32::from(view.viewport_rect.y) + y)
-            - ((view.scroll_offset.row as f32 * f32::from(view.row_h)) + f32::from(pix_yoff));
+        let y = row * usize::from(view.row_h);
+        let viewport_y = ((i64::from(view.viewport_rect.y) + y as i64)
+            - ((view.scroll_offset.row as i64 * i64::from(view.row_h)) + i64::from(pix_yoff)))
+            as f32;
         let start_col = view.scroll_offset.col;
         if start_col >= app.perspective.cols {
             break;
