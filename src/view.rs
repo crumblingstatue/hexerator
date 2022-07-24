@@ -297,7 +297,7 @@ pub struct ViewportRect {
 }
 
 /// The kind of view (hex, ascii, block, etc)
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ViewKind {
     Hex,
     Ascii,
