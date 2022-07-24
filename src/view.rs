@@ -57,8 +57,14 @@ impl View {
         self.scroll_offset.col = src_col;
         let y_ratio = f64::from(src_row_h) / f64::from(self.row_h);
         let x_ratio = f64::from(src_col_w) / f64::from(self.col_w);
-        self.scroll_offset.pix_yoff = (f64::from(src_yoff) / y_ratio) as i16;
-        self.scroll_offset.pix_xoff = (f64::from(src_xoff) / x_ratio) as i16;
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "Input values are all low (look at input types)"
+        )]
+        {
+            self.scroll_offset.pix_yoff = (f64::from(src_yoff) / y_ratio) as i16;
+            self.scroll_offset.pix_xoff = (f64::from(src_xoff) / x_ratio) as i16;
+        }
     }
 
     pub(crate) fn scroll_page_down(&mut self) {
