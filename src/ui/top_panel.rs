@@ -30,23 +30,30 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
             }
             ui.menu_button("Recent", |ui| {
                 let mut load = None;
-                for entry in app.cfg.recent.iter() {
-                    if ui
-                        .button(
-                            entry
-                                .file
-                                .as_ref()
-                                .map(|path| path.display().to_string())
-                                .unwrap_or_else(|| String::from("Unnamed file")),
-                        )
-                        .clicked()
-                    {
-                        load = Some(entry.clone());
-                        ui.close_menu();
-                        break;
-                    }
+                app.cfg.recent.retain(|entry| {
+                    let mut retain = true;
+                    ui.horizontal(|ui| {
+                        if ui
+                            .button(
+                                entry
+                                    .file
+                                    .as_ref()
+                                    .map(|path| path.display().to_string())
+                                    .unwrap_or_else(|| String::from("Unnamed file")),
+                            )
+                            .clicked()
+                        {
+                            load = Some(entry.clone());
+                            ui.close_menu();
+                        }
+                        ui.separator();
+                        if ui.button("🗑").clicked() {
+                            retain = false;
+                        }
+                    });
                     ui.separator();
-                }
+                    retain
+                });
                 if let Some(args) = load {
                     msg_if_fail(
                         app.load_file_args(args, window_height),
