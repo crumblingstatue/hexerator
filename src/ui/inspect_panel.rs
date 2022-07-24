@@ -411,7 +411,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             if let Some(off) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
                 let mut add = 0;
                 if app.ui.inspect_panel.offset_relative {
-                    add = app.args.hard_seek.unwrap_or(0) as usize;
+                    add = app.args.hard_seek.unwrap_or(0);
                 }
                 ui.label(format!("offset: {} (0x{:x})", off + add, off + add));
                 off
@@ -524,7 +524,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             Action::GoToOffset(offset) => {
                 if app.ui.inspect_panel.offset_relative {
                     app.edit_state
-                        .set_cursor(offset - app.args.hard_seek.unwrap_or(0) as usize);
+                        .set_cursor(offset - app.args.hard_seek.unwrap_or(0));
                 } else {
                     app.edit_state.set_cursor(offset);
                 }
@@ -545,7 +545,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
 fn edit_offset(app: &mut App, ui: &mut Ui) -> usize {
     let mut off = app.edit_state.cursor;
     if app.ui.inspect_panel.offset_relative {
-        off += app.args.hard_seek.unwrap_or(0) as usize;
+        off += app.args.hard_seek.unwrap_or(0);
     }
     ui.label(format!("offset: {} ({:x}h)", off, off));
     app.edit_state.cursor

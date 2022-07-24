@@ -160,7 +160,7 @@ impl App {
             None => bail!("No source opened, nothing to save"),
         };
         let offset = self.args.hard_seek.unwrap_or(0);
-        file.seek(SeekFrom::Start(offset))?;
+        file.seek(SeekFrom::Start(offset as u64))?;
         let data_to_write = match self.dirty_region {
             Some(region) => {
                 eprintln!(
@@ -540,10 +540,10 @@ fn open_file(path: &Path, read_only: bool) -> Result<File, anyhow::Error> {
 
 fn read_contents(args: &Args, file: &mut File) -> anyhow::Result<Vec<u8>> {
     let seek = args.hard_seek.unwrap_or(0);
-    file.seek(SeekFrom::Start(seek))?;
+    file.seek(SeekFrom::Start(seek as u64))?;
     let mut data = Vec::new();
     match args.take {
-        Some(amount) => (&*file).take(amount).read_to_end(&mut data)?,
+        Some(amount) => (&*file).take(amount as u64).read_to_end(&mut data)?,
         None => file.read_to_end(&mut data)?,
     };
     Ok(data)

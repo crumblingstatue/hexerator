@@ -12,10 +12,10 @@ pub struct Args {
     pub jump: Option<usize>,
     /// Seek to offset, consider it beginning of the file in the editor
     #[clap(long)]
-    pub hard_seek: Option<u64>,
+    pub hard_seek: Option<usize>,
     /// Read only this many bytes
     #[clap(long)]
-    pub take: Option<u64>,
+    pub take: Option<usize>,
     /// Open file as read-only, without writing privileges
     #[clap(long)]
     pub read_only: bool,

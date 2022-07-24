@@ -47,5 +47,9 @@ of a binary format.
 ## Limits
 To make development easier, and help keep my sanity, hexerator defines some value limits.
 
+### File size
+The supported file size is `usize`, which is ~4GB on 32 bit platforms,
+and practically limitless on 64 bit platforms. 16 bit platforms are not supported.
+
 ### Resolution and mouse position
 These are i16, meaning values higher than 32767 are not supported.
