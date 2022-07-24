@@ -87,6 +87,10 @@ fn draw_cursor(
     flash_timer: Option<u32>,
     presentation: &Presentation,
 ) {
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "Deliberate color modulation based on timer value."
+    )]
     let color = if active {
         match flash_timer {
             Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
