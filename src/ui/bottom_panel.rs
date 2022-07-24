@@ -30,6 +30,10 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 if data_len != 0 {
                     if let Some(idx) = app.focused_view {
                         let offsets = app.views[idx].offsets(&app.perspective);
+                        #[expect(
+                            clippy::cast_precision_loss,
+                            reason = "Precision is good until 52 bits (more than reasonable)"
+                        )]
                         ui.label(format!(
                             "view offset: row {} col {} byte {} ({:.2}%)",
                             offsets.row,

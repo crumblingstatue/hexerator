@@ -4,7 +4,8 @@
     trivial_numeric_casts,
     clippy::unwrap_used,
     clippy::cast_lossless,
-    clippy::cast_possible_truncation
+    clippy::cast_possible_truncation,
+    clippy::cast_precision_loss
 )]
 
 mod app;
