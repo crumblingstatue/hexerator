@@ -198,6 +198,10 @@ fn do_frame(
     let win_height = try_conv_win_height_panic(window);
     ui::do_egui(sf_egui, app, mp, win_height);
     let [r, g, b] = app.presentation.bg_color;
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "These should be in 0-1 range, and it's just bg color. Not that important."
+    )]
     window.clear(Color::rgb(
         (r * 255.) as u8,
         (g * 255.) as u8,

@@ -88,6 +88,10 @@ fn vga_13h_color(byte: u8) -> Color {
     let r = c24 >> 16;
     let g = c24 >> 8;
     let b = c24;
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "This is just playing around with colors. Non-critical."
+    )]
     Color::rgb(r as u8, g as u8, b as u8)
 }
 
@@ -137,6 +141,10 @@ fn default_color(byte: u8) -> Color {
         Color::rgb(210, 210, 210)
     } else {
         let [r, g, b] = egui::color::rgb_from_hsv((f32::from(byte) / 288.0, 1.0, 1.0));
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "Ranges are in 0-1, they will never be multiplied above 255"
+        )]
         Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
     }
 }
