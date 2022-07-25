@@ -81,13 +81,6 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             {
                 msg_if_fail(app.save(), "Failed to save");
             }
-            ui.separator();
-            if ui.button("Restore").clicked() {
-                msg_if_fail(app.restore_backup(), "Failed to restore backup");
-            }
-            if ui.button("Backup").clicked() {
-                msg_if_fail(app.create_backup(), "Failed to create backup");
-            }
         })
     });
 }

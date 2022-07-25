@@ -61,6 +61,14 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
                     );
                 }
             });
+            ui.separator();
+            if ui.button("Create backup").clicked() {
+                msg_if_fail(app.create_backup(), "Failed to create backup");
+            }
+            if ui.button("Restore backup").clicked() {
+                msg_if_fail(app.restore_backup(), "Failed to restore backup");
+            }
+            ui.separator();
             if ui.button("Close").clicked() {
                 app.close_file();
                 ui.close_menu();
