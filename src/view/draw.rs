@@ -32,6 +32,10 @@ pub fn draw_view(
     imm_msg!(start_row);
     idx += start_row * app.perspective.cols;
     imm_msg!(view.rows());
+    #[expect(
+        clippy::cast_sign_loss,
+        reason = "rows() returning negative is a bug, should be positive."
+    )]
     let orig = start_row..=start_row + view.rows() as usize;
     let (row_range, pix_yoff) = if app.perspective.flip_row_order {
         (Either::Left(orig.rev()), -view.scroll_offset.pix_yoff)
