@@ -185,7 +185,10 @@ impl View {
         }
         self.scroll_offset.floor();
     }
-
+    #[expect(
+        clippy::cast_sign_loss,
+        reason = "View::rows() being negative is a bug, can expect positive."
+    )]
     pub(crate) fn bytes_per_page(&self, perspective: &Perspective) -> usize {
         self.rows() as usize * perspective.cols
     }
