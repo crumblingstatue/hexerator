@@ -3,6 +3,7 @@ mod debug_window;
 mod find_dialog;
 pub mod inspect_panel;
 mod regions_window;
+mod top_menu;
 mod top_panel;
 mod views_window;
 
