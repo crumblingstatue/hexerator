@@ -53,3 +53,5 @@ and practically limitless on 64 bit platforms. 16 bit platforms are not supporte
 
 ### Resolution and mouse position
 These are i16, meaning values higher than 32767 are not supported.
+The minimum supported resolution is 920x620. The ui is not designed and tested for
+resolutions lower than that.
