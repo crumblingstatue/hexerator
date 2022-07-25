@@ -202,6 +202,7 @@ fn do_frame(
     let [r, g, b] = app.presentation.bg_color;
     #[expect(
         clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
         reason = "These should be in 0-1 range, and it's just bg color. Not that important."
     )]
     window.clear(Color::rgb(
