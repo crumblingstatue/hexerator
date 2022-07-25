@@ -129,6 +129,10 @@ impl View {
         let row = self.scroll_offset.row;
         let col = self.scroll_offset.col;
         imm_msg!((row, col, rel_x, rel_y, rel_col, rel_row));
+        #[expect(
+            clippy::cast_sign_loss,
+            reason = "rel_x and rel_y being positive also ensure rel_row and rel_col are"
+        )]
         if rel_x.is_positive() && rel_y.is_positive() {
             let abs_row = row + rel_row as usize;
             let abs_col = col + rel_col as usize;
