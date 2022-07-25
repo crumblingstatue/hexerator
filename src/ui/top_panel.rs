@@ -170,6 +170,12 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
         if ui.button("Regions").clicked() {
             app.ui.regions_window.open ^= true;
         }
+        ui.menu_button("Help", |ui| {
+            if ui.button("debug panel (F12)").clicked() {
+                ui.close_menu();
+                gamedebug_core::toggle();
+            }
+        });
         ui.with_layout(Layout::right_to_left(), |ui| {
             match &app.source {
                 Some(src) => match src {

@@ -1,4 +1,4 @@
-use egui_sfml::egui::{self, DragValue, Layout, TextEdit, Ui};
+use egui_sfml::egui::{self, DragValue, TextEdit, Ui};
 
 use crate::app::{interact_mode::InteractMode, App};
 
@@ -58,13 +58,5 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 ui.separator();
             }
         }
-        ui.with_layout(Layout::right_to_left(), |ui| {
-            if ui
-                .checkbox(&mut gamedebug_core::enabled(), "debug (F12)")
-                .clicked()
-            {
-                gamedebug_core::toggle();
-            }
-        })
     });
 }
