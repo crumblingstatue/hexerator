@@ -1,9 +1,6 @@
-use egui_sfml::egui::{self, Button, DragValue, Layout, TextEdit, Ui};
+use egui_sfml::egui::{self, DragValue, Layout, TextEdit, Ui};
 
-use crate::{
-    app::{interact_mode::InteractMode, App},
-    msg_if_fail,
-};
+use crate::app::{interact_mode::InteractMode, App};
 
 pub fn ui(ui: &mut Ui, app: &mut App) {
     ui.horizontal(|ui| {
@@ -67,19 +64,6 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                 .clicked()
             {
                 gamedebug_core::toggle();
-            }
-            ui.separator();
-            if ui.add(Button::new("Reload (ctrl+R)")).clicked() {
-                msg_if_fail(app.reload(), "Failed to reload");
-            }
-            if ui
-                .add_enabled(
-                    !app.args.read_only && app.dirty_region.is_some(),
-                    Button::new("Save (ctrl+S)"),
-                )
-                .clicked()
-            {
-                msg_if_fail(app.save(), "Failed to save");
             }
         })
     });

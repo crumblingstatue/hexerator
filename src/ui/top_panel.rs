@@ -62,6 +62,19 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
                 }
             });
             ui.separator();
+            if ui
+                .add_enabled(
+                    !app.args.read_only && app.dirty_region.is_some(),
+                    egui::Button::new("Save (ctrl+S)"),
+                )
+                .clicked()
+            {
+                msg_if_fail(app.save(), "Failed to save");
+            }
+            if ui.add(egui::Button::new("Reload (ctrl+R)")).clicked() {
+                msg_if_fail(app.reload(), "Failed to reload");
+            }
+            ui.separator();
             if ui.button("Create backup").clicked() {
                 msg_if_fail(app.create_backup(), "Failed to create backup");
             }
