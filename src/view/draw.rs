@@ -399,6 +399,10 @@ impl View {
         if app.scissor_views {
             unsafe {
                 glu_sys::glEnable(glu_sys::GL_SCISSOR_TEST);
+                #[expect(
+                    clippy::cast_possible_wrap,
+                    reason = "Huge window sizes (>32000) are not supported."
+                )]
                 let y = window.size().y as GLint
                     - GLint::from(self.viewport_rect.y + self.viewport_rect.h);
                 glu_sys::glScissor(
