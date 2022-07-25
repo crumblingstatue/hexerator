@@ -316,7 +316,24 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                 // When alt-tabbing, keys held down can get "stuck", because the key release events won't reach us
                 app.input.clear();
             }
-            Event::Resized { width, height } => {
+            Event::Resized {
+                mut width,
+                mut height,
+            } => {
+                let mut needs_window_resize = false;
+                const MIN_WINDOW_W: u32 = 920;
+                if width < MIN_WINDOW_W {
+                    width = MIN_WINDOW_W;
+                    needs_window_resize = true;
+                }
+                const MIN_WINDOW_H: u32 = 620;
+                if height < MIN_WINDOW_H {
+                    height = MIN_WINDOW_H;
+                    needs_window_resize = true;
+                }
+                if needs_window_resize {
+                    window.set_size((width, height));
+                }
                 #[expect(
                     clippy::cast_precision_loss,
                     reason = "Window sizes larger than i16::MAX aren't supported."
