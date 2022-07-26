@@ -8,7 +8,7 @@ pub enum ColorMethod {
     Rgb332,
     Vga13h,
     Grayscale,
-    Aitd,
+    Custom(Box<[[u8; 3]; 256]>),
 }
 
 impl ColorMethod {
@@ -20,7 +20,10 @@ impl ColorMethod {
             ColorMethod::Rgb332 => rgb332_color(byte),
             ColorMethod::Vga13h => vga_13h_color(byte),
             ColorMethod::Grayscale => Color::rgb(byte, byte, byte),
-            ColorMethod::Aitd => aitd_color(byte),
+            ColorMethod::Custom(arr) => {
+                let [r, g, b] = arr[byte as usize];
+                Color::rgb(r, g, b)
+            }
         };
         if invert {
             invert_color(color)
@@ -36,51 +39,13 @@ impl ColorMethod {
             ColorMethod::Rgb332 => "rgb 3-3-2",
             ColorMethod::Vga13h => "VGA 13h",
             ColorMethod::Grayscale => "grayscale",
-            ColorMethod::Aitd => "aitd",
+            ColorMethod::Custom(_) => "custom",
         }
     }
 }
 
 pub fn invert_color(color: Color) -> Color {
     Color::rgb(!color.red(), !color.green(), !color.blue())
-}
-
-fn aitd_color(byte: u8) -> Color {
-    let (r, g, b) = match byte {
-        25 => (100, 72, 56),
-        42 => (92, 48, 20),
-        43 => (76, 40, 12),
-        44 => (64, 32, 4),
-        45 => (52, 24, 4),
-        46 => (40, 16, 0),
-        47 => (28, 12, 0),
-        62 => (40, 12, 8),
-        75 => (40, 64, 48),
-        76 => (36, 56, 44),
-        77 => (32, 52, 40),
-        78 => (28, 48, 36),
-        79 => (24, 44, 36),
-        93 => (48, 0, 16),
-        104 => (60, 92, 88),
-        105 => (52, 84, 76),
-        106 => (48, 72, 68),
-        109 => (28, 44, 40),
-        110 => (20, 36, 32),
-        111 => (16, 28, 24),
-        117 => (168, 120, 60),
-        118 => (152, 108, 52),
-        137 => (104, 44, 24),
-        138 => (92, 36, 20),
-        139 => (80, 32, 16),
-        158 => (44, 20, 20),
-        159 => (36, 16, 16),
-        186 => (76, 76, 64),
-        190 => (28, 28, 24),
-        191 => (0, 0, 0),
-        220 => (20, 44, 4),
-        _ => (255, 0, 255),
-    };
-    Color::rgb(r, g, b)
 }
 
 fn vga_13h_color(byte: u8) -> Color {

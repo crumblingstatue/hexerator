@@ -1,3 +1,4 @@
+use anyhow::Context;
 use egui_sfml::egui::{ComboBox, Layout, Ui};
 
 use crate::{
@@ -74,14 +75,63 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
                         ColorMethod::Grayscale,
                         ColorMethod::Grayscale.name(),
                     );
-                    ui.selectable_value(
-                        &mut app.presentation.color_method,
-                        ColorMethod::Aitd,
-                        ColorMethod::Aitd.name(),
-                    );
+                    if ui
+                        .selectable_label(
+                            matches!(&app.presentation.color_method, ColorMethod::Custom(..)),
+                            "custom",
+                        )
+                        .clicked()
+                    {
+                        #[expect(
+                            clippy::cast_possible_truncation,
+                            reason = "The array is 256 elements long"
+                        )]
+                        let arr = std::array::from_fn(|i| {
+                            let c = app
+                                .presentation
+                                .color_method
+                                .byte_color(i as u8, app.presentation.invert_color);
+                            [c.red(), c.green(), c.blue()]
+                        });
+                        app.presentation.color_method = ColorMethod::Custom(Box::new(arr));
+                    }
                 });
             ui.color_edit_button_rgb(&mut app.presentation.bg_color);
             ui.label("Bg color");
+            if let ColorMethod::Custom(arr) = &mut app.presentation.color_method {
+                let col = &mut arr[app.data[app.edit_state.cursor] as usize];
+                ui.color_edit_button_srgb(col);
+                ui.label("Byte color");
+                if ui
+                    .button("#")
+                    .on_hover_text("From hex code on clipboard")
+                    .clicked()
+                {
+                    match color_from_hexcode(
+                        &sfml::window::clipboard::get_string().to_rust_string(),
+                    ) {
+                        Ok(new) => *col = new,
+                        Err(e) => msg_warn(&format!("Color parse error: {}", e)),
+                    }
+                }
+            }
         });
     });
+}
+
+fn color_from_hexcode(mut src: &str) -> anyhow::Result<[u8; 3]> {
+    let mut out = [0; 3];
+    src = src.trim_start_matches('#');
+    for (i, byte) in out.iter_mut().enumerate() {
+        let src_idx = i * 2;
+        *byte = u8::from_str_radix(src.get(src_idx..src_idx + 2).context("Indexing error")?, 16)?;
+    }
+    Ok(out)
+}
+
+#[test]
+#[allow(clippy::unwrap_used)]
+fn test_color_from_hexcode() {
+    assert_eq!(color_from_hexcode("#ffffff").unwrap(), [255, 255, 255]);
+    assert_eq!(color_from_hexcode("ff00ff").unwrap(), [255, 0, 255]);
 }
