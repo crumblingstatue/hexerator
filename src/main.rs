@@ -268,6 +268,9 @@ fn update(app: &mut App) {
     // Sync all other views to active view
     if let Some(idx) = app.focused_view {
         let src = &app.views[idx];
+        if !src.active {
+            app.focused_view = None;
+        }
         let (src_row, src_col) = (src.scroll_offset.row(), src.scroll_offset.col());
         let (src_yoff, src_xoff) = (src.scroll_offset.pix_yoff(), src.scroll_offset.pix_xoff());
         let (src_row_h, src_col_w) = (src.row_h, src.col_w);

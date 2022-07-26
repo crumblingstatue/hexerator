@@ -24,6 +24,8 @@ pub struct View {
     pub scroll_offset: ScrollOffset,
     /// The amount scrolled for a single scroll operation, in pixels
     pub scroll_speed: i16,
+    /// A view can be deactivated to not render or interact, but can later be reactivated
+    pub active: bool,
 }
 
 impl View {

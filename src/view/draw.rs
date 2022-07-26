@@ -254,6 +254,9 @@ impl View {
         vertex_buffer: &mut Vec<Vertex>,
         font: &Font,
     ) {
+        if !self.active {
+            return;
+        }
         //app.scissor_views = false;
         vertex_buffer.clear();
         let mut rs = RenderStates::default();

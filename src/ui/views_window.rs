@@ -40,6 +40,7 @@ impl ViewsWindow {
                 viewport_rect_ui(ui, &mut view.viewport_rect);
                 labelled_drag(ui, "column width", &mut view.col_w);
                 labelled_drag(ui, "row height", &mut view.row_h);
+                ui.checkbox(&mut view.active, "Active");
                 if ui.button("Delete").clicked() {
                     retain = false;
                     removed_idx = Some(idx);
@@ -70,6 +71,7 @@ impl ViewsWindow {
                 row_h: 32,
                 scroll_offset: ScrollOffset::default(),
                 scroll_speed: 10,
+                active: true,
             })
         }
     }
