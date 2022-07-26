@@ -397,23 +397,24 @@ impl View {
             } else {
                 Color::rgb(120, 120, 150)
             },
-            -1.0,
+            1.0,
         );
         if app.scissor_views {
             unsafe {
                 glu_sys::glEnable(glu_sys::GL_SCISSOR_TEST);
                 #[expect(
-                    clippy::cast_possible_wrap,
+                    clippy::cast_possible_truncation,
                     reason = "Huge window sizes (>32000) are not supported."
                 )]
-                let y = window.size().y as GLint
-                    - GLint::from(self.viewport_rect.y + self.viewport_rect.h);
-                glu_sys::glScissor(
-                    self.viewport_rect.x.into(),
-                    y,
-                    self.viewport_rect.w.into(),
-                    self.viewport_rect.h.into(),
+                let vh = window.size().y as i16;
+                let (x, y, w, h) = rect_to_gl_viewport(
+                    self.viewport_rect.x - 1,
+                    self.viewport_rect.y - 1,
+                    self.viewport_rect.w + 2,
+                    self.viewport_rect.h + 2,
+                    vh,
                 );
+                glu_sys::glScissor(x, y, w, h);
             }
         }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
@@ -424,6 +425,25 @@ impl View {
             }
         }
     }
+}
+
+fn rect_to_gl_viewport(x: i16, y: i16, w: i16, h: i16, viewport_h: i16) -> (i32, i32, i32, i32) {
+    (
+        GLint::from(x),
+        GLint::from(viewport_h - (y + h)),
+        GLint::from(w),
+        GLint::from(h),
+    )
+}
+
+#[test]
+fn test_rect_to_gl() {
+    let vh = 1080;
+    assert_eq!(rect_to_gl_viewport(0, 0, 0, 0, vh), (0, 1080, 0, 0));
+    assert_eq!(
+        rect_to_gl_viewport(100, 480, 300, 400, vh),
+        (100, 200, 300, 400)
+    );
 }
 
 fn selected_or_find_result_contains(

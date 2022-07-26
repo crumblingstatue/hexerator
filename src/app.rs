@@ -491,7 +491,7 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
     vec![
         View {
             viewport_rect: ViewportRect {
-                x: 0,
+                x: 2,
                 y: layout.top_gap,
                 w: 960,
                 h: window_height - layout.bottom_gap,
@@ -505,7 +505,7 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
         },
         View {
             viewport_rect: ViewportRect {
-                x: 962,
+                x: 966,
                 y: layout.top_gap,
                 w: 480,
                 h: window_height - layout.bottom_gap,
@@ -519,7 +519,7 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
         },
         View {
             viewport_rect: ViewportRect {
-                x: 1444,
+                x: 1450,
                 y: layout.top_gap,
                 w: 200,
                 h: window_height - layout.bottom_gap,
