@@ -51,13 +51,16 @@ use sfml::{
 };
 use view::{ViewKind, ViewportScalar};
 
-fn msg_if_fail<T, E: std::fmt::Debug>(result: Result<T, E>, prefix: &str) {
+fn msg_if_fail<T, E: std::fmt::Debug>(result: Result<T, E>, prefix: &str) -> Option<E> {
     if let Err(e) = result {
         rfd::MessageDialog::new()
             .set_level(rfd::MessageLevel::Error)
             .set_title("Error")
             .set_description(&format!("{}: {:?}", prefix, e))
             .show();
+        Some(e)
+    } else {
+        None
     }
 }
 
@@ -197,6 +200,7 @@ fn do_frame(
 ) {
     handle_events(app, window, sf_egui);
     update(app);
+    app.update();
     let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
     let win_height = try_conv_win_height_panic(window);
     ui::do_egui(sf_egui, app, mp, win_height);

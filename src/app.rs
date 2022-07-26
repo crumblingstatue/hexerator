@@ -11,10 +11,11 @@ use std::{
     path::{Path, PathBuf},
     sync::mpsc::Receiver,
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use anyhow::{bail, Context};
+
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 
@@ -69,6 +70,11 @@ pub struct App {
     pub cfg: Config,
     /// Whether to scissor views when drawing them. Useful to disable when debugging rendering.
     pub scissor_views: bool,
+    /// If true, auto-reload the current file at specified interval
+    pub auto_reload: bool,
+    /// Auto-reload interval in milliseconds
+    pub auto_reload_interval_ms: u32,
+    last_reload: Instant,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -121,6 +127,9 @@ impl App {
             meta_dirty: false,
             stream_read_recv: None,
             cfg,
+            auto_reload: false,
+            auto_reload_interval_ms: 100,
+            last_reload: Instant::now(),
         };
         this.new_file_readjust(window_height);
         if let Some(offset) = this.args.jump {
@@ -461,6 +470,17 @@ impl App {
         }
         self.new_file_readjust(window_height);
         Ok(())
+    }
+    /// Called every frame
+    pub(crate) fn update(&mut self) {
+        if self.auto_reload
+            && self.last_reload.elapsed().as_millis() >= u128::from(self.auto_reload_interval_ms)
+        {
+            if msg_if_fail(self.reload(), "Auto-reload fail").is_some() {
+                self.auto_reload = false;
+            }
+            self.last_reload = Instant::now();
+        }
     }
 }
 

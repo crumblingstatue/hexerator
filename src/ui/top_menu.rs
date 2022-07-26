@@ -73,6 +73,11 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
             if ui.add(egui::Button::new("Reload (ctrl+R)")).clicked() {
                 msg_if_fail(app.reload(), "Failed to reload");
             }
+            ui.checkbox(&mut app.auto_reload, "Auto reload");
+            ui.horizontal(|ui| {
+                ui.label("Auto reload interval");
+                ui.add(egui::DragValue::new(&mut app.auto_reload_interval_ms).suffix("ms"));
+            });
             ui.separator();
             if ui.button("Create backup").clicked() {
                 msg_if_fail(app.create_backup(), "Failed to create backup");
