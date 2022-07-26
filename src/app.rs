@@ -128,7 +128,7 @@ impl App {
             stream_read_recv: None,
             cfg,
             auto_reload: false,
-            auto_reload_interval_ms: 100,
+            auto_reload_interval_ms: 250,
             last_reload: Instant::now(),
         };
         this.new_file_readjust(window_height);
