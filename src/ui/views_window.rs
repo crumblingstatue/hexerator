@@ -20,6 +20,7 @@ impl ViewKind {
 impl ViewsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
         let mut idx = 0;
+        let mut removed_idx = None;
         app.views.retain_mut(|view| {
             let mut retain = true;
             ui.group(|ui| {
@@ -41,11 +42,19 @@ impl ViewsWindow {
                 viewport_rect_ui(ui, &mut view.viewport_rect);
                 if ui.button("Delete").clicked() {
                     retain = false;
+                    removed_idx = Some(idx);
                 }
                 idx += 1;
             });
             retain
         });
+        if let Some(focused) = &mut app.focused_view && let Some(rem_idx) = removed_idx && *focused >= rem_idx {
+            if app.views.is_empty() {
+                app.focused_view = None;
+            } else {
+                *focused -= 1;
+            }
+        }
     }
 }
 
