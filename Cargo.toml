@@ -30,3 +30,7 @@ features = ["graphics"]
 
 [dependencies.egui-sfml]
 git = "https://github.com/crumblingstatue/egui-sfml.git"
+
+# Compile deps with optimizations in dev mode
+[profile.dev.package."*"]
+opt-level = 2
