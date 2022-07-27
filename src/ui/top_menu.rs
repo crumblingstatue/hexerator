@@ -212,8 +212,9 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
         });
         ui.menu_button("Analysis", |ui| {
             if ui.button("Determine data mime type under cursor").clicked() {
-                    let format = tree_magic_mini::from_u8(&app.data[app.edit_state.cursor..]);
-                    msg_info(format);
+                let format = tree_magic_mini::from_u8(&app.data[app.edit_state.cursor..]);
+                msg_info(format);
+                ui.close_menu();
             }
         });
         ui.menu_button("Help", |ui| {
