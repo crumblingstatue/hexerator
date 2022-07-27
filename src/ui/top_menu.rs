@@ -99,13 +99,16 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
             ui.separator();
             if ui.button("Set select a to cursor").clicked() {
                 app.select_a = Some(app.edit_state.cursor);
+                ui.close_menu();
             }
             if ui.button("Set select b to cursor").clicked() {
                 app.select_b = Some(app.edit_state.cursor);
+                ui.close_menu();
             }
             if ui.button("Unselect all").clicked() {
                 app.select_a = None;
                 app.select_b = None;
+                ui.close_menu();
             }
             ui.separator();
             if ui.button("Fill selection with random").clicked() {
@@ -114,6 +117,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                     thread_rng().fill_bytes(&mut app.data[range.clone()]);
                     app.widen_dirty_region(DamageRegion::RangeInclusive(range));
                 }
+                ui.close_menu();
             }
             if ui.button("Copy selection as hex").clicked() {
                 if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
@@ -124,10 +128,14 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                     }
                     clipboard::set_string(s.trim_end());
                 }
+                ui.close_menu();
             }
-            if ui.button("Save selection to file").clicked() && let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = App::selection(&app.select_a, &app.select_b) {
-                let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
-                msg_if_fail(result, "Failed to save selection to file");
+            if ui.button("Save selection to file").clicked() {
+                if let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = App::selection(&app.select_a, &app.select_b) {
+                    let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
+                    msg_if_fail(result, "Failed to save selection to file");
+                }
+                ui.close_menu();
             }
         });
         ui.menu_button("Seek", |ui| {
