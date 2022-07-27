@@ -1,4 +1,4 @@
-use egui_sfml::egui::{self, DragValue, TextEdit, Ui};
+use egui_sfml::egui::{DragValue, Ui};
 
 use crate::app::{interact_mode::InteractMode, App};
 
@@ -38,15 +38,6 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
                             offsets.byte,
                             (offsets.byte as f64 / data_len as f64) * 100.0
                         ));
-                    }
-                    let re = ui.add(
-                        TextEdit::singleline(&mut app.ui.center_offset_input)
-                            .hint_text("Center view on offset"),
-                    );
-                    if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
-                        if let Ok(offset) = app.ui.center_offset_input.parse() {
-                            app.center_view_on_offset(offset);
-                        }
                     }
                 }
             }
