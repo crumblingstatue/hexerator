@@ -19,7 +19,7 @@ memchr = "2.5.0"
 glu-sys = "0.1.4"
 thiserror = "1.0.31"
 either = "1.7.0"
-filemagic = "0.12.3"
+tree_magic_mini = {version = "3.0.3", features = ["tree_magic_db"]}
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

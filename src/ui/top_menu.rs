@@ -208,13 +208,9 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
             app.ui.regions_window.open ^= true;
         }
         ui.menu_button("Analysis", |ui| {
-            if ui.button("Determine data format under cursor").clicked() {
-                let result: anyhow::Result<()> = try {
-                    let magic = filemagic::magic!()?;
-                    let format = magic.buffer(&app.data[app.edit_state.cursor..])?;
-                    msg_info(&format);
-                };
-                msg_if_fail(result, "Format determine error");
+            if ui.button("Determine data mime type under cursor").clicked() {
+                    let format = tree_magic_mini::from_u8(&app.data[app.edit_state.cursor..]);
+                    msg_info(format);
             }
         });
         ui.menu_button("Help", |ui| {
