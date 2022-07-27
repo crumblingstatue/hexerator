@@ -292,6 +292,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "filemagic"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0ab576ac8d15cf0e281ae7d4b27cccce08486264c843aa19d624f741a7717ed"
+dependencies = [
+ "bitflags",
+ "libc",
+]
+
+[[package]]
 name = "gamedebug_core"
 version = "0.1.0"
 source = "git+https://github.com/crumblingstatue/gamedebug_core.git#810d355ca44a59766c25153f1b7e1f65c7fc1e4a"
@@ -434,6 +444,7 @@ dependencies = [
  "directories",
  "egui-sfml",
  "either",
+ "filemagic",
  "gamedebug_core",
  "glu-sys",
  "interprocess",

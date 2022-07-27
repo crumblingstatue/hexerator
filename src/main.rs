@@ -72,6 +72,14 @@ fn msg_warn(msg: &str) {
         .show();
 }
 
+fn msg_info(msg: &str) {
+    rfd::MessageDialog::new()
+        .set_level(rfd::MessageLevel::Info)
+        .set_title("Info")
+        .set_description(msg)
+        .show();
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 struct InstanceRequest {
     args: Args,

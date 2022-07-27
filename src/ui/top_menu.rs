@@ -2,7 +2,9 @@ use egui_sfml::egui::{self, Layout};
 use rand::{thread_rng, RngCore};
 use sfml::window::clipboard;
 
-use crate::{app::App, damage_region::DamageRegion, msg_if_fail, source::Source, ui::Dialog};
+use crate::{
+    app::App, damage_region::DamageRegion, msg_if_fail, msg_info, source::Source, ui::Dialog,
+};
 
 pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
     ui.horizontal(|ui| {
@@ -205,6 +207,16 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
         if ui.button("Regions").clicked() {
             app.ui.regions_window.open ^= true;
         }
+        ui.menu_button("Analysis", |ui| {
+            if ui.button("Determine data format under cursor").clicked() {
+                let result: anyhow::Result<()> = try {
+                    let magic = filemagic::magic!()?;
+                    let format = magic.buffer(&app.data[app.edit_state.cursor..])?;
+                    msg_info(&format);
+                };
+                msg_if_fail(result, "Format determine error");
+            }
+        });
         ui.menu_button("Help", |ui| {
             if ui.button("debug panel (F12)").clicked() {
                 ui.close_menu();
