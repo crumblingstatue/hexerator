@@ -204,9 +204,12 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                 "Flip row order (experimental)",
             );
         });
-        if ui.button("Regions").clicked() {
-            app.ui.regions_window.open ^= true;
-        }
+        ui.menu_button("Meta", |ui| {
+            if ui.button("Regions").clicked() {
+                app.ui.regions_window.open ^= true;
+                ui.close_menu();
+            }
+        });
         ui.menu_button("Analysis", |ui| {
             if ui.button("Determine data mime type under cursor").clicked() {
                     let format = tree_magic_mini::from_u8(&app.data[app.edit_state.cursor..]);
