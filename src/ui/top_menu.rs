@@ -2,9 +2,7 @@ use egui_sfml::egui::{self, Layout};
 use rand::{thread_rng, RngCore};
 use sfml::window::clipboard;
 
-use crate::{
-    app::App, damage_region::DamageRegion, msg_if_fail, region::Region, source::Source, ui::Dialog,
-};
+use crate::{app::App, damage_region::DamageRegion, msg_if_fail, source::Source, ui::Dialog};
 
 pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
     ui.horizontal(|ui| {
@@ -97,38 +95,26 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                 ui.close_menu();
             }
             ui.separator();
-            if ui.button("Set select begin to cursor").clicked() {
-                match &mut app.selection {
-                    Some(sel) => sel.begin = app.edit_state.cursor,
-                    None => app.select_begin = Some(app.edit_state.cursor),
-                }
+            if ui.button("Set select a to cursor").clicked() {
+                app.select_a = Some(app.edit_state.cursor);
             }
-            if ui.button("Set select end to cursor").clicked() {
-                if let Some(begin) = app.select_begin {
-                    match &mut app.selection {
-                        None => {
-                            app.selection = Some(Region {
-                                begin,
-                                end: app.edit_state.cursor,
-                            })
-                        }
-                        Some(sel) => sel.end = app.edit_state.cursor,
-                    }
-                }
+            if ui.button("Set select b to cursor").clicked() {
+                app.select_b = Some(app.edit_state.cursor);
             }
             if ui.button("Unselect all").clicked() {
-                app.selection = None;
+                app.select_a = None;
+                app.select_b = None;
             }
             ui.separator();
             if ui.button("Fill selection with random").clicked() {
-                if let Some(sel) = app.selection {
+                if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
                     let range = sel.begin..=sel.end;
                     thread_rng().fill_bytes(&mut app.data[range.clone()]);
                     app.widen_dirty_region(DamageRegion::RangeInclusive(range));
                 }
             }
             if ui.button("Copy selection as hex").clicked() {
-                if let Some(sel) = app.selection {
+                if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
                     use std::fmt::Write;
                     let mut s = String::new();
                     for &byte in &app.data[sel.begin..=sel.end] {
@@ -137,7 +123,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                     clipboard::set_string(s.trim_end());
                 }
             }
-            if ui.button("Save selection to file").clicked() && let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = app.selection {
+            if ui.button("Save selection to file").clicked() && let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = App::selection(&app.select_a, &app.select_b) {
                 let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
                 msg_if_fail(result, "Failed to save selection to file");
             }

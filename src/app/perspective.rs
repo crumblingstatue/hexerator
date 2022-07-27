@@ -37,6 +37,10 @@ impl Perspective {
     pub(crate) fn clamp_cols(&mut self) {
         self.cols = self.cols.clamp(1, self.region.len())
     }
+    /// Returns rows spanned by `region`, and the remainder
+    pub(crate) fn region_row_span(&self, region: Region) -> (usize, usize) {
+        (region.len() / self.cols, region.len() % self.cols)
+    }
 }
 
 impl Default for Perspective {

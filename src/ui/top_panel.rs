@@ -1,9 +1,10 @@
 use anyhow::Context;
-use egui_sfml::egui::{ComboBox, Layout, Ui};
+use egui_sfml::egui::{self, ComboBox, Layout, Ui};
+use sfml::graphics::Image;
 
 use crate::{
-    app::App, color::ColorMethod, damage_region::DamageRegion, msg_warn, slice_ext::SliceExt,
-    view::ViewportScalar,
+    app::App, color::ColorMethod, damage_region::DamageRegion, msg_if_fail, msg_warn,
+    slice_ext::SliceExt, view::ViewportScalar,
 };
 
 use super::top_menu::top_menu;
@@ -11,22 +12,24 @@ use super::top_menu::top_menu;
 pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
     top_menu(ui, app, window_height);
     ui.horizontal(|ui| {
-        let begin_text = match app.select_begin {
-            Some(begin) => begin.to_string(),
-            None => "-".to_owned(),
-        };
-        ui.label(format!("Select begin: {}", begin_text));
-        let end_text = match app.selection {
-            Some(sel) => sel.end.to_string(),
-            None => "-".to_owned(),
-        };
-        ui.label(format!("end: {}", end_text));
-        if let Some(sel) = &app.selection {
-            ui.label(format!("Size: {}", sel.len()));
+        if app.select_a.is_some() || app.select_b.is_some() {
+            ui.label("Selection");
         }
-        ui.text_edit_singleline(&mut app.ui.fill_text);
-        if ui.button("fill").clicked() {
-            if let Some(sel) = app.selection {
+        if let Some(a) = app.select_a {
+            ui.label(format!("a: {}", a));
+        }
+        if let Some(b) = app.select_b {
+            ui.label(format!("b: {}", b));
+        }
+        if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
+            let (rows, rem) = app.perspective.region_row_span(sel);
+            ui.label(format!(
+                "{rows} rows * {} cols + {rem} = {}",
+                app.perspective.cols,
+                sel.len()
+            ));
+            ui.text_edit_singleline(&mut app.ui.fill_text);
+            if ui.button("fill").clicked() {
                 let values: Result<Vec<u8>, _> = app
                     .ui
                     .fill_text
@@ -113,6 +116,42 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
                         Ok(new) => *col = new,
                         Err(e) => msg_warn(&format!("Color parse error: {}", e)),
                     }
+                }
+                let tooltip = "\
+                From image file.\n\
+                \n\
+                Pixel by pixel, the image's colors will become the byte colors.
+                ";
+                if ui
+                    .add_enabled(
+                        App::selection(&app.select_a, &app.select_b).is_some(),
+                        egui::Button::new("img"),
+                    )
+                    .on_hover_text(tooltip)
+                    .clicked()
+                {
+                    let Some(img_path) = rfd::FileDialog::new().pick_file() else { return };
+                    let result: anyhow::Result<()> = try {
+                        let img = Image::from_file(
+                            img_path
+                                .to_str()
+                                .context("Failed to convert path to utf-8")?,
+                        )
+                        .context("Failed to load image")?;
+                        let size = img.size();
+                        let sel = App::selection(&app.select_a, &app.select_b)
+                            .context("Missing app selection")?;
+                        let mut i = 0;
+                        for y in 0..size.y {
+                            for x in 0..size.x {
+                                let color = unsafe { img.pixel_at(x, y) };
+                                let byte = app.data[sel.begin + i];
+                                arr[byte as usize] = [color.red(), color.green(), color.blue()];
+                                i += 1;
+                            }
+                        }
+                    };
+                    msg_if_fail(result, "Failed to load palette from reference image");
                 }
             }
         });

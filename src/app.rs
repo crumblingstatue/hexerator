@@ -53,8 +53,12 @@ pub struct App {
     pub views: Vec<View>,
     pub focused_view: Option<usize>,
     pub ui: crate::ui::Ui,
-    pub selection: Option<Region>,
-    pub select_begin: Option<usize>,
+    /// "a" point of selection. Could be smaller or larger than "b".
+    /// The length of selection is absolute difference between a and b
+    pub select_a: Option<usize>,
+    /// "b" point of selection. Could be smaller or larger than "a".
+    /// The length of selection is absolute difference between a and b
+    pub select_b: Option<usize>,
     pub args: Args,
     pub source: Option<Source>,
     pub col_change_lock_x: bool,
@@ -113,8 +117,8 @@ impl App {
             views,
             focused_view: Some(0),
             ui: crate::ui::Ui::default(),
-            selection: None,
-            select_begin: None,
+            select_a: None,
+            select_b: None,
             args,
             source,
             col_change_lock_x: false,
@@ -484,6 +488,29 @@ impl App {
             }
             self.last_reload = Instant::now();
         }
+    }
+    /// Returns the selection marked by select_a and select_b
+    pub(crate) fn selection(
+        app_select_a: &Option<usize>,
+        app_select_b: &Option<usize>,
+    ) -> Option<Region> {
+        if let Some(a) = app_select_a && let Some(b) = app_select_b {
+            Some(Region {
+                begin: *a.min(b),
+                end: *a.max(b),
+            })
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn set_selection(
+        app_select_a: &mut Option<usize>,
+        app_select_b: &mut Option<usize>,
+        region: Region,
+    ) {
+        *app_select_a = Some(region.begin);
+        *app_select_b = Some(region.end);
     }
 }
 

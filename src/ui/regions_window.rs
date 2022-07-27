@@ -25,7 +25,7 @@ impl Default for Status {
 impl RegionsWindow {
     pub fn ui(ui: &mut Ui, app: &mut App) {
         let button = egui::Button::new("Add selection as region");
-        match app.selection {
+        match App::selection(&app.select_a, &app.select_b) {
             Some(sel) => {
                 if ui.add(button).clicked() {
                     app.regions.push(NamedRegion {
@@ -57,7 +57,7 @@ impl RegionsWindow {
                     if re.double_clicked() {
                         app.ui.regions_window.status = Status::Rename(idx);
                     } else if re.clicked() {
-                        app.selection = Some(region.region);
+                        App::set_selection(&mut app.select_a, &mut app.select_b, region.region);
                     }
                 }
                 if app.ui.regions_window.status == Status::EditBegin(idx) {

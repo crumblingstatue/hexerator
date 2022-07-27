@@ -267,7 +267,11 @@ impl View {
                     app,
                     vertex_buffer,
                     |vertex_buffer, x, y, byte, idx, c| {
-                        if selected_or_find_result_contains(app.selection, idx, &app.ui) {
+                        if selected_or_find_result_contains(
+                            App::selection(&app.select_a, &app.select_b),
+                            idx,
+                            &app.ui,
+                        ) {
                             draw_rect(
                                 vertex_buffer,
                                 x,
@@ -324,7 +328,11 @@ impl View {
                     app,
                     vertex_buffer,
                     |vertex_buffer, x, y, byte, idx, c| {
-                        if selected_or_find_result_contains(app.selection, idx, &app.ui) {
+                        if selected_or_find_result_contains(
+                            App::selection(&app.select_a, &app.select_b),
+                            idx,
+                            &app.ui,
+                        ) {
                             draw_rect(
                                 vertex_buffer,
                                 x,
@@ -371,7 +379,11 @@ impl View {
                     app,
                     vertex_buffer,
                     |vertex_buffer, x, y, _byte, idx, mut c| {
-                        if selected_or_find_result_contains(app.selection, idx, &app.ui) {
+                        if selected_or_find_result_contains(
+                            App::selection(&app.select_a, &app.select_b),
+                            idx,
+                            &app.ui,
+                        ) {
                             c = invert_color(c);
                         }
                         draw_rect(
