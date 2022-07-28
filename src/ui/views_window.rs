@@ -37,7 +37,9 @@ impl ViewsWindow {
         app.views.retain_mut(|view| {
             let mut retain = true;
             ui.group(|ui| {
-                view_combo(egui::Id::new("view_combo").with(idx), &mut view.kind, ui);
+                if view_combo(egui::Id::new("view_combo").with(idx), &mut view.kind, ui) {
+                    view.adjust_block_size(&app.layout);
+                }
                 viewport_rect_ui(ui, &mut view.viewport_rect);
                 labelled_drag(ui, "column width", &mut view.col_w);
                 labelled_drag(ui, "row height", &mut view.row_h);
@@ -78,15 +80,26 @@ impl ViewsWindow {
     }
 }
 
-fn view_combo(id: impl Hash, kind: &mut crate::view::ViewKind, ui: &mut egui::Ui) {
+/// Returns whether the value was changed
+fn view_combo(id: impl Hash, kind: &mut crate::view::ViewKind, ui: &mut egui::Ui) -> bool {
+    let mut changed = false;
     egui::ComboBox::new(id, "kind")
         .selected_text(kind.name())
         .show_ui(ui, |ui| {
-            ui.selectable_value(kind, ViewKind::Hex, ViewKind::Hex.name());
-            ui.selectable_value(kind, ViewKind::Dec, ViewKind::Dec.name());
-            ui.selectable_value(kind, ViewKind::Ascii, ViewKind::Ascii.name());
-            ui.selectable_value(kind, ViewKind::Block, ViewKind::Block.name());
+            changed |= ui
+                .selectable_value(kind, ViewKind::Hex, ViewKind::Hex.name())
+                .clicked();
+            changed |= ui
+                .selectable_value(kind, ViewKind::Dec, ViewKind::Dec.name())
+                .clicked();
+            changed |= ui
+                .selectable_value(kind, ViewKind::Ascii, ViewKind::Ascii.name())
+                .clicked();
+            changed |= ui
+                .selectable_value(kind, ViewKind::Block, ViewKind::Block.name())
+                .clicked();
         });
+    changed
 }
 
 fn viewport_rect_ui(ui: &mut egui::Ui, viewport_rect: &mut ViewportRect) {

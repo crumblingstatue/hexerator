@@ -220,7 +220,7 @@ impl View {
         self.viewport_rect.h / i16::from(self.row_h)
     }
 
-    fn adjust_block_size(&mut self, layout: &Layout) {
+    pub fn adjust_block_size(&mut self, layout: &Layout) {
         (self.col_w, self.row_h) = match self.kind {
             ViewKind::Hex => (layout.font_size * 2, layout.font_size),
             ViewKind::Dec => (layout.font_size * 3, layout.font_size),
