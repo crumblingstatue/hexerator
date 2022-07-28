@@ -141,6 +141,11 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                 }
                 ui.close_menu();
             }
+            ui.separator();
+            ui.checkbox(&mut app.preferences.move_edit_cursor, "Move edit cursor")
+                .on_hover_text("With the cursor keys in edit mode, move edit cursor by default.\n\
+                                Otherwise, block cursor is moved. Can use ctrl+cursor keys for
+                                the other behavior.");
         });
         ui.menu_button("Seek", |ui| {
             let re = ui

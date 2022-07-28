@@ -79,6 +79,13 @@ pub struct App {
     /// Auto-reload interval in milliseconds
     pub auto_reload_interval_ms: u32,
     last_reload: Instant,
+    pub preferences: Preferences,
+}
+
+#[derive(Debug, Default)]
+pub struct Preferences {
+    /// Move the edit cursor with the cursor keys, instead of block cursor
+    pub move_edit_cursor: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -134,6 +141,7 @@ impl App {
             auto_reload: false,
             auto_reload_interval_ms: 250,
             last_reload: Instant::now(),
+            preferences: Preferences::default(),
         };
         this.new_file_readjust(window_height);
         if let Some(offset) = this.args.jump {

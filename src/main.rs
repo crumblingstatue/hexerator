@@ -395,6 +395,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 }
             }
             InteractMode::Edit => {
+                if let Some(view_idx) = app.focused_view {
+                    app.views[view_idx].edit_buf.dirty = false;
+                }
                 app.edit_state.set_cursor_no_history(
                     app.edit_state.cursor.saturating_sub(app.perspective.cols),
                 );
@@ -407,6 +410,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 }
             }
             InteractMode::Edit => {
+                if let Some(view_idx) = app.focused_view {
+                    app.views[view_idx].edit_buf.dirty = false;
+                }
                 if app.edit_state.cursor + app.perspective.cols < app.data.len() {
                     app.edit_state.offset_cursor(app.perspective.cols);
                 }
@@ -418,7 +424,18 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 break 'block;
             }
             if app.interact_mode == InteractMode::Edit {
-                app.edit_state.step_cursor_back();
+                if app.preferences.move_edit_cursor {
+                    if let Some(view_idx) = app.focused_view {
+                        let view = &mut app.views[view_idx];
+                        if !view.edit_buf.move_cursor_back() {
+                            view.edit_buf.move_cursor_end();
+                            view.edit_buf.dirty = false;
+                            app.edit_state.step_cursor_back();
+                        }
+                    }
+                } else {
+                    app.edit_state.step_cursor_back();
+                }
             } else if ctrl {
                 if shift {
                     app.halve_cols();
@@ -434,7 +451,18 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
             if app.interact_mode == InteractMode::Edit && app.edit_state.cursor + 1 < app.data.len()
             {
-                app.edit_state.step_cursor_forward();
+                if app.preferences.move_edit_cursor {
+                    if let Some(view_idx) = app.focused_view {
+                        let view = &mut app.views[view_idx];
+                        if !view.edit_buf.move_cursor_forward() {
+                            view.edit_buf.move_cursor_begin();
+                            view.edit_buf.dirty = false;
+                            app.edit_state.step_cursor_forward();
+                        }
+                    }
+                } else {
+                    app.edit_state.step_cursor_forward();
+                }
             } else if ctrl {
                 if shift {
                     app.double_cols();
