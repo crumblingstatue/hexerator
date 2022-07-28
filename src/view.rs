@@ -290,7 +290,9 @@ impl View {
                     ViewKind::Block => {}
                 }
             }
-            if self.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8) {
+            if self.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
+                || app.preferences.quick_edit
+            {
                 self.finish_editing(app);
             }
         }

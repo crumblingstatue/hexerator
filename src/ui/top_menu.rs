@@ -146,6 +146,9 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                 .on_hover_text("With the cursor keys in edit mode, move edit cursor by default.\n\
                                 Otherwise, block cursor is moved. Can use ctrl+cursor keys for
                                 the other behavior.");
+            ui.checkbox(&mut app.preferences.quick_edit, "Quick edit")
+                .on_hover_text("Immediately apply editing results, instead of having to type a \
+                                value to completion or press enter");
         });
         ui.menu_button("Seek", |ui| {
             let re = ui

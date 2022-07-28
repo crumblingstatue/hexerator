@@ -86,6 +86,9 @@ pub struct App {
 pub struct Preferences {
     /// Move the edit cursor with the cursor keys, instead of block cursor
     pub move_edit_cursor: bool,
+    /// Immediately apply changes when editing a value, instead of having
+    /// to type everything or press enter
+    pub quick_edit: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
