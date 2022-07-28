@@ -250,8 +250,8 @@ impl View {
 
     pub fn adjust_block_size(&mut self, layout: &Layout) {
         (self.col_w, self.row_h) = match self.kind {
-            ViewKind::Hex => (layout.font_size * 2, layout.font_size),
-            ViewKind::Dec => (layout.font_size * 3, layout.font_size),
+            ViewKind::Hex => (layout.font_size * 2 - 2, layout.font_size),
+            ViewKind::Dec => (layout.font_size * 3 - 6, layout.font_size),
             ViewKind::Ascii => (layout.font_size, layout.font_size),
             ViewKind::Block => (4, 4),
         }
