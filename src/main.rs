@@ -424,7 +424,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 break 'block;
             }
             if app.interact_mode == InteractMode::Edit {
-                if app.preferences.move_edit_cursor {
+                let move_edit = (app.preferences.move_edit_cursor && !ctrl)
+                    || (!app.preferences.move_edit_cursor && ctrl);
+                if move_edit {
                     if let Some(view_idx) = app.focused_view {
                         let view = &mut app.views[view_idx];
                         if !view.edit_buf.move_cursor_back() {
@@ -451,7 +453,9 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
             if app.interact_mode == InteractMode::Edit && app.edit_state.cursor + 1 < app.data.len()
             {
-                if app.preferences.move_edit_cursor {
+                let move_edit = (app.preferences.move_edit_cursor && !ctrl)
+                    || (!app.preferences.move_edit_cursor && ctrl);
+                if move_edit {
                     if let Some(view_idx) = app.focused_view {
                         let view = &mut app.views[view_idx];
                         if !view.edit_buf.move_cursor_forward() {
