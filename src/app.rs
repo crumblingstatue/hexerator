@@ -1,6 +1,6 @@
 mod edit_state;
 pub mod interact_mode;
-mod layout;
+pub mod layout;
 pub mod perspective;
 pub mod presentation;
 
@@ -29,7 +29,7 @@ use crate::{
     region::Region,
     source::Source,
     timer::Timer,
-    view::{ScrollOffset, View, ViewKind, ViewportRect, ViewportScalar},
+    view::{View, ViewKind, ViewportScalar},
 };
 
 use self::{
@@ -516,48 +516,30 @@ impl App {
 
 fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
     vec![
-        View {
-            viewport_rect: ViewportRect {
-                x: 2,
-                y: layout.top_gap,
-                w: 960,
-                h: window_height - layout.bottom_gap,
-            },
-            kind: ViewKind::Hex,
-            col_w: layout.font_size * 2,
-            row_h: layout.font_size,
-            scroll_offset: ScrollOffset::default(),
-            scroll_speed: 1,
-            active: true,
-        },
-        View {
-            viewport_rect: ViewportRect {
-                x: 966,
-                y: layout.top_gap,
-                w: 480,
-                h: window_height - layout.bottom_gap,
-            },
-            kind: ViewKind::Ascii,
-            col_w: layout.font_size,
-            row_h: layout.font_size,
-            scroll_offset: ScrollOffset::default(),
-            scroll_speed: 1,
-            active: true,
-        },
-        View {
-            viewport_rect: ViewportRect {
-                x: 1450,
-                y: layout.top_gap,
-                w: 200,
-                h: window_height - layout.bottom_gap,
-            },
-            kind: ViewKind::Block,
-            col_w: 4,
-            row_h: 4,
-            scroll_offset: ScrollOffset::default(),
-            scroll_speed: 1,
-            active: true,
-        },
+        View::new(
+            ViewKind::Hex,
+            2,
+            layout.top_gap,
+            960,
+            window_height - layout.bottom_gap,
+            layout,
+        ),
+        View::new(
+            ViewKind::Ascii,
+            966,
+            layout.top_gap,
+            480,
+            window_height - layout.bottom_gap,
+            layout,
+        ),
+        View::new(
+            ViewKind::Block,
+            1450,
+            layout.top_gap,
+            200,
+            window_height - layout.bottom_gap,
+            layout,
+        ),
     ]
 }
 

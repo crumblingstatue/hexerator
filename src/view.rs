@@ -1,6 +1,6 @@
 use gamedebug_core::imm_msg;
 
-use crate::app::perspective::Perspective;
+use crate::app::{layout::Layout, perspective::Perspective};
 
 mod draw;
 
@@ -29,6 +29,26 @@ pub struct View {
 }
 
 impl View {
+    pub fn new(
+        kind: ViewKind,
+        x: ViewportScalar,
+        y: ViewportScalar,
+        w: ViewportScalar,
+        h: ViewportScalar,
+        layout: &Layout,
+    ) -> Self {
+        let mut this = Self {
+            viewport_rect: ViewportRect { x, y, w, h },
+            kind,
+            col_w: 0,
+            row_h: 0,
+            scroll_offset: ScrollOffset::default(),
+            scroll_speed: 0,
+            active: true,
+        };
+        this.adjust_block_size(layout);
+        this
+    }
     pub fn scroll_x(&mut self, amount: i16) {
         scroll_impl(
             &mut self.scroll_offset.col,
@@ -199,6 +219,15 @@ impl View {
     pub(crate) fn rows(&self) -> i16 {
         self.viewport_rect.h / i16::from(self.row_h)
     }
+
+    fn adjust_block_size(&mut self, layout: &Layout) {
+        (self.col_w, self.row_h) = match self.kind {
+            ViewKind::Hex => (layout.font_size * 2, layout.font_size),
+            ViewKind::Dec => (layout.font_size * 3, layout.font_size),
+            ViewKind::Ascii => (layout.font_size, layout.font_size),
+            ViewKind::Block => (4, 4),
+        }
+    }
 }
 
 pub struct Offsets {
@@ -359,6 +388,7 @@ pub enum ViewKind {
     Ascii,
     Block,
 }
+
 impl ViewportRect {
     fn relative_offset_of_pos(
         &self,
