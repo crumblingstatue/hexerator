@@ -15,6 +15,7 @@ mod args;
 mod color;
 mod config;
 mod damage_region;
+mod dec_conv;
 mod hex_conv;
 mod input;
 mod metafile;
@@ -40,7 +41,7 @@ use clap::Parser;
 use config::Config;
 use damage_region::DamageRegion;
 use egui_sfml::SfEgui;
-use gamedebug_core::imm_msg;
+use gamedebug_core::{imm_msg, per_msg};
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
@@ -395,6 +396,12 @@ fn handle_text_entered(app: &mut App, unicode: char) {
                                 None => app.edit_state.hex_edit_half_digit = Some(ascii),
                             }
                         }
+                    }
+                }
+                ViewKind::Dec => {
+                    if matches!(unicode, '0'..='9') {
+                        let ascii = unicode as u8;
+                        per_msg!("Edit input: {}", ascii as char);
                     }
                 }
                 ViewKind::Ascii => {

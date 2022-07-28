@@ -355,6 +355,7 @@ impl TryFrom<(i32, i32)> for ViewportVec {
 #[derive(Debug, PartialEq, Eq)]
 pub enum ViewKind {
     Hex,
+    Dec,
     Ascii,
     Block,
 }

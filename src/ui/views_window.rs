@@ -23,6 +23,7 @@ impl ViewKind {
     fn name(&self) -> &'static str {
         match *self {
             ViewKind::Hex => "Hex",
+            ViewKind::Dec => "Decimal",
             ViewKind::Ascii => "Ascii",
             ViewKind::Block => "Block",
         }
@@ -81,8 +82,9 @@ fn view_combo(id: impl Hash, kind: &mut crate::view::ViewKind, ui: &mut egui::Ui
     egui::ComboBox::new(id, "kind")
         .selected_text(kind.name())
         .show_ui(ui, |ui| {
-            ui.selectable_value(kind, ViewKind::Ascii, ViewKind::Ascii.name());
             ui.selectable_value(kind, ViewKind::Hex, ViewKind::Hex.name());
+            ui.selectable_value(kind, ViewKind::Dec, ViewKind::Dec.name());
+            ui.selectable_value(kind, ViewKind::Ascii, ViewKind::Ascii.name());
             ui.selectable_value(kind, ViewKind::Block, ViewKind::Block.name());
         });
 }

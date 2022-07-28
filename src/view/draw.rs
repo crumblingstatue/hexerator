@@ -9,7 +9,7 @@ use sfml::{
 use crate::{
     app::{presentation::Presentation, App},
     color::invert_color,
-    hex_conv,
+    dec_conv, hex_conv,
     region::Region,
     ui::Ui,
     view::ViewKind,
@@ -301,6 +301,80 @@ impl View {
                             x + f32::from(self.col_w / 2) - 4.0,
                             y,
                             d2.into(),
+                            c,
+                        );
+                        let extra_x = if app.edit_state.hex_edit_half_digit.is_none() {
+                            0
+                        } else {
+                            self.col_w / 2 - 4
+                        };
+                        if idx == app.edit_state.cursor {
+                            draw_cursor(
+                                x + f32::from(extra_x),
+                                y,
+                                vertex_buffer,
+                                app.focused_view == Some(key),
+                                app.cursor_flash_timer(),
+                                &app.presentation,
+                            );
+                        }
+                    },
+                );
+                rs.set_texture(Some(font.texture(app.layout.font_size.into())));
+            }
+            ViewKind::Dec => {
+                draw_view(
+                    self,
+                    app,
+                    vertex_buffer,
+                    |vertex_buffer, x, y, byte, idx, c| {
+                        if selected_or_find_result_contains(
+                            App::selection(&app.select_a, &app.select_b),
+                            idx,
+                            &app.ui,
+                        ) {
+                            draw_rect(
+                                vertex_buffer,
+                                x,
+                                y,
+                                f32::from(self.col_w),
+                                f32::from(self.row_h),
+                                app.presentation.sel_color,
+                            )
+                        }
+                        let [mut d1, d2, d3] = dec_conv::byte_to_dec_digits(byte);
+                        if let Some(half) = app.edit_state.hex_edit_half_digit && app.edit_state.cursor == idx {
+                            d1 = half.to_ascii_uppercase();
+                        }
+                        let mut x_cursor: f32 = x;
+                        let step = f32::from(app.layout.font_size - 1);
+                        draw_glyph(
+                            font,
+                            app.layout.font_size.into(),
+                            vertex_buffer,
+                            x_cursor,
+                            y,
+                            d1.into(),
+                            c,
+                        );
+                        x_cursor += step;
+                        draw_glyph(
+                            font,
+                            app.layout.font_size.into(),
+                            vertex_buffer,
+                            x_cursor,
+                            y,
+                            d2.into(),
+                            c,
+                        );
+                        x_cursor += step;
+                        draw_glyph(
+                            font,
+                            app.layout.font_size.into(),
+                            vertex_buffer,
+                            x_cursor,
+                            y,
+                            d3.into(),
                             c,
                         );
                         let extra_x = if app.edit_state.hex_edit_half_digit.is_none() {
