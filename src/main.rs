@@ -16,6 +16,7 @@ mod color;
 mod config;
 mod damage_region;
 mod dec_conv;
+pub mod edit_buffer;
 mod hex_conv;
 mod input;
 mod metafile;
@@ -39,9 +40,8 @@ use app::interact_mode::InteractMode;
 use args::Args;
 use clap::Parser;
 use config::Config;
-use damage_region::DamageRegion;
 use egui_sfml::SfEgui;
-use gamedebug_core::{imm_msg, per_msg};
+use gamedebug_core::imm_msg;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
@@ -50,7 +50,7 @@ use sfml::{
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };
-use view::{ViewKind, ViewportScalar};
+use view::ViewportScalar;
 
 fn msg_if_fail<T, E: std::fmt::Debug>(result: Result<T, E>, prefix: &str) -> Option<E> {
     if let Err(e) = result {
@@ -375,46 +375,9 @@ fn handle_text_entered(app: &mut App, unicode: char) {
             let Some(focused) = app.focused_view else {
                 return
             };
-            let view = &app.views[focused];
-            match view.kind {
-                ViewKind::Hex => {
-                    if unicode.is_ascii() {
-                        let ascii = unicode as u8;
-                        if matches!(ascii, b'0'..=b'9' | b'a'..=b'f') {
-                            match app.edit_state.hex_edit_half_digit {
-                                Some(half) => {
-                                    app.data[app.edit_state.cursor] =
-                                        hex_conv::merge_hex_halves(half, ascii);
-                                    app.widen_dirty_region(DamageRegion::Single(
-                                        app.edit_state.cursor,
-                                    ));
-                                    if app.edit_state.cursor + 1 < app.data.len() {
-                                        app.edit_state.step_cursor_forward();
-                                    }
-                                    app.edit_state.hex_edit_half_digit = None;
-                                }
-                                None => app.edit_state.hex_edit_half_digit = Some(ascii),
-                            }
-                        }
-                    }
-                }
-                ViewKind::Dec => {
-                    if matches!(unicode, '0'..='9') {
-                        let ascii = unicode as u8;
-                        per_msg!("Edit input: {}", ascii as char);
-                    }
-                }
-                ViewKind::Ascii => {
-                    if unicode.is_ascii() {
-                        app.data[app.edit_state.cursor] = unicode as u8;
-                        app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
-                        if app.edit_state.cursor + 1 < app.data.len() {
-                            app.edit_state.step_cursor_forward()
-                        }
-                    }
-                }
-                ViewKind::Block => {}
-            }
+            let mut view = std::mem::take(&mut app.views[focused]);
+            view.handle_text_entered(unicode, app);
+            app.views[focused] = view;
         }
         InteractMode::View => {}
     }
@@ -529,14 +492,11 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                     *idx = 0;
                 }
             }
-            app.edit_state.hex_edit_half_digit = None;
         }
         Key::F1 => app.interact_mode = InteractMode::View,
         Key::F2 => app.interact_mode = InteractMode::Edit,
         Key::F12 => app.toggle_debug(),
-        Key::Escape => {
-            app.edit_state.hex_edit_half_digit = None;
-        }
+        Key::Escape => {}
         Key::F if ctrl => {
             app.ui.find_dialog.open ^= true;
         }

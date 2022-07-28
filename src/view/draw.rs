@@ -281,33 +281,24 @@ impl View {
                                 app.presentation.sel_color,
                             )
                         }
-                        let [mut d1, d2] = hex_conv::byte_to_hex_digits(byte);
-                        if let Some(half) = app.edit_state.hex_edit_half_digit && app.edit_state.cursor == idx {
-                            d1 = half.to_ascii_uppercase();
+                        let mut gx = x;
+                        for (i, mut d) in hex_conv::byte_to_hex_digits(byte).into_iter().enumerate()
+                        {
+                            if idx == app.edit_state.cursor && self.edit_buf.dirty {
+                                d = self.edit_buf.buf[i];
+                            }
+                            draw_glyph(
+                                font,
+                                app.layout.font_size.into(),
+                                vertex_buffer,
+                                gx,
+                                y,
+                                d.into(),
+                                c,
+                            );
+                            gx += f32::from(app.layout.font_size - 4);
                         }
-                        draw_glyph(
-                            font,
-                            app.layout.font_size.into(),
-                            vertex_buffer,
-                            x,
-                            y,
-                            d1.into(),
-                            c,
-                        );
-                        draw_glyph(
-                            font,
-                            app.layout.font_size.into(),
-                            vertex_buffer,
-                            x + f32::from(self.col_w / 2) - 4.0,
-                            y,
-                            d2.into(),
-                            c,
-                        );
-                        let extra_x = if app.edit_state.hex_edit_half_digit.is_none() {
-                            0
-                        } else {
-                            self.col_w / 2 - 4
-                        };
+                        let extra_x = self.edit_buf.cursor * u16::from(app.layout.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_cursor(
                                 x + f32::from(extra_x),
@@ -342,46 +333,24 @@ impl View {
                                 app.presentation.sel_color,
                             )
                         }
-                        let [mut d1, d2, d3] = dec_conv::byte_to_dec_digits(byte);
-                        if let Some(half) = app.edit_state.hex_edit_half_digit && app.edit_state.cursor == idx {
-                            d1 = half.to_ascii_uppercase();
+                        let mut gx = x;
+                        for (i, mut d) in dec_conv::byte_to_dec_digits(byte).into_iter().enumerate()
+                        {
+                            if idx == app.edit_state.cursor && self.edit_buf.dirty {
+                                d = self.edit_buf.buf[i];
+                            }
+                            draw_glyph(
+                                font,
+                                app.layout.font_size.into(),
+                                vertex_buffer,
+                                gx,
+                                y,
+                                d.into(),
+                                c,
+                            );
+                            gx += f32::from(app.layout.font_size - 4);
                         }
-                        let mut x_cursor: f32 = x;
-                        let step = f32::from(app.layout.font_size - 1);
-                        draw_glyph(
-                            font,
-                            app.layout.font_size.into(),
-                            vertex_buffer,
-                            x_cursor,
-                            y,
-                            d1.into(),
-                            c,
-                        );
-                        x_cursor += step;
-                        draw_glyph(
-                            font,
-                            app.layout.font_size.into(),
-                            vertex_buffer,
-                            x_cursor,
-                            y,
-                            d2.into(),
-                            c,
-                        );
-                        x_cursor += step;
-                        draw_glyph(
-                            font,
-                            app.layout.font_size.into(),
-                            vertex_buffer,
-                            x_cursor,
-                            y,
-                            d3.into(),
-                            c,
-                        );
-                        let extra_x = if app.edit_state.hex_edit_half_digit.is_none() {
-                            0
-                        } else {
-                            self.col_w / 2 - 4
-                        };
+                        let extra_x = self.edit_buf.cursor * u16::from(app.layout.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_cursor(
                                 x + f32::from(extra_x),

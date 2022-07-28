@@ -42,12 +42,12 @@ fn digit_to_byte(digit: u8) -> u8 {
         b'7' => 7,
         b'8' => 8,
         b'9' => 9,
-        b'a' => 10,
-        b'b' => 11,
-        b'c' => 12,
-        b'd' => 13,
-        b'e' => 14,
-        b'f' => 15,
+        b'a' | b'A' => 10,
+        b'b' | b'B' => 11,
+        b'c' | b'C' => 12,
+        b'd' | b'D' => 13,
+        b'e' | b'E' => 14,
+        b'f' | b'F' => 15,
         _ => panic!("Invalid hex digit: {}", digit),
     }
 }

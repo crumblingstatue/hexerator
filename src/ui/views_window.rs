@@ -2,7 +2,7 @@ use std::hash::Hash;
 
 use egui_sfml::egui::{self, emath::Numeric};
 
-use crate::view::{ScrollOffset, View, ViewKind, ViewportRect};
+use crate::view::{View, ViewKind, ViewportRect};
 
 #[derive(Debug)]
 pub struct ViewsWindow {
@@ -38,7 +38,7 @@ impl ViewsWindow {
             let mut retain = true;
             ui.group(|ui| {
                 if view_combo(egui::Id::new("view_combo").with(idx), &mut view.kind, ui) {
-                    view.adjust_block_size(&app.layout);
+                    view.adjust_state_to_kind(&app.layout);
                 }
                 viewport_rect_ui(ui, &mut view.viewport_rect);
                 labelled_drag(ui, "column width", &mut view.col_w);
@@ -62,20 +62,14 @@ impl ViewsWindow {
         ui.separator();
         view_combo("new_kind_combo", &mut app.ui.views_window.new_kind, ui);
         if ui.button("Add new").clicked() {
-            app.views.push(View {
-                viewport_rect: ViewportRect {
-                    x: 0,
-                    y: 0,
-                    w: 100,
-                    h: 100,
-                },
-                kind: std::mem::replace(&mut app.ui.views_window.new_kind, ViewKind::Hex),
-                col_w: 32,
-                row_h: 32,
-                scroll_offset: ScrollOffset::default(),
-                scroll_speed: 10,
-                active: true,
-            })
+            app.views.push(View::new(
+                std::mem::replace(&mut app.ui.views_window.new_kind, ViewKind::Hex),
+                0,
+                0,
+                100,
+                100,
+                &app.layout,
+            ));
         }
     }
 }

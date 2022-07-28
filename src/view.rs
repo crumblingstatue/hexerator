@@ -1,6 +1,12 @@
 use gamedebug_core::imm_msg;
 
-use crate::app::{layout::Layout, perspective::Perspective};
+use crate::{
+    app::{layout::Layout, perspective::Perspective, App},
+    damage_region::DamageRegion,
+    edit_buffer::EditBuffer,
+    hex_conv::merge_hex_halves,
+    msg_warn,
+};
 
 mod draw;
 
@@ -26,6 +32,27 @@ pub struct View {
     pub scroll_speed: i16,
     /// A view can be deactivated to not render or interact, but can later be reactivated
     pub active: bool,
+    pub edit_buf: EditBuffer,
+}
+
+impl Default for View {
+    fn default() -> Self {
+        Self {
+            viewport_rect: ViewportRect {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
+            kind: ViewKind::Block,
+            col_w: Default::default(),
+            row_h: Default::default(),
+            scroll_offset: Default::default(),
+            scroll_speed: Default::default(),
+            active: Default::default(),
+            edit_buf: Default::default(),
+        }
+    }
 }
 
 impl View {
@@ -45,8 +72,9 @@ impl View {
             scroll_offset: ScrollOffset::default(),
             scroll_speed: 0,
             active: true,
+            edit_buf: EditBuffer::default(),
         };
-        this.adjust_block_size(layout);
+        this.adjust_state_to_kind(layout);
         this
     }
     pub fn scroll_x(&mut self, amount: i16) {
@@ -226,6 +254,83 @@ impl View {
             ViewKind::Dec => (layout.font_size * 3, layout.font_size),
             ViewKind::Ascii => (layout.font_size, layout.font_size),
             ViewKind::Block => (4, 4),
+        }
+    }
+    /// Adjust state after kind was changed
+    pub fn adjust_state_to_kind(&mut self, layout: &Layout) {
+        self.adjust_block_size(layout);
+        let glyph_count = self.glyph_count();
+        self.edit_buf.resize(glyph_count);
+    }
+    /// The number of glyphs per block this view has
+    fn glyph_count(&self) -> u16 {
+        match self.kind {
+            ViewKind::Hex => 2,
+            ViewKind::Dec => 3,
+            ViewKind::Ascii => 1,
+            ViewKind::Block => 1,
+        }
+    }
+    pub fn handle_text_entered(&mut self, unicode: char, app: &mut App) {
+        if self.char_valid(unicode) {
+            if !self.edit_buf.dirty {
+                match self.kind {
+                    ViewKind::Hex => {
+                        let s = format!("{:02X}", app.data[app.edit_state.cursor]);
+                        self.edit_buf.update_from_string(&s);
+                    }
+                    ViewKind::Dec => {
+                        let s = format!("{:03}", app.data[app.edit_state.cursor]);
+                        self.edit_buf.update_from_string(&s);
+                    }
+                    // Ascii doesn't need any copy buffer updates because it only ever deals with
+                    // one glyph at a time
+                    ViewKind::Ascii => {}
+                    // Block doesn't do any text input
+                    ViewKind::Block => {}
+                }
+            }
+            if self.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8) {
+                self.finish_editing(app);
+            }
+        }
+    }
+
+    fn char_valid(&self, unicode: char) -> bool {
+        match self.kind {
+            ViewKind::Hex => matches!(unicode, '0'..='9' | 'a'..='f'),
+            ViewKind::Dec => matches!(unicode, '0'..='9'),
+            ViewKind::Ascii => unicode.is_ascii(),
+            ViewKind::Block => false,
+        }
+    }
+
+    fn finish_editing(&self, app: &mut App) {
+        match self.kind {
+            ViewKind::Hex => {
+                app.data[app.edit_state.cursor] =
+                    merge_hex_halves(self.edit_buf.buf[0], self.edit_buf.buf[1]);
+                app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+            }
+            ViewKind::Dec => {
+                let s =
+                    std::str::from_utf8(&self.edit_buf.buf).expect("Invalid utf-8 in edit buffer");
+                match s.parse() {
+                    Ok(num) => {
+                        app.data[app.edit_state.cursor] = num;
+                        app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                    }
+                    Err(e) => msg_warn(&format!("Invalid value: {}", e)),
+                }
+            }
+            ViewKind::Ascii => {
+                app.data[app.edit_state.cursor] = self.edit_buf.buf[0];
+                app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+            }
+            ViewKind::Block => {}
+        }
+        if app.edit_state.cursor + 1 < app.data.len() {
+            app.edit_state.step_cursor_forward()
         }
     }
 }
