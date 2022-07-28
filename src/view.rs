@@ -305,7 +305,7 @@ impl View {
         }
     }
 
-    fn finish_editing(&self, app: &mut App) {
+    pub fn finish_editing(&mut self, app: &mut App) {
         match self.kind {
             ViewKind::Hex => {
                 app.data[app.edit_state.cursor] =
@@ -332,6 +332,11 @@ impl View {
         if app.edit_state.cursor + 1 < app.data.len() {
             app.edit_state.step_cursor_forward()
         }
+        self.edit_buf.reset();
+    }
+
+    pub fn cancel_editing(&mut self) {
+        self.edit_buf.reset();
     }
 }
 

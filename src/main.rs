@@ -496,7 +496,18 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::F1 => app.interact_mode = InteractMode::View,
         Key::F2 => app.interact_mode = InteractMode::Edit,
         Key::F12 => app.toggle_debug(),
-        Key::Escape => {}
+        Key::Escape => {
+            if let Some(view_idx) = app.focused_view {
+                app.views[view_idx].cancel_editing();
+            }
+        }
+        Key::Enter => {
+            if let Some(view_idx) = app.focused_view {
+                let mut view = std::mem::take(&mut app.views[view_idx]);
+                view.finish_editing(app);
+                app.views[view_idx] = view;
+            }
+        }
         Key::F if ctrl => {
             app.ui.find_dialog.open ^= true;
         }

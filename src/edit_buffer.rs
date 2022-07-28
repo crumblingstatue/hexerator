@@ -23,7 +23,7 @@ impl EditBuffer {
         }
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.cursor = 0;
         self.dirty = false;
     }
