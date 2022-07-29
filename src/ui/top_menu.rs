@@ -149,6 +149,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
             ui.checkbox(&mut app.preferences.quick_edit, "Quick edit")
                 .on_hover_text("Immediately apply editing results, instead of having to type a \
                                 value to completion or press enter");
+            ui.checkbox(&mut app.preferences.sticky_edit, "Sticky edit")
+                .on_hover_text("Don't automatically move cursor after editing is finished");
         });
         ui.menu_button("Seek", |ui| {
             let re = ui

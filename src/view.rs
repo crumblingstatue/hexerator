@@ -331,7 +331,7 @@ impl View {
             }
             ViewKind::Block => {}
         }
-        if app.edit_state.cursor + 1 < app.data.len() {
+        if app.edit_state.cursor + 1 < app.data.len() && !app.preferences.sticky_edit {
             app.edit_state.step_cursor_forward()
         }
         self.edit_buf.reset();

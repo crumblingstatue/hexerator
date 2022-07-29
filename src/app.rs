@@ -89,6 +89,8 @@ pub struct Preferences {
     /// Immediately apply changes when editing a value, instead of having
     /// to type everything or press enter
     pub quick_edit: bool,
+    /// Don't move the cursor after editing is finished
+    pub sticky_edit: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
