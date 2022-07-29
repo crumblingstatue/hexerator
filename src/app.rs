@@ -91,6 +91,8 @@ pub struct Preferences {
     pub quick_edit: bool,
     /// Don't move the cursor after editing is finished
     pub sticky_edit: bool,
+    /// Automatically save when editing is finished
+    pub auto_save: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

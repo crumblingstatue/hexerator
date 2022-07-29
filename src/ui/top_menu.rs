@@ -80,6 +80,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                 ui.label("Auto reload interval");
                 ui.add(egui::DragValue::new(&mut app.auto_reload_interval_ms).suffix("ms"));
             });
+            ui.checkbox(&mut app.preferences.auto_save, "Auto save")
+                .on_hover_text("Save every time an editing action is finished");
             ui.separator();
             if ui.button("Create backup").clicked() {
                 msg_if_fail(app.create_backup(), "Failed to create backup");

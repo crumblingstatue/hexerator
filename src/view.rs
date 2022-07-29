@@ -5,7 +5,7 @@ use crate::{
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
-    msg_warn,
+    msg_if_fail, msg_warn,
 };
 
 mod draw;
@@ -335,6 +335,10 @@ impl View {
             app.edit_state.step_cursor_forward()
         }
         self.edit_buf.reset();
+
+        if app.preferences.auto_save {
+            msg_if_fail(app.save(), "Failed to save file");
+        }
     }
 
     pub fn cancel_editing(&mut self) {
