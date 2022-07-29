@@ -387,6 +387,7 @@ impl View {
                         }
                         let glyph = match byte {
                             0x00 => '∅' as u32,
+                            0x09 => '⇥' as u32,
                             0x0A => '⏎' as u32,
                             0x0D => '⇤' as u32,
                             0x20 => '␣' as u32,
