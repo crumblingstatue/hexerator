@@ -59,6 +59,12 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                         "Failed to load file",
                     );
                 }
+                ui.separator();
+                let mut cap = app.cfg.recent.capacity();
+                if ui.add(egui::DragValue::new(&mut cap).prefix("list capacity: ")).changed() {
+                    app.cfg.recent.set_capacity(cap);
+                }
+
             });
             ui.separator();
             if ui
