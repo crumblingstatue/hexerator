@@ -102,6 +102,7 @@ fn draw_cursor(
     active: bool,
     flash_timer: Option<u32>,
     presentation: &Presentation,
+    view: &View,
 ) {
     #[expect(
         clippy::cast_possible_truncation,
@@ -118,7 +119,15 @@ fn draw_cursor(
             None => presentation.cursor_color,
         }
     };
-    draw_rect_outline(vertices, x, y, 10.0, 10.0, color, 2.0);
+    draw_rect_outline(
+        vertices,
+        x,
+        y,
+        f32::from(view.font_size / 2),
+        f32::from(view.font_size - 4),
+        color,
+        2.0,
+    );
 }
 
 #[expect(
@@ -130,17 +139,13 @@ fn draw_glyph(
     font: &Font,
     font_size: u32,
     vertices: &mut Vec<Vertex>,
-    mut x: f32,
-    mut y: f32,
+    x: f32,
+    y: f32,
     glyph: u32,
     color: Color,
 ) {
     let glyph = font.glyph(glyph, font_size, false, 0.0);
     let bounds = glyph.bounds();
-    let baseline = 10.0; // TODO: Stupid assumption
-    y += baseline;
-    x += bounds.left;
-    y += bounds.top;
     let texture_rect = glyph.texture_rect();
     vertices.push(Vertex {
         position: Vector2::new(x, y),
@@ -309,6 +314,7 @@ impl View {
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
                                 &app.presentation,
+                                self,
                             );
                         }
                     },
@@ -363,6 +369,7 @@ impl View {
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
                                 &app.presentation,
+                                self,
                             );
                         }
                     },
@@ -416,6 +423,7 @@ impl View {
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
                                 &app.presentation,
+                                self,
                             );
                         }
                     },
