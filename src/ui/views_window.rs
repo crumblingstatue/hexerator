@@ -38,7 +38,7 @@ impl ViewsWindow {
             let mut retain = true;
             ui.group(|ui| {
                 if view_combo(egui::Id::new("view_combo").with(idx), &mut view.kind, ui) {
-                    view.adjust_state_to_kind(&app.layout);
+                    view.adjust_state_to_kind();
                 }
                 match view.kind {
                     ViewKind::Hex => {}
@@ -79,6 +79,9 @@ impl ViewsWindow {
                 viewport_rect_ui(ui, &mut view.viewport_rect);
                 labelled_drag(ui, "column width", &mut view.col_w);
                 labelled_drag(ui, "row height", &mut view.row_h);
+                if labelled_drag(ui, "font size", &mut view.font_size).changed() {
+                    view.adjust_block_size();
+                }
                 labelled_drag(ui, "bytes per block", &mut view.bytes_per_block);
                 ui.checkbox(&mut view.active, "Active");
                 if ui.button("Delete").clicked() {
@@ -105,7 +108,6 @@ impl ViewsWindow {
                 0,
                 100,
                 100,
-                &app.layout,
             ));
         }
     }
@@ -140,9 +142,10 @@ fn viewport_rect_ui(ui: &mut egui::Ui, viewport_rect: &mut ViewportRect) {
     labelled_drag(ui, "h", &mut viewport_rect.h);
 }
 
-fn labelled_drag<T: Numeric>(ui: &mut egui::Ui, label: &str, val: &mut T) {
+fn labelled_drag<T: Numeric>(ui: &mut egui::Ui, label: &str, val: &mut T) -> egui::Response {
     ui.horizontal(|ui| {
         ui.label(label);
-        ui.add(egui::DragValue::new(val));
-    });
+        ui.add(egui::DragValue::new(val))
+    })
+    .inner
 }

@@ -291,16 +291,16 @@ impl View {
                             }
                             draw_glyph(
                                 font,
-                                app.layout.font_size.into(),
+                                self.font_size.into(),
                                 vertex_buffer,
                                 gx,
                                 y,
                                 d.into(),
                                 c,
                             );
-                            gx += f32::from(app.layout.font_size - 4);
+                            gx += f32::from(self.font_size - 4);
                         }
-                        let extra_x = self.edit_buf.cursor * u16::from(app.layout.font_size - 4);
+                        let extra_x = self.edit_buf.cursor * u16::from(self.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_cursor(
                                 x + f32::from(extra_x),
@@ -313,7 +313,7 @@ impl View {
                         }
                     },
                 );
-                rs.set_texture(Some(font.texture(app.layout.font_size.into())));
+                rs.set_texture(Some(font.texture(self.font_size.into())));
             }
             ViewKind::Dec => {
                 draw_view(
@@ -345,16 +345,16 @@ impl View {
                             }
                             draw_glyph(
                                 font,
-                                app.layout.font_size.into(),
+                                self.font_size.into(),
                                 vertex_buffer,
                                 gx,
                                 y,
                                 d.into(),
                                 c,
                             );
-                            gx += f32::from(app.layout.font_size - 4);
+                            gx += f32::from(self.font_size - 4);
                         }
-                        let extra_x = self.edit_buf.cursor * u16::from(app.layout.font_size - 4);
+                        let extra_x = self.edit_buf.cursor * u16::from(self.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_cursor(
                                 x + f32::from(extra_x),
@@ -367,7 +367,7 @@ impl View {
                         }
                     },
                 );
-                rs.set_texture(Some(font.texture(app.layout.font_size.into())));
+                rs.set_texture(Some(font.texture(self.font_size.into())));
             }
             ViewKind::Text => {
                 draw_view(
@@ -407,15 +407,7 @@ impl View {
                             0xFF => '■' as u32,
                             _ => raw_data,
                         };
-                        draw_glyph(
-                            font,
-                            app.layout.font_size.into(),
-                            vertex_buffer,
-                            x,
-                            y,
-                            glyph,
-                            c,
-                        );
+                        draw_glyph(font, self.font_size.into(), vertex_buffer, x, y, glyph, c);
                         if idx == app.edit_state.cursor {
                             draw_cursor(
                                 x,
@@ -428,7 +420,7 @@ impl View {
                         }
                     },
                 );
-                rs.set_texture(Some(font.texture(app.layout.font_size.into())));
+                rs.set_texture(Some(font.texture(self.font_size.into())));
             }
             ViewKind::Block => {
                 draw_view(

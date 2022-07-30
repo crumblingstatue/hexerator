@@ -537,7 +537,6 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
             layout.top_gap,
             960,
             window_height - layout.bottom_gap,
-            layout,
         ),
         View::new(
             ViewKind::Text,
@@ -545,7 +544,6 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
             layout.top_gap,
             480,
             window_height - layout.bottom_gap,
-            layout,
         ),
         View::new(
             ViewKind::Block,
@@ -553,7 +551,6 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
             layout.top_gap,
             200,
             window_height - layout.bottom_gap,
-            layout,
         ),
     ]
 }

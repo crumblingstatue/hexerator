@@ -1,7 +1,7 @@
 use gamedebug_core::imm_msg;
 
 use crate::{
-    app::{layout::Layout, perspective::Perspective, App},
+    app::{perspective::Perspective, App},
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
@@ -39,6 +39,8 @@ pub struct View {
     ///
     /// Only used by text views
     pub text_kind: TextKind,
+    /// Font size
+    pub font_size: u8,
 }
 
 impl Default for View {
@@ -59,6 +61,7 @@ impl Default for View {
             active: Default::default(),
             edit_buf: Default::default(),
             text_kind: TextKind::Ascii,
+            font_size: 14,
         }
     }
 }
@@ -70,7 +73,6 @@ impl View {
         y: ViewportScalar,
         w: ViewportScalar,
         h: ViewportScalar,
-        layout: &Layout,
     ) -> Self {
         let mut this = Self {
             viewport_rect: ViewportRect { x, y, w, h },
@@ -83,8 +85,9 @@ impl View {
             active: true,
             edit_buf: EditBuffer::default(),
             text_kind: TextKind::Ascii,
+            font_size: 14,
         };
-        this.adjust_state_to_kind(layout);
+        this.adjust_state_to_kind();
         this
     }
     pub fn scroll_x(&mut self, amount: i16) {
@@ -258,17 +261,17 @@ impl View {
         self.viewport_rect.h / i16::from(self.row_h)
     }
 
-    pub fn adjust_block_size(&mut self, layout: &Layout) {
+    pub fn adjust_block_size(&mut self) {
         (self.col_w, self.row_h) = match self.kind {
-            ViewKind::Hex => (layout.font_size * 2 - 2, layout.font_size),
-            ViewKind::Dec => (layout.font_size * 3 - 6, layout.font_size),
-            ViewKind::Text => (layout.font_size, layout.font_size),
+            ViewKind::Hex => (self.font_size * 2 - 2, self.font_size),
+            ViewKind::Dec => (self.font_size * 3 - 6, self.font_size),
+            ViewKind::Text => (self.font_size, self.font_size),
             ViewKind::Block => (4, 4),
         }
     }
     /// Adjust state after kind was changed
-    pub fn adjust_state_to_kind(&mut self, layout: &Layout) {
-        self.adjust_block_size(layout);
+    pub fn adjust_state_to_kind(&mut self) {
+        self.adjust_block_size();
         let glyph_count = self.glyph_count();
         self.edit_buf.resize(glyph_count);
     }
