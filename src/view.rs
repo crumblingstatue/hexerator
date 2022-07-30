@@ -35,6 +35,10 @@ pub struct View {
     /// A view can be deactivated to not render or interact, but can later be reactivated
     pub active: bool,
     pub edit_buf: EditBuffer,
+    /// The kind of text (ascii/utf16/etc)
+    ///
+    /// Only used by text views
+    pub text_kind: TextKind,
 }
 
 impl Default for View {
@@ -54,6 +58,7 @@ impl Default for View {
             bytes_per_block: 1,
             active: Default::default(),
             edit_buf: Default::default(),
+            text_kind: TextKind::Ascii,
         }
     }
 }
@@ -77,6 +82,7 @@ impl View {
             bytes_per_block: 1,
             active: true,
             edit_buf: EditBuffer::default(),
+            text_kind: TextKind::Ascii,
         };
         this.adjust_state_to_kind(layout);
         this
@@ -256,7 +262,7 @@ impl View {
         (self.col_w, self.row_h) = match self.kind {
             ViewKind::Hex => (layout.font_size * 2 - 2, layout.font_size),
             ViewKind::Dec => (layout.font_size * 3 - 6, layout.font_size),
-            ViewKind::Ascii => (layout.font_size, layout.font_size),
+            ViewKind::Text => (layout.font_size, layout.font_size),
             ViewKind::Block => (4, 4),
         }
     }
@@ -271,7 +277,7 @@ impl View {
         match self.kind {
             ViewKind::Hex => 2,
             ViewKind::Dec => 3,
-            ViewKind::Ascii => 1,
+            ViewKind::Text => 1,
             ViewKind::Block => 1,
         }
     }
@@ -289,7 +295,7 @@ impl View {
                     }
                     // Ascii doesn't need any copy buffer updates because it only ever deals with
                     // one glyph at a time
-                    ViewKind::Ascii => {}
+                    ViewKind::Text => {}
                     // Block doesn't do any text input
                     ViewKind::Block => {}
                 }
@@ -306,7 +312,7 @@ impl View {
         match self.kind {
             ViewKind::Hex => matches!(unicode, '0'..='9' | 'a'..='f'),
             ViewKind::Dec => matches!(unicode, '0'..='9'),
-            ViewKind::Ascii => unicode.is_ascii(),
+            ViewKind::Text => unicode.is_ascii(),
             ViewKind::Block => false,
         }
     }
@@ -329,7 +335,7 @@ impl View {
                     Err(e) => msg_warn(&format!("Invalid value: {}", e)),
                 }
             }
-            ViewKind::Ascii => {
+            ViewKind::Text => {
                 app.data[app.edit_state.cursor] = self.edit_buf.buf[0];
                 app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
             }
@@ -505,8 +511,33 @@ impl TryFrom<(i32, i32)> for ViewportVec {
 pub enum ViewKind {
     Hex,
     Dec,
-    Ascii,
+    Text,
     Block,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum TextKind {
+    Ascii,
+    Utf16Le,
+    Utf16Be,
+}
+
+impl TextKind {
+    pub fn name(&self) -> &'static str {
+        match self {
+            TextKind::Ascii => "ascii",
+            TextKind::Utf16Le => "utf-16 le",
+            TextKind::Utf16Be => "utf-16 be",
+        }
+    }
+
+    pub(crate) fn bytes_needed(&self) -> u8 {
+        match self {
+            TextKind::Ascii => 1,
+            TextKind::Utf16Le => 2,
+            TextKind::Utf16Be => 2,
+        }
+    }
 }
 
 impl ViewportRect {

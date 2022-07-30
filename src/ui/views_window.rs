@@ -2,7 +2,7 @@ use std::hash::Hash;
 
 use egui_sfml::egui::{self, emath::Numeric};
 
-use crate::view::{View, ViewKind, ViewportRect};
+use crate::view::{TextKind, View, ViewKind, ViewportRect};
 
 #[derive(Debug)]
 pub struct ViewsWindow {
@@ -24,7 +24,7 @@ impl ViewKind {
         match *self {
             ViewKind::Hex => "Hex",
             ViewKind::Dec => "Decimal",
-            ViewKind::Ascii => "Ascii",
+            ViewKind::Text => "Text",
             ViewKind::Block => "Block",
         }
     }
@@ -39,6 +39,42 @@ impl ViewsWindow {
             ui.group(|ui| {
                 if view_combo(egui::Id::new("view_combo").with(idx), &mut view.kind, ui) {
                     view.adjust_state_to_kind(&app.layout);
+                }
+                match view.kind {
+                    ViewKind::Hex => {}
+                    ViewKind::Dec => {}
+                    ViewKind::Text => {
+                        let mut changed = false;
+                        egui::ComboBox::new(egui::Id::new("text_combo").with(idx), "Text kind")
+                            .selected_text(view.text_kind.name())
+                            .show_ui(ui, |ui| {
+                                changed |= ui
+                                    .selectable_value(
+                                        &mut view.text_kind,
+                                        TextKind::Ascii,
+                                        TextKind::Ascii.name(),
+                                    )
+                                    .clicked();
+                                changed |= ui
+                                    .selectable_value(
+                                        &mut view.text_kind,
+                                        TextKind::Utf16Le,
+                                        TextKind::Utf16Le.name(),
+                                    )
+                                    .clicked();
+                                changed |= ui
+                                    .selectable_value(
+                                        &mut view.text_kind,
+                                        TextKind::Utf16Be,
+                                        TextKind::Utf16Be.name(),
+                                    )
+                                    .clicked();
+                            });
+                        if changed {
+                            view.bytes_per_block = view.text_kind.bytes_needed();
+                        }
+                    }
+                    ViewKind::Block => {}
                 }
                 viewport_rect_ui(ui, &mut view.viewport_rect);
                 labelled_drag(ui, "column width", &mut view.col_w);
@@ -88,7 +124,7 @@ fn view_combo(id: impl Hash, kind: &mut crate::view::ViewKind, ui: &mut egui::Ui
                 .selectable_value(kind, ViewKind::Dec, ViewKind::Dec.name())
                 .clicked();
             changed |= ui
-                .selectable_value(kind, ViewKind::Ascii, ViewKind::Ascii.name())
+                .selectable_value(kind, ViewKind::Text, ViewKind::Text.name())
                 .clicked();
             changed |= ui
                 .selectable_value(kind, ViewKind::Block, ViewKind::Block.name())

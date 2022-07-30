@@ -21,7 +21,7 @@ pub fn draw_view(
     view: &View,
     app: &App,
     vertex_buffer: &mut Vec<Vertex>,
-    mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, u8, usize, Color),
+    mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, &[u8], usize, Color),
 ) {
     // Protect against infinite loop lock up when scrolling horizontally out of view
     if view.scroll_offset.pix_xoff <= -view.viewport_rect.w {
@@ -65,12 +65,12 @@ pub fn draw_view(
             {
                 break 'rows;
             }
-            match app.data.get(idx) {
-                Some(&byte) => {
+            match app.data.get(idx..idx + view.bytes_per_block as usize) {
+                Some(data) => {
                     let c = app
                         .presentation
                         .color_method
-                        .byte_color(byte, app.presentation.invert_color);
+                        .byte_color(data[0], app.presentation.invert_color);
                     #[expect(
                         clippy::cast_precision_loss,
                         reason = "At this point, the viewport coordinates should be small enough to fit in viewport"
@@ -79,7 +79,7 @@ pub fn draw_view(
                         vertex_buffer,
                         viewport_x as f32,
                         viewport_y as f32,
-                        byte,
+                        data,
                         idx,
                         c,
                     );
@@ -266,7 +266,7 @@ impl View {
                     self,
                     app,
                     vertex_buffer,
-                    |vertex_buffer, x, y, byte, idx, c| {
+                    |vertex_buffer, x, y, data, idx, c| {
                         if selected_or_find_result_contains(
                             App::selection(&app.select_a, &app.select_b),
                             idx,
@@ -282,7 +282,9 @@ impl View {
                             )
                         }
                         let mut gx = x;
-                        for (i, mut d) in hex_conv::byte_to_hex_digits(byte).into_iter().enumerate()
+                        for (i, mut d) in hex_conv::byte_to_hex_digits(data[0])
+                            .into_iter()
+                            .enumerate()
                         {
                             if idx == app.edit_state.cursor && self.edit_buf.dirty {
                                 d = self.edit_buf.buf[i];
@@ -318,7 +320,7 @@ impl View {
                     self,
                     app,
                     vertex_buffer,
-                    |vertex_buffer, x, y, byte, idx, c| {
+                    |vertex_buffer, x, y, data, idx, c| {
                         if selected_or_find_result_contains(
                             App::selection(&app.select_a, &app.select_b),
                             idx,
@@ -334,7 +336,9 @@ impl View {
                             )
                         }
                         let mut gx = x;
-                        for (i, mut d) in dec_conv::byte_to_dec_digits(byte).into_iter().enumerate()
+                        for (i, mut d) in dec_conv::byte_to_dec_digits(data[0])
+                            .into_iter()
+                            .enumerate()
                         {
                             if idx == app.edit_state.cursor && self.edit_buf.dirty {
                                 d = self.edit_buf.buf[i];
@@ -365,12 +369,12 @@ impl View {
                 );
                 rs.set_texture(Some(font.texture(app.layout.font_size.into())));
             }
-            ViewKind::Ascii => {
+            ViewKind::Text => {
                 draw_view(
                     self,
                     app,
                     vertex_buffer,
-                    |vertex_buffer, x, y, byte, idx, c| {
+                    |vertex_buffer, x, y, data, idx, c| {
                         if selected_or_find_result_contains(
                             App::selection(&app.select_a, &app.select_b),
                             idx,
@@ -385,14 +389,23 @@ impl View {
                                 app.presentation.sel_color,
                             )
                         }
-                        let glyph = match byte {
+                        let raw_data = match self.text_kind {
+                            crate::view::TextKind::Ascii => u32::from(data[0]),
+                            crate::view::TextKind::Utf16Le => {
+                                u32::from(u16::from_le_bytes([data[0], data[1]]))
+                            }
+                            crate::view::TextKind::Utf16Be => {
+                                u32::from(u16::from_be_bytes([data[0], data[1]]))
+                            }
+                        };
+                        let glyph = match raw_data {
                             0x00 => '∅' as u32,
                             0x09 => '⇥' as u32,
                             0x0A => '⏎' as u32,
                             0x0D => '⇤' as u32,
                             0x20 => '␣' as u32,
                             0xFF => '■' as u32,
-                            _ => u32::from(byte),
+                            _ => raw_data,
                         };
                         draw_glyph(
                             font,

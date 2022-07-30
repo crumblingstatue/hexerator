@@ -540,7 +540,7 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
             layout,
         ),
         View::new(
-            ViewKind::Ascii,
+            ViewKind::Text,
             966,
             layout.top_gap,
             480,
