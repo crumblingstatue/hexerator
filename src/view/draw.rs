@@ -30,7 +30,7 @@ pub fn draw_view(
     let mut idx = app.perspective.region.begin;
     let start_row: usize = view.scroll_offset.row;
     imm_msg!(start_row);
-    idx += start_row * app.perspective.cols;
+    idx += start_row * (app.perspective.cols * usize::from(view.bytes_per_block));
     imm_msg!(view.rows());
     #[expect(
         clippy::cast_sign_loss,
@@ -50,14 +50,14 @@ pub fn draw_view(
         if start_col >= app.perspective.cols {
             break;
         }
-        idx += start_col;
+        idx += start_col * usize::from(view.bytes_per_block);
         for col in start_col..app.perspective.cols {
             let x = col * usize::from(view.col_w);
             let viewport_x = (i64::from(view.viewport_rect.x) + x as i64)
                 - ((view.scroll_offset.col as i64 * i64::from(view.col_w))
                     + i64::from(view.scroll_offset.pix_xoff));
             if viewport_x > i64::from(view.viewport_rect.x + view.viewport_rect.w) {
-                idx += app.perspective.cols - col;
+                idx += (app.perspective.cols - col) * usize::from(view.bytes_per_block);
                 break;
             }
             if viewport_y > i64::from(view.viewport_rect.y + view.viewport_rect.h)
@@ -83,7 +83,7 @@ pub fn draw_view(
                         idx,
                         c,
                     );
-                    idx += 1;
+                    idx += usize::from(view.bytes_per_block);
                 }
                 None => {
                     if !app.perspective.flip_row_order {

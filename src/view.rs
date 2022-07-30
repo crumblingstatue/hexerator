@@ -30,6 +30,8 @@ pub struct View {
     pub scroll_offset: ScrollOffset,
     /// The amount scrolled for a single scroll operation, in pixels
     pub scroll_speed: i16,
+    /// How many bytes are required for a single block in the view
+    pub bytes_per_block: u8,
     /// A view can be deactivated to not render or interact, but can later be reactivated
     pub active: bool,
     pub edit_buf: EditBuffer,
@@ -49,6 +51,7 @@ impl Default for View {
             row_h: Default::default(),
             scroll_offset: Default::default(),
             scroll_speed: Default::default(),
+            bytes_per_block: 1,
             active: Default::default(),
             edit_buf: Default::default(),
         }
@@ -71,6 +74,7 @@ impl View {
             row_h: 0,
             scroll_offset: ScrollOffset::default(),
             scroll_speed: 0,
+            bytes_per_block: 1,
             active: true,
             edit_buf: EditBuffer::default(),
         };

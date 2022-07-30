@@ -43,6 +43,7 @@ impl ViewsWindow {
                 viewport_rect_ui(ui, &mut view.viewport_rect);
                 labelled_drag(ui, "column width", &mut view.col_w);
                 labelled_drag(ui, "row height", &mut view.row_h);
+                labelled_drag(ui, "bytes per block", &mut view.bytes_per_block);
                 ui.checkbox(&mut view.active, "Active");
                 if ui.button("Delete").clicked() {
                     retain = false;
