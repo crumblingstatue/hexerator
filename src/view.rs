@@ -1,4 +1,5 @@
 use gamedebug_core::imm_msg;
+use sfml::graphics::Font;
 
 use crate::{
     app::{perspective::Perspective, App},
@@ -41,29 +42,7 @@ pub struct View {
     pub text_kind: TextKind,
     /// Font size
     pub font_size: u8,
-}
-
-impl Default for View {
-    fn default() -> Self {
-        Self {
-            viewport_rect: ViewportRect {
-                x: 0,
-                y: 0,
-                w: 0,
-                h: 0,
-            },
-            kind: ViewKind::Block,
-            col_w: Default::default(),
-            row_h: Default::default(),
-            scroll_offset: Default::default(),
-            scroll_speed: Default::default(),
-            bytes_per_block: 1,
-            active: Default::default(),
-            edit_buf: Default::default(),
-            text_kind: TextKind::Ascii,
-            font_size: 14,
-        }
-    }
+    pub line_spacing: u8,
 }
 
 impl View {
@@ -73,7 +52,9 @@ impl View {
         y: ViewportScalar,
         w: ViewportScalar,
         h: ViewportScalar,
+        font: &Font,
     ) -> Self {
+        let font_size = 14;
         let mut this = Self {
             viewport_rect: ViewportRect { x, y, w, h },
             kind,
@@ -85,10 +66,33 @@ impl View {
             active: true,
             edit_buf: EditBuffer::default(),
             text_kind: TextKind::Ascii,
-            font_size: 14,
+            font_size,
+            line_spacing: font.line_spacing(u32::from(font_size)) as u8,
         };
         this.adjust_state_to_kind();
         this
+    }
+    /// Used only for `mem::replace` borrow checker workarounds
+    pub fn zeroed() -> Self {
+        Self {
+            viewport_rect: ViewportRect {
+                x: 0,
+                y: 0,
+                w: 0,
+                h: 0,
+            },
+            kind: ViewKind::Hex,
+            col_w: 0,
+            row_h: 0,
+            scroll_offset: Default::default(),
+            scroll_speed: 0,
+            bytes_per_block: 0,
+            active: false,
+            edit_buf: Default::default(),
+            text_kind: TextKind::Ascii,
+            font_size: 0,
+            line_spacing: 0,
+        }
     }
     pub fn scroll_x(&mut self, amount: i16) {
         scroll_impl(
@@ -265,7 +269,7 @@ impl View {
         (self.col_w, self.row_h) = match self.kind {
             ViewKind::Hex => (self.font_size * 2 - 2, self.font_size),
             ViewKind::Dec => (self.font_size * 3 - 6, self.font_size),
-            ViewKind::Text => (self.font_size, self.font_size),
+            ViewKind::Text => (self.font_size, self.line_spacing.max(1)),
             ViewKind::Block => (4, 4),
         }
     }

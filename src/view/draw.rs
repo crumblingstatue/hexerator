@@ -83,6 +83,21 @@ pub fn draw_view(
                         idx,
                         c,
                     );
+                    if gamedebug_core::enabled() {
+                        #[expect(
+                            clippy::cast_precision_loss,
+                            reason = "At this point, the viewport coordinates should be small enough to fit in viewport"
+                        )]
+                        draw_rect_outline(
+                            vertex_buffer,
+                            viewport_x as f32,
+                            viewport_y as f32,
+                            view.col_w.into(),
+                            view.row_h.into(),
+                            Color::RED,
+                            -1.0,
+                        );
+                    }
                     idx += usize::from(view.bytes_per_block);
                 }
                 None => {
@@ -110,9 +125,9 @@ fn draw_text_cursor(
         x,
         y,
         f32::from(view.font_size / 2),
-        f32::from(view.font_size - 4),
+        f32::from(view.font_size),
         color,
-        2.0,
+        -2.0,
     );
 }
 
@@ -163,14 +178,18 @@ fn draw_glyph(
     font: &Font,
     font_size: u32,
     vertices: &mut Vec<Vertex>,
-    x: f32,
-    y: f32,
+    mut x: f32,
+    mut y: f32,
     glyph: u32,
     color: Color,
 ) {
     let glyph = font.glyph(glyph, font_size, false, 0.0);
     let bounds = glyph.bounds();
     let texture_rect = glyph.texture_rect();
+    let baseline = font_size as f32;
+    let offset = baseline + bounds.top;
+    x += bounds.left;
+    y += offset;
     vertices.push(Vertex {
         position: Vector2::new(x, y),
         color,

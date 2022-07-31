@@ -1,6 +1,7 @@
 use std::hash::Hash;
 
 use egui_sfml::egui::{self, emath::Numeric};
+use sfml::graphics::Font;
 
 use crate::view::{TextKind, View, ViewKind, ViewportRect};
 
@@ -30,8 +31,11 @@ impl ViewKind {
     }
 }
 
+pub const MIN_FONT_SIZE: u8 = 5;
+pub const MAX_FONT_SIZE: u8 = 128;
+
 impl ViewsWindow {
-    pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
+    pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App, font: &Font) {
         let mut idx = 0;
         let mut removed_idx = None;
         app.views.retain_mut(|view| {
@@ -79,9 +83,27 @@ impl ViewsWindow {
                 viewport_rect_ui(ui, &mut view.viewport_rect);
                 labelled_drag(ui, "column width", &mut view.col_w);
                 labelled_drag(ui, "row height", &mut view.row_h);
-                if labelled_drag(ui, "font size", &mut view.font_size).changed() {
-                    view.adjust_block_size();
-                }
+                ui.horizontal(|ui| {
+                    ui.label("Font size");
+                    #[expect(
+                        clippy::cast_possible_truncation,
+                        clippy::cast_sign_loss,
+                        reason = "We assert line_spacing is between 0 and 255"
+                    )]
+                    if ui
+                        .add(
+                            egui::DragValue::new(&mut view.font_size)
+                                .clamp_range(MIN_FONT_SIZE..=MAX_FONT_SIZE),
+                        )
+                        .changed()
+                    {
+                        let line_spacing = font.line_spacing(u32::from(view.font_size));
+                        assert!(line_spacing > 0.0 && line_spacing <= 255.0);
+                        view.line_spacing = line_spacing as u8;
+                        view.adjust_block_size();
+                    }
+                });
+
                 labelled_drag(ui, "bytes per block", &mut view.bytes_per_block);
                 ui.checkbox(&mut view.active, "Active");
                 if ui.button("Delete").clicked() {
@@ -108,6 +130,7 @@ impl ViewsWindow {
                 0,
                 100,
                 100,
+                font,
             ));
         }
     }

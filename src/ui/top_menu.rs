@@ -1,18 +1,18 @@
 use egui_sfml::egui::{self, Layout};
 use rand::{thread_rng, RngCore};
-use sfml::window::clipboard;
+use sfml::{graphics::Font, window::clipboard};
 
 use crate::{
     app::App, damage_region::DamageRegion, msg_if_fail, msg_info, source::Source, ui::Dialog,
 };
 
-pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
+pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Font) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
             if ui.button("Open").clicked() {
                 if let Some(file) = rfd::FileDialog::new().pick_file() {
                     msg_if_fail(
-                        app.load_file(file, false, window_height),
+                        app.load_file(file, false, window_height, font),
                         "Failed to load file (read-write)",
                     );
                 }
@@ -21,7 +21,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
             if ui.button("Open (read only)").clicked() {
                 if let Some(file) = rfd::FileDialog::new().pick_file() {
                     msg_if_fail(
-                        app.load_file(file, true, window_height),
+                        app.load_file(file, true, window_height, font),
                         "Failed to load file (read-only)",
                     );
                 }
@@ -55,7 +55,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16) {
                 });
                 if let Some(args) = load {
                     msg_if_fail(
-                        app.load_file_args(args, window_height),
+                        app.load_file_args(args, window_height, font),
                         "Failed to load file",
                     );
                 }

@@ -1,0 +1,7 @@
+This is a plain text file used to test text rendering in Hexerator.
+It uses ISO-8859-1 encoding to fit accented characters in a byte.
+{Hello}
+underscored_stuff
+בבבייייבבתתבבייי <- accented characters
+תתתבבבבביייייייי
+hyphen-stuff

@@ -1,6 +1,6 @@
 use anyhow::Context;
 use egui_sfml::egui::{self, ComboBox, Layout, Ui};
-use sfml::graphics::Image;
+use sfml::graphics::{Font, Image};
 
 use crate::{
     app::App,
@@ -13,8 +13,8 @@ use crate::{
 
 use super::top_menu::top_menu;
 
-pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
-    top_menu(ui, app, window_height);
+pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar, font: &Font) {
+    top_menu(ui, app, window_height, font);
     ui.horizontal(|ui| {
         if app.select_a.is_some() || app.select_b.is_some() {
             ui.label("Selection");

@@ -18,6 +18,7 @@ use anyhow::{bail, Context};
 
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
+use sfml::graphics::Font;
 
 use crate::{
     args::Args,
@@ -106,6 +107,7 @@ impl App {
         mut args: Args,
         window_height: ViewportScalar,
         mut cfg: Config,
+        font: &Font,
     ) -> anyhow::Result<Self> {
         let mut data = Vec::new();
         let mut source = None;
@@ -115,7 +117,7 @@ impl App {
         load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
         let layout = Layout::new();
         let cursor = 0;
-        let mut views = default_views(&layout, window_height);
+        let mut views = default_views(&layout, window_height, font);
         views[0].go_home();
         let mut this = Self {
             scissor_views: true,
@@ -150,7 +152,7 @@ impl App {
             last_reload: Instant::now(),
             preferences: Preferences::default(),
         };
-        this.new_file_readjust(window_height);
+        this.new_file_readjust(window_height, font);
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
             this.edit_state.cursor = offset;
@@ -312,6 +314,7 @@ impl App {
         path: PathBuf,
         read_only: bool,
         window_height: ViewportScalar,
+        font: &Font,
     ) -> Result<(), anyhow::Error> {
         self.load_file_args(
             Args {
@@ -325,11 +328,12 @@ impl App {
                 load_recent: false,
             },
             window_height,
+            font,
         )
     }
 
     /// Readjust to a new file
-    fn new_file_readjust(&mut self, window_height: ViewportScalar) {
+    fn new_file_readjust(&mut self, window_height: ViewportScalar, font: &Font) {
         self.stream_end = false;
         self.perspective = Perspective {
             region: Region {
@@ -339,7 +343,7 @@ impl App {
             cols: 48,
             flip_row_order: false,
         };
-        self.views = default_views(&self.layout, window_height);
+        self.views = default_views(&self.layout, window_height, font);
     }
 
     pub fn close_file(&mut self) {
@@ -486,11 +490,12 @@ impl App {
         &mut self,
         mut args: Args,
         window_height: ViewportScalar,
+        font: &Font,
     ) -> anyhow::Result<()> {
         if load_file_from_args(&mut args, &mut self.cfg, &mut self.source, &mut self.data) {
             self.args = args;
         }
-        self.new_file_readjust(window_height);
+        self.new_file_readjust(window_height, font);
         Ok(())
     }
     /// Called every frame
@@ -529,7 +534,7 @@ impl App {
     }
 }
 
-fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
+fn default_views(layout: &Layout, window_height: ViewportScalar, font: &Font) -> Vec<View> {
     vec![
         View::new(
             ViewKind::Hex,
@@ -537,6 +542,7 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
             layout.top_gap,
             960,
             window_height - layout.bottom_gap,
+            font,
         ),
         View::new(
             ViewKind::Text,
@@ -544,6 +550,7 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
             layout.top_gap,
             480,
             window_height - layout.bottom_gap,
+            font,
         ),
         View::new(
             ViewKind::Block,
@@ -551,6 +558,7 @@ fn default_views(layout: &Layout, window_height: ViewportScalar) -> Vec<View> {
             layout.top_gap,
             200,
             window_height - layout.bottom_gap,
+            font,
         ),
     ]
 }

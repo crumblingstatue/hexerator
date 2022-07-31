@@ -13,6 +13,7 @@ use egui_sfml::{
     egui::{self, TopBottomPanel, Window},
     SfEgui,
 };
+use sfml::graphics::Font;
 
 use crate::{
     app::App,
@@ -52,6 +53,7 @@ pub fn do_egui(
     app: &mut App,
     mouse_pos: ViewportVec,
     window_height: ViewportScalar,
+    font: &Font,
 ) {
     sf_egui.do_frame(|ctx| {
         let mut open = gamedebug_core::enabled();
@@ -75,9 +77,10 @@ pub fn do_egui(
         open = app.ui.views_window.open;
         Window::new("Views")
             .open(&mut open)
-            .show(ctx, |ui| ViewsWindow::ui(ui, app));
+            .show(ctx, |ui| ViewsWindow::ui(ui, app, font));
         app.ui.views_window.open = open;
-        TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app, window_height));
+        TopBottomPanel::top("top_panel")
+            .show(ctx, |ui| top_panel::ui(ui, app, window_height, font));
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel::ui(ui, app));
         egui::SidePanel::right("right_panel").show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos));
         let mut dialogs: Vec<_> = std::mem::take(&mut app.ui.dialogs);

@@ -153,7 +153,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let win_height: ViewportScalar = try_conv_win_height_panic(&window);
-    let mut app = App::new(args, win_height, Config::load_or_default()?)?;
+    let mut app = App::new(args, win_height, Config::load_or_default()?, &font)?;
     let mut vertex_buffer = Vec::new();
 
     while window.is_open() {
@@ -161,7 +161,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
             let mut buf = Vec::new();
             stream.read_to_end(&mut buf)?;
             let req: InstanceRequest = rmp_serde::from_slice(&buf)?;
-            app = App::new(req.args, win_height, app.cfg)?;
+            app = App::new(req.args, win_height, app.cfg, &font)?;
             window.request_focus();
         }
         do_frame(
@@ -216,7 +216,7 @@ fn do_frame(
     app.update();
     let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
     let win_height = try_conv_win_height_panic(window);
-    ui::do_egui(sf_egui, app, mp, win_height);
+    ui::do_egui(sf_egui, app, mp, win_height, font);
     let [r, g, b] = app.presentation.bg_color;
     #[expect(
         clippy::cast_possible_truncation,
@@ -379,7 +379,7 @@ fn handle_text_entered(app: &mut App, unicode: char) {
             let Some(focused) = app.focused_view else {
                 return
             };
-            let mut view = std::mem::take(&mut app.views[focused]);
+            let mut view = std::mem::replace(&mut app.views[focused], crate::view::View::zeroed());
             view.handle_text_entered(unicode, app);
             app.views[focused] = view;
         }
@@ -539,7 +539,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         }
         Key::Enter => {
             if let Some(view_idx) = app.focused_view {
-                let mut view = std::mem::take(&mut app.views[view_idx]);
+                let mut view =
+                    std::mem::replace(&mut app.views[view_idx], crate::view::View::zeroed());
                 view.finish_editing(app);
                 app.views[view_idx] = view;
             }
