@@ -95,7 +95,7 @@ pub fn draw_view(
     }
 }
 
-fn draw_cursor(
+fn draw_text_cursor(
     x: f32,
     y: f32,
     vertices: &mut Vec<Vertex>,
@@ -104,21 +104,7 @@ fn draw_cursor(
     presentation: &Presentation,
     view: &View,
 ) {
-    #[expect(
-        clippy::cast_possible_truncation,
-        reason = "Deliberate color modulation based on timer value."
-    )]
-    let color = if active {
-        match flash_timer {
-            Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
-            None => presentation.cursor_active_color,
-        }
-    } else {
-        match flash_timer {
-            Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
-            None => presentation.cursor_color,
-        }
-    };
+    let color = cursor_color(active, flash_timer, presentation);
     draw_rect_outline(
         vertices,
         x,
@@ -128,6 +114,44 @@ fn draw_cursor(
         color,
         2.0,
     );
+}
+
+fn draw_block_cursor(
+    x: f32,
+    y: f32,
+    vertices: &mut Vec<Vertex>,
+    active: bool,
+    flash_timer: Option<u32>,
+    presentation: &Presentation,
+    view: &View,
+) {
+    let color = cursor_color(active, flash_timer, presentation);
+    draw_rect(
+        vertices,
+        x,
+        y,
+        f32::from(view.col_w),
+        f32::from(view.row_h),
+        color,
+    );
+}
+
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "Deliberate color modulation based on timer value."
+)]
+fn cursor_color(active: bool, flash_timer: Option<u32>, presentation: &Presentation) -> Color {
+    if active {
+        match flash_timer {
+            Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
+            None => presentation.cursor_active_color,
+        }
+    } else {
+        match flash_timer {
+            Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
+            None => presentation.cursor_color,
+        }
+    }
 }
 
 #[expect(
@@ -307,7 +331,7 @@ impl View {
                         }
                         let extra_x = self.edit_buf.cursor * u16::from(self.font_size - 4);
                         if idx == app.edit_state.cursor {
-                            draw_cursor(
+                            draw_text_cursor(
                                 x + f32::from(extra_x),
                                 y,
                                 vertex_buffer,
@@ -362,7 +386,7 @@ impl View {
                         }
                         let extra_x = self.edit_buf.cursor * u16::from(self.font_size - 4);
                         if idx == app.edit_state.cursor {
-                            draw_cursor(
+                            draw_text_cursor(
                                 x + f32::from(extra_x),
                                 y,
                                 vertex_buffer,
@@ -416,7 +440,7 @@ impl View {
                         };
                         draw_glyph(font, self.font_size.into(), vertex_buffer, x, y, glyph, c);
                         if idx == app.edit_state.cursor {
-                            draw_cursor(
+                            draw_text_cursor(
                                 x,
                                 y,
                                 vertex_buffer,
@@ -451,6 +475,17 @@ impl View {
                             f32::from(self.row_h),
                             c,
                         );
+                        if idx == app.edit_state.cursor {
+                            draw_block_cursor(
+                                x,
+                                y,
+                                vertex_buffer,
+                                app.focused_view == Some(key),
+                                app.cursor_flash_timer(),
+                                &app.presentation,
+                                self,
+                            );
+                        }
                     },
                 );
             }
