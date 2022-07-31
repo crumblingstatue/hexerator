@@ -5,7 +5,7 @@ pub struct Layout {
 }
 
 impl Layout {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             top_gap: 46,
             bottom_gap: 25,

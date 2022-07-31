@@ -10,10 +10,10 @@ pub enum FindType {
 }
 
 impl FindType {
-    fn label(&self) -> &str {
+    const fn label(&self) -> &str {
         match self {
-            FindType::U8 => "u8",
-            FindType::Ascii => "ascii",
+            Self::U8 => "u8",
+            Self::Ascii => "ascii",
         }
     }
 }

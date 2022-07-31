@@ -155,7 +155,7 @@ fn draw_block_cursor(
     clippy::cast_possible_truncation,
     reason = "Deliberate color modulation based on timer value."
 )]
-fn cursor_color(active: bool, flash_timer: Option<u32>, presentation: &Presentation) -> Color {
+const fn cursor_color(active: bool, flash_timer: Option<u32>, presentation: &Presentation) -> Color {
     if active {
         match flash_timer {
             Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
@@ -278,7 +278,8 @@ fn draw_rect_outline(
         vertices,
         x - thickness,
         y + h,
-        w + thickness * 2.0,
+        thickness.mul_add(2.0, w),
+        //w + thickness * 2.0,
         thickness,
         color,
     );

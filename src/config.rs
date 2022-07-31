@@ -19,7 +19,7 @@ impl Config {
         }
         let cfg_file = cfg_dir.join(FILENAME);
         if !cfg_file.exists() {
-            Ok(Config::default())
+            Ok(Self::default())
         } else {
             let result: anyhow::Result<Self> = try {
                 let cfg_bytes = std::fs::read(cfg_file)?;
@@ -30,7 +30,7 @@ impl Config {
                 Err(e) => if rfd::MessageDialog::new().set_buttons(
                     rfd::MessageButtons::OkCancelCustom("Overwrite".into(), "Quit".into()),
                 ).set_description(&format!("Failed to load config: {:?}\n Create a new default config and overwrite, or quit?", e)).show() {
-                    Ok(Config::default())
+                    Ok(Self::default())
                 } else {
                     anyhow::bail!("Couldn't create config");
                 },

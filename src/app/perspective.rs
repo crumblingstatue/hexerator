@@ -17,17 +17,17 @@ pub struct Perspective {
 
 impl Perspective {
     /// Returns the index of the last row
-    pub(crate) fn last_row_idx(&self) -> usize {
+    pub(crate) const fn last_row_idx(&self) -> usize {
         self.region.end / self.cols
     }
     /// Returns the index of the last column
-    pub(crate) fn last_col_idx(&self) -> usize {
+    pub(crate) const fn last_col_idx(&self) -> usize {
         self.region.end % self.cols
     }
-    pub(crate) fn byte_offset_of_row_col(&self, row: usize, col: usize) -> usize {
+    pub(crate) const fn byte_offset_of_row_col(&self, row: usize, col: usize) -> usize {
         self.region.begin + (row * self.cols + col)
     }
-    pub(crate) fn row_col_of_byte_offset(&self, offset: usize) -> (usize, usize) {
+    pub(crate) const fn row_col_of_byte_offset(&self, offset: usize) -> (usize, usize) {
         (offset / self.cols, offset % self.cols)
     }
     /// Whether the columns are within `cols` and the calculated offset is within the region
@@ -38,7 +38,7 @@ impl Perspective {
         self.cols = self.cols.clamp(1, self.region.len())
     }
     /// Returns rows spanned by `region`, and the remainder
-    pub(crate) fn region_row_span(&self, region: Region) -> (usize, usize) {
+    pub(crate) const fn region_row_span(&self, region: Region) -> (usize, usize) {
         (region.len() / self.cols, region.len() % self.cols)
     }
 }

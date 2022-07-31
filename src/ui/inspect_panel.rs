@@ -19,11 +19,11 @@ enum Format {
 }
 
 impl Format {
-    fn label(&self) -> &'static str {
+    const fn label(&self) -> &'static str {
         match self {
-            Format::Decimal => "Decimal",
-            Format::Hex => "Hex",
-            Format::Bin => "Binary",
+            Self::Decimal => "Decimal",
+            Self::Hex => "Hex",
+            Self::Bin => "Binary",
         }
     }
 }
@@ -127,32 +127,32 @@ trait NumBytesManip: std::fmt::Display + Sized {
 macro_rules! num_bytes_manip_impl {
     ($t:ty) => {
         impl NumBytesManip for $t {
-            type ToBytes = [u8; <$t>::BITS as usize / 8];
+            type ToBytes = [u8; <Self>::BITS as usize / 8];
 
             fn label() -> &'static str {
                 stringify!($t)
             }
 
             fn from_le_bytes(bytes: &[u8]) -> Result<Self, FromBytesError> {
-                match bytes.get(..<$t>::BITS as usize / 8) {
+                match bytes.get(..<Self>::BITS as usize / 8) {
                     Some(slice) => Ok(Self::from_le_bytes(slice.try_into()?)),
                     None => Err(FromBytesError::SliceIndexError),
                 }
             }
 
             fn from_be_bytes(bytes: &[u8]) -> Result<Self, FromBytesError> {
-                match bytes.get(..<$t>::BITS as usize / 8) {
+                match bytes.get(..<Self>::BITS as usize / 8) {
                     Some(slice) => Ok(Self::from_be_bytes(slice.try_into()?)),
                     None => Err(FromBytesError::SliceIndexError),
                 }
             }
 
             fn to_le_bytes(&self) -> Self::ToBytes {
-                <$t>::to_le_bytes(*self)
+                <Self>::to_le_bytes(*self)
             }
 
             fn to_be_bytes(&self) -> Self::ToBytes {
-                <$t>::to_be_bytes(*self)
+                <Self>::to_be_bytes(*self)
             }
 
             fn to_hex_string(&self) -> String {
@@ -208,11 +208,11 @@ impl NumBytesManip for f32 {
     }
 
     fn to_le_bytes(&self) -> Self::ToBytes {
-        f32::to_le_bytes(*self)
+        Self::to_le_bytes(*self)
     }
 
     fn to_be_bytes(&self) -> Self::ToBytes {
-        f32::to_be_bytes(*self)
+        Self::to_be_bytes(*self)
     }
 
     fn to_hex_string(&self) -> String {
@@ -255,11 +255,11 @@ impl NumBytesManip for f64 {
     }
 
     fn to_le_bytes(&self) -> Self::ToBytes {
-        f64::to_le_bytes(*self)
+        Self::to_le_bytes(*self)
     }
 
     fn to_be_bytes(&self) -> Self::ToBytes {
-        f64::to_le_bytes(*self)
+        Self::to_le_bytes(*self)
     }
 
     fn to_hex_string(&self) -> String {
@@ -409,10 +409,9 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
     let offset = match app.interact_mode {
         InteractMode::View => {
             if let Some((off, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
-                let mut add = 0;
-                if app.ui.inspect_panel.offset_relative {
-                    add = app.args.hard_seek.unwrap_or(0);
-                }
+                let add = if app.ui.inspect_panel.offset_relative {
+                    app.args.hard_seek.unwrap_or(0)
+                } else { 0 };
                 ui.label(format!("offset: {} (0x{:x})", off + add, off + add));
                 off
             } else {

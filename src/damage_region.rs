@@ -5,19 +5,19 @@ pub enum DamageRegion {
 }
 
 impl DamageRegion {
-    pub(crate) fn begin(&self) -> usize {
+    pub(crate) const fn begin(&self) -> usize {
         match self {
-            DamageRegion::Single(offset) => *offset,
-            DamageRegion::Range(range) => range.start,
-            DamageRegion::RangeInclusive(range) => *range.start(),
+            Self::Single(offset) => *offset,
+            Self::Range(range) => range.start,
+            Self::RangeInclusive(range) => *range.start(),
         }
     }
 
-    pub(crate) fn end(&self) -> usize {
+    pub(crate) const fn end(&self) -> usize {
         match self {
-            DamageRegion::Single(offset) => *offset,
-            DamageRegion::Range(range) => range.end - 1,
-            DamageRegion::RangeInclusive(range) => *range.end(),
+            Self::Single(offset) => *offset,
+            Self::Range(range) => range.end - 1,
+            Self::RangeInclusive(range) => *range.end(),
         }
     }
 }

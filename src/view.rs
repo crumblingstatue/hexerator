@@ -242,7 +242,7 @@ impl View {
         self.scroll_y(-self.viewport_rect.h / 2);
     }
 
-    pub fn offsets(&self, perspective: &Perspective) -> Offsets {
+    pub const fn offsets(&self, perspective: &Perspective) -> Offsets {
         let row = self.scroll_offset.row;
         let col = self.scroll_offset.col;
         Offsets {
@@ -272,7 +272,7 @@ impl View {
         clippy::cast_sign_loss,
         reason = "View::rows() being negative is a bug, can expect positive."
     )]
-    pub(crate) fn bytes_per_page(&self, perspective: &Perspective) -> usize {
+    pub(crate) const fn bytes_per_page(&self, perspective: &Perspective) -> usize {
         self.rows() as usize * perspective.cols
     }
 
@@ -281,7 +281,7 @@ impl View {
         clippy::cast_possible_wrap,
         reason = "block size is never greater than i16::MAX"
     )]
-    pub(crate) fn rows(&self) -> i16 {
+    pub(crate) const fn rows(&self) -> i16 {
         self.viewport_rect.h / self.row_h as i16
     }
 
@@ -300,7 +300,7 @@ impl View {
         self.edit_buf.resize(glyph_count);
     }
     /// The number of glyphs per block this view has
-    fn glyph_count(&self) -> u16 {
+    const fn glyph_count(&self) -> u16 {
         match self.kind {
             ViewKind::Hex => 2,
             ViewKind::Dec => 3,
@@ -335,7 +335,7 @@ impl View {
         }
     }
 
-    fn char_valid(&self, unicode: char) -> bool {
+    const fn char_valid(&self, unicode: char) -> bool {
         match self.kind {
             ViewKind::Hex => matches!(unicode, '0'..='9' | 'a'..='f'),
             ViewKind::Dec => matches!(unicode, '0'..='9'),
@@ -472,16 +472,16 @@ pub struct ScrollOffset {
 }
 
 impl ScrollOffset {
-    pub fn col(&self) -> usize {
+    pub const fn col(&self) -> usize {
         self.col
     }
-    pub fn row(&self) -> usize {
+    pub const fn row(&self) -> usize {
         self.row
     }
-    pub fn pix_xoff(&self) -> i16 {
+    pub const fn pix_xoff(&self) -> i16 {
         self.pix_xoff
     }
-    pub fn pix_yoff(&self) -> i16 {
+    pub const fn pix_yoff(&self) -> i16 {
         self.pix_yoff
     }
     /// Discard pixel offsets
@@ -550,19 +550,19 @@ pub enum TextKind {
 }
 
 impl TextKind {
-    pub fn name(&self) -> &'static str {
+    pub const fn name(&self) -> &'static str {
         match self {
-            TextKind::Ascii => "ascii",
-            TextKind::Utf16Le => "utf-16 le",
-            TextKind::Utf16Be => "utf-16 be",
+            Self::Ascii => "ascii",
+            Self::Utf16Le => "utf-16 le",
+            Self::Utf16Be => "utf-16 be",
         }
     }
 
-    pub(crate) fn bytes_needed(&self) -> u8 {
+    pub(crate) const fn bytes_needed(&self) -> u8 {
         match self {
-            TextKind::Ascii => 1,
-            TextKind::Utf16Le => 2,
-            TextKind::Utf16Be => 2,
+            Self::Ascii => 1,
+            Self::Utf16Le => 2,
+            Self::Utf16Be => 2,
         }
     }
 }
@@ -576,7 +576,7 @@ impl ViewportRect {
         self.contains_pos(x, y).then_some((x - self.x, y - self.y))
     }
 
-    fn contains_pos(&self, x: ViewportScalar, y: ViewportScalar) -> bool {
+    const fn contains_pos(&self, x: ViewportScalar, y: ViewportScalar) -> bool {
         x >= self.x && y >= self.y && x <= self.x + self.w && y <= self.y + self.h
     }
 }

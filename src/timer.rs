@@ -25,6 +25,6 @@ impl Timer {
 
 impl Default for Timer {
     fn default() -> Self {
-        Timer::set(Duration::ZERO)
+        Self::set(Duration::ZERO)
     }
 }

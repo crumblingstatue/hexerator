@@ -1,4 +1,4 @@
-fn byte_16_digits(byte: u8) -> [u8; 2] {
+const fn byte_16_digits(byte: u8) -> [u8; 2] {
     [byte / 16, byte % 16]
 }
 
@@ -7,7 +7,7 @@ fn test_byte_16_digits() {
     assert_eq!(byte_16_digits(255), [15, 15]);
 }
 
-pub fn byte_to_hex_digits(byte: u8) -> [u8; 2] {
+pub const fn byte_to_hex_digits(byte: u8) -> [u8; 2] {
     let [l, r] = byte_16_digits(byte);
     const TABLE: &[u8; 16] = b"0123456789ABCDEF";
     [TABLE[l as usize], TABLE[r as usize]]

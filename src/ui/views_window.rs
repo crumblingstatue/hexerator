@@ -21,12 +21,12 @@ impl Default for ViewsWindow {
 }
 
 impl ViewKind {
-    fn name(&self) -> &'static str {
+    const fn name(&self) -> &'static str {
         match *self {
-            ViewKind::Hex => "Hex",
-            ViewKind::Dec => "Decimal",
-            ViewKind::Text => "Text",
-            ViewKind::Block => "Block",
+            Self::Hex => "Hex",
+            Self::Dec => "Decimal",
+            Self::Text => "Text",
+            Self::Block => "Block",
         }
     }
 }

@@ -36,12 +36,12 @@ impl ColorMethod {
     #[must_use]
     pub fn byte_color(&self, byte: u8, invert: bool) -> Color {
         let color = match self {
-            ColorMethod::Mono => Color::WHITE,
-            ColorMethod::Default => default_color(byte),
-            ColorMethod::Rgb332 => rgb332_color(byte),
-            ColorMethod::Vga13h => vga_13h_color(byte),
-            ColorMethod::Grayscale => Color::rgb(byte, byte, byte),
-            ColorMethod::Custom(arr) => {
+            Self::Mono => Color::WHITE,
+            Self::Default => default_color(byte),
+            Self::Rgb332 => rgb332_color(byte),
+            Self::Vga13h => vga_13h_color(byte),
+            Self::Grayscale => Color::rgb(byte, byte, byte),
+            Self::Custom(arr) => {
                 let [r, g, b] = arr[byte as usize];
                 Color::rgb(r, g, b)
             }
@@ -53,23 +53,23 @@ impl ColorMethod {
         }
     }
 
-    pub(crate) fn name(&self) -> &str {
+    pub(crate) const fn name(&self) -> &str {
         match self {
-            ColorMethod::Mono => "monochrome (white)",
-            ColorMethod::Default => "default",
-            ColorMethod::Rgb332 => "rgb 3-3-2",
-            ColorMethod::Vga13h => "VGA 13h",
-            ColorMethod::Grayscale => "grayscale",
-            ColorMethod::Custom(_) => "custom",
+            Self::Mono => "monochrome (white)",
+            Self::Default => "default",
+            Self::Rgb332 => "rgb 3-3-2",
+            Self::Vga13h => "VGA 13h",
+            Self::Grayscale => "grayscale",
+            Self::Custom(_) => "custom",
         }
     }
 }
 
-pub fn invert_color(color: Color) -> Color {
+pub const fn invert_color(color: Color) -> Color {
     Color::rgb(!color.red(), !color.green(), !color.blue())
 }
 
-fn vga_13h_color(byte: u8) -> Color {
+const fn vga_13h_color(byte: u8) -> Color {
     let c24 = VGA_13H_PALETTE[byte as usize];
     let r = c24 >> 16;
     let g = c24 >> 8;
@@ -81,7 +81,7 @@ fn vga_13h_color(byte: u8) -> Color {
     Color::rgb(r as u8, g as u8, b as u8)
 }
 
-fn rgb332_color(byte: u8) -> Color {
+const fn rgb332_color(byte: u8) -> Color {
     let r = byte & 0b11100000;
     let g = byte & 0b00011100;
     let b = byte & 0b00000011;
