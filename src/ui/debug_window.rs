@@ -1,4 +1,4 @@
-use egui_sfml::egui::Ui;
+use egui_sfml::egui::{self, Ui};
 use gamedebug_core::{Info, PerEntry, IMMEDIATE, PERSISTENT};
 
 #[expect(
@@ -9,11 +9,15 @@ use gamedebug_core::{Info, PerEntry, IMMEDIATE, PERSISTENT};
 pub fn ui(ui: &mut Ui) {
     match IMMEDIATE.lock() {
         Ok(imm) => {
-            for info in imm.iter() {
-                if let Info::Msg(msg) = info {
-                    ui.label(msg);
-                }
-            }
+            egui::ScrollArea::vertical()
+                .max_height(500.)
+                .show(ui, |ui| {
+                    for info in imm.iter() {
+                        if let Info::Msg(msg) = info {
+                            ui.label(msg);
+                        }
+                    }
+                });
         }
         Err(e) => {
             ui.label(&format!("IMMEDIATE lock fail: {}", e));
