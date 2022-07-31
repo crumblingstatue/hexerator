@@ -55,3 +55,8 @@ and practically limitless on 64 bit platforms. 16 bit platforms are not supporte
 These are i16, meaning values higher than 32767 are not supported.
 The minimum supported resolution is 920x620. The ui is not designed and tested for
 resolutions lower than that.
+
+### Block size
+A block, or cell (final name not decided) is the element that displays a value.
+Like a hex pair, an ascii character, etc.
+The size range is `1..i16::MAX`.

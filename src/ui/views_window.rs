@@ -88,7 +88,7 @@ impl ViewsWindow {
                     #[expect(
                         clippy::cast_possible_truncation,
                         clippy::cast_sign_loss,
-                        reason = "We assert line_spacing is between 0 and 255"
+                        reason = "We assert line_spacing is between 0 and i16::MAX"
                     )]
                     if ui
                         .add(
@@ -98,8 +98,8 @@ impl ViewsWindow {
                         .changed()
                     {
                         let line_spacing = font.line_spacing(u32::from(view.font_size));
-                        assert!(line_spacing > 0.0 && line_spacing <= 255.0);
-                        view.line_spacing = line_spacing as u8;
+                        assert!(line_spacing > 0.0 && line_spacing <= i16::MAX as f32);
+                        view.line_spacing = line_spacing as u16;
                         view.adjust_block_size();
                     }
                 });

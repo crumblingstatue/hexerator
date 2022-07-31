@@ -24,9 +24,9 @@ pub struct View {
     /// The kind of view (hex, ascii, block, etc)
     pub kind: ViewKind,
     /// Width of a column
-    pub col_w: u8,
+    pub col_w: u16,
     /// Height of a row
-    pub row_h: u8,
+    pub row_h: u16,
     /// The scrolling offset
     pub scroll_offset: ScrollOffset,
     /// The amount scrolled for a single scroll operation, in pixels
@@ -41,8 +41,8 @@ pub struct View {
     /// Only used by text views
     pub text_kind: TextKind,
     /// Font size
-    pub font_size: u8,
-    pub line_spacing: u8,
+    pub font_size: u16,
+    pub line_spacing: u16,
 }
 
 impl View {
@@ -67,7 +67,7 @@ impl View {
             edit_buf: EditBuffer::default(),
             text_kind: TextKind::Ascii,
             font_size,
-            line_spacing: font.line_spacing(u32::from(font_size)) as u8,
+            line_spacing: font.line_spacing(u32::from(font_size)) as u16,
         };
         this.adjust_state_to_kind();
         this
@@ -98,7 +98,7 @@ impl View {
         scroll_impl(
             &mut self.scroll_offset.col,
             &mut self.scroll_offset.pix_xoff,
-            self.col_w.into(),
+            self.col_w as i16,
             amount,
         )
     }
@@ -106,7 +106,7 @@ impl View {
         scroll_impl(
             &mut self.scroll_offset.row,
             &mut self.scroll_offset.pix_yoff,
-            self.row_h.into(),
+            self.row_h as i16,
             amount,
         )
     }
@@ -117,8 +117,8 @@ impl View {
         src_yoff: i16,
         src_col: usize,
         src_xoff: i16,
-        src_row_h: u8,
-        src_col_w: u8,
+        src_row_h: u16,
+        src_col_w: u16,
     ) {
         self.scroll_offset.row = src_row;
         self.scroll_offset.col = src_col;
@@ -188,8 +188,8 @@ impl View {
     ) -> Option<(usize, usize)> {
         let rel_x = x + self.scroll_offset.pix_xoff;
         let rel_y = y + self.scroll_offset.pix_yoff;
-        let rel_col = rel_x / i16::from(self.col_w);
-        let mut rel_row = rel_y / i16::from(self.row_h);
+        let rel_col = rel_x / self.col_w as i16;
+        let mut rel_row = rel_y / self.row_h as i16;
         if perspective.flip_row_order {
             rel_row = self.rows() - rel_row;
         }
@@ -262,7 +262,7 @@ impl View {
 
     /// Returns the number of rows this view can display
     pub(crate) fn rows(&self) -> i16 {
-        self.viewport_rect.h / i16::from(self.row_h)
+        self.viewport_rect.h / self.row_h as i16
     }
 
     pub fn adjust_block_size(&mut self) {
