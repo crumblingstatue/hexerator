@@ -1,4 +1,4 @@
-#![feature(lint_reasons, label_break_value, let_else, try_blocks)]
+#![feature(lint_reasons, label_break_value, let_else, try_blocks, array_chunks)]
 #![warn(
     trivial_casts,
     trivial_numeric_casts,
@@ -54,15 +54,19 @@ use view::ViewportScalar;
 
 fn msg_if_fail<T, E: std::fmt::Debug>(result: Result<T, E>, prefix: &str) -> Option<E> {
     if let Err(e) = result {
-        rfd::MessageDialog::new()
-            .set_level(rfd::MessageLevel::Error)
-            .set_title("Error")
-            .set_description(&format!("{}: {:?}", prefix, e))
-            .show();
+        msg_fail(&e, prefix);
         Some(e)
     } else {
         None
     }
+}
+
+fn msg_fail<E: std::fmt::Debug>(e: &E, prefix: &str) {
+    rfd::MessageDialog::new()
+        .set_level(rfd::MessageLevel::Error)
+        .set_title("Error")
+        .set_description(&format!("{}: {:?}", prefix, e))
+        .show();
 }
 
 fn msg_warn(msg: &str) {

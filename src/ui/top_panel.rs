@@ -3,8 +3,12 @@ use egui_sfml::egui::{self, ComboBox, Layout, Ui};
 use sfml::graphics::Image;
 
 use crate::{
-    app::App, color::ColorMethod, damage_region::DamageRegion, msg_if_fail, msg_warn,
-    slice_ext::SliceExt, view::ViewportScalar,
+    app::App,
+    color::{self, ColorMethod},
+    damage_region::DamageRegion,
+    msg_fail, msg_if_fail, msg_warn,
+    slice_ext::SliceExt,
+    view::ViewportScalar,
 };
 
 use super::top_menu::top_menu;
@@ -115,6 +119,19 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar) {
                     ) {
                         Ok(new) => *col = new,
                         Err(e) => msg_warn(&format!("Color parse error: {}", e)),
+                    }
+                }
+                if ui.button("Save").clicked() {
+                    if let Some(path) = rfd::FileDialog::new().save_file() {
+                        msg_if_fail(color::save_palette(arr, &path), "Failed to save pal");
+                    }
+                }
+                if ui.button("Load").clicked() {
+                    if let Some(path) = rfd::FileDialog::new().pick_file() {
+                        match color::load_palette(&path) {
+                            Ok(pal) => *arr = Box::new(pal),
+                            Err(e) => msg_fail(&e, "Failed to load pal"),
+                        }
                     }
                 }
                 let tooltip = "\

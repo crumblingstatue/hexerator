@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use egui_sfml::egui;
 use sfml::graphics::Color;
 
@@ -8,7 +10,26 @@ pub enum ColorMethod {
     Rgb332,
     Vga13h,
     Grayscale,
-    Custom(Box<[[u8; 3]; 256]>),
+    Custom(Box<Palette>),
+}
+
+type Palette = [[u8; 3]; 256];
+
+pub fn load_palette(path: &Path) -> anyhow::Result<Palette> {
+    let raw_bytes = std::fs::read(path)?;
+    if raw_bytes.len() != std::mem::size_of::<Palette>() {
+        anyhow::bail!("File for palette not the correct size");
+    }
+    let mut pal = [[0u8; 3]; 256];
+    for (rgb, pal_slot) in raw_bytes.array_chunks::<3>().zip(pal.iter_mut()) {
+        *pal_slot = *rgb;
+    }
+    Ok(pal)
+}
+
+pub fn save_palette(pal: &Palette, path: &Path) -> anyhow::Result<()> {
+    let raw_bytes: &[u8] = bytemuck::cast_slice(pal);
+    Ok(std::fs::write(path, raw_bytes)?)
 }
 
 impl ColorMethod {
