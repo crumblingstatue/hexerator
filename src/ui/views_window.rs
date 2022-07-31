@@ -31,8 +31,8 @@ impl ViewKind {
     }
 }
 
-pub const MIN_FONT_SIZE: u8 = 5;
-pub const MAX_FONT_SIZE: u8 = 128;
+pub const MIN_FONT_SIZE: u16 = 5;
+pub const MAX_FONT_SIZE: u16 = 256;
 
 impl ViewsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App, font: &Font) {
