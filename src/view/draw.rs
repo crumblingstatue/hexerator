@@ -348,7 +348,7 @@ impl View {
                             );
                             gx += f32::from(self.font_size - 4);
                         }
-                        let extra_x = self.edit_buf.cursor * self.font_size - 4;
+                        let extra_x = self.edit_buf.cursor * (self.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
@@ -403,7 +403,7 @@ impl View {
                             );
                             gx += f32::from(self.font_size - 4);
                         }
-                        let extra_x = self.edit_buf.cursor * self.font_size - 4;
+                        let extra_x = self.edit_buf.cursor * (self.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
