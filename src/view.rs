@@ -55,6 +55,11 @@ impl View {
         font: &Font,
     ) -> Self {
         let font_size = 14;
+        #[expect(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "It's extremely unlikely that the line spacing is not between 0..u16::MAX"
+        )]
         let mut this = Self {
             viewport_rect: ViewportRect { x, y, w, h },
             kind,
@@ -95,6 +100,10 @@ impl View {
         }
     }
     pub fn scroll_x(&mut self, amount: i16) {
+        #[expect(
+            clippy::cast_possible_wrap,
+            reason = "block size is never greater than i16::MAX"
+        )]
         scroll_impl(
             &mut self.scroll_offset.col,
             &mut self.scroll_offset.pix_xoff,
@@ -103,6 +112,10 @@ impl View {
         )
     }
     pub fn scroll_y(&mut self, amount: i16) {
+        #[expect(
+            clippy::cast_possible_wrap,
+            reason = "block size is never greater than i16::MAX"
+        )]
         scroll_impl(
             &mut self.scroll_offset.row,
             &mut self.scroll_offset.pix_yoff,
@@ -179,7 +192,10 @@ impl View {
             .relative_offset_of_pos(x, y)
             .and_then(|(x, y)| self.row_col_of_rel_pos(x, y, perspective))
     }
-
+    #[expect(
+        clippy::cast_possible_wrap,
+        reason = "block size is never greater than i16::MAX"
+    )]
     fn row_col_of_rel_pos(
         &self,
         x: i16,
@@ -261,6 +277,10 @@ impl View {
     }
 
     /// Returns the number of rows this view can display
+    #[expect(
+        clippy::cast_possible_wrap,
+        reason = "block size is never greater than i16::MAX"
+    )]
     pub(crate) fn rows(&self) -> i16 {
         self.viewport_rect.h / self.row_h as i16
     }
