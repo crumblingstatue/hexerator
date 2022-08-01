@@ -342,11 +342,11 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
             } => {
                 const MIN_WINDOW_W: u32 = 920;
                 const MIN_WINDOW_H: u32 = 620;
-                let needs_window_resize = if width < MIN_WINDOW_W {
-                    width = MIN_WINDOW_W;
-                    true
-                } else if height < MIN_WINDOW_H {
-                    height = MIN_WINDOW_H;
+                let resize_width = width < MIN_WINDOW_W;
+                let resize_height = height < MIN_WINDOW_H;
+                let needs_window_resize = if resize_width | resize_height {
+                    width = if resize_width { MIN_WINDOW_W } else { width };
+                    height = if resize_height { MIN_WINDOW_H } else { height };
                     true
                 } else {
                     false
