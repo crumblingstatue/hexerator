@@ -19,7 +19,7 @@ enum Format {
 }
 
 impl Format {
-    const fn label(&self) -> &'static str {
+    const fn label(self) -> &'static str {
         match self {
             Self::Decimal => "Decimal",
             Self::Hex => "Hex",
@@ -358,16 +358,16 @@ impl BytesManip for Ascii {
     ) -> Option<DamageRegion> {
         let len = buf.len();
         let range = offset..offset + len;
-        match data.get_mut(range.clone()) {
-            Some(slice) => {
-                slice.copy_from_slice(buf.as_bytes());
-                Some(DamageRegion::Range(range))
-            }
-            None => {
+        data.get_mut(range.clone()).map_or_else(
+            || {
                 msg_warn("Failed to write data: Out of bounds");
                 None
-            }
-        }
+            },
+            |slice| {
+                slice.copy_from_slice(buf.as_bytes());
+                Some(DamageRegion::Range(range))
+            },
+        )
     }
 }
 
@@ -379,8 +379,8 @@ struct InputThingy<T> {
 impl<T> Default for InputThingy<T> {
     fn default() -> Self {
         Self {
-            string: Default::default(),
-            _phantom: Default::default(),
+            string: String::default(),
+            _phantom: PhantomData::default(),
         }
     }
 }
@@ -411,7 +411,9 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             if let Some((off, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
                 let add = if app.ui.inspect_panel.offset_relative {
                     app.args.hard_seek.unwrap_or(0)
-                } else { 0 };
+                } else {
+                    0
+                };
                 ui.label(format!("offset: {} (0x{:x})", off + add, off + add));
                 off
             } else {
@@ -530,7 +532,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
                 app.center_view_on_offset(app.edit_state.cursor);
                 app.flash_cursor();
             }
-            Action::AddDirty(damage) => app.widen_dirty_region(damage),
+            Action::AddDirty(damage) => app.widen_dirty_region(&damage),
             Action::JumpForward(amount) => {
                 app.edit_state.set_cursor(app.edit_state.cursor + amount);
                 app.center_view_on_offset(app.edit_state.cursor);

@@ -24,7 +24,7 @@ impl EditState {
     }
     /// Step cursor back without saving history
     pub fn step_cursor_back(&mut self) {
-        self.cursor = self.cursor.saturating_sub(1)
+        self.cursor = self.cursor.saturating_sub(1);
     }
     /// Offset cursor by amount, not saving history
     pub fn offset_cursor(&mut self, amount: usize) {

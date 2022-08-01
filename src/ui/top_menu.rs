@@ -37,8 +37,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                                 entry
                                     .file
                                     .as_ref()
-                                    .map(|path| path.display().to_string())
-                                    .unwrap_or_else(|| String::from("Unnamed file")),
+                                    .map_or_else(|| String::from("Unnamed file"), |path| path.display().to_string())
                             )
                             .clicked()
                         {
@@ -127,7 +126,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
                     let range = sel.begin..=sel.end;
                     thread_rng().fill_bytes(&mut app.data[range.clone()]);
-                    app.widen_dirty_region(DamageRegion::RangeInclusive(range));
+                    app.widen_dirty_region(&DamageRegion::RangeInclusive(range));
                 }
                 ui.close_menu();
             }
@@ -169,7 +168,6 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 ui.close_menu();
             }
             if ui.button("Set cursor position").clicked() {
-                ui.close_menu();
                 #[derive(Debug, Default)]
                 struct SetCursorDialog {
                     offset: usize,
@@ -193,6 +191,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                         }
                     }
                 }
+                ui.close_menu();
                 app.ui.add_dialog(SetCursorDialog::default());
             }
         });

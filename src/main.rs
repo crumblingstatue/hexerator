@@ -129,7 +129,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
                 "Failed to bind IPC listener: {}\nGoing to try again.",
                 e
             ));
-            let _ = std::fs::remove_file(&sock_path);
+            let _res = std::fs::remove_file(&sock_path);
             LocalSocketListener::bind(sock_path)?
         }
     };
@@ -192,7 +192,7 @@ struct SocketRemoveGuard<'a> {
 }
 impl<'a> Drop for SocketRemoveGuard<'a> {
     fn drop(&mut self) {
-        let _ = std::fs::remove_file(self.sock_path);
+        let _res = std::fs::remove_file(self.sock_path);
     }
 }
 
@@ -237,7 +237,7 @@ fn do_frame(
     gamedebug_core::inc_frame();
 }
 
-/// Try to convert mouse position to ViewportVec, show error message and panic if it fails.
+/// Try to convert mouse position to `ViewportVec`, show error message and panic if it fails.
 ///
 /// Extremly high (>32700) mouse positions are unsupported.
 fn try_conv_mp_panic<T: TryInto<ViewportVec>>(src: T) -> ViewportVec
@@ -340,17 +340,17 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                 mut width,
                 mut height,
             } => {
-                let mut needs_window_resize = false;
                 const MIN_WINDOW_W: u32 = 920;
-                if width < MIN_WINDOW_W {
-                    width = MIN_WINDOW_W;
-                    needs_window_resize = true;
-                }
                 const MIN_WINDOW_H: u32 = 620;
-                if height < MIN_WINDOW_H {
+                let needs_window_resize = if width < MIN_WINDOW_W {
+                    width = MIN_WINDOW_W;
+                    true
+                } else if height < MIN_WINDOW_H {
                     height = MIN_WINDOW_H;
-                    needs_window_resize = true;
-                }
+                    true
+                } else {
+                    false
+                };
                 if needs_window_resize {
                     window.set_size((width, height));
                 }
@@ -507,7 +507,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
             InteractMode::Edit => {
                 app.perspective.region.begin = 0;
-                app.edit_state.set_cursor_no_history(0)
+                app.edit_state.set_cursor_no_history(0);
             }
         },
         Key::End => match app.interact_mode {

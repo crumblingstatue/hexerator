@@ -155,7 +155,11 @@ fn draw_block_cursor(
     clippy::cast_possible_truncation,
     reason = "Deliberate color modulation based on timer value."
 )]
-const fn cursor_color(active: bool, flash_timer: Option<u32>, presentation: &Presentation) -> Color {
+const fn cursor_color(
+    active: bool,
+    flash_timer: Option<u32>,
+    presentation: &Presentation,
+) -> Color {
     if active {
         match flash_timer {
             Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
@@ -328,7 +332,7 @@ impl View {
                                 f32::from(self.col_w),
                                 f32::from(self.row_h),
                                 app.presentation.sel_color,
-                            )
+                            );
                         }
                         let mut gx = x;
                         for (i, mut d) in hex_conv::byte_to_hex_digits(data[0])
@@ -383,7 +387,7 @@ impl View {
                                 f32::from(self.col_w),
                                 f32::from(self.row_h),
                                 app.presentation.sel_color,
-                            )
+                            );
                         }
                         let mut gx = x;
                         for (i, mut d) in dec_conv::byte_to_dec_digits(data[0])
@@ -438,7 +442,7 @@ impl View {
                                 f32::from(self.col_w),
                                 f32::from(self.row_h),
                                 app.presentation.sel_color,
-                            )
+                            );
                         }
                         let raw_data = match self.text_kind {
                             crate::view::TextKind::Ascii => u32::from(data[0]),

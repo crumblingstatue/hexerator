@@ -8,8 +8,8 @@ fn test_byte_10_digits() {
 }
 
 pub const fn byte_to_dec_digits(byte: u8) -> [u8; 3] {
-    let [a, b, c] = byte_10_digits(byte);
     const TABLE: &[u8; 10] = b"0123456789";
+    let [a, b, c] = byte_10_digits(byte);
     [TABLE[a as usize], TABLE[b as usize], TABLE[c as usize]]
 }
 

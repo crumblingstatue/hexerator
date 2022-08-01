@@ -24,6 +24,9 @@ impl Default for Status {
 
 impl RegionsWindow {
     pub fn ui(ui: &mut Ui, app: &mut App) {
+        enum Action {
+            SetCursor(usize),
+        }
         let button = egui::Button::new("Add selection as region");
         match App::selection(&app.select_a, &app.select_b) {
             Some(sel) => {
@@ -41,9 +44,6 @@ impl RegionsWindow {
         }
         ui.separator();
         let mut idx = 0;
-        enum Action {
-            SetCursor(usize),
-        }
         let mut action = None;
         app.regions.retain_mut(|region| {
             let mut retain = true;
@@ -72,7 +72,7 @@ impl RegionsWindow {
                     if re.double_clicked() {
                         app.ui.regions_window.status = Status::EditBegin(idx);
                     } else if re.clicked() {
-                        action = Some(Action::SetCursor(region.region.begin))
+                        action = Some(Action::SetCursor(region.region.begin));
                     }
                 }
                 ui.label("..=");
@@ -85,7 +85,7 @@ impl RegionsWindow {
                     if re.double_clicked() {
                         app.ui.regions_window.status = Status::EditEnd(idx);
                     } else if re.clicked() {
-                        action = Some(Action::SetCursor(region.region.end))
+                        action = Some(Action::SetCursor(region.region.end));
                     }
                 }
                 ui.label(format!("Size: {}", region.region.len()));

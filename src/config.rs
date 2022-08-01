@@ -18,9 +18,7 @@ impl Config {
             std::fs::create_dir_all(&cfg_dir)?;
         }
         let cfg_file = cfg_dir.join(FILENAME);
-        if !cfg_file.exists() {
-            Ok(Self::default())
-        } else {
+        if cfg_file.exists() {
             let result: anyhow::Result<Self> = try {
                 let cfg_bytes = std::fs::read(cfg_file)?;
                 rmp_serde::from_slice(&cfg_bytes)?
@@ -35,6 +33,8 @@ impl Config {
                     anyhow::bail!("Couldn't create config");
                 },
             }
+        } else {
+            Ok(Self::default())
         }
     }
     pub fn save(&self) -> anyhow::Result<()> {

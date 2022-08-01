@@ -8,8 +8,8 @@ fn test_byte_16_digits() {
 }
 
 pub const fn byte_to_hex_digits(byte: u8) -> [u8; 2] {
-    let [l, r] = byte_16_digits(byte);
     const TABLE: &[u8; 16] = b"0123456789ABCDEF";
+    let [l, r] = byte_16_digits(byte);
     [TABLE[l as usize], TABLE[r as usize]]
 }
 

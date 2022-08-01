@@ -83,6 +83,7 @@ pub struct App {
     pub preferences: Preferences,
 }
 
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Default)]
 pub struct Preferences {
     /// Move the edit cursor with the cursor keys, instead of block cursor
@@ -204,7 +205,7 @@ impl App {
                 // TODO: We're assuming here that end of the region is the same position as the last dirty byte
                 // Make sure to enforce this invariant.
                 // Add 1 to the end to write the dirty region even if it's 1 byte
-                &self.data[region.begin..region.end + 1]
+                &self.data[region.begin..=region.end]
             }
             None => &self.data,
         };
@@ -212,6 +213,7 @@ impl App {
         self.dirty_region = None;
         Ok(())
     }
+    #[allow(clippy::unused_self)]
     pub fn toggle_debug(&mut self) {
         gamedebug_core::toggle();
     }
@@ -242,7 +244,7 @@ impl App {
         })
     }
 
-    pub(crate) fn widen_dirty_region(&mut self, damage: DamageRegion) {
+    pub(crate) fn widen_dirty_region(&mut self, damage: &DamageRegion) {
         match &mut self.dirty_region {
             Some(dirty_region) => {
                 if damage.begin() < dirty_region.begin {
@@ -253,9 +255,7 @@ impl App {
                 }
                 let end = damage.end();
                 {
-                    if end < dirty_region.begin {
-                        panic!("Wait, what?");
-                    }
+                    assert!(end >= dirty_region.begin, "Wait, what?");
                     if end > dirty_region.end {
                         dirty_region.end = end;
                     }
@@ -265,7 +265,7 @@ impl App {
                 self.dirty_region = Some(Region {
                     begin: damage.begin(),
                     end: damage.end(),
-                })
+                });
             }
         }
     }
@@ -432,7 +432,7 @@ impl App {
                     let result: anyhow::Result<()> = try {
                         let amount = src_clone.read(&mut buf)?;
                         buf.truncate(amount);
-                        tx.send(buf)?;
+                        return tx.send(buf)?;
                     };
                     if let Err(e) = result {
                         msg_warn(&format!("Stream error: {}", e));
@@ -486,6 +486,7 @@ impl App {
         Ok(())
     }
 
+    #[allow(clippy::unnecessary_wraps)]
     pub(crate) fn load_file_args(
         &mut self,
         mut args: Args,
@@ -509,7 +510,7 @@ impl App {
             self.last_reload = Instant::now();
         }
     }
-    /// Returns the selection marked by select_a and select_b
+    /// Returns the selection marked by `select_a` and `select_b`
     pub(crate) fn selection(
         app_select_a: &Option<usize>,
         app_select_b: &Option<usize>,

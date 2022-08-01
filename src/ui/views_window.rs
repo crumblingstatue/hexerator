@@ -45,8 +45,7 @@ impl ViewsWindow {
                     view.adjust_state_to_kind();
                 }
                 match view.kind {
-                    ViewKind::Hex => {}
-                    ViewKind::Dec => {}
+                    ViewKind::Hex | ViewKind::Dec | ViewKind::Block => {}
                     ViewKind::Text => {
                         let mut changed = false;
                         egui::ComboBox::new(egui::Id::new("text_combo").with(idx), "Text kind")
@@ -78,7 +77,6 @@ impl ViewsWindow {
                             view.bytes_per_block = view.text_kind.bytes_needed();
                         }
                     }
-                    ViewKind::Block => {}
                 }
                 viewport_rect_ui(ui, &mut view.viewport_rect);
                 labelled_drag(ui, "column width", &mut view.col_w);

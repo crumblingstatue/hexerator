@@ -89,11 +89,11 @@ impl View {
             kind: ViewKind::Hex,
             col_w: 0,
             row_h: 0,
-            scroll_offset: Default::default(),
+            scroll_offset: ScrollOffset::default(),
             scroll_speed: 0,
             bytes_per_block: 0,
             active: false,
-            edit_buf: Default::default(),
+            edit_buf: EditBuffer::default(),
             text_kind: TextKind::Ascii,
             font_size: 0,
             line_spacing: 0,
@@ -109,7 +109,7 @@ impl View {
             &mut self.scroll_offset.pix_xoff,
             self.col_w as i16,
             amount,
-        )
+        );
     }
     pub fn scroll_y(&mut self, amount: i16) {
         #[expect(
@@ -121,7 +121,7 @@ impl View {
             &mut self.scroll_offset.pix_yoff,
             self.row_h as i16,
             amount,
-        )
+        );
     }
 
     pub(crate) fn sync_to(
@@ -304,8 +304,7 @@ impl View {
         match self.kind {
             ViewKind::Hex => 2,
             ViewKind::Dec => 3,
-            ViewKind::Text => 1,
-            ViewKind::Block => 1,
+            ViewKind::Text | ViewKind::Block => 1,
         }
     }
     pub fn handle_text_entered(&mut self, unicode: char, app: &mut App) {
@@ -322,9 +321,8 @@ impl View {
                     }
                     // Ascii doesn't need any copy buffer updates because it only ever deals with
                     // one glyph at a time
-                    ViewKind::Text => {}
                     // Block doesn't do any text input
-                    ViewKind::Block => {}
+                    ViewKind::Text | ViewKind::Block => {}
                 }
             }
             if self.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
@@ -349,7 +347,7 @@ impl View {
             ViewKind::Hex => {
                 app.data[app.edit_state.cursor] =
                     merge_hex_halves(self.edit_buf.buf[0], self.edit_buf.buf[1]);
-                app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                app.widen_dirty_region(&DamageRegion::Single(app.edit_state.cursor));
             }
             ViewKind::Dec => {
                 let s =
@@ -357,19 +355,19 @@ impl View {
                 match s.parse() {
                     Ok(num) => {
                         app.data[app.edit_state.cursor] = num;
-                        app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                        app.widen_dirty_region(&DamageRegion::Single(app.edit_state.cursor));
                     }
                     Err(e) => msg_warn(&format!("Invalid value: {}", e)),
                 }
             }
             ViewKind::Text => {
                 app.data[app.edit_state.cursor] = self.edit_buf.buf[0];
-                app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                app.widen_dirty_region(&DamageRegion::Single(app.edit_state.cursor));
             }
             ViewKind::Block => {}
         }
         if app.edit_state.cursor + 1 < app.data.len() && !app.preferences.sticky_edit {
-            app.edit_state.step_cursor_forward()
+            app.edit_state.step_cursor_forward();
         }
         self.edit_buf.reset();
 
@@ -505,7 +503,7 @@ pub struct ViewportRect {
     pub h: ViewportScalar,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct ViewportVec {
     pub x: ViewportScalar,
     pub y: ViewportScalar,
@@ -561,8 +559,7 @@ impl TextKind {
     pub(crate) const fn bytes_needed(&self) -> u8 {
         match self {
             Self::Ascii => 1,
-            Self::Utf16Le => 2,
-            Self::Utf16Be => 2,
+            Self::Utf16Le | Self::Utf16Be => 2,
         }
     }
 }

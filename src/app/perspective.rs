@@ -35,7 +35,7 @@ impl Perspective {
         col < self.cols && self.region.contains(self.byte_offset_of_row_col(row, col))
     }
     pub(crate) fn clamp_cols(&mut self) {
-        self.cols = self.cols.clamp(1, self.region.len())
+        self.cols = self.cols.clamp(1, self.region.len());
     }
     /// Returns rows spanned by `region`, and the remainder
     pub(crate) const fn region_row_span(&self, region: Region) -> (usize, usize) {

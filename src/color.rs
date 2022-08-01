@@ -82,12 +82,13 @@ const fn vga_13h_color(byte: u8) -> Color {
 }
 
 const fn rgb332_color(byte: u8) -> Color {
-    let r = byte & 0b11100000;
-    let g = byte & 0b00011100;
-    let b = byte & 0b00000011;
+    let r = byte & 0b1110_0000;
+    let g = byte & 0b0001_1100;
+    let b = byte & 0b0000_0011;
     Color::rgb((r >> 5) * 32, (g >> 2) * 32, b * 64)
 }
 
+#[allow(clippy::unreadable_literal)]
 const VGA_13H_PALETTE: [u32; 256] = [
     0x000000, 0x0000a8, 0x00a800, 0x00a8a8, 0xa80000, 0xa800a8, 0xa85400, 0xa8a8a8, 0x545454,
     0x5454fc, 0x54fc54, 0x54fcfc, 0xfc5454, 0xfc54fc, 0xfcfc54, 0xfcfcfc, 0x000000, 0x141414,

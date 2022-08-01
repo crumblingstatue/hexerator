@@ -44,7 +44,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar, font: &Font
                     Ok(values) => {
                         let range = sel.begin..=sel.end;
                         app.data[range.clone()].pattern_fill(&values);
-                        app.widen_dirty_region(DamageRegion::RangeInclusive(range));
+                        app.widen_dirty_region(&DamageRegion::RangeInclusive(range));
                     }
                     Err(e) => {
                         msg_warn(&format!("Fill parse error: {}", e));
