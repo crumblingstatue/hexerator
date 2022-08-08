@@ -98,7 +98,7 @@ struct InstanceRequest {
 }
 
 fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
-    let mut args = Args::parse();
+    let args = Args::parse();
     if args.instance {
         match LocalSocketStream::connect(sock_path) {
             Ok(mut stream) => {
@@ -141,11 +141,6 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
         }
     };
     listener.set_nonblocking(true)?;
-    // Streaming sources should be read-only.
-    // Opening them as write blocks at EOF, which we don't want.
-    if args.stream {
-        args.read_only = true;
-    }
     let desktop_mode = VideoMode::desktop_mode();
     let mut window = RenderWindow::new(
         desktop_mode,
