@@ -3,7 +3,8 @@ use rand::{thread_rng, RngCore};
 use sfml::{graphics::Font, window::clipboard};
 
 use crate::{
-    app::App, damage_region::DamageRegion, msg_if_fail, msg_info, source::Source, ui::Dialog,
+    app::App, damage_region::DamageRegion, msg_if_fail, msg_info, source::SourceProvider,
+    ui::Dialog,
 };
 
 pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Font) {
@@ -69,7 +70,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             ui.separator();
             if ui
                 .add_enabled(
-                    !app.args.read_only && app.dirty_region.is_some(),
+                    app.source.is_some_and(|src| src.attr.permissions.write) && app.dirty_region.is_some(),
                     egui::Button::new("Save (ctrl+S)"),
                 )
                 .clicked()
@@ -255,27 +256,29 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
         });
         ui.with_layout(Layout::right_to_left(), |ui| {
             match &app.source {
-                Some(src) => match src {
-                    Source::File(_) => {
-                        match &app.args.file {
-                            Some(file) => ui.label(file.display().to_string()),
-                            None => ui.label("File path unknown"),
-                        };
+                Some(src) => {
+                    match src.provider {
+                        SourceProvider::File(_) => {
+                            match &app.args.file {
+                                Some(file) => ui.label(file.display().to_string()),
+                                None => ui.label("File path unknown"),
+                            };
+                        }
+                        SourceProvider::Stdin(_) => {
+                            ui.label("Standard input");
+                        }
                     }
-                    Source::Stdin(_) => {
-                        ui.label("Standard input");
+                    if src.attr.stream {
+                        if src.state.stream_end {
+                            ui.label("[finished stream]");
+                        } else {
+                            ui.spinner();
+                            ui.label("[streaming]");
+                        }
                     }
-                },
+                }
                 None => {
                     ui.label("No source loaded");
-                }
-            }
-            if app.args.stream {
-                if app.stream_end {
-                    ui.label("[finished stream]");
-                } else {
-                    ui.spinner();
-                    ui.label("[streaming]");
                 }
             }
         });

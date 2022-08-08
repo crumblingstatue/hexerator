@@ -4,12 +4,40 @@ use std::{
 };
 
 #[derive(Debug)]
-pub enum Source {
+pub enum SourceProvider {
     File(File),
     Stdin(Stdin),
 }
 
-impl Clone for Source {
+#[derive(Debug)]
+pub struct Source {
+    pub provider: SourceProvider,
+    pub attr: SourceAttributes,
+    pub state: SourceState,
+}
+
+#[derive(Debug)]
+pub struct SourceAttributes {
+    /// Whether it's possible to seek
+    pub seekable: bool,
+    /// Whether reading should be done by streaming
+    pub stream: bool,
+    pub permissions: SourcePermissions,
+}
+
+#[derive(Debug, Default)]
+pub struct SourceState {
+    /// Whether streaming has finished
+    pub stream_end: bool,
+}
+
+#[derive(Debug)]
+pub struct SourcePermissions {
+    pub read: bool,
+    pub write: bool,
+}
+
+impl Clone for SourceProvider {
     #[expect(
         clippy::unwrap_used,
         reason = "Can't really do much else in clone impl"
@@ -22,11 +50,11 @@ impl Clone for Source {
     }
 }
 
-impl Read for Source {
+impl Read for SourceProvider {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         match self {
-            Source::File(f) => f.read(buf),
-            Source::Stdin(stdin) => stdin.read(buf),
+            SourceProvider::File(f) => f.read(buf),
+            SourceProvider::Stdin(stdin) => stdin.read(buf),
         }
     }
 }

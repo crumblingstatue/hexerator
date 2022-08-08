@@ -28,7 +28,7 @@ use crate::{
     metafile::Metafile,
     msg_if_fail, msg_warn,
     region::Region,
-    source::Source,
+    source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     timer::Timer,
     view::{View, ViewKind, ViewportScalar},
 };
@@ -65,7 +65,6 @@ pub struct App {
     pub col_change_lock_x: bool,
     pub col_change_lock_y: bool,
     flash_cursor_timer: Timer,
-    pub stream_end: bool,
     pub just_reloaded: bool,
     pub layout: Layout,
     pub regions: Vec<NamedRegion>,
@@ -140,7 +139,6 @@ impl App {
             col_change_lock_x: false,
             col_change_lock_y: true,
             flash_cursor_timer: Timer::default(),
-            stream_end: false,
             just_reloaded: true,
             layout,
             regions: Vec::new(),
@@ -169,13 +167,15 @@ impl App {
     }
     pub fn reload(&mut self) -> anyhow::Result<()> {
         match &mut self.source {
-            Some(Source::File(file)) => {
-                self.data = read_contents(&self.args, file)?;
-                self.dirty_region = None;
-            }
-            Some(Source::Stdin(_)) => {
-                bail!("Can't reload streaming sources like standard input");
-            }
+            Some(src) => match &mut src.provider {
+                SourceProvider::File(file) => {
+                    self.data = read_contents(&self.args, file)?;
+                    self.dirty_region = None;
+                }
+                SourceProvider::Stdin(_) => {
+                    bail!("Can't reload streaming sources like standard input")
+                }
+            },
             None => bail!("No file to reload"),
         }
         self.just_reloaded = true;
@@ -183,9 +183,9 @@ impl App {
     }
     pub fn save(&mut self) -> anyhow::Result<()> {
         let file = match &mut self.source {
-            Some(src) => match src {
-                Source::File(file) => file,
-                Source::Stdin(_) => bail!("Standard input doesn't support saving"),
+            Some(src) => match &mut src.provider {
+                SourceProvider::File(file) => file,
+                SourceProvider::Stdin(_) => bail!("Standard input doesn't support saving"),
             },
             None => bail!("No source opened, nothing to save"),
         };
@@ -334,7 +334,6 @@ impl App {
 
     /// Readjust to a new file
     fn new_file_readjust(&mut self, window_height: ViewportScalar, font: &Font) {
-        self.stream_end = false;
         self.perspective = Perspective {
             region: Region {
                 begin: 0,
@@ -395,6 +394,10 @@ impl App {
     }
 
     pub(crate) fn try_read_stream(&mut self) {
+        let Some(src) = &mut self.source else { return };
+        if !src.attr.stream {
+            return;
+        };
         let Some(idx) = self.focused_view else { return };
         let view = &self.views[idx];
         let view_byte_offset = view.offsets(&self.perspective).byte;
@@ -403,14 +406,14 @@ impl App {
         if view_byte_offset + bytes_per_page < self.data.len() {
             return;
         }
-        if self.stream_end {
+        if src.state.stream_end {
             return;
         }
         match &self.stream_read_recv {
             Some(recv) => match recv.try_recv() {
                 Ok(buf) => {
                     if buf.is_empty() {
-                        self.stream_end = true;
+                        src.state.stream_end = true;
                     } else {
                         self.data.extend_from_slice(&buf[..]);
                         self.perspective.region.end = self.data.len() - 1;
@@ -423,8 +426,7 @@ impl App {
             },
             None => {
                 let (tx, rx) = std::sync::mpsc::channel();
-                let Some(src) = &mut self.source else { return };
-                let mut src_clone = src.clone();
+                let mut src_clone = src.provider.clone();
                 self.stream_read_recv = Some(rx);
                 thread::spawn(move || {
                     let buffer_size = 1024;
@@ -572,8 +574,18 @@ fn load_file_from_args(
 ) -> bool {
     if let Some(file_arg) = &args.file {
         if file_arg.as_os_str() == "-" {
-            *source = Some(Source::Stdin(std::io::stdin()));
-            args.stream = true;
+            *source = Some(Source {
+                provider: SourceProvider::Stdin(std::io::stdin()),
+                attr: SourceAttributes {
+                    seekable: false,
+                    stream: true,
+                    permissions: SourcePermissions {
+                        read: true,
+                        write: false,
+                    },
+                },
+                state: SourceState::default(),
+            });
             true
         } else {
             let result: Result<(), anyhow::Error> = try {
@@ -594,7 +606,18 @@ fn load_file_from_args(
                 if !args.stream {
                     *data = read_contents(&*args, &mut file)?;
                 }
-                *source = Some(Source::File(file));
+                *source = Some(Source {
+                    provider: SourceProvider::File(file),
+                    attr: SourceAttributes {
+                        seekable: true,
+                        stream: args.stream,
+                        permissions: SourcePermissions {
+                            read: true,
+                            write: !args.read_only,
+                        },
+                    },
+                    state: SourceState::default(),
+                });
             };
             match result {
                 Ok(()) => true,

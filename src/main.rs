@@ -1,4 +1,11 @@
-#![feature(lint_reasons, label_break_value, let_else, try_blocks, array_chunks)]
+#![feature(
+    lint_reasons,
+    label_break_value,
+    let_else,
+    try_blocks,
+    array_chunks,
+    is_some_with
+)]
 #![warn(
     trivial_casts,
     trivial_numeric_casts,
@@ -254,9 +261,7 @@ where
 }
 
 fn update(app: &mut App) {
-    if app.args.stream {
-        app.try_read_stream();
-    }
+    app.try_read_stream();
     if app.data.is_empty() {
         return;
     }
@@ -548,13 +553,16 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::F if ctrl => {
             app.ui.find_dialog.open ^= true;
         }
-        Key::S if ctrl => {
-            if app.args.read_only {
-                msg_warn("File opened as read-only");
-            } else {
-                msg_if_fail(app.save(), "Failed to save");
+        Key::S if ctrl => match &mut app.source {
+            Some(source) => {
+                if !source.attr.permissions.write {
+                    msg_warn("This source cannot be written to.");
+                } else {
+                    msg_if_fail(app.save(), "Failed to save");
+                }
             }
-        }
+            None => msg_warn("No source opened"),
+        },
         Key::R if ctrl => {
             msg_if_fail(app.reload(), "Failed to reload");
         }
