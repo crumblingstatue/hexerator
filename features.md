@@ -8,6 +8,7 @@ Legend:
 - [x] [Easy data alignment](#easy-data-alignment)
 - [x] Suitable for [process memory editing](#process-memory-editing)
 - [x] [Multiple source types](#multiple-source-types) (file/streamed sources)
+- [x] [Rich command line options](commandline.md)
 - [ ] [Bookmarks](#bookmarks)
 - [ ] [Multiple configurable views](#multiple-configurable-views)
 
