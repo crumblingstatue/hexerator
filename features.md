@@ -11,9 +11,11 @@ Legend:
 - [x] [Rich command line options](commandline.md)
 - [ ] [Bookmarks](#bookmarks)
 - [ ] [Multiple configurable views](#multiple-configurable-views)
+- [ ] [Huge file support through memory mapped files](#huge-file-support-through-memory-mapped-files)
 
 # Non-features
 - [Insertion](#insertion)
+- [Memory holes support, generic support for huge data](#memory-holes-support-generic-support-for-huge-data)
 
 # Features
 
@@ -56,8 +58,18 @@ To be implemented.
 Each bookmarked region can have multiple views of different configuration, like different column size.
 To be implemented.
 
+## Huge file support through memory mapped files
+
+Huge files that couldn't fit in memory can be opened as memory mapped files through a command line
+option.
+To be implemented.
 
 # Non-features
 
 ## Insertion
 Insertion would complicate implementation, and for most binary data, including process memory, it will just mess up the data.
+
+## Memory holes support, generic support for huge data
+Originally, I wanted to have a generic mechanism for loading only parts of files, but I found that
+it would make the implementation way more complex, and possibly inefficient, so I dropped the idea.
+Huge files will be eventually supported through memory mapped file support.
