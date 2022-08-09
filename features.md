@@ -29,6 +29,7 @@ Hexerator considers it important to easily align data with shortcut keys. Proper
 with pattern recognition.
 
 You can see a YouTube video of it in action here:
+
 [![Video](https://img.youtube.com/vi/GhPh_y1PjTU/0.jpg)](https://www.youtube.com/watch?v=GhPh_y1PjTU)
 
 ## Process Memory editing
@@ -37,6 +38,7 @@ It also only saves regions that have been edited, to prevent
 old memory from being saved over new updated memory.
 
 You can see a YouTube video of it in action here:
+
 [![Video](https://img.youtube.com/vi/W8ab3-Hp-f0/0.jpg)](https://www.youtube.com/watch?v=W8ab3-Hp-f0)
 
 ## Multiple source types
