@@ -7,6 +7,39 @@ use crate::{
     ui::Dialog,
 };
 
+#[derive(Debug, Default)]
+struct SetCursorDialog {
+    string_buf: String,
+}
+impl Dialog for SetCursorDialog {
+    fn title(&self) -> &str {
+        "Set cursor"
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+        ui.horizontal(|ui| {
+            ui.label("Offset");
+            ui.text_edit_singleline(&mut self.string_buf)
+                .request_focus();
+        });
+        if ui.input().key_pressed(egui::Key::Enter) {
+            match self.string_buf.parse::<usize>() {
+                Ok(offset) => {
+                    app.edit_state.cursor = offset;
+                    app.center_view_on_offset(offset);
+                    false
+                }
+                Err(e) => {
+                    msg_fail(&e, "Failed to parse offset");
+                    true
+                }
+            }
+        } else {
+            true
+        }
+    }
+}
+
 pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Font) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
@@ -171,37 +204,6 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             }
             if ui.button("Set cursor position").clicked() {
                 ui.close_menu();
-                #[derive(Debug, Default)]
-                struct SetCursorDialog {
-                    string_buf: String,
-                }
-                impl Dialog for SetCursorDialog {
-                    fn title(&self) -> &str {
-                        "Set cursor"
-                    }
-
-                    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
-                        ui.horizontal(|ui| {
-                            ui.label("Offset");
-                            ui.text_edit_singleline(&mut self.string_buf).request_focus();
-                        });
-                        if ui.input().key_pressed(egui::Key::Enter) {
-                            match self.string_buf.parse::<usize>() {
-                                Ok(offset) => {
-                                    app.edit_state.cursor = offset;
-                                    app.center_view_on_offset(offset);
-                                    false
-                                },
-                                Err(e) => {
-                                    msg_fail(&e, "Failed to parse offset");
-                                    true
-                                }
-                            }
-                        } else {
-                            true
-                        }
-                    }
-                }
                 app.ui.add_dialog(SetCursorDialog::default());
             }
         });
