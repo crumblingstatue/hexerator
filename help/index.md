@@ -4,4 +4,4 @@ A hex editor focused on binary file exploration and aiding human pattern recogni
 
 # Table of contents
 
-- [Shortcut keys](shortcut-keys)
+- [Keys](keys)

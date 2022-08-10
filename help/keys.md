@@ -1,4 +1,4 @@
-# Shortcut keys
+# Keys
 
 # View mode
 `⬅` `⬆` `➡` `⬇`: Move view. Hold `shift` to move faster.

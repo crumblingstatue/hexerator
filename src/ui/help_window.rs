@@ -17,8 +17,8 @@ const TOPICS: [Topic; 2] = [
         contents: include_str!("../../help/index.md"),
     },
     Topic {
-        name: "Shortcut keys",
-        contents: include_str!("../../help/shortcut-keys.md"),
+        name: "Keys",
+        contents: include_str!("../../help/keys.md"),
     },
 ];
 
@@ -43,7 +43,7 @@ impl HelpWindow {
                 TOPICS[app.ui.help_window.topic_index].contents,
             ) {
                 match url {
-                    "shortcut-keys" => app.ui.help_window.topic_index = 1,
+                    "keys" => app.ui.help_window.topic_index = 1,
                     etc => eprintln!("Unhandled URL: {}", etc),
                 }
             }
