@@ -52,7 +52,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar, font: &Font
                 }
             }
         }
-        ui.with_layout(Layout::right_to_left(), |ui| {
+        ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
             ui.checkbox(&mut app.presentation.invert_color, "invert");
             ComboBox::new("color_combo", "Color")
                 .selected_text(app.presentation.color_method.name())

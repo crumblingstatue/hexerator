@@ -1,6 +1,7 @@
 mod bottom_panel;
 mod debug_window;
 mod find_dialog;
+mod help_window;
 pub mod inspect_panel;
 mod regions_window;
 mod top_menu;
@@ -20,7 +21,7 @@ use crate::{
     view::{ViewportScalar, ViewportVec},
 };
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Ui {
     pub inspect_panel: InspectPanel,
     pub find_dialog: FindDialog,
@@ -30,6 +31,7 @@ pub struct Ui {
     pub regions_window: RegionsWindow,
     pub dialogs: Vec<Box<dyn Dialog>>,
     pub views_window: ViewsWindow,
+    pub help_window: HelpWindow,
 }
 
 pub trait Dialog: Debug {
@@ -44,8 +46,8 @@ impl Ui {
 }
 
 use self::{
-    find_dialog::FindDialog, inspect_panel::InspectPanel, regions_window::RegionsWindow,
-    views_window::ViewsWindow,
+    find_dialog::FindDialog, help_window::HelpWindow, inspect_panel::InspectPanel,
+    regions_window::RegionsWindow, views_window::ViewsWindow,
 };
 
 pub fn do_egui(
@@ -79,6 +81,11 @@ pub fn do_egui(
             .open(&mut open)
             .show(ctx, |ui| ViewsWindow::ui(ui, app, font));
         app.ui.views_window.open = open;
+        open = app.ui.help_window.open;
+        Window::new("Help")
+            .open(&mut open)
+            .show(ctx, |ui| HelpWindow::ui(ui, app));
+        app.ui.help_window.open = open;
         TopBottomPanel::top("top_panel")
             .show(ctx, |ui| top_panel::ui(ui, app, window_height, font));
         TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel::ui(ui, app));

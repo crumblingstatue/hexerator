@@ -249,7 +249,7 @@ checksum = "bd0c93bb4b0c6d9b77f4435b0ae98c24d17f1c45b2ff844c6151a07256ca923b"
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/emilk/egui.git#eeae485629fca24a81a7251739460b671e1420f7"
+source = "git+https://github.com/emilk/egui.git#7c25a9238e8b899b4d5653db98a583e69b790b17"
 dependencies = [
  "ahash",
  "epaint",
@@ -267,6 +267,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui_easy_mark_standalone"
+version = "0.1.0"
+source = "git+https://github.com/crumblingstatue/egui-easymark-standalone.git#2933698a6ab54d4180b433af8bd69a2fb9b8c2ae"
+dependencies = [
+ "egui",
+]
+
+[[package]]
 name = "either"
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -275,7 +283,7 @@ checksum = "3f107b87b6afc2a64fd13cac55fe06d6c8859f12d4b14cbcdd2c67d0976781be"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/emilk/egui.git#eeae485629fca24a81a7251739460b671e1420f7"
+source = "git+https://github.com/emilk/egui.git#7c25a9238e8b899b4d5653db98a583e69b790b17"
 
 [[package]]
 name = "embed-resource"
@@ -293,7 +301,7 @@ dependencies = [
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/emilk/egui.git#eeae485629fca24a81a7251739460b671e1420f7"
+source = "git+https://github.com/emilk/egui.git#7c25a9238e8b899b4d5653db98a583e69b790b17"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -458,6 +466,7 @@ dependencies = [
  "clap",
  "directories",
  "egui-sfml",
+ "egui_easy_mark_standalone",
  "either",
  "gamedebug_core",
  "glu-sys",

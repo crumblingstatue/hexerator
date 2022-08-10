@@ -249,12 +249,16 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             }
         });
         ui.menu_button("Help", |ui| {
+            if ui.button("Help").clicked() {
+                app.ui.help_window.open ^= true;
+                ui.close_menu();
+            }
             if ui.button("debug panel (F12)").clicked() {
                 ui.close_menu();
                 gamedebug_core::toggle();
             }
         });
-        ui.with_layout(Layout::right_to_left(), |ui| {
+        ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
             match &app.source {
                 Some(src) => {
                     match src.provider {
