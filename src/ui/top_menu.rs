@@ -192,9 +192,6 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 app.flash_cursor();
                 ui.close_menu();
             }
-            if ui.button("Set view offset to cursor").clicked() {
-                app.perspective.region.begin = app.edit_state.cursor;
-            }
             ui.horizontal(|ui| {
                 ui.label("Seek to byte offset");
                 let re = ui.text_edit_singleline(&mut app.ui.seek_byte_offset_input);
@@ -211,10 +208,18 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             });
             ui.checkbox(&mut app.col_change_lock_x, "Lock x on column change");
             ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
-            ui.checkbox(
+        });
+        ui.menu_button("Perspective", |ui| {
+            if ui.button("Set offset to cursor").clicked() {
+                app.perspective.region.begin = app.edit_state.cursor;
+                ui.close_menu();
+            }
+            if ui.checkbox(
                 &mut app.perspective.flip_row_order,
                 "Flip row order (experimental)",
-            );
+            ).clicked() {
+                ui.close_menu();
+            }
         });
         ui.menu_button("Meta", |ui| {
             if ui.button("Regions...").clicked() {
