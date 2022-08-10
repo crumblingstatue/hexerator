@@ -2,7 +2,12 @@ use egui_sfml::egui::{self, Layout};
 use rand::{thread_rng, RngCore};
 use sfml::{graphics::Font, window::clipboard};
 
-use crate::{app::App, damage_region::DamageRegion, msg_if_fail, msg_info, source::SourceProvider};
+use crate::{
+    app::App,
+    damage_region::DamageRegion,
+    shell::{msg_if_fail, msg_info},
+    source::SourceProvider,
+};
 
 use super::{
     dialogs::{AutoSaveReloadDialog, SetCursorDialog},

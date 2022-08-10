@@ -1,6 +1,6 @@
 use egui_sfml::egui::{self, ScrollArea, Ui};
 
-use crate::{app::App, msg_warn};
+use crate::{app::App, shell::msg_warn};
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub enum FindType {

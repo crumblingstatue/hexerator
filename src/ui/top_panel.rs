@@ -6,7 +6,7 @@ use crate::{
     app::App,
     color::{self, ColorMethod},
     damage_region::DamageRegion,
-    msg_fail, msg_if_fail, msg_warn,
+    shell::{msg_fail, msg_if_fail, msg_warn},
     slice_ext::SliceExt,
     view::ViewportScalar,
 };

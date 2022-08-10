@@ -58,41 +58,9 @@ use sfml::{
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };
+use shell::{msg_if_fail, msg_warn};
 use ui::dialogs::SetCursorDialog;
 use view::ViewportScalar;
-
-fn msg_if_fail<T, E: std::fmt::Debug>(result: Result<T, E>, prefix: &str) -> Option<E> {
-    if let Err(e) = result {
-        msg_fail(&e, prefix);
-        Some(e)
-    } else {
-        None
-    }
-}
-
-fn msg_fail<E: std::fmt::Debug>(e: &E, prefix: &str) {
-    rfd::MessageDialog::new()
-        .set_level(rfd::MessageLevel::Error)
-        .set_title("Error")
-        .set_description(&format!("{}: {:?}", prefix, e))
-        .show();
-}
-
-fn msg_warn(msg: &str) {
-    rfd::MessageDialog::new()
-        .set_level(rfd::MessageLevel::Warning)
-        .set_title("Warning")
-        .set_description(msg)
-        .show();
-}
-
-fn msg_info(msg: &str) {
-    rfd::MessageDialog::new()
-        .set_level(rfd::MessageLevel::Info)
-        .set_title("Info")
-        .set_description(msg)
-        .show();
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 struct InstanceRequest {

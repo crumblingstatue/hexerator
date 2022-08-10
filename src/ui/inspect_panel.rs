@@ -7,7 +7,7 @@ use thiserror::Error;
 use crate::{
     app::{interact_mode::InteractMode, App},
     damage_region::DamageRegion,
-    msg_if_fail, msg_warn,
+    shell::{msg_if_fail, msg_warn},
     view::ViewportVec,
 };
 

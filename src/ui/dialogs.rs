@@ -1,6 +1,6 @@
 use egui_sfml::egui;
 
-use crate::{app::App, msg_fail};
+use crate::{app::App, shell::msg_fail};
 
 use super::Dialog;
 

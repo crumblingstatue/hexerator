@@ -6,7 +6,7 @@ use crate::{
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
-    msg_if_fail, msg_warn,
+    shell::{msg_if_fail, msg_warn},
 };
 
 mod draw;
