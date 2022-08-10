@@ -155,15 +155,16 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             ui.checkbox(&mut app.preferences.sticky_edit, "Sticky edit")
                 .on_hover_text("Don't automatically move cursor after editing is finished");
         });
-        ui.menu_button("Seek", |ui| {
+        ui.menu_button("Cursor", |ui| {
             let re = ui
-                .button("Set cursor to initial position")
-                .on_hover_text("Set to --jump argument, 0 otherwise");
+                .button("Reset")
+                .on_hover_text("Set to initial position.\n\
+                                This will be --jump argument, if one was provided, 0 otherwise");
             if re.clicked() {
                 app.set_cursor_init();
                 ui.close_menu();
             }
-            if button_with_shortcut(ui, "Set cursor position", "Ctrl+J").clicked() {
+            if button_with_shortcut(ui, "Jump", "Ctrl+J").clicked() {
                 ui.close_menu();
                 app.ui.add_dialog(SetCursorDialog::default());
             }
