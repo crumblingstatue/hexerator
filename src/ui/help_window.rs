@@ -9,17 +9,24 @@ pub struct HelpWindow {
 struct Topic {
     name: &'static str,
     contents: &'static str,
+    id: &'static str,
 }
 
-const TOPICS: [Topic; 2] = [
-    Topic {
-        name: "Hexerator",
-        contents: include_str!("../../help/index.md"),
-    },
-    Topic {
-        name: "Keys",
-        contents: include_str!("../../help/keys.md"),
-    },
+macro_rules! topic {
+    ($id: literal, $name: literal) => {
+        Topic {
+            name: $name,
+            contents: include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/help/", $id, ".md")),
+            id: $id,
+        }
+    };
+}
+
+const TOPICS: [Topic; 4] = [
+    topic!("index", "Hexerator"),
+    topic!("keys", "Keys"),
+    topic!("modal-editing", "Modal editing"),
+    topic!("perspective", "Perspective"),
 ];
 
 impl HelpWindow {
@@ -42,9 +49,10 @@ impl HelpWindow {
                 ui,
                 TOPICS[app.ui.help_window.topic_index].contents,
             ) {
-                match url {
-                    "keys" => app.ui.help_window.topic_index = 1,
-                    etc => eprintln!("Unhandled URL: {}", etc),
+                for (i, topic) in TOPICS.iter().enumerate() {
+                    if url == topic.id {
+                        app.ui.help_window.topic_index = i;
+                    }
                 }
             }
         });
