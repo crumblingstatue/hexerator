@@ -39,7 +39,6 @@ use self::{
 };
 
 /// The hexerator application state
-#[derive(Debug)]
 pub struct App {
     /// The default perspective
     pub perspective: Perspective,
