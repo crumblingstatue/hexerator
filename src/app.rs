@@ -48,8 +48,6 @@ pub struct App {
     pub input: Input,
     pub interact_mode: InteractMode,
     pub presentation: Presentation,
-    // The value of the cursor on the previous frame. Used to determine when the cursor changes
-    pub prev_frame_inspect_offset: usize,
     pub views: Vec<View>,
     pub focused_view: Option<usize>,
     pub ui: crate::ui::Ui,
@@ -114,7 +112,6 @@ impl App {
         }
         load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
         let layout = Layout::new();
-        let cursor = 0;
         let mut views = default_views(&layout, window_height, font);
         views[0].go_home();
         let mut this = Self {
@@ -126,8 +123,6 @@ impl App {
             input: Input::default(),
             interact_mode: InteractMode::View,
             presentation: Presentation::default(),
-            // The value of the cursor on the previous frame. Used to determine when the cursor changes
-            prev_frame_inspect_offset: cursor,
             views,
             focused_view: Some(0),
             ui: crate::ui::Ui::default(),

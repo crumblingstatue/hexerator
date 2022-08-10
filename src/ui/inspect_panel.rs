@@ -36,6 +36,8 @@ pub struct InspectPanel {
     format: Format,
     /// If true, go to offset action is relative to the hard seek argument
     offset_relative: bool,
+    // The value of the cursor on the previous frame. Used to determine when the cursor changes
+    pub prev_frame_inspect_offset: usize,
 }
 
 impl std::fmt::Debug for InspectPanel {
@@ -64,6 +66,7 @@ impl Default for InspectPanel {
             big_endian: false,
             format: Format::Decimal,
             offset_relative: false,
+            prev_frame_inspect_offset: 0,
         }
     }
 }
@@ -426,7 +429,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
     if app.data.is_empty() {
         return;
     }
-    if offset != app.prev_frame_inspect_offset
+    if offset != app.ui.inspect_panel.prev_frame_inspect_offset
         || app.just_reloaded
         || app.ui.inspect_panel.changed_one
     {
@@ -539,7 +542,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             }
         }
     }
-    app.prev_frame_inspect_offset = offset;
+    app.ui.inspect_panel.prev_frame_inspect_offset = offset;
 }
 
 fn edit_offset(app: &mut App, ui: &mut Ui) -> usize {
