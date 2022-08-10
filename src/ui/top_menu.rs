@@ -3,7 +3,7 @@ use rand::{thread_rng, RngCore};
 use sfml::{graphics::Font, window::clipboard};
 
 use crate::{
-    app::App, damage_region::DamageRegion, msg_if_fail, msg_info, source::SourceProvider,
+    app::App, damage_region::DamageRegion, msg_fail, msg_if_fail, msg_info, source::SourceProvider,
     ui::Dialog,
 };
 
@@ -173,7 +173,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 ui.close_menu();
                 #[derive(Debug, Default)]
                 struct SetCursorDialog {
-                    offset: usize,
+                    string_buf: String,
                 }
                 impl Dialog for SetCursorDialog {
                     fn title(&self) -> &str {
@@ -183,12 +183,20 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
                         ui.horizontal(|ui| {
                             ui.label("Offset");
-                            ui.add(egui::DragValue::new(&mut self.offset));
+                            ui.text_edit_singleline(&mut self.string_buf).request_focus();
                         });
                         if ui.input().key_pressed(egui::Key::Enter) {
-                            app.edit_state.cursor = self.offset;
-                            app.center_view_on_offset(self.offset);
-                            false
+                            match self.string_buf.parse::<usize>() {
+                                Ok(offset) => {
+                                    app.edit_state.cursor = offset;
+                                    app.center_view_on_offset(offset);
+                                    false
+                                },
+                                Err(e) => {
+                                    msg_fail(&e, "Failed to parse offset");
+                                    true
+                                }
+                            }
                         } else {
                             true
                         }
