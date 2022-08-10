@@ -27,7 +27,6 @@ use crate::{
 pub struct Ui {
     pub inspect_panel: InspectPanel,
     pub find_dialog: FindDialog,
-    pub fill_text: String,
     pub center_offset_input: String,
     pub seek_byte_offset_input: String,
     pub regions_window: RegionsWindow,

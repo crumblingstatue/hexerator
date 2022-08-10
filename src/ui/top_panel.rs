@@ -5,9 +5,7 @@ use sfml::graphics::{Font, Image};
 use crate::{
     app::App,
     color::{self, ColorMethod},
-    damage_region::DamageRegion,
     shell::{msg_fail, msg_if_fail, msg_warn},
-    slice_ext::SliceExt,
     view::ViewportScalar,
 };
 
@@ -32,25 +30,6 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar, font: &Font
                 app.perspective.cols,
                 sel.len()
             ));
-            ui.text_edit_singleline(&mut app.ui.fill_text);
-            if ui.button("fill").clicked() {
-                let values: Result<Vec<u8>, _> = app
-                    .ui
-                    .fill_text
-                    .split(' ')
-                    .map(|token| u8::from_str_radix(token, 16))
-                    .collect();
-                match values {
-                    Ok(values) => {
-                        let range = sel.begin..=sel.end;
-                        app.data[range.clone()].pattern_fill(&values);
-                        app.widen_dirty_region(DamageRegion::RangeInclusive(range));
-                    }
-                    Err(e) => {
-                        msg_warn(&format!("Fill parse error: {}", e));
-                    }
-                }
-            }
         }
         ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
             ui.checkbox(&mut app.presentation.invert_color, "invert");

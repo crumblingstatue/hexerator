@@ -1,6 +1,11 @@
 use egui_sfml::egui;
 
-use crate::{app::App, shell::msg_fail};
+use crate::{
+    app::App,
+    damage_region::DamageRegion,
+    shell::{msg_fail, msg_warn},
+    slice_ext::SliceExt,
+};
 
 use super::Dialog;
 
@@ -59,5 +64,46 @@ impl Dialog for AutoSaveReloadDialog {
         !(ui.button("Close (enter/esc)").clicked()
             || ui.input().key_pressed(egui::Key::Escape)
             || ui.input().key_pressed(egui::Key::Enter))
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct PatternFillDialog {
+    pattern_string: String,
+}
+
+impl Dialog for PatternFillDialog {
+    fn title(&self) -> &str {
+        "Selection pattern fill"
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+        let Some(sel) = App::selection(&app.select_a, &app.select_b) else {
+            ui.heading("No active selection");
+            return true;
+        };
+        ui.text_edit_singleline(&mut self.pattern_string)
+            .request_focus();
+        if ui.input().key_pressed(egui::Key::Enter) {
+            let values: Result<Vec<u8>, _> = self
+                .pattern_string
+                .split(' ')
+                .map(|token| u8::from_str_radix(token, 16))
+                .collect();
+            match values {
+                Ok(values) => {
+                    let range = sel.begin..=sel.end;
+                    app.data[range.clone()].pattern_fill(&values);
+                    app.widen_dirty_region(DamageRegion::RangeInclusive(range));
+                    false
+                }
+                Err(e) => {
+                    msg_warn(&format!("Fill parse error: {}", e));
+                    true
+                }
+            }
+        } else {
+            true
+        }
     }
 }

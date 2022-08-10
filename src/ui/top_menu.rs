@@ -10,7 +10,7 @@ use crate::{
 };
 
 use super::{
-    dialogs::{AutoSaveReloadDialog, SetCursorDialog},
+    dialogs::{AutoSaveReloadDialog, PatternFillDialog, SetCursorDialog},
     util::{button_with_shortcut, ButtonWithShortcut},
 };
 
@@ -123,7 +123,11 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 ui.close_menu();
             }
             ui.separator();
-            if ui.button("Fill selection with random").clicked() {
+            if ui.button("Pattern fill").clicked() {
+                app.ui.add_dialog(PatternFillDialog::default());
+                ui.close_menu();
+            }
+            if ui.button("Random fill").clicked() {
                 if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
                     let range = sel.begin..=sel.end;
                     thread_rng().fill_bytes(&mut app.data[range.clone()]);
