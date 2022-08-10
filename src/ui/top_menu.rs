@@ -7,6 +7,8 @@ use crate::{
     ui::Dialog,
 };
 
+use super::util::{button_with_shortcut, ButtonWithShortcut};
+
 #[derive(Debug, Default)]
 struct SetCursorDialog {
     string_buf: String,
@@ -40,16 +42,35 @@ impl Dialog for SetCursorDialog {
     }
 }
 
+#[derive(Debug)]
+struct AutoSaveReloadDialog;
+
+impl Dialog for AutoSaveReloadDialog {
+    fn title(&self) -> &str {
+        "Auto save/reload"
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+        ui.checkbox(&mut app.auto_reload, "Auto reload");
+        ui.horizontal(|ui| {
+            ui.label("Interval (ms)");
+            ui.add(egui::DragValue::new(&mut app.auto_reload_interval_ms));
+        });
+        ui.separator();
+        ui.checkbox(&mut app.preferences.auto_save, "Auto save")
+            .on_hover_text("Save every time an editing action is finished");
+        ui.separator();
+        !(ui.button("Close (enter/esc)").clicked()
+            || ui.input().key_pressed(egui::Key::Escape)
+            || ui.input().key_pressed(egui::Key::Enter))
+    }
+}
+
 pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Font) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
-            if ui.button("Open").clicked() {
-                if let Some(file) = rfd::FileDialog::new().pick_file() {
-                    msg_if_fail(
-                        app.load_file(file, false, window_height, font),
-                        "Failed to load file (read-write)",
-                    );
-                }
+            if button_with_shortcut(ui, "Open", "Ctrl+O").clicked() {
+                crate::shell::open_file(app, window_height, font);
                 ui.close_menu();
             }
             if ui.button("Open (read only)").clicked() {
@@ -104,24 +125,21 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             if ui
                 .add_enabled(
                     app.source.is_some_and(|src| src.attr.permissions.write) && app.dirty_region.is_some(),
-                    egui::Button::new("Save (ctrl+S)"),
+                    ButtonWithShortcut("Save", "Ctrl+S"),
                 )
                 .clicked()
             {
                 msg_if_fail(app.save(), "Failed to save");
                 ui.close_menu();
             }
-            if ui.add(egui::Button::new("Reload (ctrl+R)")).clicked() {
+            if button_with_shortcut(ui, "Reload", "Ctrl+R").clicked() {
                 msg_if_fail(app.reload(), "Failed to reload");
                 ui.close_menu();
             }
-            ui.checkbox(&mut app.auto_reload, "Auto reload");
-            ui.horizontal(|ui| {
-                ui.label("Auto reload interval");
-                ui.add(egui::DragValue::new(&mut app.auto_reload_interval_ms).suffix("ms"));
-            });
-            ui.checkbox(&mut app.preferences.auto_save, "Auto save")
-                .on_hover_text("Save every time an editing action is finished");
+            if ui.button("Auto save/reload...").clicked() {
+                ui.close_menu();
+                app.ui.add_dialog(AutoSaveReloadDialog);
+            }
             ui.separator();
             if ui.button("Create backup").clicked() {
                 msg_if_fail(app.create_backup(), "Failed to create backup");
@@ -132,13 +150,13 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 ui.close_menu();
             }
             ui.separator();
-            if ui.button("Close").clicked() {
+            if button_with_shortcut(ui, "Close", "Ctrl+W").clicked() {
                 app.close_file();
                 ui.close_menu();
             }
         });
         ui.menu_button("Edit", |ui| {
-            if ui.button("Find (ctrl+F)").clicked() {
+            if button_with_shortcut(ui, "Find", "Ctrl+F").clicked() {
                 app.ui.find_dialog.open ^= true;
                 ui.close_menu();
             }
@@ -263,7 +281,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 app.ui.help_window.open ^= true;
                 ui.close_menu();
             }
-            if ui.button("debug panel (F12)").clicked() {
+            if button_with_shortcut(ui, "Debug panel", "F12").clicked() {
                 ui.close_menu();
                 gamedebug_core::toggle();
             }

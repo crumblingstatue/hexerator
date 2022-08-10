@@ -28,6 +28,7 @@ mod hex_conv;
 mod input;
 mod metafile;
 mod region;
+mod shell;
 mod slice_ext;
 mod source;
 mod timer;
@@ -213,7 +214,7 @@ fn do_frame(
     font: &Font,
     vertex_buffer: &mut Vec<Vertex>,
 ) {
-    handle_events(app, window, sf_egui);
+    handle_events(app, window, sf_egui, font);
     update(app);
     app.update();
     let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
@@ -301,7 +302,7 @@ fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &m
     app.views = views;
 }
 
-fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui) {
+fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui, font: &Font) {
     while let Some(event) = window.poll_event() {
         app.input.update_from_event(&event);
         sf_egui.add_event(&event);
@@ -321,7 +322,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui)
                 ctrl,
                 alt,
                 ..
-            } => handle_key_events(code, app, ctrl, shift, alt),
+            } => handle_key_events(code, app, ctrl, shift, alt, window, font),
             Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_panic((x, y));
@@ -387,7 +388,15 @@ fn handle_text_entered(app: &mut App, unicode: char) {
     }
 }
 
-fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: bool) {
+fn handle_key_events(
+    code: Key,
+    app: &mut App,
+    ctrl: bool,
+    shift: bool,
+    alt: bool,
+    window: &mut RenderWindow,
+    font: &Font,
+) {
     if app.data.is_empty() {
         return;
     }
@@ -561,6 +570,14 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::R if ctrl => {
             msg_if_fail(app.reload(), "Failed to reload");
         }
+        Key::O if ctrl => {
+            #[expect(
+                clippy::cast_possible_truncation,
+                reason = "Window sizes larger than i16 are not supported"
+            )]
+            shell::open_file(app, window.size().y as _, font);
+        }
+        Key::W if ctrl => app.close_file(),
         _ => {}
     }
 }

@@ -6,6 +6,7 @@ pub mod inspect_panel;
 mod regions_window;
 mod top_menu;
 mod top_panel;
+mod util;
 mod views_window;
 
 use std::fmt::Debug;
