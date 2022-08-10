@@ -2,69 +2,12 @@ use egui_sfml::egui::{self, Layout};
 use rand::{thread_rng, RngCore};
 use sfml::{graphics::Font, window::clipboard};
 
-use crate::{
-    app::App, damage_region::DamageRegion, msg_fail, msg_if_fail, msg_info, source::SourceProvider,
-    ui::Dialog,
+use crate::{app::App, damage_region::DamageRegion, msg_if_fail, msg_info, source::SourceProvider};
+
+use super::{
+    dialogs::{AutoSaveReloadDialog, SetCursorDialog},
+    util::{button_with_shortcut, ButtonWithShortcut},
 };
-
-use super::util::{button_with_shortcut, ButtonWithShortcut};
-
-#[derive(Debug, Default)]
-struct SetCursorDialog {
-    string_buf: String,
-}
-impl Dialog for SetCursorDialog {
-    fn title(&self) -> &str {
-        "Set cursor"
-    }
-
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
-        ui.horizontal(|ui| {
-            ui.label("Offset");
-            ui.text_edit_singleline(&mut self.string_buf)
-                .request_focus();
-        });
-        if ui.input().key_pressed(egui::Key::Enter) {
-            match self.string_buf.parse::<usize>() {
-                Ok(offset) => {
-                    app.edit_state.cursor = offset;
-                    app.center_view_on_offset(offset);
-                    false
-                }
-                Err(e) => {
-                    msg_fail(&e, "Failed to parse offset");
-                    true
-                }
-            }
-        } else {
-            true
-        }
-    }
-}
-
-#[derive(Debug)]
-struct AutoSaveReloadDialog;
-
-impl Dialog for AutoSaveReloadDialog {
-    fn title(&self) -> &str {
-        "Auto save/reload"
-    }
-
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
-        ui.checkbox(&mut app.auto_reload, "Auto reload");
-        ui.horizontal(|ui| {
-            ui.label("Interval (ms)");
-            ui.add(egui::DragValue::new(&mut app.auto_reload_interval_ms));
-        });
-        ui.separator();
-        ui.checkbox(&mut app.preferences.auto_save, "Auto save")
-            .on_hover_text("Save every time an editing action is finished");
-        ui.separator();
-        !(ui.button("Close (enter/esc)").clicked()
-            || ui.input().key_pressed(egui::Key::Escape)
-            || ui.input().key_pressed(egui::Key::Enter))
-    }
-}
 
 pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Font) {
     ui.horizontal(|ui| {
@@ -220,7 +163,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 app.set_cursor_init();
                 ui.close_menu();
             }
-            if ui.button("Set cursor position").clicked() {
+            if button_with_shortcut(ui, "Set cursor position", "Ctrl+J").clicked() {
                 ui.close_menu();
                 app.ui.add_dialog(SetCursorDialog::default());
             }

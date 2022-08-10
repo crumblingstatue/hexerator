@@ -58,6 +58,7 @@ use sfml::{
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };
+use ui::dialogs::SetCursorDialog;
 use view::ViewportScalar;
 
 fn msg_if_fail<T, E: std::fmt::Debug>(result: Result<T, E>, prefix: &str) -> Option<E> {
@@ -578,6 +579,7 @@ fn handle_key_events(
             shell::open_file(app, window.size().y as _, font);
         }
         Key::W if ctrl => app.close_file(),
+        Key::J if ctrl => app.ui.add_dialog(SetCursorDialog::default()),
         _ => {}
     }
 }

@@ -1,5 +1,6 @@
 mod bottom_panel;
 mod debug_window;
+pub mod dialogs;
 mod find_dialog;
 mod help_window;
 pub mod inspect_panel;
