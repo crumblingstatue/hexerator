@@ -85,6 +85,7 @@ pub fn do_egui(
         app.ui.views_window.open = open;
         open = app.ui.help_window.open;
         Window::new("Help")
+            .default_size(egui::vec2(800., 600.))
             .open(&mut open)
             .show(ctx, |ui| HelpWindow::ui(ui, app));
         app.ui.help_window.open = open;
