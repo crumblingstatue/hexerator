@@ -36,6 +36,7 @@ pub struct Ui {
 
 pub trait Dialog: Debug {
     fn title(&self) -> &str;
+    /// Do the ui for this dialog. Returns whether to keep this dialog open.
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool;
 }
 
