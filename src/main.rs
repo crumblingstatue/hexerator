@@ -514,6 +514,8 @@ fn handle_key_events(
             if let Some(view_idx) = app.focused_view {
                 app.views[view_idx].cancel_editing();
             }
+            app.select_a = None;
+            app.select_b = None;
         }
         Key::Enter => {
             if let Some(view_idx) = app.focused_view {
@@ -548,6 +550,8 @@ fn handle_key_events(
         }
         Key::W if ctrl => app.close_file(),
         Key::J if ctrl => app.ui.add_dialog(SetCursorDialog::default()),
+        Key::Num1 if shift => app.select_a = Some(app.edit_state.cursor),
+        Key::Num2 if shift => app.select_b = Some(app.edit_state.cursor),
         _ => {}
     }
 }

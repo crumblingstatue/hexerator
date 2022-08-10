@@ -109,15 +109,15 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 ui.close_menu();
             }
             ui.separator();
-            if ui.button("Set select a to cursor").clicked() {
+            if button_with_shortcut(ui, "Set select a", "shift+1").clicked() {
                 app.select_a = Some(app.edit_state.cursor);
                 ui.close_menu();
             }
-            if ui.button("Set select b to cursor").clicked() {
+            if button_with_shortcut(ui, "Set select b", "shift+2").clicked() {
                 app.select_b = Some(app.edit_state.cursor);
                 ui.close_menu();
             }
-            if ui.button("Unselect all").clicked() {
+            if button_with_shortcut(ui, "Unselect all", "Esc").clicked() {
                 app.select_a = None;
                 app.select_b = None;
                 ui.close_menu();
