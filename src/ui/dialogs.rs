@@ -24,6 +24,7 @@ impl Dialog for SetCursorDialog {
                 Ok(offset) => {
                     app.edit_state.cursor = offset;
                     app.center_view_on_offset(offset);
+                    app.flash_cursor();
                     false
                 }
                 Err(e) => {
