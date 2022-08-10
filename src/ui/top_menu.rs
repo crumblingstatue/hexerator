@@ -17,11 +17,11 @@ use super::{
 pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Font) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
-            if button_with_shortcut(ui, "Open", "Ctrl+O").clicked() {
+            if button_with_shortcut(ui, "Open...", "Ctrl+O").clicked() {
                 crate::shell::open_file(app, window_height, font);
                 ui.close_menu();
             }
-            if ui.button("Open (read only)").clicked() {
+            if ui.button("Open (read only)...").clicked() {
                 if let Some(file) = rfd::FileDialog::new().pick_file() {
                     msg_if_fail(
                         app.load_file(file, true, window_height, font),
@@ -104,7 +104,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             }
         });
         ui.menu_button("Edit", |ui| {
-            if button_with_shortcut(ui, "Find", "Ctrl+F").clicked() {
+            if button_with_shortcut(ui, "Find...", "Ctrl+F").clicked() {
                 app.ui.find_dialog.open ^= true;
                 ui.close_menu();
             }
@@ -123,7 +123,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 ui.close_menu();
             }
             ui.separator();
-            if ui.button("Pattern fill").clicked() {
+            if ui.button("Pattern fill...").clicked() {
                 app.ui.add_dialog(PatternFillDialog::default());
                 ui.close_menu();
             }
@@ -173,7 +173,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 app.set_cursor_init();
                 ui.close_menu();
             }
-            if button_with_shortcut(ui, "Jump", "Ctrl+J").clicked() {
+            if button_with_shortcut(ui, "Jump...", "Ctrl+J").clicked() {
                 ui.close_menu();
                 app.ui.add_dialog(SetCursorDialog::default());
             }
@@ -217,7 +217,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             );
         });
         ui.menu_button("Meta", |ui| {
-            if ui.button("Regions").clicked() {
+            if ui.button("Regions...").clicked() {
                 app.ui.regions_window.open ^= true;
                 ui.close_menu();
             }
@@ -230,11 +230,11 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             }
         });
         ui.menu_button("Help", |ui| {
-            if ui.button("Help").clicked() {
+            if ui.button("Help...").clicked() {
                 app.ui.help_window.open ^= true;
                 ui.close_menu();
             }
-            if button_with_shortcut(ui, "Debug panel", "F12").clicked() {
+            if button_with_shortcut(ui, "Debug panel...", "F12").clicked() {
                 ui.close_menu();
                 gamedebug_core::toggle();
             }
