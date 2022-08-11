@@ -1,17 +1,19 @@
-use egui_sfml::egui::{DragValue, Ui};
+use egui_sfml::egui::{text::LayoutJob, Align, DragValue, Stroke, TextFormat, TextStyle, Ui};
 
 use crate::app::{interact_mode::InteractMode, App};
 
 pub fn ui(ui: &mut Ui, app: &mut App) {
     ui.horizontal(|ui| {
+        let job = key_label(ui, "F1", "View");
         if ui
-            .selectable_label(app.interact_mode == InteractMode::View, "View (F1)")
+            .selectable_label(app.interact_mode == InteractMode::View, job)
             .clicked()
         {
             app.interact_mode = InteractMode::View;
         }
+        let job = key_label(ui, "F2", "Edit");
         if ui
-            .selectable_label(app.interact_mode == InteractMode::Edit, "Edit (F2)")
+            .selectable_label(app.interact_mode == InteractMode::Edit, job)
             .clicked()
         {
             app.interact_mode = InteractMode::Edit;
@@ -50,4 +52,30 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             }
         }
     });
+}
+
+/// A key "box" and then some text. Like `[F1] View`
+fn key_label(ui: &mut Ui, key_text: &str, label_text: &str) -> LayoutJob {
+    let mut job = LayoutJob::default();
+    let style = ui.style();
+    let body_font = TextStyle::Body.resolve(style);
+    job.append(
+        key_text,
+        0.0,
+        TextFormat {
+            font_id: body_font.clone(),
+            color: style.visuals.widgets.active.fg_stroke.color,
+            background: style.visuals.code_bg_color,
+            italics: false,
+            underline: Stroke::none(),
+            strikethrough: Stroke::none(),
+            valign: Align::Center,
+        },
+    );
+    job.append(
+        label_text,
+        10.0,
+        TextFormat::simple(body_font, style.visuals.widgets.active.fg_stroke.color),
+    );
+    job
 }
