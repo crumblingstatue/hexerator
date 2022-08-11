@@ -1,4 +1,4 @@
-use std::hash::Hash;
+use std::{hash::Hash, ops::RangeInclusive};
 
 use egui_sfml::egui::{self, emath::Numeric};
 use sfml::graphics::Font;
@@ -81,8 +81,8 @@ impl ViewsWindow {
                     ViewKind::Block => {}
                 }
                 viewport_rect_ui(ui, &mut view.viewport_rect);
-                labelled_drag(ui, "column width", &mut view.col_w);
-                labelled_drag(ui, "row height", &mut view.row_h);
+                labelled_drag(ui, "column width", &mut view.col_w, 1..=128);
+                labelled_drag(ui, "row height", &mut view.row_h, 1..=128);
                 ui.horizontal(|ui| {
                     ui.label("Font size");
                     #[expect(
@@ -103,7 +103,7 @@ impl ViewsWindow {
                     }
                 });
 
-                labelled_drag(ui, "bytes per block", &mut view.bytes_per_block);
+                labelled_drag(ui, "bytes per block", &mut view.bytes_per_block, 1..=64);
                 ui.checkbox(&mut view.active, "Active");
                 if ui.button("Delete").clicked() {
                     retain = false;
@@ -158,16 +158,25 @@ fn view_combo(id: impl Hash, kind: &mut crate::view::ViewKind, ui: &mut egui::Ui
 }
 
 fn viewport_rect_ui(ui: &mut egui::Ui, viewport_rect: &mut ViewportRect) {
-    labelled_drag(ui, "x", &mut viewport_rect.x);
-    labelled_drag(ui, "y", &mut viewport_rect.y);
-    labelled_drag(ui, "w", &mut viewport_rect.w);
-    labelled_drag(ui, "h", &mut viewport_rect.h);
+    labelled_drag(ui, "x", &mut viewport_rect.x, None);
+    labelled_drag(ui, "y", &mut viewport_rect.y, None);
+    labelled_drag(ui, "w", &mut viewport_rect.w, None);
+    labelled_drag(ui, "h", &mut viewport_rect.h, None);
 }
 
-fn labelled_drag<T: Numeric>(ui: &mut egui::Ui, label: &str, val: &mut T) -> egui::Response {
+fn labelled_drag<T: Numeric>(
+    ui: &mut egui::Ui,
+    label: &str,
+    val: &mut T,
+    range: impl Into<Option<RangeInclusive<T>>>,
+) -> egui::Response {
     ui.horizontal(|ui| {
         ui.label(label);
-        ui.add(egui::DragValue::new(val))
+        let mut dv = egui::DragValue::new(val);
+        if let Some(range) = range.into() {
+            dv = dv.clamp_range(range);
+        }
+        ui.add(dv)
     })
     .inner
 }
