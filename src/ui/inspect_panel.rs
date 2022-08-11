@@ -163,9 +163,7 @@ macro_rules! num_bytes_manip_impl {
             }
 
             fn to_bin_string(&self) -> String {
-                // TODO: Different paddings for different integer sizes
-                // For now pad to 8 bits
-                format!("{:08b}", self)
+                format!("{:0w$b}", self, w = <$t>::BITS as usize)
             }
 
             fn from_str(input: &str, format: Format) -> Result<Self, anyhow::Error> {
