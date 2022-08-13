@@ -21,12 +21,16 @@ impl Default for ViewsWindow {
 }
 
 impl ViewKind {
+    const HEX_NAME: &str = "Hex";
+    const DEC_NAME: &str = "Decimal";
+    const TEXT_NAME: &str = "Text";
+    const BLOCK_NAME: &str = "Block";
     fn name(&self) -> &'static str {
         match *self {
-            ViewKind::Hex => "Hex",
-            ViewKind::Dec => "Decimal",
-            ViewKind::Text => "Text",
-            ViewKind::Block => "Block",
+            ViewKind::Hex => Self::HEX_NAME,
+            ViewKind::Dec => Self::DEC_NAME,
+            ViewKind::Text => Self::TEXT_NAME,
+            ViewKind::Block => Self::BLOCK_NAME,
         }
     }
 }
@@ -142,16 +146,16 @@ fn view_combo(id: impl Hash, kind: &mut crate::view::ViewKind, ui: &mut egui::Ui
         .selected_text(kind.name())
         .show_ui(ui, |ui| {
             changed |= ui
-                .selectable_value(kind, ViewKind::Hex, ViewKind::Hex.name())
+                .selectable_value(kind, ViewKind::Hex, ViewKind::HEX_NAME)
                 .clicked();
             changed |= ui
-                .selectable_value(kind, ViewKind::Dec, ViewKind::Dec.name())
+                .selectable_value(kind, ViewKind::Dec, ViewKind::DEC_NAME)
                 .clicked();
             changed |= ui
-                .selectable_value(kind, ViewKind::Text, ViewKind::Text.name())
+                .selectable_value(kind, ViewKind::Text, ViewKind::TEXT_NAME)
                 .clicked();
             changed |= ui
-                .selectable_value(kind, ViewKind::Block, ViewKind::Block.name())
+                .selectable_value(kind, ViewKind::Block, ViewKind::BLOCK_NAME)
                 .clicked();
         });
     changed
