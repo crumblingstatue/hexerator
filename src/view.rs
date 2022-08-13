@@ -38,7 +38,6 @@ pub struct View {
     pub edit_buf: EditBuffer,
     /// Font size
     pub font_size: u16,
-    pub line_spacing: u16,
 }
 
 impl View {
@@ -48,14 +47,8 @@ impl View {
         y: ViewportScalar,
         w: ViewportScalar,
         h: ViewportScalar,
-        font: &Font,
     ) -> Self {
         let font_size = 14;
-        #[expect(
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss,
-            reason = "It's extremely unlikely that the line spacing is not between 0..u16::MAX"
-        )]
         let mut this = Self {
             viewport_rect: ViewportRect { x, y, w, h },
             kind,
@@ -67,7 +60,6 @@ impl View {
             active: true,
             edit_buf: EditBuffer::default(),
             font_size,
-            line_spacing: font.line_spacing(u32::from(font_size)) as u16,
         };
         this.adjust_state_to_kind();
         this
@@ -90,7 +82,6 @@ impl View {
             active: false,
             edit_buf: Default::default(),
             font_size: 0,
-            line_spacing: 0,
         }
     }
     pub fn scroll_x(&mut self, amount: i16) {
@@ -280,10 +271,10 @@ impl View {
     }
 
     pub fn adjust_block_size(&mut self) {
-        (self.col_w, self.row_h) = match self.kind {
+        (self.col_w, self.row_h) = match &self.kind {
             ViewKind::Hex => (self.font_size * 2 - 2, self.font_size),
             ViewKind::Dec => (self.font_size * 3 - 6, self.font_size),
-            ViewKind::Text { .. } => (self.font_size, self.line_spacing.max(1)),
+            ViewKind::Text(data) => (self.font_size, data.line_spacing.max(1)),
             ViewKind::Block => (4, 4),
         }
     }
@@ -540,12 +531,19 @@ pub enum ViewKind {
 pub struct TextData {
     /// The kind of text (ascii/utf16/etc)
     pub text_kind: TextKind,
+    pub line_spacing: u16,
 }
 
-impl Default for TextData {
-    fn default() -> Self {
+impl TextData {
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "It's extremely unlikely that the line spacing is not between 0..u16::MAX"
+    )]
+    pub fn default_from_font(font: &Font, font_size: u16) -> Self {
         Self {
             text_kind: TextKind::Ascii,
+            line_spacing: font.line_spacing(u32::from(font_size)) as u16,
         }
     }
 }

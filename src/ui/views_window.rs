@@ -45,7 +45,7 @@ impl ViewsWindow {
         app.views.retain_mut(|view| {
             let mut retain = true;
             ui.group(|ui| {
-                if view_combo(egui::Id::new("view_combo").with(idx), &mut view.kind, ui) {
+                if view_combo(egui::Id::new("view_combo").with(idx), &mut view.kind, ui, font, view.font_size) {
                     view.adjust_state_to_kind();
                 }
                 match &mut view.kind {
@@ -101,8 +101,9 @@ impl ViewsWindow {
                         )
                         .changed()
                     {
-                        let line_spacing = font.line_spacing(u32::from(view.font_size));
-                        view.line_spacing = line_spacing as u16;
+                        if let ViewKind::Text(data) = &mut view.kind {
+                            data.line_spacing = font.line_spacing(u32::from(view.font_size)) as u16;
+                        }
                         view.adjust_block_size();
                     }
                 });
@@ -125,7 +126,13 @@ impl ViewsWindow {
             }
         }
         ui.separator();
-        view_combo("new_kind_combo", &mut app.ui.views_window.new_kind, ui);
+        view_combo(
+            "new_kind_combo",
+            &mut app.ui.views_window.new_kind,
+            ui,
+            font,
+            14,
+        );
         if ui.button("Add new").clicked() {
             app.views.push(View::new(
                 std::mem::replace(&mut app.ui.views_window.new_kind, ViewKind::Hex),
@@ -133,14 +140,19 @@ impl ViewsWindow {
                 0,
                 100,
                 100,
-                font,
             ));
         }
     }
 }
 
 /// Returns whether the value was changed
-fn view_combo(id: impl Hash, kind: &mut crate::view::ViewKind, ui: &mut egui::Ui) -> bool {
+fn view_combo(
+    id: impl Hash,
+    kind: &mut crate::view::ViewKind,
+    ui: &mut egui::Ui,
+    font: &Font,
+    font_size: u16,
+) -> bool {
     let mut changed = false;
     egui::ComboBox::new(id, "kind")
         .selected_text(kind.name())
@@ -163,7 +175,7 @@ fn view_combo(id: impl Hash, kind: &mut crate::view::ViewKind, ui: &mut egui::Ui
                 .selectable_label(kind.name() == ViewKind::TEXT_NAME, ViewKind::TEXT_NAME)
                 .clicked()
             {
-                *kind = ViewKind::Text(TextData::default());
+                *kind = ViewKind::Text(TextData::default_from_font(font, font_size));
                 changed = true;
             }
             if ui

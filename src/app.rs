@@ -538,15 +538,13 @@ fn default_views(layout: &Layout, window_height: ViewportScalar, font: &Font) ->
             layout.top_gap,
             960,
             window_height - layout.bottom_gap,
-            font,
         ),
         View::new(
-            ViewKind::Text(TextData::default()),
+            ViewKind::Text(TextData::default_from_font(font, 14)),
             966,
             layout.top_gap,
             480,
             window_height - layout.bottom_gap,
-            font,
         ),
         View::new(
             ViewKind::Block,
@@ -554,7 +552,6 @@ fn default_views(layout: &Layout, window_height: ViewportScalar, font: &Font) ->
             layout.top_gap,
             200,
             window_height - layout.bottom_gap,
-            font,
         ),
     ]
 }
