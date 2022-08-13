@@ -35,8 +35,6 @@ pub struct View {
     pub bytes_per_block: u8,
     /// A view can be deactivated to not render or interact, but can later be reactivated
     pub active: bool,
-    /// Font size
-    pub font_size: u16,
 }
 
 impl View {
@@ -47,7 +45,6 @@ impl View {
         w: ViewportScalar,
         h: ViewportScalar,
     ) -> Self {
-        let font_size = 14;
         let mut this = Self {
             viewport_rect: ViewportRect { x, y, w, h },
             kind,
@@ -57,7 +54,6 @@ impl View {
             scroll_speed: 0,
             bytes_per_block: 1,
             active: true,
-            font_size,
         };
         this.adjust_state_to_kind();
         this
@@ -78,7 +74,6 @@ impl View {
             scroll_speed: 0,
             bytes_per_block: 0,
             active: false,
-            font_size: 0,
         }
     }
     pub fn scroll_x(&mut self, amount: i16) {
@@ -269,9 +264,9 @@ impl View {
 
     pub fn adjust_block_size(&mut self) {
         (self.col_w, self.row_h) = match &self.kind {
-            ViewKind::Hex(_) => (self.font_size * 2 - 2, self.font_size),
-            ViewKind::Dec(_) => (self.font_size * 3 - 6, self.font_size),
-            ViewKind::Text(data) => (self.font_size, data.line_spacing.max(1)),
+            ViewKind::Hex(hex) => (hex.font_size * 2 - 2, hex.font_size),
+            ViewKind::Dec(dec) => (dec.font_size * 3 - 6, dec.font_size),
+            ViewKind::Text(data) => (data.font_size, data.line_spacing.max(1)),
             ViewKind::Block => (4, 4),
         }
     }
@@ -280,8 +275,8 @@ impl View {
         self.adjust_block_size();
         let glyph_count = self.glyph_count();
         match &mut self.kind {
-            ViewKind::Hex(HexData { edit_buf })
-            | ViewKind::Dec(HexData { edit_buf })
+            ViewKind::Hex(HexData { edit_buf, .. })
+            | ViewKind::Dec(HexData { edit_buf, .. })
             | ViewKind::Text(TextData { edit_buf, .. }) => edit_buf.resize(glyph_count),
             _ => {}
         }
@@ -566,11 +561,22 @@ pub struct TextData {
     pub text_kind: TextKind,
     pub line_spacing: u16,
     pub edit_buf: EditBuffer,
+    pub font_size: u16,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct HexData {
     pub edit_buf: EditBuffer,
+    pub font_size: u16,
+}
+
+impl Default for HexData {
+    fn default() -> Self {
+        Self {
+            edit_buf: Default::default(),
+            font_size: 14,
+        }
+    }
 }
 
 impl TextData {
@@ -584,6 +590,7 @@ impl TextData {
             text_kind: TextKind::Ascii,
             line_spacing: font.line_spacing(u32::from(font_size)) as u16,
             edit_buf: EditBuffer::default(),
+            font_size,
         }
     }
 }

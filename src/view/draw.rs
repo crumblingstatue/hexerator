@@ -117,15 +117,15 @@ fn draw_text_cursor(
     active: bool,
     flash_timer: Option<u32>,
     presentation: &Presentation,
-    view: &View,
+    font_size: u16,
 ) {
     let color = cursor_color(active, flash_timer, presentation);
     draw_rect_outline(
         vertices,
         x,
         y,
-        f32::from(view.font_size / 2),
-        f32::from(view.font_size),
+        f32::from(font_size / 2),
+        f32::from(font_size),
         color,
         -2.0,
     );
@@ -339,16 +339,16 @@ impl View {
                             }
                             draw_glyph(
                                 font,
-                                self.font_size.into(),
+                                hex.font_size.into(),
                                 vertex_buffer,
                                 gx,
                                 y,
                                 d.into(),
                                 c,
                             );
-                            gx += f32::from(self.font_size - 4);
+                            gx += f32::from(hex.font_size - 4);
                         }
-                        let extra_x = hex.edit_buf.cursor * (self.font_size - 4);
+                        let extra_x = hex.edit_buf.cursor * (hex.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
@@ -357,12 +357,12 @@ impl View {
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
                                 &app.presentation,
-                                self,
+                                hex.font_size,
                             );
                         }
                     },
                 );
-                rs.set_texture(Some(font.texture(self.font_size.into())));
+                rs.set_texture(Some(font.texture(hex.font_size.into())));
             }
             ViewKind::Dec(dec) => {
                 draw_view(
@@ -394,16 +394,16 @@ impl View {
                             }
                             draw_glyph(
                                 font,
-                                self.font_size.into(),
+                                dec.font_size.into(),
                                 vertex_buffer,
                                 gx,
                                 y,
                                 d.into(),
                                 c,
                             );
-                            gx += f32::from(self.font_size - 4);
+                            gx += f32::from(dec.font_size - 4);
                         }
-                        let extra_x = dec.edit_buf.cursor * (self.font_size - 4);
+                        let extra_x = dec.edit_buf.cursor * (dec.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
@@ -412,12 +412,12 @@ impl View {
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
                                 &app.presentation,
-                                self,
+                                dec.font_size,
                             );
                         }
                     },
                 );
-                rs.set_texture(Some(font.texture(self.font_size.into())));
+                rs.set_texture(Some(font.texture(dec.font_size.into())));
             }
             ViewKind::Text(text) => {
                 draw_view(
@@ -457,7 +457,7 @@ impl View {
                             0xFF => '■' as u32,
                             _ => raw_data,
                         };
-                        draw_glyph(font, self.font_size.into(), vertex_buffer, x, y, glyph, c);
+                        draw_glyph(font, text.font_size.into(), vertex_buffer, x, y, glyph, c);
                         if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x,
@@ -466,12 +466,12 @@ impl View {
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
                                 &app.presentation,
-                                self,
+                                text.font_size,
                             );
                         }
                     },
                 );
-                rs.set_texture(Some(font.texture(self.font_size.into())));
+                rs.set_texture(Some(font.texture(text.font_size.into())));
             }
             ViewKind::Block => {
                 draw_view(

@@ -45,69 +45,79 @@ impl ViewsWindow {
         app.views.retain_mut(|view| {
             let mut retain = true;
             ui.group(|ui| {
-                if view_combo(egui::Id::new("view_combo").with(idx), &mut view.kind, ui, font, view.font_size) {
+                if view_combo(
+                    egui::Id::new("view_combo").with(idx),
+                    &mut view.kind,
+                    ui,
+                    font,
+                ) {
                     view.adjust_state_to_kind();
                 }
+                let mut adjust_block_size = false;
                 match &mut view.kind {
-                    ViewKind::Hex(_) => {}
-                    ViewKind::Dec(_) => {}
-                    ViewKind::Text(text) => {
-                        let mut changed = false;
-                        egui::ComboBox::new(egui::Id::new("text_combo").with(idx), "Text kind")
-                            .selected_text(text.text_kind.name())
-                            .show_ui(ui, |ui| {
-                                changed |= ui
-                                    .selectable_value(
-                                        &mut text.text_kind,
-                                        TextKind::Ascii,
-                                        TextKind::Ascii.name(),
-                                    )
-                                    .clicked();
-                                changed |= ui
-                                    .selectable_value(
-                                        &mut text.text_kind,
-                                        TextKind::Utf16Le,
-                                        TextKind::Utf16Le.name(),
-                                    )
-                                    .clicked();
-                                changed |= ui
-                                    .selectable_value(
-                                        &mut text.text_kind,
-                                        TextKind::Utf16Be,
-                                        TextKind::Utf16Be.name(),
-                                    )
-                                    .clicked();
-                            });
-                        if changed {
-                            view.bytes_per_block = text.text_kind.bytes_needed();
+                    ViewKind::Hex(HexData { font_size, .. })
+                    | ViewKind::Dec(HexData { font_size, .. })
+                    | ViewKind::Text(TextData { font_size, .. }) => {
+                        ui.horizontal(|ui| {
+                            ui.label("Font size");
+                            if ui
+                                .add(
+                                    egui::DragValue::new(font_size)
+                                        .clamp_range(MIN_FONT_SIZE..=MAX_FONT_SIZE),
+                                )
+                                .changed()
+                            {
+                                adjust_block_size = true;
+                            };
+                        });
+                        if let ViewKind::Text(text) = &mut view.kind {
+                            let mut changed = false;
+                            egui::ComboBox::new(egui::Id::new("text_combo").with(idx), "Text kind")
+                                .selected_text(text.text_kind.name())
+                                .show_ui(ui, |ui| {
+                                    changed |= ui
+                                        .selectable_value(
+                                            &mut text.text_kind,
+                                            TextKind::Ascii,
+                                            TextKind::Ascii.name(),
+                                        )
+                                        .clicked();
+                                    changed |= ui
+                                        .selectable_value(
+                                            &mut text.text_kind,
+                                            TextKind::Utf16Le,
+                                            TextKind::Utf16Le.name(),
+                                        )
+                                        .clicked();
+                                    changed |= ui
+                                        .selectable_value(
+                                            &mut text.text_kind,
+                                            TextKind::Utf16Be,
+                                            TextKind::Utf16Be.name(),
+                                        )
+                                        .clicked();
+                                });
+                            if changed {
+                                view.bytes_per_block = text.text_kind.bytes_needed();
+                            }
                         }
                     }
                     ViewKind::Block => {}
                 }
-                viewport_rect_ui(ui, &mut view.viewport_rect);
-                labelled_drag(ui, "column width", &mut view.col_w, 1..=128);
-                labelled_drag(ui, "row height", &mut view.row_h, 1..=128);
-                ui.horizontal(|ui| {
-                    ui.label("Font size");
+                if adjust_block_size {
+                    view.adjust_block_size();
                     #[expect(
                         clippy::cast_possible_truncation,
                         clippy::cast_sign_loss,
                         reason = "It's extremely unlikely line spacing is not between 0 and i16::MAX"
                     )]
-                    if ui
-                        .add(
-                            egui::DragValue::new(&mut view.font_size)
-                                .clamp_range(MIN_FONT_SIZE..=MAX_FONT_SIZE),
-                        )
-                        .changed()
-                    {
-                        if let ViewKind::Text(data) = &mut view.kind {
-                            data.line_spacing = font.line_spacing(u32::from(view.font_size)) as u16;
-                        }
-                        view.adjust_block_size();
+                    if let ViewKind::Text(data) = &mut view.kind {
+                        data.line_spacing = font.line_spacing(u32::from(data.font_size)) as u16;
                     }
-                });
-
+                }
+                viewport_rect_ui(ui, &mut view.viewport_rect);
+                labelled_drag(ui, "column width", &mut view.col_w, 1..=128);
+                labelled_drag(ui, "row height", &mut view.row_h, 1..=128);
                 labelled_drag(ui, "bytes per block", &mut view.bytes_per_block, 1..=64);
                 ui.checkbox(&mut view.active, "Active");
                 if ui.button("Delete").clicked() {
@@ -131,7 +141,6 @@ impl ViewsWindow {
             &mut app.ui.views_window.new_kind,
             ui,
             font,
-            14,
         );
         if ui.button("Add new").clicked() {
             app.views.push(View::new(
@@ -154,7 +163,6 @@ fn view_combo(
     kind: &mut crate::view::ViewKind,
     ui: &mut egui::Ui,
     font: &Font,
-    font_size: u16,
 ) -> bool {
     let mut changed = false;
     egui::ComboBox::new(id, "kind")
@@ -178,7 +186,7 @@ fn view_combo(
                 .selectable_label(kind.name() == ViewKind::TEXT_NAME, ViewKind::TEXT_NAME)
                 .clicked()
             {
-                *kind = ViewKind::Text(TextData::default_from_font(font, font_size));
+                *kind = ViewKind::Text(TextData::default_from_font(font, 14));
                 changed = true;
             }
             if ui
