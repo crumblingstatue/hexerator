@@ -30,7 +30,7 @@ use crate::{
     shell::{msg_if_fail, msg_warn},
     source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     timer::Timer,
-    view::{View, ViewKind, ViewportScalar},
+    view::{TextData, View, ViewKind, ViewportScalar},
 };
 
 use self::{
@@ -541,7 +541,7 @@ fn default_views(layout: &Layout, window_height: ViewportScalar, font: &Font) ->
             font,
         ),
         View::new(
-            ViewKind::Text,
+            ViewKind::Text(TextData::default()),
             966,
             layout.top_gap,
             480,

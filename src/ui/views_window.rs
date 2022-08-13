@@ -3,7 +3,7 @@ use std::{hash::Hash, ops::RangeInclusive};
 use egui_sfml::egui::{self, emath::Numeric};
 use sfml::graphics::Font;
 
-use crate::view::{TextKind, View, ViewKind, ViewportRect};
+use crate::view::{TextData, TextKind, View, ViewKind, ViewportRect};
 
 #[derive(Debug)]
 pub struct ViewsWindow {
@@ -29,7 +29,7 @@ impl ViewKind {
         match *self {
             ViewKind::Hex => Self::HEX_NAME,
             ViewKind::Dec => Self::DEC_NAME,
-            ViewKind::Text => Self::TEXT_NAME,
+            ViewKind::Text(_) => Self::TEXT_NAME,
             ViewKind::Block => Self::BLOCK_NAME,
         }
     }
@@ -48,38 +48,38 @@ impl ViewsWindow {
                 if view_combo(egui::Id::new("view_combo").with(idx), &mut view.kind, ui) {
                     view.adjust_state_to_kind();
                 }
-                match view.kind {
+                match &mut view.kind {
                     ViewKind::Hex => {}
                     ViewKind::Dec => {}
-                    ViewKind::Text => {
+                    ViewKind::Text(text) => {
                         let mut changed = false;
                         egui::ComboBox::new(egui::Id::new("text_combo").with(idx), "Text kind")
-                            .selected_text(view.text_kind.name())
+                            .selected_text(text.text_kind.name())
                             .show_ui(ui, |ui| {
                                 changed |= ui
                                     .selectable_value(
-                                        &mut view.text_kind,
+                                        &mut text.text_kind,
                                         TextKind::Ascii,
                                         TextKind::Ascii.name(),
                                     )
                                     .clicked();
                                 changed |= ui
                                     .selectable_value(
-                                        &mut view.text_kind,
+                                        &mut text.text_kind,
                                         TextKind::Utf16Le,
                                         TextKind::Utf16Le.name(),
                                     )
                                     .clicked();
                                 changed |= ui
                                     .selectable_value(
-                                        &mut view.text_kind,
+                                        &mut text.text_kind,
                                         TextKind::Utf16Be,
                                         TextKind::Utf16Be.name(),
                                     )
                                     .clicked();
                             });
                         if changed {
-                            view.bytes_per_block = view.text_kind.bytes_needed();
+                            view.bytes_per_block = text.text_kind.bytes_needed();
                         }
                     }
                     ViewKind::Block => {}
@@ -145,18 +145,34 @@ fn view_combo(id: impl Hash, kind: &mut crate::view::ViewKind, ui: &mut egui::Ui
     egui::ComboBox::new(id, "kind")
         .selected_text(kind.name())
         .show_ui(ui, |ui| {
-            changed |= ui
-                .selectable_value(kind, ViewKind::Hex, ViewKind::HEX_NAME)
-                .clicked();
-            changed |= ui
-                .selectable_value(kind, ViewKind::Dec, ViewKind::DEC_NAME)
-                .clicked();
-            changed |= ui
-                .selectable_value(kind, ViewKind::Text, ViewKind::TEXT_NAME)
-                .clicked();
-            changed |= ui
-                .selectable_value(kind, ViewKind::Block, ViewKind::BLOCK_NAME)
-                .clicked();
+            if ui
+                .selectable_label(kind.name() == ViewKind::HEX_NAME, ViewKind::HEX_NAME)
+                .clicked()
+            {
+                *kind = ViewKind::Hex;
+                changed = true;
+            }
+            if ui
+                .selectable_label(kind.name() == ViewKind::DEC_NAME, ViewKind::DEC_NAME)
+                .clicked()
+            {
+                *kind = ViewKind::Dec;
+                changed = true;
+            }
+            if ui
+                .selectable_label(kind.name() == ViewKind::TEXT_NAME, ViewKind::TEXT_NAME)
+                .clicked()
+            {
+                *kind = ViewKind::Text(TextData::default());
+                changed = true;
+            }
+            if ui
+                .selectable_label(kind.name() == ViewKind::BLOCK_NAME, ViewKind::BLOCK_NAME)
+                .clicked()
+            {
+                *kind = ViewKind::Block;
+                changed = true;
+            }
         });
     changed
 }

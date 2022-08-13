@@ -308,7 +308,7 @@ impl View {
         //app.scissor_views = false;
         vertex_buffer.clear();
         let mut rs = RenderStates::default();
-        match self.kind {
+        match &self.kind {
             ViewKind::Hex => {
                 draw_view(
                     self,
@@ -419,7 +419,7 @@ impl View {
                 );
                 rs.set_texture(Some(font.texture(self.font_size.into())));
             }
-            ViewKind::Text => {
+            ViewKind::Text(text) => {
                 draw_view(
                     self,
                     app,
@@ -439,7 +439,7 @@ impl View {
                                 app.presentation.sel_color,
                             )
                         }
-                        let raw_data = match self.text_kind {
+                        let raw_data = match text.text_kind {
                             crate::view::TextKind::Ascii => u32::from(data[0]),
                             crate::view::TextKind::Utf16Le => {
                                 u32::from(u16::from_le_bytes([data[0], data[1]]))
