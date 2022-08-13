@@ -30,7 +30,7 @@ use crate::{
     shell::{msg_if_fail, msg_warn},
     source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     timer::Timer,
-    view::{TextData, View, ViewKind, ViewportScalar},
+    view::{HexData, TextData, View, ViewKind, ViewportScalar},
 };
 
 use self::{
@@ -533,7 +533,7 @@ impl App {
 fn default_views(layout: &Layout, window_height: ViewportScalar, font: &Font) -> Vec<View> {
     vec![
         View::new(
-            ViewKind::Hex,
+            ViewKind::Hex(HexData::default()),
             2,
             layout.top_gap,
             960,

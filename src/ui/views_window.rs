@@ -3,7 +3,7 @@ use std::{hash::Hash, ops::RangeInclusive};
 use egui_sfml::egui::{self, emath::Numeric};
 use sfml::graphics::Font;
 
-use crate::view::{TextData, TextKind, View, ViewKind, ViewportRect};
+use crate::view::{HexData, TextData, TextKind, View, ViewKind, ViewportRect};
 
 #[derive(Debug)]
 pub struct ViewsWindow {
@@ -15,7 +15,7 @@ impl Default for ViewsWindow {
     fn default() -> Self {
         Self {
             open: Default::default(),
-            new_kind: ViewKind::Hex,
+            new_kind: ViewKind::Hex(HexData::default()),
         }
     }
 }
@@ -27,8 +27,8 @@ impl ViewKind {
     const BLOCK_NAME: &str = "Block";
     fn name(&self) -> &'static str {
         match *self {
-            ViewKind::Hex => Self::HEX_NAME,
-            ViewKind::Dec => Self::DEC_NAME,
+            ViewKind::Hex(_) => Self::HEX_NAME,
+            ViewKind::Dec(_) => Self::DEC_NAME,
             ViewKind::Text(_) => Self::TEXT_NAME,
             ViewKind::Block => Self::BLOCK_NAME,
         }
@@ -49,8 +49,8 @@ impl ViewsWindow {
                     view.adjust_state_to_kind();
                 }
                 match &mut view.kind {
-                    ViewKind::Hex => {}
-                    ViewKind::Dec => {}
+                    ViewKind::Hex(_) => {}
+                    ViewKind::Dec(_) => {}
                     ViewKind::Text(text) => {
                         let mut changed = false;
                         egui::ComboBox::new(egui::Id::new("text_combo").with(idx), "Text kind")
@@ -135,7 +135,10 @@ impl ViewsWindow {
         );
         if ui.button("Add new").clicked() {
             app.views.push(View::new(
-                std::mem::replace(&mut app.ui.views_window.new_kind, ViewKind::Hex),
+                std::mem::replace(
+                    &mut app.ui.views_window.new_kind,
+                    ViewKind::Hex(HexData::default()),
+                ),
                 0,
                 0,
                 100,
@@ -161,14 +164,14 @@ fn view_combo(
                 .selectable_label(kind.name() == ViewKind::HEX_NAME, ViewKind::HEX_NAME)
                 .clicked()
             {
-                *kind = ViewKind::Hex;
+                *kind = ViewKind::Hex(HexData::default());
                 changed = true;
             }
             if ui
                 .selectable_label(kind.name() == ViewKind::DEC_NAME, ViewKind::DEC_NAME)
                 .clicked()
             {
-                *kind = ViewKind::Dec;
+                *kind = ViewKind::Dec(HexData::default());
                 changed = true;
             }
             if ui

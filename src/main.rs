@@ -378,7 +378,7 @@ fn handle_key_events(
             }
             InteractMode::Edit => {
                 if let Some(view_idx) = app.focused_view {
-                    app.views[view_idx].edit_buf.dirty = false;
+                    app.views[view_idx].undirty_edit_buffer();
                 }
                 app.edit_state.set_cursor_no_history(
                     app.edit_state.cursor.saturating_sub(app.perspective.cols),
@@ -393,7 +393,7 @@ fn handle_key_events(
             }
             InteractMode::Edit => {
                 if let Some(view_idx) = app.focused_view {
-                    app.views[view_idx].edit_buf.dirty = false;
+                    app.views[view_idx].undirty_edit_buffer()
                 }
                 if app.edit_state.cursor + app.perspective.cols < app.data.len() {
                     app.edit_state.offset_cursor(app.perspective.cols);
@@ -411,10 +411,12 @@ fn handle_key_events(
                 if move_edit {
                     if let Some(view_idx) = app.focused_view {
                         let view = &mut app.views[view_idx];
-                        if !view.edit_buf.move_cursor_back() {
-                            view.edit_buf.move_cursor_end();
-                            view.edit_buf.dirty = false;
-                            app.edit_state.step_cursor_back();
+                        if let Some(edit_buf) = view.edit_buffer_mut() {
+                            if !edit_buf.move_cursor_back() {
+                                edit_buf.move_cursor_end();
+                                edit_buf.dirty = false;
+                                app.edit_state.step_cursor_back();
+                            }
                         }
                     }
                 } else {
@@ -440,10 +442,12 @@ fn handle_key_events(
                 if move_edit {
                     if let Some(view_idx) = app.focused_view {
                         let view = &mut app.views[view_idx];
-                        if !view.edit_buf.move_cursor_forward() {
-                            view.edit_buf.move_cursor_begin();
-                            view.edit_buf.dirty = false;
-                            app.edit_state.step_cursor_forward();
+                        if let Some(edit_buf) = &mut view.edit_buffer_mut() {
+                            if !edit_buf.move_cursor_forward() {
+                                edit_buf.move_cursor_begin();
+                                edit_buf.dirty = false;
+                                app.edit_state.step_cursor_forward();
+                            }
                         }
                     }
                 } else {

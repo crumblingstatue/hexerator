@@ -35,7 +35,6 @@ pub struct View {
     pub bytes_per_block: u8,
     /// A view can be deactivated to not render or interact, but can later be reactivated
     pub active: bool,
-    pub edit_buf: EditBuffer,
     /// Font size
     pub font_size: u16,
 }
@@ -58,7 +57,6 @@ impl View {
             scroll_speed: 0,
             bytes_per_block: 1,
             active: true,
-            edit_buf: EditBuffer::default(),
             font_size,
         };
         this.adjust_state_to_kind();
@@ -73,14 +71,13 @@ impl View {
                 w: 0,
                 h: 0,
             },
-            kind: ViewKind::Hex,
+            kind: ViewKind::Hex(HexData::default()),
             col_w: 0,
             row_h: 0,
             scroll_offset: Default::default(),
             scroll_speed: 0,
             bytes_per_block: 0,
             active: false,
-            edit_buf: Default::default(),
             font_size: 0,
         }
     }
@@ -272,8 +269,8 @@ impl View {
 
     pub fn adjust_block_size(&mut self) {
         (self.col_w, self.row_h) = match &self.kind {
-            ViewKind::Hex => (self.font_size * 2 - 2, self.font_size),
-            ViewKind::Dec => (self.font_size * 3 - 6, self.font_size),
+            ViewKind::Hex(_) => (self.font_size * 2 - 2, self.font_size),
+            ViewKind::Dec(_) => (self.font_size * 3 - 6, self.font_size),
             ViewKind::Text(data) => (self.font_size, data.line_spacing.max(1)),
             ViewKind::Block => (4, 4),
         }
@@ -282,63 +279,79 @@ impl View {
     pub fn adjust_state_to_kind(&mut self) {
         self.adjust_block_size();
         let glyph_count = self.glyph_count();
-        self.edit_buf.resize(glyph_count);
+        match &mut self.kind {
+            ViewKind::Hex(HexData { edit_buf })
+            | ViewKind::Dec(HexData { edit_buf })
+            | ViewKind::Text(TextData { edit_buf, .. }) => edit_buf.resize(glyph_count),
+            _ => {}
+        }
     }
     /// The number of glyphs per block this view has
     fn glyph_count(&self) -> u16 {
         match self.kind {
-            ViewKind::Hex => 2,
-            ViewKind::Dec => 3,
+            ViewKind::Hex(_) => 2,
+            ViewKind::Dec(_) => 3,
             ViewKind::Text { .. } => 1,
             ViewKind::Block => 1,
         }
     }
     pub fn handle_text_entered(&mut self, unicode: char, app: &mut App) {
         if self.char_valid(unicode) {
-            if !self.edit_buf.dirty {
-                match self.kind {
-                    ViewKind::Hex => {
+            match &mut self.kind {
+                ViewKind::Hex(hex) => {
+                    if !hex.edit_buf.dirty {
                         let s = format!("{:02X}", app.data[app.edit_state.cursor]);
-                        self.edit_buf.update_from_string(&s);
+                        hex.edit_buf.update_from_string(&s);
                     }
-                    ViewKind::Dec => {
-                        let s = format!("{:03}", app.data[app.edit_state.cursor]);
-                        self.edit_buf.update_from_string(&s);
+                    if hex.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
+                        || app.preferences.quick_edit
+                    {
+                        self.finish_editing(app);
                     }
-                    // Ascii doesn't need any copy buffer updates because it only ever deals with
-                    // one glyph at a time
-                    ViewKind::Text { .. } => {}
-                    // Block doesn't do any text input
-                    ViewKind::Block => {}
                 }
-            }
-            if self.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
-                || app.preferences.quick_edit
-            {
-                self.finish_editing(app);
+                ViewKind::Dec(dec) => {
+                    if !dec.edit_buf.dirty {
+                        let s = format!("{:03}", app.data[app.edit_state.cursor]);
+                        dec.edit_buf.update_from_string(&s);
+                    }
+                    if dec.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
+                        || app.preferences.quick_edit
+                    {
+                        self.finish_editing(app);
+                    }
+                }
+                ViewKind::Text(text) => {
+                    if text.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
+                        || app.preferences.quick_edit
+                    {
+                        self.finish_editing(app);
+                    }
+                }
+                // Block doesn't do any text input
+                ViewKind::Block => {}
             }
         }
     }
 
     fn char_valid(&self, unicode: char) -> bool {
         match self.kind {
-            ViewKind::Hex => matches!(unicode, '0'..='9' | 'a'..='f'),
-            ViewKind::Dec => matches!(unicode, '0'..='9'),
+            ViewKind::Hex(_) => matches!(unicode, '0'..='9' | 'a'..='f'),
+            ViewKind::Dec(_) => matches!(unicode, '0'..='9'),
             ViewKind::Text { .. } => unicode.is_ascii(),
             ViewKind::Block => false,
         }
     }
 
     pub fn finish_editing(&mut self, app: &mut App) {
-        match self.kind {
-            ViewKind::Hex => {
+        match &mut self.kind {
+            ViewKind::Hex(hex) => {
                 app.data[app.edit_state.cursor] =
-                    merge_hex_halves(self.edit_buf.buf[0], self.edit_buf.buf[1]);
+                    merge_hex_halves(hex.edit_buf.buf[0], hex.edit_buf.buf[1]);
                 app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
             }
-            ViewKind::Dec => {
+            ViewKind::Dec(dec) => {
                 let s =
-                    std::str::from_utf8(&self.edit_buf.buf).expect("Invalid utf-8 in edit buffer");
+                    std::str::from_utf8(&dec.edit_buf.buf).expect("Invalid utf-8 in edit buffer");
                 match s.parse() {
                     Ok(num) => {
                         app.data[app.edit_state.cursor] = num;
@@ -347,8 +360,8 @@ impl View {
                     Err(e) => msg_warn(&format!("Invalid value: {}", e)),
                 }
             }
-            ViewKind::Text { .. } => {
-                app.data[app.edit_state.cursor] = self.edit_buf.buf[0];
+            ViewKind::Text(text) => {
+                app.data[app.edit_state.cursor] = text.edit_buf.buf[0];
                 app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
             }
             ViewKind::Block => {}
@@ -356,7 +369,7 @@ impl View {
         if app.edit_state.cursor + 1 < app.data.len() && !app.preferences.sticky_edit {
             app.edit_state.step_cursor_forward()
         }
-        self.edit_buf.reset();
+        self.reset_edit_buf();
 
         if app.preferences.auto_save {
             msg_if_fail(app.save(), "Failed to save file");
@@ -364,7 +377,27 @@ impl View {
     }
 
     pub fn cancel_editing(&mut self) {
-        self.edit_buf.reset();
+        self.reset_edit_buf();
+    }
+
+    pub fn reset_edit_buf(&mut self) {
+        if let Some(edit_buf) = self.edit_buffer_mut() {
+            edit_buf.reset()
+        }
+    }
+
+    pub(crate) fn undirty_edit_buffer(&mut self) {
+        if let Some(edit_buf) = self.edit_buffer_mut() {
+            edit_buf.dirty = false
+        }
+    }
+
+    pub(crate) fn edit_buffer_mut(&mut self) -> Option<&mut EditBuffer> {
+        match &mut self.kind {
+            ViewKind::Hex(data) | ViewKind::Dec(data) => Some(&mut data.edit_buf),
+            ViewKind::Text(data) => Some(&mut data.edit_buf),
+            ViewKind::Block => None,
+        }
     }
 }
 
@@ -519,19 +552,25 @@ impl TryFrom<(i32, i32)> for ViewportVec {
 }
 
 /// The kind of view (hex, ascii, block, etc)
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub enum ViewKind {
-    Hex,
-    Dec,
+    Hex(HexData),
+    Dec(HexData),
     Text(TextData),
     Block,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct TextData {
     /// The kind of text (ascii/utf16/etc)
     pub text_kind: TextKind,
     pub line_spacing: u16,
+    pub edit_buf: EditBuffer,
+}
+
+#[derive(Debug, Default)]
+pub struct HexData {
+    pub edit_buf: EditBuffer,
 }
 
 impl TextData {
@@ -544,6 +583,7 @@ impl TextData {
         Self {
             text_kind: TextKind::Ascii,
             line_spacing: font.line_spacing(u32::from(font_size)) as u16,
+            edit_buf: EditBuffer::default(),
         }
     }
 }

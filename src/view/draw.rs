@@ -309,7 +309,7 @@ impl View {
         vertex_buffer.clear();
         let mut rs = RenderStates::default();
         match &self.kind {
-            ViewKind::Hex => {
+            ViewKind::Hex(hex) => {
                 draw_view(
                     self,
                     app,
@@ -334,8 +334,8 @@ impl View {
                             .into_iter()
                             .enumerate()
                         {
-                            if idx == app.edit_state.cursor && self.edit_buf.dirty {
-                                d = self.edit_buf.buf[i];
+                            if idx == app.edit_state.cursor && hex.edit_buf.dirty {
+                                d = hex.edit_buf.buf[i];
                             }
                             draw_glyph(
                                 font,
@@ -348,7 +348,7 @@ impl View {
                             );
                             gx += f32::from(self.font_size - 4);
                         }
-                        let extra_x = self.edit_buf.cursor * (self.font_size - 4);
+                        let extra_x = hex.edit_buf.cursor * (self.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
@@ -364,7 +364,7 @@ impl View {
                 );
                 rs.set_texture(Some(font.texture(self.font_size.into())));
             }
-            ViewKind::Dec => {
+            ViewKind::Dec(dec) => {
                 draw_view(
                     self,
                     app,
@@ -389,8 +389,8 @@ impl View {
                             .into_iter()
                             .enumerate()
                         {
-                            if idx == app.edit_state.cursor && self.edit_buf.dirty {
-                                d = self.edit_buf.buf[i];
+                            if idx == app.edit_state.cursor && dec.edit_buf.dirty {
+                                d = dec.edit_buf.buf[i];
                             }
                             draw_glyph(
                                 font,
@@ -403,7 +403,7 @@ impl View {
                             );
                             gx += f32::from(self.font_size - 4);
                         }
-                        let extra_x = self.edit_buf.cursor * (self.font_size - 4);
+                        let extra_x = dec.edit_buf.cursor * (self.font_size - 4);
                         if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
