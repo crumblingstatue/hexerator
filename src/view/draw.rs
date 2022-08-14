@@ -29,9 +29,7 @@ pub fn draw_view(
     }
     let mut idx = app.perspective.region.begin;
     let start_row: usize = view.scroll_offset.row;
-    imm_msg!(start_row);
     idx += start_row * (app.perspective.cols * usize::from(view.bytes_per_block));
-    imm_msg!(view.rows());
     #[expect(
         clippy::cast_sign_loss,
         reason = "rows() returning negative is a bug, should be positive."
