@@ -83,7 +83,7 @@ pub fn draw_view(
                         idx,
                         c,
                     );
-                    if gamedebug_core::enabled() {
+                    /*if gamedebug_core::enabled() {
                         #[expect(
                             clippy::cast_precision_loss,
                             reason = "At this point, the viewport coordinates should be small enough to fit in viewport"
@@ -97,7 +97,7 @@ pub fn draw_view(
                             Color::RED,
                             -1.0,
                         );
-                    }
+                    }*/
                     idx += usize::from(view.bytes_per_block);
                 }
                 None => {
