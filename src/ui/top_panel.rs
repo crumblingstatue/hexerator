@@ -93,9 +93,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar, font: &Font
                     .on_hover_text("From hex code on clipboard")
                     .clicked()
                 {
-                    match color_from_hexcode(
-                        &sfml::window::clipboard::get_string().to_rust_string(),
-                    ) {
+                    match color_from_hexcode(&sfml::window::clipboard::get_string()) {
                         Ok(new) => *col = new,
                         Err(e) => msg_warn(&format!("Color parse error: {}", e)),
                     }

@@ -6,22 +6,22 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "3.2.7", features = ["derive"] }
-anyhow = "1.0.58"
-rfd = "0.9.1"
+clap = { version = "3.2.17", features = ["derive"] }
+anyhow = "1.0.61"
+rfd = "0.10.0"
 rand = "0.8.5"
 rmp-serde = "1.1.0"
-serde = { version = "1.0.137", features = ["derive"] }
+serde = { version = "1.0.143", features = ["derive"] }
 # Need git version because 1.1.1 blocks on 2nd listener.accept() on windows
 interprocess = { git = "https://github.com/kotauskas/interprocess.git", default-features = false }
 directories = "4.0.1"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 memchr = "2.5.0"
 glu-sys = "0.1.4"
-thiserror = "1.0.31"
+thiserror = "1.0.32"
 either = "1.7.0"
-tree_magic_mini = {version = "3.0.3", features = ["tree_magic_db"]}
-bytemuck = "1.11.0"
+tree_magic_mini = { version = "3.0.3", features = ["tree_magic_db"] }
+bytemuck = "1.12.0"
 egui_easy_mark_standalone = { git = "https://github.com/crumblingstatue/egui-easymark-standalone.git", version = "0.1.0" }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
