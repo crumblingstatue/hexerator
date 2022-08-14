@@ -405,7 +405,7 @@ pub struct Offsets {
 /// It's "comfortable" to scroll a bit before the data when we're "home".
 ///
 /// It visually indicates that we are at the beginning and there is no more data before.
-const COMFY_MARGIN: i16 = -12;
+pub const COMFY_MARGIN: i16 = -12;
 
 /// When scrolling past 0 whole, allows unbounded negative pixel offset
 fn scroll_impl(whole: &mut usize, pixel: &mut i16, pixels_per_whole: i16, scroll_by: i16) {
@@ -475,13 +475,13 @@ fn test_scroll_impl_negative() {
 #[derive(Debug, Default, Clone, Copy)]
 pub struct ScrollOffset {
     /// What column we are at
-    col: usize,
+    pub col: usize,
     /// Additional pixel x offset
-    pix_xoff: i16,
+    pub pix_xoff: i16,
     /// What row we are at
-    row: usize,
+    pub row: usize,
     /// Additional pixel y offset
-    pix_yoff: i16,
+    pub pix_yoff: i16,
 }
 
 impl ScrollOffset {

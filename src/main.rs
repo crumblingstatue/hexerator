@@ -60,7 +60,7 @@ use sfml::{
 };
 use shell::{msg_if_fail, msg_warn};
 use ui::dialogs::SetCursorDialog;
-use view::ViewportScalar;
+use view::{ViewportScalar, COMFY_MARGIN};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct InstanceRequest {
@@ -259,6 +259,13 @@ fn update(app: &mut App) {
         let (src_row_h, src_col_w) = (src.row_h, src.col_w);
         for view in &mut app.views {
             view.sync_to(src_row, src_yoff, src_col, src_xoff, src_row_h, src_col_w);
+            // Also clamp view ranges
+            if view.scroll_offset.row == 0 && view.scroll_offset.pix_yoff < COMFY_MARGIN {
+                view.scroll_offset.pix_yoff = COMFY_MARGIN;
+            }
+            if view.scroll_offset.col == 0 && view.scroll_offset.pix_xoff < COMFY_MARGIN {
+                view.scroll_offset.pix_xoff = COMFY_MARGIN;
+            }
         }
     }
 }
