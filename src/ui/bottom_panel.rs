@@ -44,9 +44,12 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             }
         }
         ui.separator();
-        ui.label(format!("cursor: {}", app.edit_state.cursor));
+        ui.label(format!(
+            "cursor: {} ({:x})",
+            app.edit_state.cursor, app.edit_state.cursor
+        ));
         if let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
-            ui.label(format!("mouse: {}", offset));
+            ui.label(format!("mouse: {} ({:x})", offset, offset));
         }
     });
 }
