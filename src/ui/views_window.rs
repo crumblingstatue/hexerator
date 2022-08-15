@@ -12,6 +12,7 @@ use crate::{
 pub struct ViewsWindow {
     pub open: bool,
     pub selected: usize,
+    rename: bool,
     new_kind: ViewKind,
 }
 
@@ -21,6 +22,7 @@ impl Default for ViewsWindow {
             open: Default::default(),
             new_kind: ViewKind::Hex(HexData::default()),
             selected: 0,
+            rename: false,
         }
     }
 }
@@ -101,15 +103,25 @@ impl ViewsWindow {
         });
         ui.separator();
         if let Some(view) = app.named_views.get_mut(app.ui.views_window.selected) {
-            ui.heading(&view.name);
             ui.horizontal(|ui| {
-                ui.label("Name");
-                ui.text_edit_singleline(&mut view.name);
-            });
-            ui.group(|ui| {
+                if app.ui.views_window.rename {
+                    if ui
+                        .add(egui::TextEdit::singleline(&mut view.name).desired_width(150.0))
+                        .lost_focus()
+                    {
+                        app.ui.views_window.rename = false;
+                    }
+                } else {
+                    ui.heading(&view.name);
+                }
+                if ui.button("✏").on_hover_text("Rename").clicked() {
+                    app.ui.views_window.rename ^= true;
+                }
                 if view_combo(egui::Id::new("view_combo"), &mut view.view.kind, ui, font) {
                     view.view.adjust_state_to_kind();
                 }
+            });
+            ui.group(|ui| {
                 let mut adjust_block_size = false;
                 match &mut view.view.kind {
                     ViewKind::Hex(HexData { font_size, .. })
