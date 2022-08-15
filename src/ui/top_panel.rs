@@ -77,7 +77,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar, font: &Font
                                 .presentation
                                 .color_method
                                 .byte_color(i as u8, app.presentation.invert_color);
-                            [c.red(), c.green(), c.blue()]
+                            [c.r, c.g, c.b]
                         });
                         app.presentation.color_method = ColorMethod::Custom(Box::new(arr));
                     }
@@ -140,7 +140,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar, font: &Font
                             for x in 0..size.x {
                                 let color = unsafe { img.pixel_at(x, y) };
                                 let byte = app.data[sel.begin + i];
-                                arr[byte as usize] = [color.red(), color.green(), color.blue()];
+                                arr[byte as usize] = [color.r, color.g, color.b];
                                 i += 1;
                             }
                         }

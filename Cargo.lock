@@ -211,7 +211,7 @@ checksum = "bd0c93bb4b0c6d9b77f4435b0ae98c24d17f1c45b2ff844c6151a07256ca923b"
 [[package]]
 name = "egui"
 version = "0.18.1"
-source = "git+https://github.com/emilk/egui.git#923b67ef9c0b56712ca7636cbe3337b1ca43bb4e"
+source = "git+https://github.com/emilk/egui.git#48e7f219a3aaa43084d042590b2871c01415e642"
 dependencies = [
  "ahash",
  "epaint",
@@ -245,12 +245,12 @@ checksum = "3f107b87b6afc2a64fd13cac55fe06d6c8859f12d4b14cbcdd2c67d0976781be"
 [[package]]
 name = "emath"
 version = "0.18.0"
-source = "git+https://github.com/emilk/egui.git#923b67ef9c0b56712ca7636cbe3337b1ca43bb4e"
+source = "git+https://github.com/emilk/egui.git#48e7f219a3aaa43084d042590b2871c01415e642"
 
 [[package]]
 name = "epaint"
 version = "0.18.1"
-source = "git+https://github.com/emilk/egui.git#923b67ef9c0b56712ca7636cbe3337b1ca43bb4e"
+source = "git+https://github.com/emilk/egui.git#48e7f219a3aaa43084d042590b2871c01415e642"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -438,7 +438,7 @@ dependencies = [
 [[package]]
 name = "interprocess"
 version = "1.1.1"
-source = "git+https://github.com/kotauskas/interprocess.git#fc5f2a22a05dea8833f1505a41d2b79a449a412b"
+source = "git+https://github.com/kotauskas/interprocess.git?rev=fc5f2a22a05dea8833f1505a41d2b79a449a412b#fc5f2a22a05dea8833f1505a41d2b79a449a412b"
 dependencies = [
  "cfg-if",
  "libc",
@@ -854,7 +854,7 @@ dependencies = [
 [[package]]
 name = "sfml"
 version = "0.17.0"
-source = "git+https://github.com/jeremyletang/rust-sfml.git#faa32e3c9ab0fb1d9fe647ce089e86fd241f80e9"
+source = "git+https://github.com/jeremyletang/rust-sfml.git#f2824f48ed6c85a0c8435f958d6b0c271762d830"
 dependencies = [
  "bitflags",
  "cc",

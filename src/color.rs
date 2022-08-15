@@ -65,7 +65,7 @@ impl ColorMethod {
 }
 
 pub fn invert_color(color: Color) -> Color {
-    Color::rgb(!color.red(), !color.green(), !color.blue())
+    Color::rgb(!color.r, !color.g, !color.b)
 }
 
 fn vga_13h_color(byte: u8) -> Color {
