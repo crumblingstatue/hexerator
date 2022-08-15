@@ -79,7 +79,7 @@ pub fn do_egui(
             .show(ctx, |ui| RegionsWindow::ui(ui, app));
         app.ui.regions_window.open = open;
         open = app.ui.views_window.open;
-        Window::new("Views")
+        Window::new("View configuration")
             .open(&mut open)
             .show(ctx, |ui| ViewsWindow::ui(ui, app, font));
         app.ui.views_window.open = open;
