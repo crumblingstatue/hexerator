@@ -91,7 +91,6 @@ impl ViewsWindow {
                 ui.label("Name");
                 ui.text_edit_singleline(&mut view.name);
             });
-            viewport_rect_ui(ui, &mut view.view.viewport_rect);
             ui.group(|ui| {
                 if view_combo(egui::Id::new("view_combo"), &mut view.view.kind, ui, font) {
                     view.view.adjust_state_to_kind();
@@ -169,6 +168,7 @@ impl ViewsWindow {
                     1..=64,
                 );
             });
+            viewport_rect_ui(ui, &mut view.view.viewport_rect);
             if ui.button("Delete").clicked() {
                 removed_idx = Some(app.ui.views_window.selected);
             }
