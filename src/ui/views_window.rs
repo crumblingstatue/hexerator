@@ -3,7 +3,10 @@ use std::{hash::Hash, ops::RangeInclusive};
 use egui_sfml::egui::{self, emath::Numeric};
 use sfml::graphics::Font;
 
-use crate::view::{HexData, TextData, TextKind, View, ViewKind, ViewportRect};
+use crate::{
+    app::NamedView,
+    view::{HexData, TextData, TextKind, View, ViewKind, ViewportRect},
+};
 
 #[derive(Debug)]
 pub struct ViewsWindow {
@@ -42,19 +45,23 @@ impl ViewsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App, font: &Font) {
         let mut idx = 0;
         let mut removed_idx = None;
-        app.views.retain_mut(|view| {
+        app.named_views.retain_mut(|view| {
             let mut retain = true;
             ui.group(|ui| {
+                ui.horizontal(|ui| {
+                    ui.label("Name");
+                    ui.text_edit_singleline(&mut view.name);
+                });
                 if view_combo(
                     egui::Id::new("view_combo").with(idx),
-                    &mut view.kind,
+                    &mut view.view.kind,
                     ui,
                     font,
                 ) {
-                    view.adjust_state_to_kind();
+                    view.view.adjust_state_to_kind();
                 }
                 let mut adjust_block_size = false;
-                match &mut view.kind {
+                match &mut view.view.kind {
                     ViewKind::Hex(HexData { font_size, .. })
                     | ViewKind::Dec(HexData { font_size, .. })
                     | ViewKind::Text(TextData { font_size, .. }) => {
@@ -70,7 +77,7 @@ impl ViewsWindow {
                                 adjust_block_size = true;
                             };
                         });
-                        if let ViewKind::Text(text) = &mut view.kind {
+                        if let ViewKind::Text(text) = &mut view.view.kind {
                             let mut changed = false;
                             egui::ComboBox::new(egui::Id::new("text_combo").with(idx), "Text kind")
                                 .selected_text(text.text_kind.name())
@@ -98,28 +105,28 @@ impl ViewsWindow {
                                         .clicked();
                                 });
                             if changed {
-                                view.bytes_per_block = text.text_kind.bytes_needed();
+                                view.view.bytes_per_block = text.text_kind.bytes_needed();
                             }
                         }
                     }
                     ViewKind::Block => {}
                 }
                 if adjust_block_size {
-                    view.adjust_block_size();
+                    view.view.adjust_block_size();
                     #[expect(
                         clippy::cast_possible_truncation,
                         clippy::cast_sign_loss,
                         reason = "It's extremely unlikely line spacing is not between 0 and i16::MAX"
                     )]
-                    if let ViewKind::Text(data) = &mut view.kind {
+                    if let ViewKind::Text(data) = &mut view.view.kind {
                         data.line_spacing = font.line_spacing(u32::from(data.font_size)) as u16;
                     }
                 }
-                viewport_rect_ui(ui, &mut view.viewport_rect);
-                labelled_drag(ui, "column width", &mut view.col_w, 1..=128);
-                labelled_drag(ui, "row height", &mut view.row_h, 1..=128);
-                labelled_drag(ui, "bytes per block", &mut view.bytes_per_block, 1..=64);
-                ui.checkbox(&mut view.active, "Active");
+                viewport_rect_ui(ui, &mut view.view.viewport_rect);
+                labelled_drag(ui, "column width", &mut view.view.col_w, 1..=128);
+                labelled_drag(ui, "row height", &mut view.view.row_h, 1..=128);
+                labelled_drag(ui, "bytes per block", &mut view.view.bytes_per_block, 1..=64);
+                ui.checkbox(&mut view.view.active, "Active");
                 if ui.button("Delete").clicked() {
                     retain = false;
                     removed_idx = Some(idx);
@@ -129,7 +136,7 @@ impl ViewsWindow {
             retain
         });
         if let Some(focused) = &mut app.focused_view && let Some(rem_idx) = removed_idx && *focused >= rem_idx {
-            if app.views.is_empty() {
+            if app.named_views.is_empty() {
                 app.focused_view = None;
             } else if *focused > 0 {
                 *focused -= 1;
@@ -143,16 +150,19 @@ impl ViewsWindow {
             font,
         );
         if ui.button("Add new").clicked() {
-            app.views.push(View::new(
-                std::mem::replace(
-                    &mut app.ui.views_window.new_kind,
-                    ViewKind::Hex(HexData::default()),
+            app.named_views.push(NamedView {
+                view: View::new(
+                    std::mem::replace(
+                        &mut app.ui.views_window.new_kind,
+                        ViewKind::Hex(HexData::default()),
+                    ),
+                    0,
+                    0,
+                    100,
+                    100,
                 ),
-                0,
-                0,
-                100,
-                100,
-            ));
+                name: "Unnamed view".into(),
+            });
         }
     }
 }

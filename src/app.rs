@@ -38,6 +38,11 @@ use self::{
     presentation::Presentation,
 };
 
+pub struct NamedView {
+    pub name: String,
+    pub view: View,
+}
+
 /// The hexerator application state
 pub struct App {
     /// The default perspective
@@ -48,7 +53,7 @@ pub struct App {
     pub input: Input,
     pub interact_mode: InteractMode,
     pub presentation: Presentation,
-    pub views: Vec<View>,
+    pub named_views: Vec<NamedView>,
     pub focused_view: Option<usize>,
     pub ui: crate::ui::Ui,
     /// "a" point of selection. Could be smaller or larger than "b".
@@ -113,7 +118,7 @@ impl App {
         load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
         let layout = Layout::new();
         let mut views = default_views(&layout, window_height, font);
-        views[0].go_home();
+        views[0].view.go_home();
         let mut this = Self {
             scissor_views: true,
             perspective: Perspective::default(),
@@ -123,7 +128,7 @@ impl App {
             input: Input::default(),
             interact_mode: InteractMode::View,
             presentation: Presentation::default(),
-            views,
+            named_views: views,
             focused_view: Some(0),
             ui: crate::ui::Ui::default(),
             select_a: None,
@@ -216,7 +221,9 @@ impl App {
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
         if let Some(idx) = self.focused_view {
-            self.views[idx].center_on_offset(offset, &self.perspective);
+            self.named_views[idx]
+                .view
+                .center_on_offset(offset, &self.perspective);
         }
     }
 
@@ -269,7 +276,7 @@ impl App {
     }
     fn col_change_impl(&mut self, f: impl FnOnce(&mut usize)) {
         if let Some(idx) = self.focused_view {
-            let view = &mut self.views[idx];
+            let view = &mut self.named_views[idx].view;
             let prev_offset = view.offsets(&self.perspective);
             f(&mut self.perspective.cols);
             self.perspective.clamp_cols();
@@ -336,7 +343,7 @@ impl App {
             cols: 48,
             flip_row_order: false,
         };
-        self.views = default_views(&self.layout, window_height, font);
+        self.named_views = default_views(&self.layout, window_height, font);
     }
 
     pub fn close_file(&mut self) {
@@ -393,7 +400,7 @@ impl App {
             return;
         };
         let Some(idx) = self.focused_view else { return };
-        let view = &self.views[idx];
+        let view = &self.named_views[idx].view;
         let view_byte_offset = view.offsets(&self.perspective).byte;
         let bytes_per_page = view.bytes_per_page(&self.perspective);
         // Don't read past what we need for our current view offset
@@ -441,7 +448,7 @@ impl App {
     //
     // Also returns the index of the view the position is from
     pub fn byte_offset_at_pos(&mut self, x: i16, y: i16) -> Option<(usize, usize)> {
-        for (view_idx, view) in self.views.iter().enumerate() {
+        for (view_idx, view) in self.named_views.iter().map(|v| &v.view).enumerate() {
             if !view.active {
                 continue;
             }
@@ -530,29 +537,38 @@ impl App {
     }
 }
 
-fn default_views(layout: &Layout, window_height: ViewportScalar, font: &Font) -> Vec<View> {
+fn default_views(layout: &Layout, window_height: ViewportScalar, font: &Font) -> Vec<NamedView> {
     vec![
-        View::new(
-            ViewKind::Hex(HexData::default()),
-            2,
-            layout.top_gap,
-            960,
-            window_height - layout.bottom_gap,
-        ),
-        View::new(
-            ViewKind::Text(TextData::default_from_font(font, 14)),
-            966,
-            layout.top_gap,
-            480,
-            window_height - layout.bottom_gap,
-        ),
-        View::new(
-            ViewKind::Block,
-            1450,
-            layout.top_gap,
-            200,
-            window_height - layout.bottom_gap,
-        ),
+        NamedView {
+            view: View::new(
+                ViewKind::Hex(HexData::default()),
+                2,
+                layout.top_gap,
+                960,
+                window_height - layout.bottom_gap,
+            ),
+            name: "Default hex".into(),
+        },
+        NamedView {
+            view: View::new(
+                ViewKind::Text(TextData::default_from_font(font, 14)),
+                966,
+                layout.top_gap,
+                480,
+                window_height - layout.bottom_gap,
+            ),
+            name: "Default text".into(),
+        },
+        NamedView {
+            view: View::new(
+                ViewKind::Block,
+                1450,
+                layout.top_gap,
+                200,
+                window_height - layout.bottom_gap,
+            ),
+            name: "Default block".into(),
+        },
     ]
 }
 

@@ -197,7 +197,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 let re = ui.text_edit_singleline(&mut app.ui.seek_byte_offset_input);
                 if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
                     if let Some(idx) = app.focused_view {
-                        app.views[idx].scroll_to_byte_offset(
+                        app.named_views[idx].view.scroll_to_byte_offset(
                             app.ui.seek_byte_offset_input.parse().unwrap_or(0),
                             &app.perspective,
                             app.col_change_lock_x,
