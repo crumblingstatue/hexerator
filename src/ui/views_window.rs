@@ -1,6 +1,6 @@
 use std::{hash::Hash, ops::RangeInclusive};
 
-use egui_sfml::egui::{self, emath::Numeric};
+use egui_sfml::egui::{self, emath::Numeric, Button};
 use sfml::graphics::Font;
 
 use crate::{
@@ -47,10 +47,18 @@ impl ViewsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App, font: &Font) {
         let mut removed_idx = None;
         ui.heading("Views");
+        let last_idx = app.named_views.len() - 1;
+        let mut swap = None;
         for (i, view) in app.named_views.iter_mut().enumerate() {
             ui.horizontal(|ui| {
                 ui.checkbox(&mut view.view.active, "")
                     .on_hover_text("Active");
+                if ui.add_enabled(i != 0, Button::new("⏶")).clicked() {
+                    swap = Some((i, i - 1));
+                }
+                if ui.add_enabled(i != last_idx, Button::new("⏷")).clicked() {
+                    swap = Some((i, i + 1));
+                }
                 if ui
                     .selectable_label(i == app.ui.views_window.selected, &view.name)
                     .clicked()
@@ -59,6 +67,13 @@ impl ViewsWindow {
                 }
                 ui.label(egui::RichText::new(view.view.kind.name()).code());
             });
+        }
+        if let Some((a, b)) = swap {
+            let mut arr = [a, b];
+            arr.sort();
+            let [a, b] = index_many::simple::index_many_mut(&mut app.named_views, arr);
+            std::mem::swap(&mut a.view.viewport_rect, &mut b.view.viewport_rect);
+            std::mem::swap(a, b);
         }
         ui.separator();
         ui.horizontal(|ui| {

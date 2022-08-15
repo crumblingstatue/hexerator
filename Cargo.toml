@@ -24,6 +24,7 @@ either = "1.7.0"
 tree_magic_mini = { version = "3.0.3", features = ["tree_magic_db"] }
 bytemuck = "1.12.0"
 egui_easy_mark_standalone = { git = "https://github.com/crumblingstatue/egui-easymark-standalone.git", version = "0.1.0" }
+index_many = "0.6.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
