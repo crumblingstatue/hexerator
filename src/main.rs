@@ -523,6 +523,7 @@ fn handle_key_events(
         }
         Key::F1 => app.interact_mode = InteractMode::View,
         Key::F2 => app.interact_mode = InteractMode::Edit,
+        Key::F5 => app.ui.views_window.open ^= true,
         Key::F12 if !shift && !ctrl && !alt => app.toggle_debug(),
         Key::Escape => {
             if let Some(view_idx) = app.focused_view {

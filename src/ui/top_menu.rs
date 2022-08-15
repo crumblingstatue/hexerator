@@ -179,7 +179,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
             }
         });
         ui.menu_button("View", |ui| {
-            if ui.button("View configuration...").clicked() {
+            if button_with_shortcut(ui, "View configuration...", "F5").clicked() {
                 app.ui.views_window.open ^= true;
                 ui.close_menu();
             }
