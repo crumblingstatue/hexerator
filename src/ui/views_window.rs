@@ -153,27 +153,29 @@ impl ViewsWindow {
             }
         }
         ui.separator();
-        view_combo(
-            "new_kind_combo",
-            &mut app.ui.views_window.new_kind,
-            ui,
-            font,
-        );
-        if ui.button("Add new").clicked() {
-            app.named_views.push(NamedView {
-                view: View::new(
-                    std::mem::replace(
-                        &mut app.ui.views_window.new_kind,
-                        ViewKind::Hex(HexData::default()),
+        ui.horizontal(|ui| {
+            if ui.button("Add new").clicked() {
+                app.named_views.push(NamedView {
+                    view: View::new(
+                        std::mem::replace(
+                            &mut app.ui.views_window.new_kind,
+                            ViewKind::Hex(HexData::default()),
+                        ),
+                        0,
+                        0,
+                        100,
+                        100,
                     ),
-                    0,
-                    0,
-                    100,
-                    100,
-                ),
-                name: "Unnamed view".into(),
-            });
-        }
+                    name: "Unnamed view".into(),
+                });
+            }
+            view_combo(
+                "new_kind_combo",
+                &mut app.ui.views_window.new_kind,
+                ui,
+                font,
+            );
+        });
     }
 }
 
