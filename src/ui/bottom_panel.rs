@@ -1,8 +1,11 @@
 use egui_sfml::egui::{text::LayoutJob, Align, DragValue, Stroke, TextFormat, TextStyle, Ui};
 
-use crate::app::{interact_mode::InteractMode, App};
+use crate::{
+    app::{interact_mode::InteractMode, App},
+    view::ViewportVec,
+};
 
-pub fn ui(ui: &mut Ui, app: &mut App) {
+pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
     ui.horizontal(|ui| {
         let job = key_label(ui, "F1", "View");
         if ui
@@ -19,37 +22,31 @@ pub fn ui(ui: &mut Ui, app: &mut App) {
             app.interact_mode = InteractMode::Edit;
         }
         ui.separator();
-        match app.interact_mode {
-            InteractMode::View => {
-                ui.label("offset");
-                ui.add(DragValue::new(&mut app.perspective.region.begin));
-                ui.label("columns");
-                ui.add(DragValue::new(&mut app.perspective.cols));
-                let data_len = app.data.len();
-                if data_len != 0 {
-                    if let Some(idx) = app.focused_view {
-                        let offsets = app.named_views[idx].view.offsets(&app.perspective);
-                        #[expect(
-                            clippy::cast_precision_loss,
-                            reason = "Precision is good until 52 bits (more than reasonable)"
-                        )]
-                        ui.label(format!(
-                            "view offset: row {} col {} byte {} ({:.2}%)",
-                            offsets.row,
-                            offsets.col,
-                            offsets.byte,
-                            (offsets.byte as f64 / data_len as f64) * 100.0
-                        ));
-                    }
-                }
+        ui.label("offset");
+        ui.add(DragValue::new(&mut app.perspective.region.begin));
+        ui.label("columns");
+        ui.add(DragValue::new(&mut app.perspective.cols));
+        let data_len = app.data.len();
+        if data_len != 0 {
+            if let Some(idx) = app.focused_view {
+                let offsets = app.named_views[idx].view.offsets(&app.perspective);
+                #[expect(
+                    clippy::cast_precision_loss,
+                    reason = "Precision is good until 52 bits (more than reasonable)"
+                )]
+                ui.label(format!(
+                    "view offset: row {} col {} byte {} ({:.2}%)",
+                    offsets.row,
+                    offsets.col,
+                    offsets.byte,
+                    (offsets.byte as f64 / data_len as f64) * 100.0
+                ));
             }
-            InteractMode::Edit => 'edit: {
-                if app.data.is_empty() {
-                    break 'edit;
-                }
-                ui.label(format!("cursor: {}", app.edit_state.cursor));
-                ui.separator();
-            }
+        }
+        ui.separator();
+        ui.label(format!("cursor: {}", app.edit_state.cursor));
+        if let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
+            ui.label(format!("mouse: {}", offset));
         }
     });
 }

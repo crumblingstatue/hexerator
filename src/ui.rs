@@ -91,7 +91,7 @@ pub fn do_egui(
         app.ui.help_window.open = open;
         TopBottomPanel::top("top_panel")
             .show(ctx, |ui| top_panel::ui(ui, app, window_height, font));
-        TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel::ui(ui, app));
+        TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos));
         egui::SidePanel::right("right_panel").show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos));
         let mut dialogs: Vec<_> = std::mem::take(&mut app.ui.dialogs);
         dialogs.retain_mut(|dialog| {
