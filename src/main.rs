@@ -376,6 +376,9 @@ fn handle_key_events(
     window: &mut RenderWindow,
     font: &Font,
 ) {
+    if code == Key::F12 && !shift && !ctrl && !alt {
+        app.toggle_debug()
+    }
     if app.data.is_empty() {
         return;
     }
@@ -524,7 +527,6 @@ fn handle_key_events(
         Key::F1 => app.interact_mode = InteractMode::View,
         Key::F2 => app.interact_mode = InteractMode::Edit,
         Key::F5 => app.ui.views_window.open ^= true,
-        Key::F12 if !shift && !ctrl && !alt => app.toggle_debug(),
         Key::Escape => {
             if let Some(view_idx) = app.focused_view {
                 app.named_views[view_idx].view.cancel_editing();
