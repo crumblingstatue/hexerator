@@ -244,7 +244,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
         });
         ui.menu_button("Meta", |ui| {
-            if ui.button("Regions...").clicked() {
+            if button_with_shortcut(ui, "Regions...", "F7").clicked() {
                 app.ui.regions_window.open ^= true;
                 ui.close_menu();
             }
