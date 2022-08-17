@@ -61,6 +61,9 @@ pub fn draw_view(
                 idx += (perspective.cols - col) * usize::from(view.bytes_per_block);
                 break;
             }
+            if idx > region.end {
+                break 'rows;
+            }
             if viewport_y > i64::from(view.viewport_rect.y + view.viewport_rect.h)
                 && !perspective.flip_row_order
             {
