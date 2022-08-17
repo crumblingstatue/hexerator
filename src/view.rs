@@ -631,7 +631,7 @@ impl ViewportRect {
         self.contains_pos(x, y).then_some((x - self.x, y - self.y))
     }
 
-    fn contains_pos(&self, x: ViewportScalar, y: ViewportScalar) -> bool {
+    pub fn contains_pos(&self, x: ViewportScalar, y: ViewportScalar) -> bool {
         x >= self.x && y >= self.y && x <= self.x + self.w && y <= self.y + self.h
     }
 }

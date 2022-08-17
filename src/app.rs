@@ -486,6 +486,17 @@ impl App {
         }
         None
     }
+    pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<usize> {
+        for (view_idx, view) in self.named_views.iter().enumerate() {
+            if !view.view.active {
+                continue;
+            }
+            if view.view.viewport_rect.contains_pos(x, y) {
+                return Some(view_idx);
+            }
+        }
+        None
+    }
     pub fn consume_meta(&mut self, meta: Metafile) {
         self.regions = meta.named_regions;
     }
