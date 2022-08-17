@@ -298,6 +298,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
                     }
                     if let Some(view_idx) = app.view_idx_at_pos(mp.x, mp.y) {
                         app.focused_view = Some(view_idx);
+                        app.ui.views_window.selected = view_idx;
                     }
                 }
             }
