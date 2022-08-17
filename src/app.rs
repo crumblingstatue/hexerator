@@ -18,6 +18,7 @@ use anyhow::{bail, Context};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use sfml::graphics::Font;
+use slotmap::{new_key_type, SlotMap};
 
 use crate::{
     args::Args,
@@ -74,10 +75,16 @@ impl EventTrigger {
     }
 }
 
+new_key_type! {
+    pub struct PerspectiveKey;
+}
+
+pub type PerspectiveMap = SlotMap<PerspectiveKey, Perspective>;
+
 /// The hexerator application state
 pub struct App {
     /// The default perspective
-    pub perspective: Perspective,
+    pub perspectives: PerspectiveMap,
     pub dirty_region: Option<Region>,
     pub data: Vec<u8>,
     pub edit_state: EditState,
@@ -146,11 +153,13 @@ impl App {
             args = recent.clone();
         }
         load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
-        let mut views = default_views(font, &ViewportRect::default());
+        let mut perspectives = SlotMap::default();
+        let default_perspective = perspectives.insert(Perspective::default());
+        let mut views = default_views(font, &ViewportRect::default(), default_perspective);
         views[0].view.go_home();
         let mut this = Self {
             scissor_views: true,
-            perspective: Perspective::default(),
+            perspectives,
             dirty_region: None,
             data,
             edit_state: EditState::default(),
@@ -254,7 +263,7 @@ impl App {
         if let Some(idx) = self.focused_view {
             self.named_views[idx]
                 .view
-                .center_on_offset(offset, &self.perspective);
+                .center_on_offset(offset, &self.perspectives);
         }
     }
 
@@ -310,7 +319,7 @@ impl App {
             let view = &mut self.named_views[idx].view;
             col_change_impl_view_perspective(
                 view,
-                &mut self.perspective,
+                &mut self.perspectives,
                 f,
                 self.col_change_lock_x,
                 self.col_change_lock_y,
@@ -362,15 +371,15 @@ impl App {
 
     /// Readjust to a new file
     fn new_file_readjust(&mut self, font: &Font, hex_iface_rect: &ViewportRect) {
-        self.perspective = Perspective {
+        let default_perspective = self.perspectives.insert(Perspective {
             region: Region {
                 begin: 0,
                 end: self.data.len().saturating_sub(1),
             },
             cols: 48,
             flip_row_order: false,
-        };
-        self.named_views = default_views(font, hex_iface_rect);
+        });
+        self.named_views = default_views(font, hex_iface_rect, default_perspective);
     }
 
     pub fn close_file(&mut self) {
@@ -428,8 +437,8 @@ impl App {
         };
         let Some(idx) = self.focused_view else { return };
         let view = &self.named_views[idx].view;
-        let view_byte_offset = view.offsets(&self.perspective).byte;
-        let bytes_per_page = view.bytes_per_page(&self.perspective);
+        let view_byte_offset = view.offsets(&self.perspectives).byte;
+        let bytes_per_page = view.bytes_per_page(&self.perspectives);
         // Don't read past what we need for our current view offset
         if view_byte_offset + bytes_per_page < self.data.len() {
             return;
@@ -444,7 +453,7 @@ impl App {
                         src.state.stream_end = true;
                     } else {
                         self.data.extend_from_slice(&buf[..]);
-                        self.perspective.region.end = self.data.len() - 1;
+                        self.perspectives[view.perspective].region.end = self.data.len() - 1;
                     }
                 }
                 Err(e) => match e {
@@ -479,8 +488,11 @@ impl App {
             if !view.active {
                 continue;
             }
-            if let Some((row, col)) = view.row_col_offset_of_pos(x, y, &self.perspective) {
-                return Some((self.perspective.byte_offset_of_row_col(row, col), view_idx));
+            if let Some((row, col)) = view.row_col_offset_of_pos(x, y, &self.perspectives) {
+                return Some((
+                    self.perspectives[view.perspective].byte_offset_of_row_col(row, col),
+                    view_idx,
+                ));
             }
         }
         None
@@ -576,15 +588,15 @@ impl App {
 
 pub fn col_change_impl_view_perspective(
     view: &mut View,
-    perspective: &mut Perspective,
+    perspectives: &mut PerspectiveMap,
     f: impl FnOnce(&mut usize),
     lock_x: bool,
     lock_y: bool,
 ) {
-    let prev_offset = view.offsets(perspective);
-    f(&mut perspective.cols);
-    perspective.clamp_cols();
-    view.scroll_to_byte_offset(prev_offset.byte, perspective, lock_x, lock_y);
+    let prev_offset = view.offsets(perspectives);
+    f(&mut perspectives[view.perspective].cols);
+    perspectives[view.perspective].clamp_cols();
+    view.scroll_to_byte_offset(prev_offset.byte, perspectives, lock_x, lock_y);
 }
 
 fn named_views_auto_layout(named_views: &mut [NamedView], hex_iface_rect: &ViewportRect) {
@@ -628,18 +640,25 @@ fn named_views_auto_layout(named_views: &mut [NamedView], hex_iface_rect: &Viewp
     }
 }
 
-pub fn default_views(font: &Font, hex_iface_rect: &ViewportRect) -> Vec<NamedView> {
+pub fn default_views(
+    font: &Font,
+    hex_iface_rect: &ViewportRect,
+    perspective: PerspectiveKey,
+) -> Vec<NamedView> {
     let mut v = vec![
         NamedView {
-            view: View::new(ViewKind::Hex(HexData::default())),
+            view: View::new(ViewKind::Hex(HexData::default()), perspective),
             name: "Default hex".into(),
         },
         NamedView {
-            view: View::new(ViewKind::Text(TextData::default_from_font(font, 14))),
+            view: View::new(
+                ViewKind::Text(TextData::default_from_font(font, 14)),
+                perspective,
+            ),
             name: "Default text".into(),
         },
         NamedView {
-            view: View::new(ViewKind::Block),
+            view: View::new(ViewKind::Block, perspective),
             name: "Default block".into(),
         },
     ];

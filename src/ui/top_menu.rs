@@ -202,7 +202,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                     if let Some(idx) = app.focused_view {
                         app.named_views[idx].view.scroll_to_byte_offset(
                             app.ui.seek_byte_offset_input.parse().unwrap_or(0),
-                            &app.perspective,
+                            &app.perspectives,
                             app.col_change_lock_x,
                             app.col_change_lock_y,
                         );
@@ -213,31 +213,30 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
         });
         ui.menu_button("Perspective", |ui| {
+            let Some(view_idx) = app.focused_view else { return };
+            let view = &mut app.named_views[view_idx].view;
             if ui.button("Set offset to cursor").clicked() {
-                app.perspective.region.begin = app.edit_state.cursor;
+                app.perspectives[view.perspective].region.begin = app.edit_state.cursor;
                 ui.close_menu();
             }
             if ui.button("Fill focused view").on_hover_text("Make the column count as big as the active view can fit").clicked() {
                 ui.close_menu();
-                if let Some(idx) = app.focused_view {
-                    let v = &mut app.named_views[idx];
-                    v.view.scroll_offset.pix_xoff = 0;
-                    v.view.scroll_offset.col = 0;
+                    view.scroll_offset.pix_xoff = 0;
+                    view.scroll_offset.col = 0;
                     #[expect(clippy::cast_sign_loss, reason = "columns is never negative")]
                     {
-                        let cols = v.view.cols() as usize;
+                        let cols = view.cols() as usize;
                         col_change_impl_view_perspective(
-                            &mut v.view,
-                            &mut app.perspective,
+                            view,
+                            &mut app.perspectives,
                             |c| *c = cols,
                             app.col_change_lock_x,
                             app.col_change_lock_y
                         );
                     }
-                }
             }
             if ui.checkbox(
-                &mut app.perspective.flip_row_order,
+                &mut app.perspectives[view.perspective].flip_row_order,
                 "Flip row order (experimental)",
             ).clicked() {
                 ui.close_menu();

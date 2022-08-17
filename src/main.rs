@@ -193,7 +193,7 @@ fn do_frame(
     window.display();
     // Should only be true on the frame right after reloading
     app.just_reloaded = false;
-    imm_msg!(&app.perspective);
+    imm_msg!(&app.perspectives);
     imm_msg!(&app.hex_iface_rect);
     imm_msg!(&app.named_views);
     gamedebug_core::inc_frame();
@@ -370,31 +370,35 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
     match code {
         Key::Up => match app.interact_mode {
             InteractMode::View => {
-                if ctrl {
-                    app.perspective.region.begin = app.perspective.region.begin.saturating_sub(1);
+                if ctrl && let Some(view_idx) = app.focused_view {
+                    let key = app.named_views[view_idx].view.perspective;
+                    app.perspectives[key].region.begin = app.perspectives[key].region.begin.saturating_sub(1);
                 }
             }
             InteractMode::Edit => {
                 if let Some(view_idx) = app.focused_view {
-                    app.named_views[view_idx].view.undirty_edit_buffer();
+                    let view = &mut app.named_views[view_idx].view;
+                    view.undirty_edit_buffer();
+                    app.edit_state.set_cursor_no_history(
+                        app.edit_state.cursor.saturating_sub(app.perspectives[view.perspective].cols),
+                    );
                 }
-                app.edit_state.set_cursor_no_history(
-                    app.edit_state.cursor.saturating_sub(app.perspective.cols),
-                );
             }
         },
         Key::Down => match app.interact_mode {
             InteractMode::View => {
-                if ctrl {
-                    app.perspective.region.begin += 1;
+                if ctrl && let Some(view_idx) = app.focused_view {
+                    let key = app.named_views[view_idx].view.perspective;
+                    app.perspectives[key].region.begin += 1;
                 }
             }
             InteractMode::Edit => {
                 if let Some(view_idx) = app.focused_view {
-                    app.named_views[view_idx].view.undirty_edit_buffer()
-                }
-                if app.edit_state.cursor + app.perspective.cols < app.data.len() {
-                    app.edit_state.offset_cursor(app.perspective.cols);
+                    let view = &mut app.named_views[view_idx].view;
+                    view.undirty_edit_buffer();
+                    if app.edit_state.cursor + app.perspectives[view.perspective].cols < app.data.len() {
+                        app.edit_state.offset_cursor(app.perspectives[view.perspective].cols);
+                    }
                 }
             }
         },
@@ -479,21 +483,24 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 // TODO: Implement
             }
         },
-        Key::Home => match app.interact_mode {
-            InteractMode::View => {
-                if let Some(idx) = app.focused_view {
-                    app.named_views[idx].view.go_home();
+        Key::Home => {
+            if let Some(idx) = app.focused_view {
+                let view = &mut app.named_views[idx].view;
+                match app.interact_mode {
+                    InteractMode::View => {
+                        view.go_home();
+                    }
+                    InteractMode::Edit => {
+                        app.perspectives[view.perspective].region.begin = 0;
+                        app.edit_state.set_cursor_no_history(0);
+                    }
                 }
-            }
-            InteractMode::Edit => {
-                app.perspective.region.begin = 0;
-                app.edit_state.set_cursor_no_history(0)
             }
         },
         Key::End => match app.interact_mode {
             InteractMode::View => {
                 if let Some(idx) = app.focused_view {
-                    app.named_views[idx].view.scroll_to_end(&app.perspective);
+                    app.named_views[idx].view.scroll_to_end(&app.perspectives);
                 }
             }
             InteractMode::Edit => {

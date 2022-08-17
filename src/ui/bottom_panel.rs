@@ -22,14 +22,17 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             app.interact_mode = InteractMode::Edit;
         }
         ui.separator();
-        ui.label("offset");
-        ui.add(DragValue::new(&mut app.perspective.region.begin));
-        ui.label("columns");
-        ui.add(DragValue::new(&mut app.perspective.cols));
         let data_len = app.data.len();
         if data_len != 0 {
             if let Some(idx) = app.focused_view {
-                let offsets = app.named_views[idx].view.offsets(&app.perspective);
+                let view = &app.named_views[idx].view;
+                ui.label("offset");
+                ui.add(DragValue::new(
+                    &mut app.perspectives[view.perspective].region.begin,
+                ));
+                ui.label("columns");
+                ui.add(DragValue::new(&mut app.perspectives[view.perspective].cols));
+                let offsets = view.offsets(&app.perspectives);
                 #[expect(
                     clippy::cast_precision_loss,
                     reason = "Precision is good until 52 bits (more than reasonable)"

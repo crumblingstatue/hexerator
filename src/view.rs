@@ -1,8 +1,9 @@
 use gamedebug_core::imm_msg;
 use sfml::graphics::Font;
+use slotmap::Key;
 
 use crate::{
-    app::{perspective::Perspective, App},
+    app::{App, PerspectiveKey, PerspectiveMap},
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
@@ -35,10 +36,12 @@ pub struct View {
     pub bytes_per_block: u8,
     /// A view can be deactivated to not render or interact, but can later be reactivated
     pub active: bool,
+    /// The perspective this view is associated with
+    pub perspective: PerspectiveKey,
 }
 
 impl View {
-    pub fn new(kind: ViewKind) -> Self {
+    pub fn new(kind: ViewKind, perspective: PerspectiveKey) -> Self {
         let mut this = Self {
             viewport_rect: ViewportRect::default(),
             kind,
@@ -48,6 +51,7 @@ impl View {
             scroll_speed: 0,
             bytes_per_block: 1,
             active: true,
+            perspective,
         };
         this.adjust_state_to_kind();
         this
@@ -68,6 +72,7 @@ impl View {
             scroll_speed: 0,
             bytes_per_block: 0,
             active: false,
+            perspective: PerspectiveKey::null(),
         }
     }
     pub fn scroll_x(&mut self, amount: i16) {
@@ -137,10 +142,11 @@ impl View {
         self.scroll_offset.pix_yoff = COMFY_MARGIN;
     }
     /// Scroll so the perspective's last row is visible
-    pub(crate) fn scroll_to_end(&mut self, perspective: &Perspective) {
+    pub(crate) fn scroll_to_end(&mut self, perspectives: &PerspectiveMap) {
         // Needs:
         // - row index of last byte of perspective
         // - number of rows this view can hold
+        let perspective = &perspectives[self.perspective];
         let last_row_idx = perspective.last_row_idx();
         let last_col_idx = perspective.last_col_idx();
         self.scroll_offset.row = last_row_idx + 1;
@@ -157,11 +163,11 @@ impl View {
         &self,
         x: i16,
         y: i16,
-        perspective: &Perspective,
+        perspectives: &PerspectiveMap,
     ) -> Option<(usize, usize)> {
         self.viewport_rect
             .relative_offset_of_pos(x, y)
-            .and_then(|(x, y)| self.row_col_of_rel_pos(x, y, perspective))
+            .and_then(|(x, y)| self.row_col_of_rel_pos(x, y, perspectives))
     }
     #[expect(
         clippy::cast_possible_wrap,
@@ -171,12 +177,13 @@ impl View {
         &self,
         x: i16,
         y: i16,
-        perspective: &Perspective,
+        perspectives: &PerspectiveMap,
     ) -> Option<(usize, usize)> {
         let rel_x = x + self.scroll_offset.pix_xoff;
         let rel_y = y + self.scroll_offset.pix_yoff;
         let rel_col = rel_x / self.col_w as i16;
         let mut rel_row = rel_y / self.row_h as i16;
+        let perspective = &perspectives[self.perspective];
         if perspective.flip_row_order {
             rel_row = self.rows() - rel_row;
         }
@@ -200,8 +207,8 @@ impl View {
         }
     }
 
-    pub(crate) fn center_on_offset(&mut self, offset: usize, perspective: &Perspective) {
-        let (row, col) = perspective.row_col_of_byte_offset(offset);
+    pub(crate) fn center_on_offset(&mut self, offset: usize, perspectives: &PerspectiveMap) {
+        let (row, col) = perspectives[self.perspective].row_col_of_byte_offset(offset);
         self.center_on_row_col(row, col);
     }
 
@@ -213,24 +220,24 @@ impl View {
         self.scroll_y(-self.viewport_rect.h / 2);
     }
 
-    pub fn offsets(&self, perspective: &Perspective) -> Offsets {
+    pub fn offsets(&self, perspectives: &PerspectiveMap) -> Offsets {
         let row = self.scroll_offset.row;
         let col = self.scroll_offset.col;
         Offsets {
             row,
             col,
-            byte: perspective.byte_offset_of_row_col(row, col),
+            byte: perspectives[self.perspective].byte_offset_of_row_col(row, col),
         }
     }
     /// Scroll to byte offset, with control of each axis individually
     pub(crate) fn scroll_to_byte_offset(
         &mut self,
         offset: usize,
-        perspective: &Perspective,
+        perspectives: &PerspectiveMap,
         do_col: bool,
         do_row: bool,
     ) {
-        let (row, col) = perspective.row_col_of_byte_offset(offset);
+        let (row, col) = perspectives[self.perspective].row_col_of_byte_offset(offset);
         if do_row {
             self.scroll_offset.row = row;
         }
@@ -243,8 +250,8 @@ impl View {
         clippy::cast_sign_loss,
         reason = "View::rows() being negative is a bug, can expect positive."
     )]
-    pub(crate) fn bytes_per_page(&self, perspective: &Perspective) -> usize {
-        self.rows() as usize * perspective.cols
+    pub(crate) fn bytes_per_page(&self, perspectives: &PerspectiveMap) -> usize {
+        self.rows() as usize * perspectives[self.perspective].cols
     }
 
     /// Returns the number of rows this view can display

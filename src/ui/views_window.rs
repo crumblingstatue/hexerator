@@ -2,9 +2,10 @@ use std::{hash::Hash, ops::RangeInclusive};
 
 use egui_sfml::egui::{self, emath::Numeric, Button};
 use sfml::graphics::Font;
+use slotmap::Key;
 
 use crate::{
-    app::NamedView,
+    app::{NamedView, PerspectiveKey},
     view::{HexData, TextData, TextKind, View, ViewKind, ViewportRect},
 };
 
@@ -14,6 +15,7 @@ pub struct ViewsWindow {
     pub selected: usize,
     rename: bool,
     new_kind: ViewKind,
+    new_perspective: PerspectiveKey,
 }
 
 impl Default for ViewsWindow {
@@ -23,6 +25,7 @@ impl Default for ViewsWindow {
             new_kind: ViewKind::Hex(HexData::default()),
             selected: 0,
             rename: false,
+            new_perspective: PerspectiveKey::null(),
         }
     }
 }
@@ -84,10 +87,13 @@ impl ViewsWindow {
         ui.horizontal(|ui| {
             if ui.button("Add new").clicked() {
                 app.named_views.push(NamedView {
-                    view: View::new(std::mem::replace(
-                        &mut app.ui.views_window.new_kind,
-                        ViewKind::Hex(HexData::default()),
-                    )),
+                    view: View::new(
+                        std::mem::replace(
+                            &mut app.ui.views_window.new_kind,
+                            ViewKind::Hex(HexData::default()),
+                        ),
+                        app.ui.views_window.new_perspective,
+                    ),
                     name: "Unnamed view".into(),
                 });
                 app.resize_views.reset();
@@ -98,6 +104,21 @@ impl ViewsWindow {
                 ui,
                 font,
             );
+            egui::ComboBox::new("new_perspective_combo", "Perspective")
+                .selected_text(format!("{:?}", app.ui.views_window.new_perspective))
+                .show_ui(ui, |ui| {
+                    for k in app.perspectives.keys() {
+                        if ui
+                            .selectable_label(
+                                k == app.ui.views_window.new_perspective,
+                                format!("{:?}", k),
+                            )
+                            .clicked()
+                        {
+                            app.ui.views_window.new_perspective = k;
+                        }
+                    }
+                });
         });
         ui.separator();
         if let Some(view) = app.named_views.get_mut(app.ui.views_window.selected) {

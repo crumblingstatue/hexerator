@@ -22,11 +22,12 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
         if let Some(b) = app.select_b {
             ui.label(format!("b: {}", b));
         }
-        if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
-            let (rows, rem) = app.perspective.region_row_span(sel);
+        if let Some(sel) = App::selection(&app.select_a, &app.select_b) && let Some(view_idx) = app.focused_view {
+            let view = &app.named_views[view_idx].view;
+            let (rows, rem) = app.perspectives[view.perspective].region_row_span(sel);
             ui.label(format!(
                 "{rows} rows * {} cols + {rem} = {}",
-                app.perspective.cols,
+                app.perspectives[view.perspective].cols,
                 sel.len()
             ));
         }

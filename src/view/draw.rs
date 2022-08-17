@@ -27,15 +27,16 @@ pub fn draw_view(
     if view.scroll_offset.pix_xoff <= -view.viewport_rect.w {
         return;
     }
-    let mut idx = app.perspective.region.begin;
+    let perspective = &app.perspectives[view.perspective];
+    let mut idx = perspective.region.begin;
     let start_row: usize = view.scroll_offset.row;
-    idx += start_row * (app.perspective.cols * usize::from(view.bytes_per_block));
+    idx += start_row * (perspective.cols * usize::from(view.bytes_per_block));
     #[expect(
         clippy::cast_sign_loss,
         reason = "rows() returning negative is a bug, should be positive."
     )]
     let orig = start_row..=start_row + view.rows() as usize;
-    let (row_range, pix_yoff) = if app.perspective.flip_row_order {
+    let (row_range, pix_yoff) = if perspective.flip_row_order {
         (Either::Left(orig.rev()), -view.scroll_offset.pix_yoff)
     } else {
         (Either::Right(orig), view.scroll_offset.pix_yoff)
@@ -45,21 +46,21 @@ pub fn draw_view(
         let viewport_y = (i64::from(view.viewport_rect.y) + y as i64)
             - ((view.scroll_offset.row as i64 * i64::from(view.row_h)) + i64::from(pix_yoff));
         let start_col = view.scroll_offset.col;
-        if start_col >= app.perspective.cols {
+        if start_col >= perspective.cols {
             break;
         }
         idx += start_col * usize::from(view.bytes_per_block);
-        for col in start_col..app.perspective.cols {
+        for col in start_col..perspective.cols {
             let x = col * usize::from(view.col_w);
             let viewport_x = (i64::from(view.viewport_rect.x) + x as i64)
                 - ((view.scroll_offset.col as i64 * i64::from(view.col_w))
                     + i64::from(view.scroll_offset.pix_xoff));
             if viewport_x > i64::from(view.viewport_rect.x + view.viewport_rect.w) {
-                idx += (app.perspective.cols - col) * usize::from(view.bytes_per_block);
+                idx += (perspective.cols - col) * usize::from(view.bytes_per_block);
                 break;
             }
             if viewport_y > i64::from(view.viewport_rect.y + view.viewport_rect.h)
-                && !app.perspective.flip_row_order
+                && !perspective.flip_row_order
             {
                 break 'rows;
             }
@@ -99,7 +100,7 @@ pub fn draw_view(
                     idx += usize::from(view.bytes_per_block);
                 }
                 None => {
-                    if !app.perspective.flip_row_order {
+                    if !perspective.flip_row_order {
                         break 'rows;
                     }
                 }
