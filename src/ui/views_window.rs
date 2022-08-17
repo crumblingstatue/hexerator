@@ -72,6 +72,9 @@ impl ViewsWindow {
         }
         if let Some((a, b)) = swap {
             let mut arr = [a, b];
+            // Select the swapped-to location. This makes it easier for the user to
+            // "follow" the item if they want to keep moving it up/down the list.
+            app.ui.views_window.selected = b;
             arr.sort();
             let [a, b] = index_many::simple::index_many_mut(&mut app.named_views, arr);
             std::mem::swap(&mut a.view.viewport_rect, &mut b.view.viewport_rect);
