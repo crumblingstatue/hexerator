@@ -38,15 +38,9 @@ pub struct View {
 }
 
 impl View {
-    pub fn new(
-        kind: ViewKind,
-        x: ViewportScalar,
-        y: ViewportScalar,
-        w: ViewportScalar,
-        h: ViewportScalar,
-    ) -> Self {
+    pub fn new(kind: ViewKind) -> Self {
         let mut this = Self {
-            viewport_rect: ViewportRect { x, y, w, h },
+            viewport_rect: ViewportRect::default(),
             kind,
             col_w: 0,
             row_h: 0,
@@ -510,7 +504,7 @@ impl ScrollOffset {
 /// or get mouse positions higher than that.
 pub type ViewportScalar = i16;
 
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct ViewportRect {
     pub x: ViewportScalar,
     pub y: ViewportScalar,

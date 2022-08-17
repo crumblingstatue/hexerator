@@ -6,13 +6,12 @@ use crate::{
     app::App,
     color::{self, ColorMethod},
     shell::{msg_fail, msg_if_fail, msg_warn},
-    view::ViewportScalar,
 };
 
 use super::top_menu::top_menu;
 
-pub fn ui(ui: &mut Ui, app: &mut App, window_height: ViewportScalar, font: &Font) {
-    top_menu(ui, app, window_height, font);
+pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
+    top_menu(ui, app, font);
     ui.horizontal(|ui| {
         if app.select_a.is_some() || app.select_b.is_some() {
             ui.label("Selection");

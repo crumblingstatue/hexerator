@@ -81,18 +81,13 @@ impl ViewsWindow {
         ui.horizontal(|ui| {
             if ui.button("Add new").clicked() {
                 app.named_views.push(NamedView {
-                    view: View::new(
-                        std::mem::replace(
-                            &mut app.ui.views_window.new_kind,
-                            ViewKind::Hex(HexData::default()),
-                        ),
-                        0,
-                        0,
-                        100,
-                        100,
-                    ),
+                    view: View::new(std::mem::replace(
+                        &mut app.ui.views_window.new_kind,
+                        ViewKind::Hex(HexData::default()),
+                    )),
                     name: "Unnamed view".into(),
                 });
+                app.resize_views.reset();
             }
             view_combo(
                 "new_kind_combo",
@@ -198,6 +193,7 @@ impl ViewsWindow {
             viewport_rect_ui(ui, &mut view.view.viewport_rect);
             if ui.button("Delete").clicked() {
                 removed_idx = Some(app.ui.views_window.selected);
+                app.resize_views.reset();
             }
         }
         if let Some(rem_idx) = removed_idx {

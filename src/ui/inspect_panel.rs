@@ -36,7 +36,7 @@ pub struct InspectPanel {
     format: Format,
     /// If true, go to offset action is relative to the hard seek argument
     offset_relative: bool,
-    // The value of the cursor on the previous frame. Used to determine when the cursor changes
+    /// The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
 }
 

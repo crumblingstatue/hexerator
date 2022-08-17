@@ -60,7 +60,7 @@ use sfml::{
 };
 use shell::{msg_if_fail, msg_warn};
 use ui::dialogs::SetCursorDialog;
-use view::{ViewportScalar, COMFY_MARGIN};
+use view::COMFY_MARGIN;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct InstanceRequest {
@@ -124,8 +124,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     let font = unsafe {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
-    let win_height: ViewportScalar = try_conv_win_height_panic(&window);
-    let mut app = App::new(args, win_height, Config::load_or_default()?, &font)?;
+    let mut app = App::new(args, Config::load_or_default()?, &font)?;
     let mut vertex_buffer = Vec::new();
 
     while window.is_open() {
@@ -133,7 +132,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
             let mut buf = Vec::new();
             stream.read_to_end(&mut buf)?;
             let req: InstanceRequest = rmp_serde::from_slice(&buf)?;
-            app = App::new(req.args, win_height, app.cfg, &font)?;
+            app = App::new(req.args, app.cfg, &font)?;
             window.request_focus();
         }
         do_frame(
@@ -147,16 +146,6 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     app.close_file();
     app.cfg.save()?;
     Ok(())
-}
-
-fn try_conv_win_height_panic(window: &RenderWindow) -> i16 {
-    match window.size().y.try_into() {
-        Ok(wh) => wh,
-        Err(e) => {
-            msg_warn(&format!("Window height conversion error: {}\nHexerator doesn't support resolutions higher than 32700", e));
-            panic!("Window height conversion error");
-        }
-    }
 }
 
 struct SocketRemoveGuard<'a> {
@@ -187,8 +176,7 @@ fn do_frame(
     update(app);
     app.update();
     let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
-    let win_height = try_conv_win_height_panic(window);
-    ui::do_egui(sf_egui, app, mp, win_height, font);
+    ui::do_egui(sf_egui, app, mp, font);
     let [r, g, b] = app.presentation.bg_color;
     #[expect(
         clippy::cast_possible_truncation,
@@ -206,6 +194,8 @@ fn do_frame(
     // Should only be true on the frame right after reloading
     app.just_reloaded = false;
     imm_msg!(&app.perspective);
+    imm_msg!(&app.hex_iface_rect);
+    imm_msg!(&app.named_views);
     gamedebug_core::inc_frame();
 }
 
@@ -298,7 +288,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
                 ctrl,
                 alt,
                 ..
-            } => handle_key_events(code, app, ctrl, shift, alt, window, font),
+            } => handle_key_events(code, app, ctrl, shift, alt, font),
             Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_panic((x, y));
@@ -341,6 +331,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
                     width as f32,
                     height as f32,
                 )));
+                app.resize_views.reset();
             }
             _ => {}
         }
@@ -367,15 +358,7 @@ fn handle_text_entered(app: &mut App, unicode: char) {
     }
 }
 
-fn handle_key_events(
-    code: Key,
-    app: &mut App,
-    ctrl: bool,
-    shift: bool,
-    alt: bool,
-    window: &mut RenderWindow,
-    font: &Font,
-) {
+fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: bool, font: &Font) {
     if code == Key::F12 && !shift && !ctrl && !alt {
         app.toggle_debug()
     }
@@ -561,11 +544,7 @@ fn handle_key_events(
             msg_if_fail(app.reload(), "Failed to reload");
         }
         Key::O if ctrl => {
-            #[expect(
-                clippy::cast_possible_truncation,
-                reason = "Window sizes larger than i16 are not supported"
-            )]
-            shell::open_file(app, window.size().y as _, font);
+            shell::open_file(app, font);
         }
         Key::W if ctrl => app.close_file(),
         Key::J if ctrl => app.ui.add_dialog(SetCursorDialog::default()),

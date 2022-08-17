@@ -1,6 +1,5 @@
 mod edit_state;
 pub mod interact_mode;
-pub mod layout;
 pub mod perspective;
 pub mod presentation;
 
@@ -16,6 +15,7 @@ use std::{
 
 use anyhow::{bail, Context};
 
+use gamedebug_core::per_msg;
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use sfml::graphics::Font;
@@ -30,17 +30,49 @@ use crate::{
     shell::{msg_if_fail, msg_warn},
     source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     timer::Timer,
-    view::{HexData, TextData, View, ViewKind, ViewportScalar},
+    view::{HexData, TextData, View, ViewKind, ViewportRect, ViewportScalar},
 };
 
 use self::{
-    edit_state::EditState, interact_mode::InteractMode, layout::Layout, perspective::Perspective,
+    edit_state::EditState, interact_mode::InteractMode, perspective::Perspective,
     presentation::Presentation,
 };
 
+#[derive(Debug)]
 pub struct NamedView {
     pub name: String,
     pub view: View,
+}
+
+/// An event that can be triggered weakly.
+///
+/// A weak trigger can be called repeatedly every frame, and it will only
+/// trigger on the first time.
+#[derive(Default)]
+pub enum EventTrigger {
+    /// Initial state
+    #[default]
+    Init,
+    /// The event was triggered
+    Triggered,
+    /// The event was already triggered once
+    Inactive,
+}
+
+impl EventTrigger {
+    pub fn weak_trigger(&mut self) {
+        match self {
+            Self::Init => *self = Self::Triggered,
+            Self::Triggered => *self = Self::Inactive,
+            Self::Inactive => {}
+        }
+    }
+    pub fn triggered(&self) -> bool {
+        matches!(self, Self::Triggered)
+    }
+    pub fn reset(&mut self) {
+        *self = Self::Init;
+    }
 }
 
 /// The hexerator application state
@@ -55,7 +87,12 @@ pub struct App {
     pub presentation: Presentation,
     pub named_views: Vec<NamedView>,
     pub focused_view: Option<usize>,
+    /// The rectangle area that's available for the hex interface
+    pub hex_iface_rect: ViewportRect,
     pub ui: crate::ui::Ui,
+    pub resize_views: EventTrigger,
+    /// Automatic view layout every frame
+    pub auto_view_layout: bool,
     /// "a" point of selection. Could be smaller or larger than "b".
     /// The length of selection is absolute difference between a and b
     pub select_a: Option<usize>,
@@ -68,7 +105,6 @@ pub struct App {
     pub col_change_lock_y: bool,
     flash_cursor_timer: Timer,
     pub just_reloaded: bool,
-    pub layout: Layout,
     pub regions: Vec<NamedRegion>,
     /// Whether metafile needs saving
     pub meta_dirty: bool,
@@ -104,20 +140,14 @@ pub struct NamedRegion {
 }
 
 impl App {
-    pub fn new(
-        mut args: Args,
-        window_height: ViewportScalar,
-        mut cfg: Config,
-        font: &Font,
-    ) -> anyhow::Result<Self> {
+    pub fn new(mut args: Args, mut cfg: Config, font: &Font) -> anyhow::Result<Self> {
         let mut data = Vec::new();
         let mut source = None;
         if args.load_recent && let Some(recent) = cfg.recent.most_recent() {
             args = recent.clone();
         }
         load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
-        let layout = Layout::new();
-        let mut views = default_views(&layout, window_height, font);
+        let mut views = default_views(font, &ViewportRect::default());
         views[0].view.go_home();
         let mut this = Self {
             scissor_views: true,
@@ -131,6 +161,8 @@ impl App {
             named_views: views,
             focused_view: Some(0),
             ui: crate::ui::Ui::default(),
+            resize_views: EventTrigger::default(),
+            auto_view_layout: true,
             select_a: None,
             select_b: None,
             args,
@@ -139,7 +171,6 @@ impl App {
             col_change_lock_y: true,
             flash_cursor_timer: Timer::default(),
             just_reloaded: true,
-            layout,
             regions: Vec::new(),
             meta_dirty: false,
             stream_read_recv: None,
@@ -148,8 +179,9 @@ impl App {
             auto_reload_interval_ms: 250,
             last_reload: Instant::now(),
             preferences: Preferences::default(),
+            hex_iface_rect: ViewportRect::default(),
         };
-        this.new_file_readjust(window_height, font);
+        this.new_file_readjust(font, &ViewportRect::default());
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
             this.edit_state.cursor = offset;
@@ -314,7 +346,6 @@ impl App {
         &mut self,
         path: PathBuf,
         read_only: bool,
-        window_height: ViewportScalar,
         font: &Font,
     ) -> Result<(), anyhow::Error> {
         self.load_file_args(
@@ -328,13 +359,12 @@ impl App {
                 instance: false,
                 load_recent: false,
             },
-            window_height,
             font,
         )
     }
 
     /// Readjust to a new file
-    fn new_file_readjust(&mut self, window_height: ViewportScalar, font: &Font) {
+    fn new_file_readjust(&mut self, font: &Font, hex_iface_rect: &ViewportRect) {
         self.perspective = Perspective {
             region: Region {
                 begin: 0,
@@ -343,7 +373,7 @@ impl App {
             cols: 48,
             flip_row_order: false,
         };
-        self.named_views = default_views(&self.layout, window_height, font);
+        self.named_views = default_views(font, hex_iface_rect);
     }
 
     pub fn close_file(&mut self) {
@@ -489,20 +519,20 @@ impl App {
         Ok(())
     }
 
-    pub(crate) fn load_file_args(
-        &mut self,
-        mut args: Args,
-        window_height: ViewportScalar,
-        font: &Font,
-    ) -> anyhow::Result<()> {
+    pub(crate) fn load_file_args(&mut self, mut args: Args, font: &Font) -> anyhow::Result<()> {
         if load_file_from_args(&mut args, &mut self.cfg, &mut self.source, &mut self.data) {
             self.args = args;
         }
-        self.new_file_readjust(window_height, font);
+        let iface_rect = self.hex_iface_rect;
+        self.new_file_readjust(font, &iface_rect);
         Ok(())
     }
     /// Called every frame
     pub(crate) fn update(&mut self) {
+        if self.auto_view_layout || self.resize_views.triggered() {
+            named_views_auto_layout(&mut self.named_views, &self.hex_iface_rect);
+            per_msg!("Auto view resize!");
+        }
         if self.auto_reload
             && self.last_reload.elapsed().as_millis() >= u128::from(self.auto_reload_interval_ms)
         {
@@ -537,39 +567,64 @@ impl App {
     }
 }
 
-fn default_views(layout: &Layout, window_height: ViewportScalar, font: &Font) -> Vec<NamedView> {
-    vec![
+fn named_views_auto_layout(named_views: &mut [NamedView], hex_iface_rect: &ViewportRect) {
+    if hex_iface_rect.w == 0 {
+        // Can't deal with 0 viewport w, do nothing
+        return;
+    }
+    // Horizontal auto layout algorithm by Callie
+    let padding = 4;
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_possible_wrap,
+        reason = "Number of views won't exceed i16"
+    )]
+    let n_views = named_views.iter().filter(|v| v.view.active).count() as ViewportScalar;
+    if n_views == 0 {
+        return;
+    }
+    #[expect(clippy::cast_sign_loss, reason = "n_views is always positive")]
+    let slice = hex_iface_rect.w / (2i16.pow(n_views as u32) - 1);
+    let mut x = hex_iface_rect.x + hex_iface_rect.w;
+    for (i, rect) in named_views
+        .iter_mut()
+        .rev()
+        .filter_map(|v| v.view.active.then_some(&mut v.view.viewport_rect))
+        .enumerate()
+    {
+        // Horizontal layout
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "Number of views doesn't exceed u32"
+        )]
+        {
+            rect.w = slice * 2i16.pow(i as u32) - padding;
+        }
+        x -= rect.w + padding;
+        rect.x = x;
+        // Vertical is always the same (for now)
+        rect.y = hex_iface_rect.y;
+        rect.h = hex_iface_rect.h;
+    }
+}
+
+pub fn default_views(font: &Font, hex_iface_rect: &ViewportRect) -> Vec<NamedView> {
+    let mut v = vec![
         NamedView {
-            view: View::new(
-                ViewKind::Hex(HexData::default()),
-                2,
-                layout.top_gap,
-                960,
-                window_height - layout.bottom_gap,
-            ),
+            view: View::new(ViewKind::Hex(HexData::default())),
             name: "Default hex".into(),
         },
         NamedView {
-            view: View::new(
-                ViewKind::Text(TextData::default_from_font(font, 14)),
-                966,
-                layout.top_gap,
-                480,
-                window_height - layout.bottom_gap,
-            ),
+            view: View::new(ViewKind::Text(TextData::default_from_font(font, 14))),
             name: "Default text".into(),
         },
         NamedView {
-            view: View::new(
-                ViewKind::Block,
-                1450,
-                layout.top_gap,
-                200,
-                window_height - layout.bottom_gap,
-            ),
+            view: View::new(ViewKind::Block),
             name: "Default block".into(),
         },
-    ]
+    ];
+    named_views_auto_layout(&mut v, hex_iface_rect);
+    v
 }
 
 /// Returns if the file was actually loaded.

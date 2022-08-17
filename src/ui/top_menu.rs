@@ -14,17 +14,17 @@ use super::{
     util::{button_with_shortcut, ButtonWithShortcut},
 };
 
-pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Font) {
+pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
             if button_with_shortcut(ui, "Open...", "Ctrl+O").clicked() {
-                crate::shell::open_file(app, window_height, font);
+                crate::shell::open_file(app, font);
                 ui.close_menu();
             }
             if ui.button("Open (read only)...").clicked() {
                 if let Some(file) = rfd::FileDialog::new().pick_file() {
                     msg_if_fail(
-                        app.load_file(file, true, window_height, font),
+                        app.load_file(file, true,  font),
                         "Failed to load file (read-only)",
                     );
                 }
@@ -58,7 +58,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 });
                 if let Some(args) = load {
                     msg_if_fail(
-                        app.load_file_args(args, window_height, font),
+                        app.load_file_args(args,font),
                         "Failed to load file",
                     );
                 }
@@ -183,6 +183,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, window_height: i16, font: &Fon
                 app.ui.views_window.open ^= true;
                 ui.close_menu();
             }
+            ui.checkbox(&mut app.auto_view_layout, "Auto view layout");
             if ui.button("Flash cursor").clicked() {
                 app.flash_cursor();
                 ui.close_menu();

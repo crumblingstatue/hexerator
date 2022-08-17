@@ -52,13 +52,7 @@ use self::{
     regions_window::RegionsWindow, views_window::ViewsWindow,
 };
 
-pub fn do_egui(
-    sf_egui: &mut SfEgui,
-    app: &mut App,
-    mouse_pos: ViewportVec,
-    window_height: ViewportScalar,
-    font: &Font,
-) {
+pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font: &Font) {
     sf_egui.do_frame(|ctx| {
         let mut open = gamedebug_core::enabled();
         let was_open = open;
@@ -89,10 +83,39 @@ pub fn do_egui(
             .open(&mut open)
             .show(ctx, |ui| HelpWindow::ui(ui, app));
         app.ui.help_window.open = open;
-        TopBottomPanel::top("top_panel")
-            .show(ctx, |ui| top_panel::ui(ui, app, window_height, font));
-        TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos));
-        egui::SidePanel::right("right_panel").show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos));
+        let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app, font));
+        let bot_re = TopBottomPanel::bottom("bottom_panel")
+            .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos));
+        let right_re = egui::SidePanel::right("right_panel")
+            .show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos))
+            .response;
+        let padding = 2;
+        app.hex_iface_rect.x = padding;
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "Window size can't exceed i16"
+        )]
+        {
+            app.hex_iface_rect.y = top_re.response.rect.bottom() as ViewportScalar + padding;
+        }
+        if right_re.drag_released() {
+            app.resize_views.reset();
+        }
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "Window size can't exceed i16"
+        )]
+        {
+            app.hex_iface_rect.w = right_re.rect.left() as ViewportScalar - padding * 2;
+        }
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "Window size can't exceed i16"
+        )]
+        {
+            app.hex_iface_rect.h =
+                (bot_re.response.rect.top() as ViewportScalar - app.hex_iface_rect.y) - padding * 2;
+        }
         let mut dialogs: Vec<_> = std::mem::take(&mut app.ui.dialogs);
         dialogs.retain_mut(|dialog| {
             let mut retain = true;
@@ -103,4 +126,5 @@ pub fn do_egui(
         });
         app.ui.dialogs = dialogs;
     });
+    app.resize_views.weak_trigger();
 }
