@@ -38,7 +38,7 @@ impl Dialog for SetCursorDialog {
                 }
             }
         } else {
-            true
+            !(ui.input().key_pressed(egui::Key::Escape))
         }
     }
 }
