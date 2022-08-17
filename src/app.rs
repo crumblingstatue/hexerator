@@ -77,9 +77,11 @@ impl EventTrigger {
 
 new_key_type! {
     pub struct PerspectiveKey;
+    pub struct RegionKey;
 }
 
 pub type PerspectiveMap = SlotMap<PerspectiveKey, Perspective>;
+pub type RegionMap = SlotMap<RegionKey, NamedRegion>;
 
 /// The hexerator application state
 pub struct App {
@@ -111,7 +113,7 @@ pub struct App {
     pub col_change_lock_y: bool,
     flash_cursor_timer: Timer,
     pub just_reloaded: bool,
-    pub regions: Vec<NamedRegion>,
+    pub regions: SlotMap<RegionKey, NamedRegion>,
     /// Whether metafile needs saving
     pub meta_dirty: bool,
     pub stream_read_recv: Option<Receiver<Vec<u8>>>,
@@ -153,6 +155,7 @@ impl App {
             args = recent.clone();
         }
         load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
+        let regions = SlotMap::default();
         let mut perspectives = SlotMap::default();
         let default_perspective = perspectives.insert(Perspective::default());
         let mut views = default_views(font, &ViewportRect::default(), default_perspective);
@@ -179,7 +182,7 @@ impl App {
             col_change_lock_y: true,
             flash_cursor_timer: Timer::default(),
             just_reloaded: true,
-            regions: Vec::new(),
+            regions,
             meta_dirty: false,
             stream_read_recv: None,
             cfg,

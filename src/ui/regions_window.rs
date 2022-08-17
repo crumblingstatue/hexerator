@@ -28,7 +28,7 @@ impl RegionsWindow {
         match App::selection(&app.select_a, &app.select_b) {
             Some(sel) => {
                 if ui.add(button).clicked() {
-                    app.regions.push(NamedRegion {
+                    app.regions.insert(NamedRegion {
                         name: String::from("<Unnamed>"),
                         region: sel,
                     });
@@ -45,7 +45,7 @@ impl RegionsWindow {
             SetCursor(usize),
         }
         let mut action = None;
-        app.regions.retain_mut(|region| {
+        app.regions.retain(|_key, region| {
             let mut retain = true;
             ui.horizontal(|ui| {
                 if app.ui.regions_window.status == Status::Rename(idx) {

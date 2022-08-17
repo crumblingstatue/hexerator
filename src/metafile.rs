@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::app::NamedRegion;
+use crate::app::RegionMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct Metafile {
-    pub named_regions: Vec<NamedRegion>,
+    pub named_regions: RegionMap,
 }
