@@ -323,6 +323,7 @@ impl App {
             col_change_impl_view_perspective(
                 view,
                 &mut self.perspectives,
+                &self.regions,
                 f,
                 self.col_change_lock_x,
                 self.col_change_lock_y,
@@ -374,11 +375,15 @@ impl App {
 
     /// Readjust to a new file
     fn new_file_readjust(&mut self, font: &Font, hex_iface_rect: &ViewportRect) {
-        let default_perspective = self.perspectives.insert(Perspective {
+        let def_region = self.regions.insert(NamedRegion {
+            name: "Default region".into(),
             region: Region {
                 begin: 0,
                 end: self.data.len().saturating_sub(1),
             },
+        });
+        let default_perspective = self.perspectives.insert(Perspective {
+            region: def_region,
             cols: 48,
             flip_row_order: false,
         });
@@ -440,7 +445,7 @@ impl App {
         };
         let Some(idx) = self.focused_view else { return };
         let view = &self.named_views[idx].view;
-        let view_byte_offset = view.offsets(&self.perspectives).byte;
+        let view_byte_offset = view.offsets(&self.perspectives, &self.regions).byte;
         let bytes_per_page = view.bytes_per_page(&self.perspectives);
         // Don't read past what we need for our current view offset
         if view_byte_offset + bytes_per_page < self.data.len() {
@@ -456,7 +461,9 @@ impl App {
                         src.state.stream_end = true;
                     } else {
                         self.data.extend_from_slice(&buf[..]);
-                        self.perspectives[view.perspective].region.end = self.data.len() - 1;
+                        let perspective = &self.perspectives[view.perspective];
+                        let region = &mut self.regions[perspective.region].region;
+                        region.end = self.data.len() - 1;
                     }
                 }
                 Err(e) => match e {
@@ -491,9 +498,15 @@ impl App {
             if !view.active {
                 continue;
             }
-            if let Some((row, col)) = view.row_col_offset_of_pos(x, y, &self.perspectives) {
+            if let Some((row, col)) =
+                view.row_col_offset_of_pos(x, y, &self.perspectives, &self.regions)
+            {
                 return Some((
-                    self.perspectives[view.perspective].byte_offset_of_row_col(row, col),
+                    self.perspectives[view.perspective].byte_offset_of_row_col(
+                        row,
+                        col,
+                        &self.regions,
+                    ),
                     view_idx,
                 ));
             }
@@ -592,13 +605,14 @@ impl App {
 pub fn col_change_impl_view_perspective(
     view: &mut View,
     perspectives: &mut PerspectiveMap,
+    regions: &RegionMap,
     f: impl FnOnce(&mut usize),
     lock_x: bool,
     lock_y: bool,
 ) {
-    let prev_offset = view.offsets(perspectives);
+    let prev_offset = view.offsets(perspectives, regions);
     f(&mut perspectives[view.perspective].cols);
-    perspectives[view.perspective].clamp_cols();
+    perspectives[view.perspective].clamp_cols(regions);
     view.scroll_to_byte_offset(prev_offset.byte, perspectives, lock_x, lock_y);
 }
 

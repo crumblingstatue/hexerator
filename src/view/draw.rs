@@ -28,7 +28,8 @@ pub fn draw_view(
         return;
     }
     let perspective = &app.perspectives[view.perspective];
-    let mut idx = perspective.region.begin;
+    let region = &app.regions[perspective.region].region;
+    let mut idx = region.begin;
     let start_row: usize = view.scroll_offset.row;
     idx += start_row * (perspective.cols * usize::from(view.bytes_per_block));
     #[expect(

@@ -28,11 +28,13 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
                 let view = &app.named_views[idx].view;
                 ui.label("offset");
                 ui.add(DragValue::new(
-                    &mut app.perspectives[view.perspective].region.begin,
+                    &mut app.regions[app.perspectives[view.perspective].region]
+                        .region
+                        .begin,
                 ));
                 ui.label("columns");
                 ui.add(DragValue::new(&mut app.perspectives[view.perspective].cols));
-                let offsets = view.offsets(&app.perspectives);
+                let offsets = view.offsets(&app.perspectives, &app.regions);
                 #[expect(
                     clippy::cast_precision_loss,
                     reason = "Precision is good until 52 bits (more than reasonable)"

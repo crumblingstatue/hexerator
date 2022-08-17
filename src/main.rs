@@ -372,7 +372,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             InteractMode::View => {
                 if ctrl && let Some(view_idx) = app.focused_view {
                     let key = app.named_views[view_idx].view.perspective;
-                    app.perspectives[key].region.begin = app.perspectives[key].region.begin.saturating_sub(1);
+                    app.regions[app.perspectives[key].region].region.begin = app.regions[app.perspectives[key].region].region.begin.saturating_sub(1);
                 }
             }
             InteractMode::Edit => {
@@ -389,7 +389,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             InteractMode::View => {
                 if ctrl && let Some(view_idx) = app.focused_view {
                     let key = app.named_views[view_idx].view.perspective;
-                    app.perspectives[key].region.begin += 1;
+                    app.regions[app.perspectives[key].region].region.begin += 1;
                 }
             }
             InteractMode::Edit => {
@@ -491,7 +491,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                         view.go_home();
                     }
                     InteractMode::Edit => {
-                        app.perspectives[view.perspective].region.begin = 0;
+                        app.regions[app.perspectives[view.perspective].region].region.begin = 0;
                         app.edit_state.set_cursor_no_history(0);
                     }
                 }
@@ -500,7 +500,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::End => match app.interact_mode {
             InteractMode::View => {
                 if let Some(idx) = app.focused_view {
-                    app.named_views[idx].view.scroll_to_end(&app.perspectives);
+                    app.named_views[idx].view.scroll_to_end(&app.perspectives, &app.regions);
                 }
             }
             InteractMode::Edit => {

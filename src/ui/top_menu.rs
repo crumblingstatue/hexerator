@@ -216,7 +216,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             let Some(view_idx) = app.focused_view else { return };
             let view = &mut app.named_views[view_idx].view;
             if ui.button("Set offset to cursor").clicked() {
-                app.perspectives[view.perspective].region.begin = app.edit_state.cursor;
+                app.regions[app.perspectives[view.perspective].region].region.begin = app.edit_state.cursor;
                 ui.close_menu();
             }
             if ui.button("Fill focused view").on_hover_text("Make the column count as big as the active view can fit").clicked() {
@@ -229,6 +229,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                         col_change_impl_view_perspective(
                             view,
                             &mut app.perspectives,
+                            &app.regions,
                             |c| *c = cols,
                             app.col_change_lock_x,
                             app.col_change_lock_y

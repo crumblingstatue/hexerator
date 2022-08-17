@@ -3,7 +3,7 @@ use sfml::graphics::Font;
 use slotmap::Key;
 
 use crate::{
-    app::{App, PerspectiveKey, PerspectiveMap},
+    app::{App, PerspectiveKey, PerspectiveMap, RegionMap},
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
@@ -142,13 +142,13 @@ impl View {
         self.scroll_offset.pix_yoff = COMFY_MARGIN;
     }
     /// Scroll so the perspective's last row is visible
-    pub(crate) fn scroll_to_end(&mut self, perspectives: &PerspectiveMap) {
+    pub(crate) fn scroll_to_end(&mut self, perspectives: &PerspectiveMap, regions: &RegionMap) {
         // Needs:
         // - row index of last byte of perspective
         // - number of rows this view can hold
         let perspective = &perspectives[self.perspective];
-        let last_row_idx = perspective.last_row_idx();
-        let last_col_idx = perspective.last_col_idx();
+        let last_row_idx = perspective.last_row_idx(regions);
+        let last_col_idx = perspective.last_col_idx(regions);
         self.scroll_offset.row = last_row_idx + 1;
         self.scroll_offset.col = last_col_idx + 1;
         self.scroll_page_up();
@@ -164,10 +164,11 @@ impl View {
         x: i16,
         y: i16,
         perspectives: &PerspectiveMap,
+        regions: &RegionMap,
     ) -> Option<(usize, usize)> {
         self.viewport_rect
             .relative_offset_of_pos(x, y)
-            .and_then(|(x, y)| self.row_col_of_rel_pos(x, y, perspectives))
+            .and_then(|(x, y)| self.row_col_of_rel_pos(x, y, perspectives, regions))
     }
     #[expect(
         clippy::cast_possible_wrap,
@@ -178,6 +179,7 @@ impl View {
         x: i16,
         y: i16,
         perspectives: &PerspectiveMap,
+        regions: &RegionMap,
     ) -> Option<(usize, usize)> {
         let rel_x = x + self.scroll_offset.pix_xoff;
         let rel_y = y + self.scroll_offset.pix_yoff;
@@ -197,7 +199,7 @@ impl View {
         if rel_x.is_positive() && rel_y.is_positive() {
             let abs_row = row + rel_row as usize;
             let abs_col = col + rel_col as usize;
-            if perspective.row_col_within_bound(abs_row, abs_col) {
+            if perspective.row_col_within_bound(abs_row, abs_col, regions) {
                 Some((abs_row, abs_col))
             } else {
                 None
@@ -220,13 +222,13 @@ impl View {
         self.scroll_y(-self.viewport_rect.h / 2);
     }
 
-    pub fn offsets(&self, perspectives: &PerspectiveMap) -> Offsets {
+    pub fn offsets(&self, perspectives: &PerspectiveMap, regions: &RegionMap) -> Offsets {
         let row = self.scroll_offset.row;
         let col = self.scroll_offset.col;
         Offsets {
             row,
             col,
-            byte: perspectives[self.perspective].byte_offset_of_row_col(row, col),
+            byte: perspectives[self.perspective].byte_offset_of_row_col(row, col, regions),
         }
     }
     /// Scroll to byte offset, with control of each axis individually
