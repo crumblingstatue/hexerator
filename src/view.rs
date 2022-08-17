@@ -255,6 +255,14 @@ impl View {
     pub(crate) fn rows(&self) -> i16 {
         self.viewport_rect.h / self.row_h as i16
     }
+    /// Returns the number of columns this view can display
+    #[expect(
+        clippy::cast_possible_wrap,
+        reason = "block size is never greater than i16::MAX"
+    )]
+    pub(crate) fn cols(&self) -> i16 {
+        self.viewport_rect.w / self.col_w as i16
+    }
 
     pub fn adjust_block_size(&mut self) {
         (self.col_w, self.row_h) = match &self.kind {

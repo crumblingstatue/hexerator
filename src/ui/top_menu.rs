@@ -3,7 +3,7 @@ use rand::{thread_rng, RngCore};
 use sfml::{graphics::Font, window::clipboard};
 
 use crate::{
-    app::App,
+    app::{col_change_impl_view_perspective, App},
     damage_region::DamageRegion,
     shell::{msg_if_fail, msg_info},
     source::SourceProvider,
@@ -183,7 +183,9 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 app.ui.views_window.open ^= true;
                 ui.close_menu();
             }
-            ui.checkbox(&mut app.auto_view_layout, "Auto view layout");
+            if ui.checkbox(&mut app.auto_view_layout, "Auto view layout").clicked() {
+                ui.close_menu();
+            }
             if ui.button("Flash cursor").clicked() {
                 app.flash_cursor();
                 ui.close_menu();
@@ -214,6 +216,25 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             if ui.button("Set offset to cursor").clicked() {
                 app.perspective.region.begin = app.edit_state.cursor;
                 ui.close_menu();
+            }
+            if ui.button("Fill focused view").on_hover_text("Make the column count as big as the active view can fit").clicked() {
+                ui.close_menu();
+                if let Some(idx) = app.focused_view {
+                    let v = &mut app.named_views[idx];
+                    v.view.scroll_offset.pix_xoff = 0;
+                    v.view.scroll_offset.col = 0;
+                    #[expect(clippy::cast_sign_loss, reason = "columns is never negative")]
+                    {
+                        let cols = v.view.cols() as usize;
+                        col_change_impl_view_perspective(
+                            &mut v.view,
+                            &mut app.perspective,
+                            |c| *c = cols,
+                            app.col_change_lock_x,
+                            app.col_change_lock_y
+                        );
+                    }
+                }
             }
             if ui.checkbox(
                 &mut app.perspective.flip_row_order,

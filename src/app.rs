@@ -309,12 +309,10 @@ impl App {
     fn col_change_impl(&mut self, f: impl FnOnce(&mut usize)) {
         if let Some(idx) = self.focused_view {
             let view = &mut self.named_views[idx].view;
-            let prev_offset = view.offsets(&self.perspective);
-            f(&mut self.perspective.cols);
-            self.perspective.clamp_cols();
-            view.scroll_to_byte_offset(
-                prev_offset.byte,
-                &self.perspective,
+            col_change_impl_view_perspective(
+                view,
+                &mut self.perspective,
+                f,
                 self.col_change_lock_x,
                 self.col_change_lock_y,
             );
@@ -565,6 +563,19 @@ impl App {
         *app_select_a = Some(region.begin);
         *app_select_b = Some(region.end);
     }
+}
+
+pub fn col_change_impl_view_perspective(
+    view: &mut View,
+    perspective: &mut Perspective,
+    f: impl FnOnce(&mut usize),
+    lock_x: bool,
+    lock_y: bool,
+) {
+    let prev_offset = view.offsets(perspective);
+    f(&mut perspective.cols);
+    perspective.clamp_cols();
+    view.scroll_to_byte_offset(prev_offset.byte, perspective, lock_x, lock_y);
 }
 
 fn named_views_auto_layout(named_views: &mut [NamedView], hex_iface_rect: &ViewportRect) {
