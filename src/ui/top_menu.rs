@@ -189,7 +189,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("View", |ui| {
             if button_with_shortcut(ui, "View configuration...", "F5").clicked() {
-                app.ui.views_window.open ^= true;
+                app.ui.views_window.open.toggle();
                 ui.close_menu();
             }
             if ui.checkbox(&mut app.auto_view_layout, "Auto view layout").clicked() {

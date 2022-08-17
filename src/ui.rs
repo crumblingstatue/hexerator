@@ -72,11 +72,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             .open(&mut open)
             .show(ctx, |ui| RegionsWindow::ui(ui, app));
         app.ui.regions_window.open = open;
-        open = app.ui.views_window.open;
+        open = app.ui.views_window.open.is_open();
         Window::new("View configuration")
             .open(&mut open)
             .show(ctx, |ui| ViewsWindow::ui(ui, app, font));
-        app.ui.views_window.open = open;
+        app.ui.views_window.open.set_open(open);
         open = app.ui.help_window.open;
         Window::new("Help")
             .default_size(egui::vec2(800., 600.))
