@@ -31,124 +31,126 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
                 sel.len()
             ));
         }
-        ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
-            ui.checkbox(&mut app.presentation.invert_color, "invert");
-            ComboBox::new("color_combo", "Color")
-                .selected_text(app.presentation.color_method.name())
-                .show_ui(ui, |ui| {
-                    ui.selectable_value(
-                        &mut app.presentation.color_method,
-                        ColorMethod::Default,
-                        ColorMethod::Default.name(),
-                    );
-                    ui.selectable_value(
-                        &mut app.presentation.color_method,
-                        ColorMethod::Mono,
-                        ColorMethod::Mono.name(),
-                    );
-                    ui.selectable_value(
-                        &mut app.presentation.color_method,
-                        ColorMethod::Rgb332,
-                        ColorMethod::Rgb332.name(),
-                    );
-                    ui.selectable_value(
-                        &mut app.presentation.color_method,
-                        ColorMethod::Vga13h,
-                        ColorMethod::Vga13h.name(),
-                    );
-                    ui.selectable_value(
-                        &mut app.presentation.color_method,
-                        ColorMethod::Grayscale,
-                        ColorMethod::Grayscale.name(),
-                    );
+        if let Some(view_idx) = app.focused_view {
+            let presentation = &mut app.named_views[view_idx].view.presentation;
+            ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
+                ui.checkbox(&mut presentation.invert_color, "invert");
+                ComboBox::new("color_combo", "Color")
+                    .selected_text(presentation.color_method.name())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(
+                            &mut presentation.color_method,
+                            ColorMethod::Default,
+                            ColorMethod::Default.name(),
+                        );
+                        ui.selectable_value(
+                            &mut presentation.color_method,
+                            ColorMethod::Mono,
+                            ColorMethod::Mono.name(),
+                        );
+                        ui.selectable_value(
+                            &mut presentation.color_method,
+                            ColorMethod::Rgb332,
+                            ColorMethod::Rgb332.name(),
+                        );
+                        ui.selectable_value(
+                            &mut presentation.color_method,
+                            ColorMethod::Vga13h,
+                            ColorMethod::Vga13h.name(),
+                        );
+                        ui.selectable_value(
+                            &mut presentation.color_method,
+                            ColorMethod::Grayscale,
+                            ColorMethod::Grayscale.name(),
+                        );
+                        if ui
+                            .selectable_label(
+                                matches!(&presentation.color_method, ColorMethod::Custom(..)),
+                                "custom",
+                            )
+                            .clicked()
+                        {
+                            #[expect(
+                                clippy::cast_possible_truncation,
+                                reason = "The array is 256 elements long"
+                            )]
+                            let arr = std::array::from_fn(|i| {
+                                let c = presentation
+                                    .color_method
+                                    .byte_color(i as u8, presentation.invert_color);
+                                [c.r, c.g, c.b]
+                            });
+                            presentation.color_method = ColorMethod::Custom(Box::new(arr));
+                        }
+                    });
+                ui.color_edit_button_rgb(&mut app.bg_color);
+                ui.label("Bg color");
+                if let ColorMethod::Custom(arr) = &mut presentation.color_method {
+                    let col = &mut arr[app.data[app.edit_state.cursor] as usize];
+                    ui.color_edit_button_srgb(col);
+                    ui.label("Byte color");
                     if ui
-                        .selectable_label(
-                            matches!(&app.presentation.color_method, ColorMethod::Custom(..)),
-                            "custom",
-                        )
+                        .button("#")
+                        .on_hover_text("From hex code on clipboard")
                         .clicked()
                     {
-                        #[expect(
-                            clippy::cast_possible_truncation,
-                            reason = "The array is 256 elements long"
-                        )]
-                        let arr = std::array::from_fn(|i| {
-                            let c = app
-                                .presentation
-                                .color_method
-                                .byte_color(i as u8, app.presentation.invert_color);
-                            [c.r, c.g, c.b]
-                        });
-                        app.presentation.color_method = ColorMethod::Custom(Box::new(arr));
-                    }
-                });
-            ui.color_edit_button_rgb(&mut app.presentation.bg_color);
-            ui.label("Bg color");
-            if let ColorMethod::Custom(arr) = &mut app.presentation.color_method {
-                let col = &mut arr[app.data[app.edit_state.cursor] as usize];
-                ui.color_edit_button_srgb(col);
-                ui.label("Byte color");
-                if ui
-                    .button("#")
-                    .on_hover_text("From hex code on clipboard")
-                    .clicked()
-                {
-                    match color_from_hexcode(&sfml::window::clipboard::get_string()) {
-                        Ok(new) => *col = new,
-                        Err(e) => msg_warn(&format!("Color parse error: {}", e)),
-                    }
-                }
-                if ui.button("Save").clicked() {
-                    if let Some(path) = rfd::FileDialog::new().save_file() {
-                        msg_if_fail(color::save_palette(arr, &path), "Failed to save pal");
-                    }
-                }
-                if ui.button("Load").clicked() {
-                    if let Some(path) = rfd::FileDialog::new().pick_file() {
-                        match color::load_palette(&path) {
-                            Ok(pal) => *arr = Box::new(pal),
-                            Err(e) => msg_fail(&e, "Failed to load pal"),
+                        match color_from_hexcode(&sfml::window::clipboard::get_string()) {
+                            Ok(new) => *col = new,
+                            Err(e) => msg_warn(&format!("Color parse error: {}", e)),
                         }
                     }
-                }
-                let tooltip = "\
-                From image file.\n\
-                \n\
-                Pixel by pixel, the image's colors will become the byte colors.
-                ";
-                if ui
-                    .add_enabled(
-                        App::selection(&app.select_a, &app.select_b).is_some(),
-                        egui::Button::new("img"),
-                    )
-                    .on_hover_text(tooltip)
-                    .clicked()
-                {
-                    let Some(img_path) = rfd::FileDialog::new().pick_file() else { return };
-                    let result: anyhow::Result<()> = try {
-                        let img = Image::from_file(
-                            img_path
-                                .to_str()
-                                .context("Failed to convert path to utf-8")?,
-                        )
-                        .context("Failed to load image")?;
-                        let size = img.size();
-                        let sel = App::selection(&app.select_a, &app.select_b)
-                            .context("Missing app selection")?;
-                        let mut i = 0;
-                        for y in 0..size.y {
-                            for x in 0..size.x {
-                                let color = unsafe { img.pixel_at(x, y) };
-                                let byte = app.data[sel.begin + i];
-                                arr[byte as usize] = [color.r, color.g, color.b];
-                                i += 1;
+                    if ui.button("Save").clicked() {
+                        if let Some(path) = rfd::FileDialog::new().save_file() {
+                            msg_if_fail(color::save_palette(arr, &path), "Failed to save pal");
+                        }
+                    }
+                    if ui.button("Load").clicked() {
+                        if let Some(path) = rfd::FileDialog::new().pick_file() {
+                            match color::load_palette(&path) {
+                                Ok(pal) => *arr = Box::new(pal),
+                                Err(e) => msg_fail(&e, "Failed to load pal"),
                             }
                         }
-                    };
-                    msg_if_fail(result, "Failed to load palette from reference image");
+                    }
+                    let tooltip = "\
+                    From image file.\n\
+                    \n\
+                    Pixel by pixel, the image's colors will become the byte colors.
+                    ";
+                    if ui
+                        .add_enabled(
+                            App::selection(&app.select_a, &app.select_b).is_some(),
+                            egui::Button::new("img"),
+                        )
+                        .on_hover_text(tooltip)
+                        .clicked()
+                    {
+                        let Some(img_path) = rfd::FileDialog::new().pick_file() else { return };
+                        let result: anyhow::Result<()> = try {
+                            let img = Image::from_file(
+                                img_path
+                                    .to_str()
+                                    .context("Failed to convert path to utf-8")?,
+                            )
+                            .context("Failed to load image")?;
+                            let size = img.size();
+                            let sel = App::selection(&app.select_a, &app.select_b)
+                                .context("Missing app selection")?;
+                            let mut i = 0;
+                            for y in 0..size.y {
+                                for x in 0..size.x {
+                                    let color = unsafe { img.pixel_at(x, y) };
+                                    let byte = app.data[sel.begin + i];
+                                    arr[byte as usize] = [color.r, color.g, color.b];
+                                    i += 1;
+                                }
+                            }
+                        };
+                        msg_if_fail(result, "Failed to load palette from reference image");
+                    }
                 }
-            }
-        });
+            });
+        }
     });
 }
 

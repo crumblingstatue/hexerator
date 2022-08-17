@@ -68,10 +68,10 @@ pub fn draw_view(
             }
             match app.data.get(idx..idx + view.bytes_per_block as usize) {
                 Some(data) => {
-                    let c = app
+                    let c = view
                         .presentation
                         .color_method
-                        .byte_color(data[0], app.presentation.invert_color);
+                        .byte_color(data[0], view.presentation.invert_color);
                     #[expect(
                         clippy::cast_precision_loss,
                         reason = "At this point, the viewport coordinates should be small enough to fit in viewport"
@@ -327,7 +327,7 @@ impl View {
                                 y,
                                 f32::from(self.col_w),
                                 f32::from(self.row_h),
-                                app.presentation.sel_color,
+                                self.presentation.sel_color,
                             )
                         }
                         let mut gx = x;
@@ -357,7 +357,7 @@ impl View {
                                 vertex_buffer,
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
-                                &app.presentation,
+                                &self.presentation,
                                 hex.font_size,
                             );
                         }
@@ -382,7 +382,7 @@ impl View {
                                 y,
                                 f32::from(self.col_w),
                                 f32::from(self.row_h),
-                                app.presentation.sel_color,
+                                self.presentation.sel_color,
                             )
                         }
                         let mut gx = x;
@@ -412,7 +412,7 @@ impl View {
                                 vertex_buffer,
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
-                                &app.presentation,
+                                &self.presentation,
                                 dec.font_size,
                             );
                         }
@@ -437,7 +437,7 @@ impl View {
                                 y,
                                 f32::from(self.col_w),
                                 f32::from(self.row_h),
-                                app.presentation.sel_color,
+                                self.presentation.sel_color,
                             )
                         }
                         let raw_data = match text.text_kind {
@@ -466,7 +466,7 @@ impl View {
                                 vertex_buffer,
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
-                                &app.presentation,
+                                &self.presentation,
                                 text.font_size,
                             );
                         }
@@ -502,7 +502,7 @@ impl View {
                                 vertex_buffer,
                                 app.focused_view == Some(key),
                                 app.cursor_flash_timer(),
-                                &app.presentation,
+                                &self.presentation,
                                 self,
                             );
                         }

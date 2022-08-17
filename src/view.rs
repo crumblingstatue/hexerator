@@ -3,7 +3,7 @@ use sfml::graphics::Font;
 use slotmap::Key;
 
 use crate::{
-    app::{App, PerspectiveKey, PerspectiveMap, RegionMap},
+    app::{presentation::Presentation, App, PerspectiveKey, PerspectiveMap, RegionMap},
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
@@ -38,6 +38,8 @@ pub struct View {
     pub active: bool,
     /// The perspective this view is associated with
     pub perspective: PerspectiveKey,
+    /// Color schemes, etc.
+    pub presentation: Presentation,
 }
 
 impl View {
@@ -52,6 +54,7 @@ impl View {
             bytes_per_block: 1,
             active: true,
             perspective,
+            presentation: Presentation::default(),
         };
         this.adjust_state_to_kind();
         this
@@ -73,6 +76,7 @@ impl View {
             bytes_per_block: 0,
             active: false,
             perspective: PerspectiveKey::null(),
+            presentation: Presentation::default(),
         }
     }
     pub fn scroll_x(&mut self, amount: i16) {

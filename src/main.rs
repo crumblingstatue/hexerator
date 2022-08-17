@@ -177,7 +177,7 @@ fn do_frame(
     app.update();
     let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
     ui::do_egui(sf_egui, app, mp, font);
-    let [r, g, b] = app.presentation.bg_color;
+    let [r, g, b] = app.bg_color;
     #[expect(
         clippy::cast_possible_truncation,
         clippy::cast_sign_loss,

@@ -33,10 +33,7 @@ use crate::{
     view::{HexData, TextData, View, ViewKind, ViewportRect, ViewportScalar},
 };
 
-use self::{
-    edit_state::EditState, interact_mode::InteractMode, perspective::Perspective,
-    presentation::Presentation,
-};
+use self::{edit_state::EditState, interact_mode::InteractMode, perspective::Perspective};
 
 #[derive(Debug)]
 pub struct NamedView {
@@ -92,7 +89,6 @@ pub struct App {
     pub edit_state: EditState,
     pub input: Input,
     pub interact_mode: InteractMode,
-    pub presentation: Presentation,
     pub named_views: Vec<NamedView>,
     pub focused_view: Option<usize>,
     /// The rectangle area that's available for the hex interface
@@ -126,6 +122,7 @@ pub struct App {
     pub auto_reload_interval_ms: u32,
     last_reload: Instant,
     pub preferences: Preferences,
+    pub bg_color: [f32; 3],
 }
 
 #[derive(Debug, Default)]
@@ -168,7 +165,6 @@ impl App {
             edit_state: EditState::default(),
             input: Input::default(),
             interact_mode: InteractMode::View,
-            presentation: Presentation::default(),
             named_views: views,
             focused_view: Some(0),
             ui: crate::ui::Ui::default(),
@@ -191,6 +187,7 @@ impl App {
             last_reload: Instant::now(),
             preferences: Preferences::default(),
             hex_iface_rect: ViewportRect::default(),
+            bg_color: [0.; 3],
         };
         this.new_file_readjust(font, &ViewportRect::default());
         if let Some(offset) = this.args.jump {
