@@ -152,20 +152,15 @@ impl App {
             args = recent.clone();
         }
         load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
-        let regions = SlotMap::default();
-        let mut perspectives = SlotMap::default();
-        let default_perspective = perspectives.insert(Perspective::default());
-        let mut views = default_views(font, &ViewportRect::default(), default_perspective);
-        views[0].view.go_home();
         let mut this = Self {
             scissor_views: true,
-            perspectives,
+            perspectives: SlotMap::default(),
             dirty_region: None,
             data,
             edit_state: EditState::default(),
             input: Input::default(),
             interact_mode: InteractMode::View,
-            named_views: views,
+            named_views: Vec::default(),
             focused_view: Some(0),
             ui: crate::ui::Ui::default(),
             resize_views: EventTrigger::default(),
@@ -178,7 +173,7 @@ impl App {
             col_change_lock_y: true,
             flash_cursor_timer: Timer::default(),
             just_reloaded: true,
-            regions,
+            regions: SlotMap::default(),
             meta_dirty: false,
             stream_read_recv: None,
             cfg,
