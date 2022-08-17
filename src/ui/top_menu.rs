@@ -177,15 +177,6 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
                 app.ui.add_dialog(SetCursorDialog::default());
             }
-        });
-        ui.menu_button("View", |ui| {
-            if button_with_shortcut(ui, "View configuration...", "F5").clicked() {
-                app.ui.views_window.open ^= true;
-                ui.close_menu();
-            }
-            if ui.checkbox(&mut app.auto_view_layout, "Auto view layout").clicked() {
-                ui.close_menu();
-            }
             if ui.button("Flash cursor").clicked() {
                 app.flash_cursor();
                 ui.close_menu();
@@ -193,6 +184,15 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             if ui.button("Center view on cursor").clicked() {
                 app.center_view_on_offset(app.edit_state.cursor);
                 app.flash_cursor();
+                ui.close_menu();
+            }
+        });
+        ui.menu_button("View", |ui| {
+            if button_with_shortcut(ui, "View configuration...", "F5").clicked() {
+                app.ui.views_window.open ^= true;
+                ui.close_menu();
+            }
+            if ui.checkbox(&mut app.auto_view_layout, "Auto view layout").clicked() {
                 ui.close_menu();
             }
             ui.horizontal(|ui| {
