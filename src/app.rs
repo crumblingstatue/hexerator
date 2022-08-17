@@ -15,7 +15,6 @@ use std::{
 
 use anyhow::{bail, Context};
 
-use gamedebug_core::per_msg;
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use sfml::graphics::Font;
@@ -540,7 +539,6 @@ impl App {
     pub(crate) fn update(&mut self) {
         if self.auto_view_layout || self.resize_views.triggered() {
             named_views_auto_layout(&mut self.named_views, &self.hex_iface_rect);
-            per_msg!("Auto view resize!");
         }
         if self.auto_reload
             && self.last_reload.elapsed().as_millis() >= u128::from(self.auto_reload_interval_ms)
