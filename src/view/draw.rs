@@ -5,6 +5,7 @@ use sfml::{
     graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
     system::Vector2,
 };
+use slotmap::Key;
 
 use crate::{
     app::{presentation::Presentation, App},
@@ -24,7 +25,7 @@ pub fn draw_view(
     mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, &[u8], usize, Color),
 ) {
     // Protect against infinite loop lock up when scrolling horizontally out of view
-    if view.scroll_offset.pix_xoff <= -view.viewport_rect.w {
+    if view.scroll_offset.pix_xoff <= -view.viewport_rect.w || view.perspective.is_null() {
         return;
     }
     let perspective = &app.perspectives[view.perspective];

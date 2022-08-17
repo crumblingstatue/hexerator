@@ -215,6 +215,10 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         ui.menu_button("Perspective", |ui| {
             let Some(view_idx) = app.focused_view else { return };
             let view = &mut app.named_views[view_idx].view;
+            if button_with_shortcut(ui, "Perspectives...", "F6").clicked() {
+                app.ui.perspectives_window.open.toggle();
+                ui.close_menu();
+            }
             if ui.button("Set offset to cursor").clicked() {
                 app.regions[app.perspectives[view.perspective].region].region.begin = app.edit_state.cursor;
                 ui.close_menu();

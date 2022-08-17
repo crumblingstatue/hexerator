@@ -9,55 +9,13 @@ use crate::{
     view::{HexData, TextData, TextKind, View, ViewKind, ViewportRect},
 };
 
+use super::window_open::WindowOpen;
+
 #[derive(Default)]
-pub struct WindowOpen {
-    open: bool,
-    just_opened: bool,
-}
-
-impl WindowOpen {
-    pub fn toggle(&mut self) {
-        self.open ^= true;
-        if self.open {
-            self.just_opened = true;
-        }
-    }
-    pub fn is_open(&self) -> bool {
-        self.open
-    }
-    pub fn set_open(&mut self, open: bool) {
-        if !self.open && open {
-            self.just_opened = true;
-        }
-        self.open = open;
-    }
-    pub fn just_opened(&self) -> bool {
-        self.just_opened
-    }
-    /// Call this at the end of your ui, where you won't query just_opened anymore
-    pub fn post_ui(&mut self) {
-        self.just_opened = false;
-    }
-}
-
 pub struct ViewsWindow {
     pub open: WindowOpen,
     pub selected: usize,
     rename: bool,
-    new_kind: ViewKind,
-    new_perspective: PerspectiveKey,
-}
-
-impl Default for ViewsWindow {
-    fn default() -> Self {
-        Self {
-            open: Default::default(),
-            new_kind: ViewKind::Hex(HexData::default()),
-            selected: 0,
-            rename: false,
-            new_perspective: PerspectiveKey::null(),
-        }
-    }
 }
 
 impl ViewKind {
@@ -117,42 +75,13 @@ impl ViewsWindow {
             std::mem::swap(a, b);
         }
         ui.separator();
-        ui.horizontal(|ui| {
-            if ui.button("Add new").clicked() {
-                app.named_views.push(NamedView {
-                    view: View::new(
-                        std::mem::replace(
-                            &mut app.ui.views_window.new_kind,
-                            ViewKind::Hex(HexData::default()),
-                        ),
-                        app.ui.views_window.new_perspective,
-                    ),
-                    name: "Unnamed view".into(),
-                });
-                app.resize_views.reset();
-            }
-            view_combo(
-                "new_kind_combo",
-                &mut app.ui.views_window.new_kind,
-                ui,
-                font,
-            );
-            egui::ComboBox::new("new_perspective_combo", "Perspective")
-                .selected_text(format!("{:?}", app.ui.views_window.new_perspective))
-                .show_ui(ui, |ui| {
-                    for k in app.perspectives.keys() {
-                        if ui
-                            .selectable_label(
-                                k == app.ui.views_window.new_perspective,
-                                format!("{:?}", k),
-                            )
-                            .clicked()
-                        {
-                            app.ui.views_window.new_perspective = k;
-                        }
-                    }
-                });
-        });
+        if ui.button("Add new").clicked() {
+            app.named_views.push(NamedView {
+                view: View::new(ViewKind::Hex(HexData::default()), PerspectiveKey::null()),
+                name: "Unnamed view".into(),
+            });
+            app.resize_views.reset();
+        }
         ui.separator();
         if let Some(view) = app.named_views.get_mut(app.ui.views_window.selected) {
             ui.horizontal(|ui| {
@@ -173,6 +102,18 @@ impl ViewsWindow {
                     view.view.adjust_state_to_kind();
                 }
             });
+            egui::ComboBox::new("new_perspective_combo", "Perspective")
+                .selected_text(format!("{:?}", view.view.perspective))
+                .show_ui(ui, |ui| {
+                    for k in app.perspectives.keys() {
+                        if ui
+                            .selectable_label(k == view.view.perspective, format!("{:?}", k))
+                            .clicked()
+                        {
+                            view.view.perspective = k;
+                        }
+                    }
+                });
             ui.group(|ui| {
                 let mut adjust_block_size = false;
                 match &mut view.view.kind {

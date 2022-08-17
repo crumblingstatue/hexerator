@@ -4,11 +4,13 @@ pub mod dialogs;
 mod find_dialog;
 mod help_window;
 pub mod inspect_panel;
+mod perspectives_window;
 mod regions_window;
 mod top_menu;
 mod top_panel;
 mod util;
 mod views_window;
+mod window_open;
 
 use std::fmt::Debug;
 
@@ -32,6 +34,7 @@ pub struct Ui {
     pub regions_window: RegionsWindow,
     pub dialogs: Vec<Box<dyn Dialog>>,
     pub views_window: ViewsWindow,
+    pub perspectives_window: PerspectivesWindow,
     pub help_window: HelpWindow,
 }
 
@@ -49,7 +52,8 @@ impl Ui {
 
 use self::{
     find_dialog::FindDialog, help_window::HelpWindow, inspect_panel::InspectPanel,
-    regions_window::RegionsWindow, views_window::ViewsWindow,
+    perspectives_window::PerspectivesWindow, regions_window::RegionsWindow,
+    views_window::ViewsWindow,
 };
 
 pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font: &Font) {
@@ -77,6 +81,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             .open(&mut open)
             .show(ctx, |ui| ViewsWindow::ui(ui, app, font));
         app.ui.views_window.open.set_open(open);
+        open = app.ui.perspectives_window.open.is_open();
+        Window::new("Perspectives")
+            .open(&mut open)
+            .show(ctx, |ui| PerspectivesWindow::ui(ui, app));
+        app.ui.perspectives_window.open.set_open(open);
         open = app.ui.help_window.open;
         Window::new("Help")
             .default_size(egui::vec2(800., 600.))
