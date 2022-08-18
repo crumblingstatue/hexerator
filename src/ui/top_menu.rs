@@ -252,6 +252,9 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 app.ui.regions_window.open ^= true;
                 ui.close_menu();
             }
+            ui.separator();
+            ui.checkbox(&mut app.meta_dirty, "Mark as changed")
+              .on_hover_text("If marked as changed, the metadata will overwrite the old one on quit");
         });
         ui.menu_button("Analysis", |ui| {
             if ui.button("Determine data mime type under cursor").clicked() {
