@@ -1,11 +1,6 @@
 use egui_sfml::egui::{self, Ui};
 use gamedebug_core::{Info, PerEntry, IMMEDIATE, PERSISTENT};
 
-#[expect(
-    clippy::significant_drop_in_scrutinee,
-    reason = "this isn't a useful lint for for loops"
-)]
-// https://github.com/rust-lang/rust-clippy/issues/8987
 pub fn ui(ui: &mut Ui) {
     match IMMEDIATE.lock() {
         Ok(imm) => {
