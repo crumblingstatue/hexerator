@@ -151,7 +151,7 @@ impl App {
         if args.load_recent && let Some(recent) = cfg.recent.most_recent() {
             args = recent.clone();
         }
-        load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
+        let load_success = load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
         let mut this = Self {
             scissor_views: true,
             perspectives: SlotMap::default(),
@@ -161,7 +161,7 @@ impl App {
             input: Input::default(),
             interact_mode: InteractMode::View,
             named_views: Vec::default(),
-            focused_view: Some(0),
+            focused_view: None,
             ui: crate::ui::Ui::default(),
             resize_views: EventTrigger::default(),
             auto_view_layout: true,
@@ -184,7 +184,9 @@ impl App {
             hex_iface_rect: ViewportRect::default(),
             bg_color: [0.; 3],
         };
-        this.new_file_readjust(font, &ViewportRect::default());
+        if load_success {
+            this.new_file_readjust(font, &ViewportRect::default());
+        }
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
             this.edit_state.cursor = offset;
