@@ -382,6 +382,10 @@ impl App {
             flip_row_order: false,
         });
         self.named_views = default_views(font, hex_iface_rect, default_perspective);
+        // If we have no focused view, let's focus on the default view
+        if self.focused_view.is_none() {
+            self.focused_view = Some(0);
+        }
     }
 
     pub fn close_file(&mut self) {
