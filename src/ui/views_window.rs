@@ -43,6 +43,10 @@ impl ViewsWindow {
         }
         let mut removed_idx = None;
         ui.heading("Views");
+        if app.named_views.is_empty() {
+            ui.label("No views");
+            return;
+        }
         let last_idx = app.named_views.len() - 1;
         let mut swap = None;
         for (i, view) in app.named_views.iter_mut().enumerate() {
