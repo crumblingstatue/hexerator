@@ -1,7 +1,7 @@
 use std::{array::TryFromSliceError, marker::PhantomData};
 
 use egui_sfml::egui::{self, Ui};
-use sfml::window::clipboard;
+use egui_sfml::sfml::window::clipboard;
 use thiserror::Error;
 
 use crate::{

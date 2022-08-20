@@ -1,5 +1,5 @@
+use egui_sfml::sfml::graphics::Font;
 use gamedebug_core::imm_msg;
-use sfml::graphics::Font;
 use slotmap::Key;
 
 use crate::{
@@ -539,10 +539,10 @@ pub struct ViewportVec {
     pub y: ViewportScalar,
 }
 
-impl TryFrom<sfml::system::Vector2<i32>> for ViewportVec {
+impl TryFrom<egui_sfml::sfml::system::Vector2<i32>> for ViewportVec {
     type Error = <ViewportScalar as std::convert::TryFrom<i32>>::Error;
 
-    fn try_from(sf_vec: sfml::system::Vector2<i32>) -> Result<Self, Self::Error> {
+    fn try_from(sf_vec: egui_sfml::sfml::system::Vector2<i32>) -> Result<Self, Self::Error> {
         Ok(Self {
             x: sf_vec.x.try_into()?,
             y: sf_vec.y.try_into()?,

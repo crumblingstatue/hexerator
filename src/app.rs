@@ -15,9 +15,9 @@ use std::{
 
 use anyhow::{bail, Context};
 
+use egui_sfml::sfml::graphics::Font;
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
-use sfml::graphics::Font;
 use slotmap::{new_key_type, SlotMap};
 
 use crate::{

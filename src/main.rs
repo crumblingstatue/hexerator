@@ -48,16 +48,16 @@ use app::{interact_mode::InteractMode, NamedView};
 use args::Args;
 use clap::Parser;
 use config::Config;
+use egui_sfml::sfml::{
+    graphics::{Color, Font, Rect, RenderTarget, RenderWindow, Vertex, View},
+    system::Vector2,
+    window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
+};
 use egui_sfml::SfEgui;
 use gamedebug_core::imm_msg;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
-use sfml::{
-    graphics::{Color, Font, Rect, RenderTarget, RenderWindow, Vertex, View},
-    system::Vector2,
-    window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
-};
 use shell::{msg_if_fail, msg_warn};
 use ui::dialogs::SetCursorDialog;
 use view::COMFY_MARGIN;

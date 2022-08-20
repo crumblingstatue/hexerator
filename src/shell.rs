@@ -1,4 +1,4 @@
-use sfml::graphics::Font;
+use egui_sfml::sfml::graphics::Font;
 
 use crate::app::App;
 

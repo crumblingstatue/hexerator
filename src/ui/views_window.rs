@@ -1,7 +1,7 @@
 use std::{hash::Hash, ops::RangeInclusive};
 
 use egui_sfml::egui::{self, emath::Numeric, Button};
-use sfml::graphics::Font;
+use egui_sfml::sfml::graphics::Font;
 use slotmap::Key;
 
 use crate::{

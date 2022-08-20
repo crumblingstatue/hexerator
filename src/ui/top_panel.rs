@@ -1,6 +1,6 @@
 use anyhow::Context;
 use egui_sfml::egui::{self, ComboBox, Layout, Ui};
-use sfml::graphics::{Font, Image};
+use egui_sfml::sfml::graphics::{Font, Image};
 
 use crate::{
     app::App,
@@ -94,7 +94,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
                         .on_hover_text("From hex code on clipboard")
                         .clicked()
                     {
-                        match color_from_hexcode(&sfml::window::clipboard::get_string()) {
+                        match color_from_hexcode(&egui_sfml::sfml::window::clipboard::get_string()) {
                             Ok(new) => *col = new,
                             Err(e) => msg_warn(&format!("Color parse error: {}", e)),
                         }

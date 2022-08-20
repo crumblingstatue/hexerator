@@ -14,11 +14,11 @@ mod window_open;
 
 use std::fmt::Debug;
 
+use egui_sfml::sfml::graphics::Font;
 use egui_sfml::{
     egui::{self, TopBottomPanel, Window},
     SfEgui,
 };
-use sfml::graphics::Font;
 
 use crate::{
     app::App,

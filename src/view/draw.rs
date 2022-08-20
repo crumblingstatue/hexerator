@@ -1,10 +1,10 @@
-use either::Either;
-use gamedebug_core::imm_msg;
-use glu_sys::GLint;
-use sfml::{
+use egui_sfml::sfml::{
     graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
     system::Vector2,
 };
+use either::Either;
+use gamedebug_core::imm_msg;
+use glu_sys::GLint;
 use slotmap::Key;
 
 use crate::{

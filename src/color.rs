@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use sfml::graphics::Color;
+use egui_sfml::sfml::graphics::Color;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ColorMethod {

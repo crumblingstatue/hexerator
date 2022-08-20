@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use sfml::window::{Event, Key};
+use egui_sfml::sfml::window::{Event, Key};
 
 #[derive(Default, Debug)]
 pub struct Input {

@@ -1,4 +1,4 @@
-use sfml::graphics::Color;
+use egui_sfml::sfml::graphics::Color;
 
 use crate::color::ColorMethod;
 

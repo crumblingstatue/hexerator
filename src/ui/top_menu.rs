@@ -1,6 +1,6 @@
 use egui_sfml::egui::{self, Layout};
+use egui_sfml::sfml::{graphics::Font, window::clipboard};
 use rand::{thread_rng, RngCore};
-use sfml::{graphics::Font, window::clipboard};
 
 use crate::{
     app::{col_change_impl_view_perspective, App},
