@@ -3,7 +3,7 @@ use egui_sfml::egui;
 use crate::{
     app::App,
     damage_region::DamageRegion,
-    parse_radix::parse_offset,
+    parse_radix::parse_guess_radix,
     shell::{msg_fail, msg_warn},
     slice_ext::SliceExt,
 };
@@ -26,7 +26,7 @@ impl Dialog for SetCursorDialog {
                 .request_focus();
         });
         if ui.input().key_pressed(egui::Key::Enter) {
-            match parse_offset(&self.string_buf) {
+            match parse_guess_radix(&self.string_buf) {
                 Ok(offset) => {
                     app.edit_state.cursor = offset;
                     app.center_view_on_offset(offset);

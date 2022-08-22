@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use num_traits::Num;
 
 pub fn parse_guess_radix<T: Num>(input: &str) -> Result<T, <T as Num>::FromStrRadixErr> {
@@ -10,8 +8,4 @@ pub fn parse_guess_radix<T: Num>(input: &str) -> Result<T, <T as Num>::FromStrRa
     } else {
         T::from_str_radix(input, 10)
     }
-}
-
-pub fn parse_offset(arg: &str) -> Result<usize, <usize as FromStr>::Err> {
-    parse_guess_radix::<usize>(arg)
 }
