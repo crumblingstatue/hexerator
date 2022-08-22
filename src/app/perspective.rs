@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use slotmap::Key;
 
 use crate::region::Region;
@@ -5,7 +6,7 @@ use crate::region::Region;
 use super::{RegionKey, RegionMap};
 
 /// A "perspectived" (column count) view of a region
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Perspective {
     /// The associated region
     pub region: RegionKey,

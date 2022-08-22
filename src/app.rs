@@ -520,10 +520,12 @@ impl App {
     }
     pub fn consume_meta(&mut self, meta: Metafile) {
         self.regions = meta.named_regions;
+        self.perspectives = meta.perspectives;
     }
     pub fn make_meta(&self) -> Metafile {
         Metafile {
             named_regions: self.regions.clone(),
+            perspectives: self.perspectives.clone(),
         }
     }
     pub fn save_meta(&self) -> anyhow::Result<()> {
