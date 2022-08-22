@@ -27,6 +27,7 @@ egui_easy_mark_standalone = { git = "https://github.com/crumblingstatue/egui-eas
 index_many = "0.6.1"
 slotmap = { version = "1.0.6", features = ["serde"] }
 egui-sfml = "0.1.1"
+num-traits = "0.2.15"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

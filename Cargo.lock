@@ -421,6 +421,7 @@ dependencies = [
  "index_many",
  "interprocess",
  "memchr",
+ "num-traits",
  "rand",
  "recently_used_list",
  "rfd",

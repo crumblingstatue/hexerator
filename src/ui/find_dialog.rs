@@ -1,6 +1,6 @@
 use egui_sfml::egui::{self, ScrollArea, Ui};
 
-use crate::{app::App, shell::msg_warn};
+use crate::{app::App, parse_radix::parse_guess_radix, shell::msg_warn};
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub enum FindType {
@@ -53,7 +53,7 @@ impl FindDialog {
         {
             app.ui.find_dialog.result_offsets.clear();
             match app.ui.find_dialog.find_type {
-                FindType::U8 => match app.ui.find_dialog.input.parse() {
+                FindType::U8 => match parse_guess_radix(&app.ui.find_dialog.input) {
                     Ok(needle) => {
                         for (offset, &byte) in app.data.iter().enumerate() {
                             if byte == needle {

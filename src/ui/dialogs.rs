@@ -3,7 +3,7 @@ use egui_sfml::egui;
 use crate::{
     app::App,
     damage_region::DamageRegion,
-    parse_offset::parse_offset,
+    parse_radix::parse_offset,
     shell::{msg_fail, msg_warn},
     slice_ext::SliceExt,
 };
