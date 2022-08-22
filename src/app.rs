@@ -188,18 +188,12 @@ impl App {
         };
         if load_success {
             this.new_file_readjust(font, &ViewportRect::default());
+            try_consume_metafile(&mut this)?;
         }
         if let Some(offset) = this.args.jump {
             this.center_view_on_offset(offset);
             this.edit_state.cursor = offset;
             this.flash_cursor();
-        }
-        if let Some(path) = this.meta_path() {
-            if path.exists() {
-                let data = std::fs::read(path)?;
-                let meta = rmp_serde::from_slice(&data)?;
-                this.consume_meta(meta);
-            }
         }
         Ok(this)
     }
@@ -562,6 +556,7 @@ impl App {
         if !self.preferences.keep_meta {
             let iface_rect = self.hex_iface_rect;
             self.new_file_readjust(font, &iface_rect);
+            try_consume_metafile(self)?;
         }
         Ok(())
     }
@@ -602,6 +597,22 @@ impl App {
         *app_select_a = Some(region.begin);
         *app_select_b = Some(region.end);
     }
+}
+
+fn try_consume_metafile(this: &mut App) -> Result<(), anyhow::Error> {
+    if let Some(path) = this.meta_path() {
+        if path.exists() {
+            consume_meta_from_file(path, this)?;
+        }
+    };
+    Ok(())
+}
+
+fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
+    let data = std::fs::read(path)?;
+    let meta = rmp_serde::from_slice(&data)?;
+    this.consume_meta(meta);
+    Ok(())
 }
 
 pub fn col_change_impl_view_perspective(
