@@ -27,6 +27,7 @@ pub mod edit_buffer;
 mod hex_conv;
 mod input;
 mod metafile;
+mod parse_offset;
 mod region;
 mod shell;
 mod slice_ext;
