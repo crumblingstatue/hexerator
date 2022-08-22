@@ -81,21 +81,31 @@ impl FindDialog {
                 app.search_focus(off);
             }
         }
-        ScrollArea::vertical().max_height(480.).show(ui, |ui| {
-            for (i, &off) in app.ui.find_dialog.results_vec.iter().enumerate() {
-                let re =
-                    ui.selectable_label(app.ui.find_dialog.result_cursor == i, off.to_string());
-                if let Some(scroll_off) = app.ui.find_dialog.scroll_to && scroll_off == i {
+        let row_height = ui.text_style_height(&egui::TextStyle::Body);
+        ScrollArea::vertical().max_height(480.).show_rows(
+            ui,
+            row_height,
+            app.ui.find_dialog.results_vec.len(),
+            |ui, range| {
+                for (i, &off) in app.ui.find_dialog.results_vec[range.clone()]
+                    .iter()
+                    .enumerate()
+                {
+                    let i = i + range.start;
+                    let re =
+                        ui.selectable_label(app.ui.find_dialog.result_cursor == i, off.to_string());
+                    if let Some(scroll_off) = app.ui.find_dialog.scroll_to && scroll_off == i {
                         re.scroll_to_me(None);
                         app.ui.find_dialog.scroll_to = None;
                     }
-                if re.clicked() {
-                    app.search_focus(off);
-                    app.ui.find_dialog.result_cursor = i;
-                    break;
+                    if re.clicked() {
+                        app.search_focus(off);
+                        app.ui.find_dialog.result_cursor = i;
+                        break;
+                    }
                 }
-            }
-        });
+            },
+        );
         ui.horizontal(|ui| {
             ui.set_enabled(!app.ui.find_dialog.results_vec.is_empty());
             if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
