@@ -30,6 +30,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 }
                 ui.close_menu();
             }
+            ui.checkbox(&mut app.preferences.keep_meta, "Keep metadata").on_hover_text("Keep metadata when loading a new file");
             ui.menu_button("Recent", |ui| {
                 let mut load = None;
                 app.cfg.recent.retain(|entry| {

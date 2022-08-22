@@ -136,6 +136,8 @@ pub struct Preferences {
     pub sticky_edit: bool,
     /// Automatically save when editing is finished
     pub auto_save: bool,
+    /// Keep metadata when loading.
+    pub keep_meta: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -557,8 +559,10 @@ impl App {
         if load_file_from_args(&mut args, &mut self.cfg, &mut self.source, &mut self.data) {
             self.args = args;
         }
-        let iface_rect = self.hex_iface_rect;
-        self.new_file_readjust(font, &iface_rect);
+        if !self.preferences.keep_meta {
+            let iface_rect = self.hex_iface_rect;
+            self.new_file_readjust(font, &iface_rect);
+        }
         Ok(())
     }
     /// Called every frame
