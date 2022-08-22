@@ -582,7 +582,7 @@ fn selected_or_find_result_contains(
 }
 
 fn find_result_contains(app_ui: &Ui, idx: usize) -> bool {
-    app_ui.find_dialog.open && app_ui.find_dialog.result_offsets.contains(&idx)
+    app_ui.find_dialog.open && app_ui.find_dialog.results_set.contains(&idx)
 }
 
 fn selected(app_selection: Option<Region>, idx: usize) -> bool {
