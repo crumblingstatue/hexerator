@@ -221,6 +221,7 @@ fn update(app: &mut App) {
     if app.data.is_empty() {
         return;
     }
+    app.show_alt_overlay = app.input.key_down(Key::LAlt);
     if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
         let Some(idx) = app.focused_view else { return };
         let spd = if app.input.key_down(Key::LShift) {
@@ -264,7 +265,8 @@ fn update(app: &mut App) {
 fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
     let views = std::mem::take(&mut app.named_views);
     for (k, view) in views.iter().enumerate() {
-        view.view.draw(k, app, window, vertex_buffer, font);
+        view.view
+            .draw(k, app, window, vertex_buffer, font, &view.name);
     }
     app.named_views = views;
 }

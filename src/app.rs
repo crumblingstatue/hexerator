@@ -123,6 +123,8 @@ pub struct App {
     last_reload: Instant,
     pub preferences: Preferences,
     pub bg_color: [f32; 3],
+    /// When alt is being held, it shows things like names of views as overlays
+    pub show_alt_overlay: bool,
 }
 
 #[derive(Debug, Default)]
@@ -185,6 +187,7 @@ impl App {
             preferences: Preferences::default(),
             hex_iface_rect: ViewportRect::default(),
             bg_color: [0.; 3],
+            show_alt_overlay: false,
         };
         if load_success {
             this.new_file_readjust(font, &ViewportRect::default());

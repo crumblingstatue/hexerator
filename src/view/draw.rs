@@ -1,5 +1,8 @@
 use egui_sfml::sfml::{
-    graphics::{Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Vertex},
+    graphics::{
+        Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Text, Transformable,
+        Vertex,
+    },
     system::Vector2,
 };
 use either::Either;
@@ -305,6 +308,7 @@ impl View {
         window: &mut RenderWindow,
         vertex_buffer: &mut Vec<Vertex>,
         font: &Font,
+        name: &str,
     ) {
         if !self.active {
             return;
@@ -544,12 +548,33 @@ impl View {
                 glu_sys::glScissor(x, y, w, h);
             }
         }
+        let mut overlay_text = None;
+        if app.show_alt_overlay {
+            let mut text = Text::new(name, font, 16);
+            text.set_position((
+                f32::from(self.viewport_rect.x),
+                f32::from(self.viewport_rect.y),
+            ));
+            let text_bounds = text.global_bounds();
+            draw_rect(
+                vertex_buffer,
+                text_bounds.left,
+                text_bounds.top,
+                text_bounds.width,
+                text_bounds.height,
+                Color::rgba(32, 32, 32, 200),
+            );
+            overlay_text = Some(text);
+        }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
         imm_msg!(vertex_buffer.len());
         if app.scissor_views {
             unsafe {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
             }
+        }
+        if let Some(text) = overlay_text {
+            window.draw(&text);
         }
     }
 }
