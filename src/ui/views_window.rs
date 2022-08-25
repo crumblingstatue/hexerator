@@ -226,6 +226,9 @@ fn perspective_label(
     app_regions: &RegionMap,
     perspective_key: PerspectiveKey,
 ) -> String {
+    if perspective_key.is_null() {
+        return "<null perspective key>".into();
+    }
     let p = &app_perspectives[perspective_key];
     let r = &app_regions[p.region];
     format!("{}:{}", r.name, p.cols)
