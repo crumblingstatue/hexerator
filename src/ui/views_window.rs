@@ -4,6 +4,7 @@ use egui_sfml::egui::{self, emath::Numeric, Button};
 use egui_sfml::sfml::graphics::Font;
 use slotmap::Key;
 
+use crate::app::{PerspectiveMap, RegionMap};
 use crate::{
     app::{NamedView, PerspectiveKey},
     view::{HexData, TextData, TextKind, View, ViewKind, ViewportRect},
@@ -107,11 +108,18 @@ impl ViewsWindow {
                 }
             });
             egui::ComboBox::new("new_perspective_combo", "Perspective")
-                .selected_text(format!("{:?}", view.view.perspective))
+                .selected_text(perspective_label(
+                    &app.perspectives,
+                    &app.regions,
+                    view.view.perspective,
+                ))
                 .show_ui(ui, |ui| {
                     for k in app.perspectives.keys() {
                         if ui
-                            .selectable_label(k == view.view.perspective, format!("{:?}", k))
+                            .selectable_label(
+                                k == view.view.perspective,
+                                perspective_label(&app.perspectives, &app.regions, k),
+                            )
                             .clicked()
                         {
                             view.view.perspective = k;
@@ -210,6 +218,17 @@ impl ViewsWindow {
         }
         app.ui.views_window.open.post_ui();
     }
+}
+
+/// Try to give a sensible label for a perspective
+fn perspective_label(
+    app_perspectives: &PerspectiveMap,
+    app_regions: &RegionMap,
+    perspective_key: PerspectiveKey,
+) -> String {
+    let p = &app_perspectives[perspective_key];
+    let r = &app_regions[p.region];
+    format!("{}:{}", r.name, p.cols)
 }
 
 /// Returns whether the value was changed
