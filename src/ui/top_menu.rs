@@ -33,6 +33,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             let mut load = None;
             if button_with_shortcut(ui, "Open previous", "Ctrl+P").on_hover_text("Can be used to switch between 2 files quickly for comparison").clicked() {
                 crate::shell::open_previous(app, &mut load);
+                ui.close_menu();
             }
             ui.checkbox(&mut app.preferences.keep_meta, "Keep metadata").on_hover_text("Keep metadata when loading a new file");
             ui.menu_button("Recent", |ui| {
@@ -264,11 +265,13 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 if let Some(path) = rfd::FileDialog::default().pick_file() {
                     msg_if_fail(crate::app::consume_meta_from_file(path, app), "Failed to load metafile");
                 }
+                ui.close_menu();
             }
             if ui.button("Save to file...").clicked() {
                 if let Some(path) = rfd::FileDialog::default().save_file() {
                     msg_if_fail(app.save_meta_to_file(path), "Failed to save metafile");
                 }
+                ui.close_menu();
             }
         });
         ui.menu_button("Analysis", |ui| {
