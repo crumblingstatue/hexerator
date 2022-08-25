@@ -561,6 +561,16 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::O if ctrl => {
             shell::open_file(app, font);
         }
+        Key::P if ctrl => {
+            let mut load = None;
+            crate::shell::open_previous(app, &mut load);
+            if let Some(args) = load {
+                msg_if_fail(
+                    app.load_file_args(args,font),
+                    "Failed to load file",
+                );
+            }
+        }
         Key::W if ctrl => app.close_file(),
         Key::J if ctrl => app.ui.add_dialog(SetCursorDialog::default()),
         Key::Num1 if shift => app.select_a = Some(app.edit_state.cursor),

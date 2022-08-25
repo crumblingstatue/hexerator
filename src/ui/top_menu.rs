@@ -30,9 +30,12 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 }
                 ui.close_menu();
             }
+            let mut load = None;
+            if button_with_shortcut(ui, "Open previous", "Ctrl+P").on_hover_text("Can be used to switch between 2 files quickly for comparison").clicked() {
+                crate::shell::open_previous(app, &mut load);
+            }
             ui.checkbox(&mut app.preferences.keep_meta, "Keep metadata").on_hover_text("Keep metadata when loading a new file");
             ui.menu_button("Recent", |ui| {
-                let mut load = None;
                 app.cfg.recent.retain(|entry| {
                     let mut retain = true;
                     ui.horizontal(|ui| {
@@ -57,12 +60,6 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                     ui.separator();
                     retain
                 });
-                if let Some(args) = load {
-                    msg_if_fail(
-                        app.load_file_args(args,font),
-                        "Failed to load file",
-                    );
-                }
                 ui.separator();
                 let mut cap = app.cfg.recent.capacity();
                 if ui.add(egui::DragValue::new(&mut cap).prefix("list capacity: ")).changed() {
@@ -70,6 +67,12 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 }
 
             });
+            if let Some(args) = load {
+                msg_if_fail(
+                    app.load_file_args(args,font),
+                    "Failed to load file",
+                );
+            }
             ui.separator();
             if ui
                 .add_enabled(
