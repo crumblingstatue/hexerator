@@ -525,6 +525,10 @@ impl App {
         self.regions = meta.named_regions;
         self.perspectives = meta.perspectives;
         self.named_views = meta.views;
+        for view in &mut self.named_views {
+            // Needed to initialize edit buffers, etc.
+            view.view.adjust_state_to_kind();
+        }
     }
     pub fn make_meta(&self) -> Metafile {
         Metafile {
