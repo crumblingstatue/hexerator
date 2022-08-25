@@ -1,25 +1,14 @@
-use egui_sfml::egui::{self, DragValue, Ui};
+use egui_extras::{Size, TableBuilder};
+use egui_sfml::egui::{self, Ui};
 
-use crate::app::{App, NamedRegion};
+use crate::app::{App, NamedRegion, RegionKey};
 
 #[derive(Debug, Default)]
 pub struct RegionsWindow {
     pub open: bool,
-    pub status: Status,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum Status {
-    Init,
-    Rename(usize),
-    EditBegin(usize),
-    EditEnd(usize),
-}
-
-impl Default for Status {
-    fn default() -> Self {
-        Self::Init
-    }
+    pub selected_key: Option<RegionKey>,
+    select_active: bool,
+    rename_active: bool,
 }
 
 impl RegionsWindow {
@@ -40,69 +29,91 @@ impl RegionsWindow {
             }
         }
         ui.separator();
-        let mut idx = 0;
-        enum Action {
-            SetCursor(usize),
-        }
-        let mut action = None;
-        app.regions.retain(|_key, region| {
-            let mut retain = true;
-            ui.horizontal(|ui| {
-                if app.ui.regions_window.status == Status::Rename(idx) {
-                    if ui.text_edit_singleline(&mut region.name).lost_focus() {
-                        app.ui.regions_window.status = Status::Init;
-                    }
-                } else {
-                    let re = ui.button(&region.name);
-                    if re.double_clicked() {
-                        app.ui.regions_window.status = Status::Rename(idx);
-                    } else if re.clicked() {
-                        App::set_selection(&mut app.select_a, &mut app.select_b, region.region);
-                    }
-                }
-                if app.ui.regions_window.status == Status::EditBegin(idx) {
-                    if ui
-                        .add(DragValue::new(&mut region.region.begin))
-                        .lost_focus()
-                    {
-                        app.ui.regions_window.status = Status::Init;
-                    }
-                } else {
-                    let re = ui.button(region.region.begin.to_string());
-                    if re.double_clicked() {
-                        app.ui.regions_window.status = Status::EditBegin(idx);
-                    } else if re.clicked() {
-                        action = Some(Action::SetCursor(region.region.begin))
-                    }
-                }
-                ui.label("..=");
-                if app.ui.regions_window.status == Status::EditEnd(idx) {
-                    if ui.add(DragValue::new(&mut region.region.end)).lost_focus() {
-                        app.ui.regions_window.status = Status::Init;
-                    }
-                } else {
-                    let re = ui.button(region.region.end.to_string());
-                    if re.double_clicked() {
-                        app.ui.regions_window.status = Status::EditEnd(idx);
-                    } else if re.clicked() {
-                        action = Some(Action::SetCursor(region.region.end))
-                    }
-                }
-                ui.label(format!("Size: {}", region.region.len()));
-                if ui.button("🗑").clicked() {
-                    retain = false;
-                    app.meta_dirty = true;
+        TableBuilder::new(ui)
+            .striped(true)
+            .resizable(true)
+            .column(Size::remainder().at_least(200.0))
+            .column(Size::remainder().at_least(80.0))
+            .column(Size::remainder().at_least(80.0))
+            .column(Size::remainder().at_least(80.0))
+            .header(20.0, |mut header| {
+                header.col(|ui| {
+                    ui.label("Name");
+                });
+                header.col(|ui| {
+                    ui.label("First byte");
+                });
+                header.col(|ui| {
+                    ui.label("Last byte");
+                });
+                header.col(|ui| {
+                    ui.label("Length");
+                });
+            })
+            .body(|mut body| {
+                let mut keys: Vec<RegionKey> = app.regions.keys().collect();
+                keys.sort_by_key(|k| app.regions[*k].region.begin);
+                for k in keys {
+                    body.row(20.0, |mut row| {
+                        let reg = &app.regions[k];
+                        row.col(|ui| {
+                            if ui
+                                .selectable_label(
+                                    app.ui.regions_window.selected_key == Some(k),
+                                    &reg.name,
+                                )
+                                .clicked()
+                            {
+                                app.ui.regions_window.selected_key = Some(k);
+                            }
+                        });
+                        row.col(|ui| {
+                            ui.label(reg.region.begin.to_string());
+                        });
+                        row.col(|ui| {
+                            ui.label(reg.region.end.to_string());
+                        });
+                        row.col(|ui| {
+                            ui.label(((reg.region.end + 1) - reg.region.begin).to_string());
+                        });
+                    });
                 }
             });
-            idx += 1;
-            retain
-        });
-        if let Some(action) = action {
-            match action {
-                Action::SetCursor(offset) => {
-                    app.edit_state.cursor = offset;
-                    app.center_view_on_offset(offset);
+        ui.separator();
+        if let &Some(key) = &app.ui.regions_window.selected_key {
+            let reg = &mut app.regions[key];
+            ui.horizontal(|ui| {
+                if app.ui.regions_window.rename_active {
+                    if ui.text_edit_singleline(&mut reg.name).lost_focus() {
+                        app.ui.regions_window.rename_active = false;
+                    }
+                } else {
+                    ui.heading(&reg.name);
                 }
+                if ui.button("✏").on_hover_text("Rename").clicked() {
+                    app.ui.regions_window.rename_active ^= true;
+                }
+            });
+            ui.horizontal(|ui| {
+                ui.label("First byte");
+                ui.add(egui::DragValue::new(&mut reg.region.begin));
+                ui.label("Last byte");
+                ui.add(egui::DragValue::new(&mut reg.region.end));
+            });
+            if app.ui.regions_window.select_active {
+                app.select_a = Some(reg.region.begin);
+                app.select_b = Some(reg.region.end);
+            }
+            if ui
+                .checkbox(&mut app.ui.regions_window.select_active, "Select")
+                .clicked()
+            {
+                app.select_a = None;
+                app.select_b = None;
+            }
+            if ui.button("Delete").clicked() {
+                app.regions.remove(key);
+                app.ui.regions_window.selected_key = None;
             }
         }
     }

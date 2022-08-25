@@ -600,15 +600,6 @@ impl App {
             None
         }
     }
-
-    pub(crate) fn set_selection(
-        app_select_a: &mut Option<usize>,
-        app_select_b: &mut Option<usize>,
-        region: Region,
-    ) {
-        *app_select_a = Some(region.begin);
-        *app_select_b = Some(region.end);
-    }
 }
 
 fn try_consume_metafile(this: &mut App) -> Result<(), anyhow::Error> {
