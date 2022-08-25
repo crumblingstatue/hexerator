@@ -1,8 +1,10 @@
 use std::path::Path;
 
 use egui_sfml::sfml::graphics::Color;
+use serde::{Deserialize, Serialize};
+use serde_big_array::BigArray;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub enum ColorMethod {
     Mono,
     Default,
@@ -12,22 +14,23 @@ pub enum ColorMethod {
     Custom(Box<Palette>),
 }
 
-type Palette = [[u8; 3]; 256];
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct Palette(#[serde(with = "BigArray")] pub [[u8; 3]; 256]);
 
 pub fn load_palette(path: &Path) -> anyhow::Result<Palette> {
     let raw_bytes = std::fs::read(path)?;
     if raw_bytes.len() != std::mem::size_of::<Palette>() {
         anyhow::bail!("File for palette not the correct size");
     }
-    let mut pal = [[0u8; 3]; 256];
-    for (rgb, pal_slot) in raw_bytes.array_chunks::<3>().zip(pal.iter_mut()) {
+    let mut pal = Palette([[0u8; 3]; 256]);
+    for (rgb, pal_slot) in raw_bytes.array_chunks::<3>().zip(pal.0.iter_mut()) {
         *pal_slot = *rgb;
     }
     Ok(pal)
 }
 
 pub fn save_palette(pal: &Palette, path: &Path) -> anyhow::Result<()> {
-    let raw_bytes: &[u8] = bytemuck::cast_slice(pal);
+    let raw_bytes: &[u8] = bytemuck::cast_slice(&pal.0);
     Ok(std::fs::write(path, raw_bytes)?)
 }
 
@@ -40,8 +43,8 @@ impl ColorMethod {
             ColorMethod::Rgb332 => rgb332_color(byte),
             ColorMethod::Vga13h => vga_13h_color(byte),
             ColorMethod::Grayscale => Color::rgb(byte, byte, byte),
-            ColorMethod::Custom(arr) => {
-                let [r, g, b] = arr[byte as usize];
+            ColorMethod::Custom(pal) => {
+                let [r, g, b] = pal.0[byte as usize];
                 Color::rgb(r, g, b)
             }
         };

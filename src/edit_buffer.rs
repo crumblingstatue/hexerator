@@ -1,6 +1,6 @@
 use gamedebug_core::per_msg;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct EditBuffer {
     pub buf: Vec<u8>,
     pub cursor: u16,

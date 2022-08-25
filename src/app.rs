@@ -35,7 +35,7 @@ use crate::{
 
 use self::{edit_state::EditState, interact_mode::InteractMode, perspective::Perspective};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NamedView {
     pub name: String,
     pub view: View,
@@ -524,11 +524,13 @@ impl App {
     pub fn consume_meta(&mut self, meta: Metafile) {
         self.regions = meta.named_regions;
         self.perspectives = meta.perspectives;
+        self.named_views = meta.views;
     }
     pub fn make_meta(&self) -> Metafile {
         Metafile {
             named_regions: self.regions.clone(),
             perspectives: self.perspectives.clone(),
+            views: self.named_views.clone(),
         }
     }
     pub fn save_meta(&self) -> anyhow::Result<()> {

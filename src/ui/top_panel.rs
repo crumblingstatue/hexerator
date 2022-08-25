@@ -2,6 +2,7 @@ use anyhow::Context;
 use egui_sfml::egui::{self, ComboBox, Layout, Ui};
 use egui_sfml::sfml::graphics::{Font, Image};
 
+use crate::color::Palette;
 use crate::{
     app::App,
     color::{self, ColorMethod},
@@ -80,13 +81,13 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
                                     .byte_color(i as u8, presentation.invert_color);
                                 [c.r, c.g, c.b]
                             });
-                            presentation.color_method = ColorMethod::Custom(Box::new(arr));
+                            presentation.color_method = ColorMethod::Custom(Box::new(Palette(arr)));
                         }
                     });
                 ui.color_edit_button_rgb(&mut app.bg_color);
                 ui.label("Bg color");
                 if let ColorMethod::Custom(arr) = &mut presentation.color_method {
-                    let col = &mut arr[app.data[app.edit_state.cursor] as usize];
+                    let col = &mut arr.0[app.data[app.edit_state.cursor] as usize];
                     ui.color_edit_button_srgb(col);
                     ui.label("Byte color");
                     if ui
@@ -141,7 +142,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
                                 for x in 0..size.x {
                                     let color = unsafe { img.pixel_at(x, y) };
                                     let byte = app.data[sel.begin + i];
-                                    arr[byte as usize] = [color.r, color.g, color.b];
+                                    arr.0[byte as usize] = [color.r, color.g, color.b];
                                     i += 1;
                                 }
                             }

@@ -1,5 +1,6 @@
 use egui_sfml::sfml::graphics::Font;
 use gamedebug_core::imm_msg;
+use serde::{Deserialize, Serialize};
 use slotmap::Key;
 
 use crate::{
@@ -18,7 +19,7 @@ mod draw;
 /// There can be different views through the same perspective.
 /// By default they sync their offsets, but each view can show different amounts of data
 /// depending on block size of its items, and its relative size in the viewport.
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct View {
     /// The rectangle to occupy in the viewport
     pub viewport_rect: ViewportRect,
@@ -487,7 +488,7 @@ fn test_scroll_impl_negative() {
     assert_eq!((whole, pixel), (0, -320));
 }
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
 pub struct ScrollOffset {
     /// What column we are at
     pub col: usize,
@@ -525,7 +526,7 @@ impl ScrollOffset {
 /// or get mouse positions higher than that.
 pub type ViewportScalar = i16;
 
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
 pub struct ViewportRect {
     pub x: ViewportScalar,
     pub y: ViewportScalar,
@@ -562,7 +563,7 @@ impl TryFrom<(i32, i32)> for ViewportVec {
 }
 
 /// The kind of view (hex, ascii, block, etc)
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ViewKind {
     Hex(HexData),
     Dec(HexData),
@@ -570,17 +571,19 @@ pub enum ViewKind {
     Block,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TextData {
     /// The kind of text (ascii/utf16/etc)
     pub text_kind: TextKind,
     pub line_spacing: u16,
+    #[serde(skip)]
     pub edit_buf: EditBuffer,
     pub font_size: u16,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct HexData {
+    #[serde(skip)]
     pub edit_buf: EditBuffer,
     pub font_size: u16,
 }
@@ -610,7 +613,7 @@ impl TextData {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub enum TextKind {
     Ascii,
     Utf16Le,

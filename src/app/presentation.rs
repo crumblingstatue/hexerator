@@ -1,14 +1,40 @@
 use egui_sfml::sfml::graphics::Color;
+use serde::{Deserialize, Serialize};
+use serde_with::{serde_as, FromInto};
 
 use crate::color::ColorMethod;
 
-#[derive(Debug)]
+#[serde_as]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Presentation {
     pub color_method: ColorMethod,
     pub invert_color: bool,
+    #[serde_as(as = "FromInto<MyColor>")]
     pub sel_color: Color,
+    #[serde_as(as = "FromInto<MyColor>")]
     pub cursor_color: Color,
+    #[serde_as(as = "FromInto<MyColor>")]
     pub cursor_active_color: Color,
+}
+
+#[derive(Serialize, Deserialize)]
+struct MyColor {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8,
+}
+
+impl From<Color> for MyColor {
+    fn from(Color { r, g, b, a }: Color) -> Self {
+        Self { r, g, b, a }
+    }
+}
+
+impl From<MyColor> for Color {
+    fn from(MyColor { r, g, b, a }: MyColor) -> Self {
+        Self { r, g, b, a }
+    }
 }
 
 impl Default for Presentation {
