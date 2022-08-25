@@ -256,6 +256,17 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             ui.separator();
             ui.checkbox(&mut app.meta_dirty, "Mark as changed")
               .on_hover_text("If marked as changed, the metadata will overwrite the old one on quit");
+              ui.separator();
+            if ui.button("Load from file...").clicked() {
+                if let Some(path) = rfd::FileDialog::default().pick_file() {
+                    msg_if_fail(crate::app::consume_meta_from_file(path, app), "Failed to load metafile");
+                }
+            }
+            if ui.button("Save to file...").clicked() {
+                if let Some(path) = rfd::FileDialog::default().save_file() {
+                    msg_if_fail(app.save_meta_to_file(path), "Failed to save metafile");
+                }
+            }
         });
         ui.menu_button("Analysis", |ui| {
             if ui.button("Determine data mime type under cursor").clicked() {
