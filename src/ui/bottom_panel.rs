@@ -26,14 +26,17 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
         if data_len != 0 {
             if let Some(idx) = app.focused_view {
                 let view = &app.named_views[idx].view;
+                let per = match app.perspectives.get_mut(view.perspective) {
+                    Some(per) => per,
+                    None => {
+                        ui.label("Invalid perspective key");
+                        return;
+                    }
+                };
                 ui.label("offset");
-                ui.add(DragValue::new(
-                    &mut app.regions[app.perspectives[view.perspective].region]
-                        .region
-                        .begin,
-                ));
+                ui.add(DragValue::new(&mut app.regions[per.region].region.begin));
                 ui.label("columns");
-                ui.add(DragValue::new(&mut app.perspectives[view.perspective].cols));
+                ui.add(DragValue::new(&mut per.cols));
                 let offsets = view.offsets(&app.perspectives, &app.regions);
                 #[expect(
                     clippy::cast_precision_loss,

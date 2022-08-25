@@ -1,5 +1,5 @@
 use egui_sfml::sfml::graphics::Font;
-use gamedebug_core::imm_msg;
+use gamedebug_core::{imm_msg, per_msg};
 use serde::{Deserialize, Serialize};
 use slotmap::Key;
 
@@ -190,7 +190,13 @@ impl View {
         let rel_y = y + self.scroll_offset.pix_yoff;
         let rel_col = rel_x / self.col_w as i16;
         let mut rel_row = rel_y / self.row_h as i16;
-        let perspective = &perspectives[self.perspective];
+        let perspective = match perspectives.get(self.perspective) {
+            Some(per) => per,
+            None => {
+                per_msg!("row_col_of_rel_pos: Invalid perspective key");
+                return None;
+            }
+        };
         if perspective.flip_row_order {
             rel_row = self.rows() - rel_row;
         }
