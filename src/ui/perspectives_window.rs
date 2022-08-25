@@ -13,12 +13,13 @@ impl PerspectivesWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
         app.perspectives.retain(|k, per| {
             let mut retain = true;
-            ui.heading(format!("{:?}", k));
-            let sel_text = if per.region.is_null() {
-                "<null>"
+            let (heading, sel_text) = if per.region.is_null() {
+                ("<null perspective>".to_string(), "<null>")
             } else {
-                &app.regions[per.region].name
+                let name = &app.regions[per.region].name;
+                (format!("{}:{}", name, per.cols), name.as_str())
             };
+            ui.heading(heading);
             egui::ComboBox::new(egui::Id::new("region_combo").with(k), "region")
                 .selected_text(sel_text)
                 .show_ui(ui, |ui| {
