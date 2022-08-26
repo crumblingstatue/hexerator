@@ -350,6 +350,20 @@ impl View {
         }
     }
 
+    /// Returns the size needed by this view to display fully
+    pub fn max_needed_size(
+        &self,
+        perspectives: &PerspectiveMap,
+        regions: &RegionMap,
+    ) -> ViewportVec {
+        let p = &perspectives[self.perspective];
+        let n_rows = p.n_rows(regions);
+        ViewportVec {
+            x: i16::saturating_from(p.cols).saturating_mul(i16::saturating_from(self.col_w)),
+            y: i16::saturating_from(n_rows).saturating_mul(i16::saturating_from(self.row_h)),
+        }
+    }
+
     fn char_valid(&self, unicode: char) -> bool {
         match self.kind {
             ViewKind::Hex(_) => matches!(unicode, '0'..='9' | 'a'..='f'),
@@ -415,6 +429,22 @@ impl View {
             ViewKind::Text(data) => Some(&mut data.edit_buf),
             ViewKind::Block => None,
         }
+    }
+}
+
+trait SatFrom<V> {
+    fn saturating_from(src: V) -> Self;
+}
+
+impl SatFrom<usize> for i16 {
+    fn saturating_from(src: usize) -> Self {
+        i16::try_from(src).unwrap_or(Self::MAX)
+    }
+}
+
+impl SatFrom<u16> for i16 {
+    fn saturating_from(src: u16) -> Self {
+        i16::try_from(src).unwrap_or(Self::MAX)
     }
 }
 

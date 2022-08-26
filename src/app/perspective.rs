@@ -49,6 +49,14 @@ impl Perspective {
     pub(crate) fn region_row_span(&self, region: Region) -> (usize, usize) {
         (region.len() / self.cols, region.len() % self.cols)
     }
+    pub(crate) fn n_rows(&self, rmap: &RegionMap) -> usize {
+        let region = &rmap[self.region].region;
+        let mut rows = region.len() / self.cols;
+        if region.len() % self.cols != 0 {
+            rows += 1;
+        }
+        rows
+    }
 }
 
 impl Default for Perspective {
