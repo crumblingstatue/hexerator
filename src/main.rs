@@ -488,8 +488,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                         view.go_home();
                     }
                     InteractMode::Edit => {
-                        app.regions[app.perspectives[view.perspective].region].region.begin = 0;
-                        app.edit_state.set_cursor_no_history(0);
+                        // TODO: Implement
                     }
                 }
             }
