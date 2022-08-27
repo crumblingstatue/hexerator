@@ -16,6 +16,9 @@ pub struct Args {
     /// Open most recently used file
     #[clap(long)]
     pub recent: bool,
+    /// Load this metafile
+    #[clap(long)]
+    pub meta: Option<PathBuf>,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]

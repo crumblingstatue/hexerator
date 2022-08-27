@@ -191,7 +191,11 @@ impl App {
         };
         if load_success {
             this.new_file_readjust(font, &ViewportRect::default());
-            try_consume_metafile(&mut this)?;
+            if let Some(meta_path) = &this.args.meta {
+                consume_meta_from_file(meta_path.clone(), &mut this)?;
+            } else {
+                try_consume_metafile(&mut this)?;
+            }
         }
         if let Some(offset) = this.args.src.jump {
             this.center_view_on_offset(offset);
@@ -363,6 +367,7 @@ impl App {
                 },
                 instance: false,
                 recent: false,
+                meta: None,
             },
             font,
         )
