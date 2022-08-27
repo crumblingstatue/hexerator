@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use crate::app::{PerspectiveMap, RegionMap, ViewKey, ViewMap};
+use crate::app::{LayoutMap, PerspectiveMap, RegionMap, ViewMap};
 
 #[derive(Serialize, Deserialize)]
 pub struct Metafile {
     pub named_regions: RegionMap,
     pub perspectives: PerspectiveMap,
     pub view_map: ViewMap,
-    pub shown_views: Vec<ViewKey>,
+    pub layout_map: LayoutMap,
 }

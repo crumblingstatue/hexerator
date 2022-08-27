@@ -18,13 +18,14 @@ use anyhow::{bail, Context};
 use egui_sfml::sfml::graphics::Font;
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
-use slotmap::{new_key_type, SlotMap};
+use slotmap::{new_key_type, Key, SlotMap};
 
 use crate::{
     args::{Args, SourceArgs},
     config::Config,
     damage_region::DamageRegion,
     input::Input,
+    layout::Layout,
     metafile::Metafile,
     region::Region,
     shell::{msg_if_fail, msg_warn},
@@ -76,11 +77,13 @@ new_key_type! {
     pub struct PerspectiveKey;
     pub struct RegionKey;
     pub struct ViewKey;
+    pub struct LayoutKey;
 }
 
 pub type PerspectiveMap = SlotMap<PerspectiveKey, Perspective>;
 pub type RegionMap = SlotMap<RegionKey, NamedRegion>;
 pub type ViewMap = SlotMap<ViewKey, NamedView>;
+pub type LayoutMap = SlotMap<LayoutKey, Layout>;
 
 /// The hexerator application state
 pub struct App {
@@ -91,7 +94,8 @@ pub struct App {
     pub edit_state: EditState,
     pub input: Input,
     pub interact_mode: InteractMode,
-    pub shown_views: Vec<ViewKey>,
+    pub view_layout_map: LayoutMap,
+    pub current_layout: LayoutKey,
     pub view_map: ViewMap,
     pub focused_view: Option<ViewKey>,
     /// The rectangle area that's available for the hex interface
@@ -167,7 +171,7 @@ impl App {
             edit_state: EditState::default(),
             input: Input::default(),
             interact_mode: InteractMode::View,
-            shown_views: Vec::default(),
+            view_layout_map: LayoutMap::default(),
             focused_view: None,
             ui: crate::ui::Ui::default(),
             resize_views: EventTrigger::default(),
@@ -192,6 +196,7 @@ impl App {
             bg_color: [0.; 3],
             show_alt_overlay: false,
             view_map: ViewMap::default(),
+            current_layout: LayoutKey::null(),
         };
         if load_success {
             this.new_file_readjust(font);
@@ -391,16 +396,22 @@ impl App {
             cols: 48,
             flip_row_order: false,
         });
-        self.shown_views.clear();
+        self.view_layout_map.clear();
         self.view_map.clear();
+        let mut layout = Layout {
+            name: "Default layout".into(),
+            view_keys: vec![vec![]],
+        };
         for view in default_views(font, default_perspective) {
             let k = self.view_map.insert(view);
-            self.shown_views.push(k);
+            layout.view_keys[0].push(k);
         }
         // If we have no focused view, let's focus on the default view
         if self.focused_view.is_none() {
-            self.focused_view = Some(self.shown_views[0]);
+            self.focused_view = Some(layout.view_keys[0][0]);
         }
+        let layout_key = self.view_layout_map.insert(layout);
+        self.current_layout = layout_key;
     }
 
     pub fn close_file(&mut self) {
@@ -507,7 +518,8 @@ impl App {
     //
     // Also returns the index of the view the position is from
     pub fn byte_offset_at_pos(&mut self, x: i16, y: i16) -> Option<(usize, ViewKey)> {
-        for &view_key in &self.shown_views {
+        let layout = &self.view_layout_map[self.current_layout];
+        for view_key in layout.iter() {
             let view = &self.view_map[view_key];
             if let Some((row, col)) =
                 view.view
@@ -526,7 +538,8 @@ impl App {
         None
     }
     pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<ViewKey> {
-        for &view_key in &self.shown_views {
+        let layout = &self.view_layout_map[self.current_layout];
+        for view_key in layout.iter() {
             let view = &self.view_map[view_key];
             if view.view.viewport_rect.contains_pos(x, y) {
                 return Some(view_key);
@@ -537,7 +550,7 @@ impl App {
     pub fn consume_meta(&mut self, meta: Metafile) {
         self.regions = meta.named_regions;
         self.perspectives = meta.perspectives;
-        self.shown_views = meta.shown_views;
+        self.view_layout_map = meta.layout_map;
         self.view_map = meta.view_map;
         for view in self.view_map.values_mut() {
             // Needed to initialize edit buffers, etc.
@@ -548,7 +561,7 @@ impl App {
         Metafile {
             named_regions: self.regions.clone(),
             perspectives: self.perspectives.clone(),
-            shown_views: self.shown_views.clone(),
+            layout_map: self.view_layout_map.clone(),
             view_map: self.view_map.clone(),
         }
     }
@@ -598,7 +611,8 @@ impl App {
     /// Called every frame
     pub(crate) fn update(&mut self) {
         if self.auto_view_layout || self.resize_views.triggered() {
-            shown_views_auto_layout(&self.shown_views, &mut self.view_map, &self.hex_iface_rect);
+            let layout = &self.view_layout_map[self.current_layout];
+            shown_views_auto_layout(layout, &mut self.view_map, &self.hex_iface_rect);
         }
         if self.auto_reload
             && self.last_reload.elapsed().as_millis() >= u128::from(self.auto_reload_interval_ms)
@@ -655,11 +669,8 @@ pub fn col_change_impl_view_perspective(
     view.scroll_to_byte_offset(prev_offset.byte, perspectives, lock_x, lock_y);
 }
 
-fn shown_views_auto_layout(
-    shown_views: &[ViewKey],
-    view_map: &mut ViewMap,
-    hex_iface_rect: &ViewportRect,
-) {
+fn shown_views_auto_layout(layout: &Layout, view_map: &mut ViewMap, hex_iface_rect: &ViewportRect) {
+    let shown_views = &layout.view_keys[0];
     if hex_iface_rect.w == 0 {
         // Can't deal with 0 viewport w, do nothing
         return;

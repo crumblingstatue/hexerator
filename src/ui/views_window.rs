@@ -65,7 +65,7 @@ impl ViewsWindow {
                 view: View::new(ViewKind::Hex(HexData::default()), PerspectiveKey::null()),
                 name: "Unnamed view".into(),
             });
-            app.shown_views.push(k);
+            app.view_layout_map[app.current_layout].view_keys[0].push(k);
             app.resize_views.reset();
         }
         ui.separator();

@@ -19,6 +19,7 @@ mod dec_conv;
 pub mod edit_buffer;
 mod hex_conv;
 mod input;
+mod layout;
 mod metafile;
 mod parse_radix;
 mod region;
@@ -189,7 +190,6 @@ fn do_frame(
     app.just_reloaded = false;
     imm_msg!(&app.perspectives);
     imm_msg!(&app.hex_iface_rect);
-    imm_msg!(&app.shown_views);
     gamedebug_core::inc_frame();
 }
 
@@ -253,7 +253,7 @@ fn update(app: &mut App) {
 }
 
 fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
-    for &view_key in &app.shown_views {
+    for view_key in app.view_layout_map[app.current_layout].iter() {
         let view = &app.view_map[view_key];
         view.view.draw(
             view_key,
