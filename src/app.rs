@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
 use slotmap::{new_key_type, SlotMap};
 
 use crate::{
-    args::Args,
+    args::{Args, SourceArgs},
     config::Config,
     damage_region::DamageRegion,
     input::Input,
@@ -193,7 +193,7 @@ impl App {
             this.new_file_readjust(font, &ViewportRect::default());
             try_consume_metafile(&mut this)?;
         }
-        if let Some(offset) = this.args.jump {
+        if let Some(offset) = this.args.src.jump {
             this.center_view_on_offset(offset);
             this.edit_state.cursor = offset;
             this.flash_cursor();
@@ -224,7 +224,7 @@ impl App {
             },
             None => bail!("No source opened, nothing to save"),
         };
-        let offset = self.args.hard_seek.unwrap_or(0);
+        let offset = self.args.src.hard_seek.unwrap_or(0);
         file.seek(SeekFrom::Start(offset as u64))?;
         let data_to_write = match self.dirty_region {
             Some(region) => {
@@ -264,7 +264,7 @@ impl App {
     }
 
     pub(crate) fn backup_path(&self) -> Option<PathBuf> {
-        self.args.file.as_ref().map(|file| {
+        self.args.src.file.as_ref().map(|file| {
             let mut os_string = OsString::from(file);
             os_string.push(".hexerator_bak");
             os_string.into()
@@ -272,7 +272,7 @@ impl App {
     }
 
     pub(crate) fn meta_path(&self) -> Option<PathBuf> {
-        self.args.file.as_ref().map(|file| {
+        self.args.src.file.as_ref().map(|file| {
             let mut os_string = OsString::from(file);
             os_string.push(".hexerator_meta");
             os_string.into()
@@ -353,12 +353,14 @@ impl App {
     ) -> Result<(), anyhow::Error> {
         self.load_file_args(
             Args {
-                file: Some(path),
-                jump: None,
-                hard_seek: None,
-                take: None,
-                read_only,
-                stream: false,
+                src: SourceArgs {
+                    file: Some(path),
+                    jump: None,
+                    hard_seek: None,
+                    take: None,
+                    read_only,
+                    stream: false,
+                },
                 instance: false,
                 load_recent: false,
             },
@@ -391,28 +393,28 @@ impl App {
         // We potentially had large data, free it instead of clearing the Vec
         self.data = Vec::new();
         msg_if_fail(self.save_meta(), "Failed to save .hexerator_meta");
-        self.args.file = None;
+        self.args.src.file = None;
         self.source = None;
     }
 
     pub(crate) fn restore_backup(&mut self) -> Result<(), anyhow::Error> {
         std::fs::copy(
             &self.backup_path().context("Failed to get backup path")?,
-            self.args.file.as_ref().context("No file open")?,
+            self.args.src.file.as_ref().context("No file open")?,
         )?;
         self.reload()
     }
 
     pub(crate) fn create_backup(&self) -> Result<(), anyhow::Error> {
         std::fs::copy(
-            self.args.file.as_ref().context("No file open")?,
+            self.args.src.file.as_ref().context("No file open")?,
             &self.backup_path().context("Failed to get backup path")?,
         )?;
         Ok(())
     }
 
     pub(crate) fn set_cursor_init(&mut self) {
-        self.edit_state.cursor = self.args.jump.unwrap_or(0);
+        self.edit_state.cursor = self.args.src.jump.unwrap_or(0);
         self.center_view_on_offset(self.edit_state.cursor);
         self.flash_cursor();
     }
@@ -710,7 +712,7 @@ fn load_file_from_args(
     source: &mut Option<Source>,
     data: &mut Vec<u8>,
 ) -> bool {
-    if let Some(file_arg) = &args.file {
+    if let Some(file_arg) = &args.src.file {
         if file_arg.as_os_str() == "-" {
             *source = Some(Source {
                 provider: SourceProvider::Stdin(std::io::stdin()),
@@ -727,9 +729,9 @@ fn load_file_from_args(
             true
         } else {
             let result: Result<(), anyhow::Error> = try {
-                let mut file = open_file(file_arg, args.read_only)?;
+                let mut file = open_file(file_arg, args.src.read_only)?;
                 data.clear();
-                if let Some(path) = &mut args.file {
+                if let Some(path) = &mut args.src.file {
                     match path.canonicalize() {
                         Ok(canon) => *path = canon,
                         Err(e) => msg_warn(&format!(
@@ -741,17 +743,17 @@ fn load_file_from_args(
                     }
                 }
                 cfg.recent.use_(args.clone());
-                if !args.stream {
+                if !args.src.stream {
                     *data = read_contents(&*args, &mut file)?;
                 }
                 *source = Some(Source {
                     provider: SourceProvider::File(file),
                     attr: SourceAttributes {
                         seekable: true,
-                        stream: args.stream,
+                        stream: args.src.stream,
                         permissions: SourcePermissions {
                             read: true,
-                            write: !args.read_only,
+                            write: !args.src.read_only,
                         },
                     },
                     state: SourceState::default(),
@@ -779,10 +781,10 @@ fn open_file(path: &Path, read_only: bool) -> Result<File, anyhow::Error> {
 }
 
 fn read_contents(args: &Args, file: &mut File) -> anyhow::Result<Vec<u8>> {
-    let seek = args.hard_seek.unwrap_or(0);
+    let seek = args.src.hard_seek.unwrap_or(0);
     file.seek(SeekFrom::Start(seek as u64))?;
     let mut data = Vec::new();
-    match args.take {
+    match args.src.take {
         Some(amount) => (&*file).take(amount as u64).read_to_end(&mut data)?,
         None => file.read_to_end(&mut data)?,
     };

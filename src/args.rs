@@ -7,6 +7,19 @@ use crate::parse_radix::parse_guess_radix;
 
 #[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct Args {
+    /// Arguments relating to the source to open
+    #[clap(flatten)]
+    pub src: SourceArgs,
+    /// Open content in existing instance
+    #[clap(long)]
+    pub instance: bool,
+    /// Load most recently used file
+    #[clap(long)]
+    pub load_recent: bool,
+}
+
+#[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct SourceArgs {
     /// The file to read
     pub file: Option<PathBuf>,
     /// Jump to offset on startup
@@ -25,10 +38,4 @@ pub struct Args {
     /// Specify source as a streaming source (for example, standard streams).
     /// Sets read-only attribute.
     pub stream: bool,
-    /// Open content in existing instance
-    #[clap(long)]
-    pub instance: bool,
-    /// Load most recently used file
-    #[clap(long)]
-    pub load_recent: bool,
 }

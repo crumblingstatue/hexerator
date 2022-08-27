@@ -43,7 +43,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                         if ui
                             .button(
                                 entry
-                                    .file
+                                    .src.file
                                     .as_ref()
                                     .map(|path| path.display().to_string())
                                     .unwrap_or_else(|| String::from("Unnamed file")),
@@ -296,7 +296,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 Some(src) => {
                     match src.provider {
                         SourceProvider::File(_) => {
-                            match &app.args.file {
+                            match &app.args.src.file {
                                 Some(file) => ui.label(file.display().to_string()),
                                 None => ui.label("File path unknown"),
                             };
