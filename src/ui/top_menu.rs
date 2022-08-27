@@ -2,6 +2,7 @@ use egui_sfml::egui::{self, Layout};
 use egui_sfml::sfml::{graphics::Font, window::clipboard};
 use rand::{thread_rng, RngCore};
 
+use crate::args::Args;
 use crate::{
     app::{col_change_impl_view_perspective, App},
     damage_region::DamageRegion,
@@ -43,7 +44,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                         if ui
                             .button(
                                 entry
-                                    .src.file
+                                    .file
                                     .as_ref()
                                     .map(|path| path.display().to_string())
                                     .unwrap_or_else(|| String::from("Unnamed file")),
@@ -70,7 +71,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             });
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(args,font),
+                    app.load_file_args(Args{ src: args, instance: false, load_recent: false },font),
                     "Failed to load file",
                 );
             }

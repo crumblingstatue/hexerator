@@ -3,11 +3,11 @@ use directories::ProjectDirs;
 use recently_used_list::RecentlyUsedList;
 use serde::{Deserialize, Serialize};
 
-use crate::args::Args;
+use crate::args::SourceArgs;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Config {
-    pub recent: RecentlyUsedList<Args>,
+    pub recent: RecentlyUsedList<SourceArgs>,
 }
 
 impl Config {

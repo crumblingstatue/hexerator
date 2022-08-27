@@ -11,9 +11,9 @@ pub fn open_file(app: &mut App, font: &Font) {
     }
 }
 
-pub fn open_previous(app: &mut App, load: &mut Option<crate::args::Args>) {
-    if let Some(en) = app.cfg.recent.iter().nth(1) {
-        *load = Some(en.clone());
+pub fn open_previous(app: &mut App, load: &mut Option<crate::args::SourceArgs>) {
+    if let Some(src_args) = app.cfg.recent.iter().nth(1) {
+        *load = Some(src_args.clone());
     }
 }
 

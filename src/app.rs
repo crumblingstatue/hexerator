@@ -153,7 +153,7 @@ impl App {
         let mut data = Vec::new();
         let mut source = None;
         if args.load_recent && let Some(recent) = cfg.recent.most_recent() {
-            args = recent.clone();
+            args.src = recent.clone();
         }
         let load_success = load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
         let mut this = Self {
@@ -742,7 +742,7 @@ fn load_file_from_args(
                         )),
                     }
                 }
-                cfg.recent.use_(args.clone());
+                cfg.recent.use_(args.src.clone());
                 if !args.src.stream {
                     *data = read_contents(&*args, &mut file)?;
                 }
