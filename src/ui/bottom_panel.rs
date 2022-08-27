@@ -24,8 +24,8 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
         ui.separator();
         let data_len = app.data.len();
         if data_len != 0 {
-            if let Some(idx) = app.focused_view {
-                let view = &app.named_views[idx].view;
+            if let Some(view_key) = app.focused_view {
+                let view = &app.view_map[view_key].view;
                 let per = match app.perspectives.get_mut(view.perspective) {
                     Some(per) => per,
                     None => {

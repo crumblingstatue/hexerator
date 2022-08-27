@@ -189,7 +189,7 @@ fn do_frame(
     app.just_reloaded = false;
     imm_msg!(&app.perspectives);
     imm_msg!(&app.hex_iface_rect);
-    imm_msg!(&app.named_views);
+    imm_msg!(&app.shown_views);
     gamedebug_core::inc_frame();
 }
 
@@ -216,33 +216,30 @@ fn update(app: &mut App) {
     }
     app.show_alt_overlay = app.input.key_down(Key::LAlt);
     if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
-        let Some(idx) = app.focused_view else { return };
+        let Some(key) = app.focused_view else { return };
         let spd = if app.input.key_down(Key::LShift) {
             10
         } else {
             1
         };
         if app.input.key_down(Key::Left) {
-            app.named_views[idx].view.scroll_x(-spd);
+            app.view_map[key].view.scroll_x(-spd);
         } else if app.input.key_down(Key::Right) {
-            app.named_views[idx].view.scroll_x(spd);
+            app.view_map[key].view.scroll_x(spd);
         }
         if app.input.key_down(Key::Up) {
-            app.named_views[idx].view.scroll_y(-spd);
+            app.view_map[key].view.scroll_y(-spd);
         } else if app.input.key_down(Key::Down) {
-            app.named_views[idx].view.scroll_y(spd);
+            app.view_map[key].view.scroll_y(spd);
         }
     }
     // Sync all other views to active view
-    if let Some(idx) = app.focused_view {
-        let src = &app.named_views[idx].view;
-        if !src.active {
-            app.focused_view = None;
-        }
+    if let Some(key) = app.focused_view {
+        let src = &app.view_map[key].view;
         let (src_row, src_col) = (src.scroll_offset.row(), src.scroll_offset.col());
         let (src_yoff, src_xoff) = (src.scroll_offset.pix_yoff(), src.scroll_offset.pix_xoff());
         let (src_row_h, src_col_w) = (src.row_h, src.col_w);
-        for NamedView { view, name: _ } in &mut app.named_views {
+        for NamedView { view, name: _ } in app.view_map.values_mut() {
             view.sync_to(src_row, src_yoff, src_col, src_xoff, src_row_h, src_col_w);
             // Also clamp view ranges
             if view.scroll_offset.row == 0 && view.scroll_offset.pix_yoff < COMFY_MARGIN {
@@ -256,12 +253,27 @@ fn update(app: &mut App) {
 }
 
 fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
-    let views = std::mem::take(&mut app.named_views);
-    for (k, view) in views.iter().enumerate() {
-        view.view
-            .draw(k, app, window, vertex_buffer, font, &view.name);
+    for &view_key in &app.shown_views {
+        let view = &app.view_map[view_key];
+        view.view.draw(
+            view_key,
+            &app.perspectives,
+            &app.regions,
+            &app.data,
+            &app.select_a,
+            &app.select_b,
+            &app.ui,
+            &app.edit_state,
+            &app.focused_view,
+            app.scissor_views,
+            app.show_alt_overlay,
+            &app.flash_cursor_timer,
+            window,
+            vertex_buffer,
+            font,
+            &view.name,
+        );
     }
-    app.named_views = views;
 }
 
 fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui, font: &Font) {
@@ -346,12 +358,10 @@ fn handle_text_entered(app: &mut App, unicode: char) {
             let Some(focused) = app.focused_view else {
                 return
             };
-            let mut view = std::mem::replace(
-                &mut app.named_views[focused].view,
-                crate::view::View::zeroed(),
-            );
+            let mut view =
+                std::mem::replace(&mut app.view_map[focused].view, crate::view::View::zeroed());
             view.handle_text_entered(unicode, app);
-            app.named_views[focused].view = view;
+            app.view_map[focused].view = view;
         }
         InteractMode::View => {}
     }
@@ -367,14 +377,14 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
     match code {
         Key::Up => match app.interact_mode {
             InteractMode::View => {
-                if ctrl && let Some(view_idx) = app.focused_view {
-                    let key = app.named_views[view_idx].view.perspective;
+                if ctrl && let Some(view_key) = app.focused_view {
+                    let key = app.view_map[view_key].view.perspective;
                     app.regions[app.perspectives[key].region].region.begin = app.regions[app.perspectives[key].region].region.begin.saturating_sub(1);
                 }
             }
             InteractMode::Edit => {
-                if let Some(view_idx) = app.focused_view {
-                    let view = &mut app.named_views[view_idx].view;
+                if let Some(view_key) = app.focused_view {
+                    let view = &mut app.view_map[view_key].view;
                     view.undirty_edit_buffer();
                     app.edit_state.set_cursor_no_history(
                         app.edit_state.cursor.saturating_sub(app.perspectives[view.perspective].cols),
@@ -384,14 +394,14 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::Down => match app.interact_mode {
             InteractMode::View => {
-                if ctrl && let Some(view_idx) = app.focused_view {
-                    let key = app.named_views[view_idx].view.perspective;
+                if ctrl && let Some(view_key) = app.focused_view {
+                    let key = app.view_map[view_key].view.perspective;
                     app.regions[app.perspectives[key].region].region.begin += 1;
                 }
             }
             InteractMode::Edit => {
-                if let Some(view_idx) = app.focused_view {
-                    let view = &mut app.named_views[view_idx].view;
+                if let Some(view_key) = app.focused_view {
+                    let view = &mut app.view_map[view_key].view;
                     view.undirty_edit_buffer();
                     if app.edit_state.cursor + app.perspectives[view.perspective].cols < app.data.len() {
                         app.edit_state.offset_cursor(app.perspectives[view.perspective].cols);
@@ -408,8 +418,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 let move_edit = (app.preferences.move_edit_cursor && !ctrl)
                     || (!app.preferences.move_edit_cursor && ctrl);
                 if move_edit {
-                    if let Some(view_idx) = app.focused_view {
-                        let view = &mut app.named_views[view_idx];
+                    if let Some(view_key) = app.focused_view {
+                        let view = &mut app.view_map[view_key];
                         if let Some(edit_buf) = view.view.edit_buffer_mut() {
                             if !edit_buf.move_cursor_back() {
                                 edit_buf.move_cursor_end();
@@ -439,8 +449,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                 let move_edit = (app.preferences.move_edit_cursor && !ctrl)
                     || (!app.preferences.move_edit_cursor && ctrl);
                 if move_edit {
-                    if let Some(view_idx) = app.focused_view {
-                        let view = &mut app.named_views[view_idx];
+                    if let Some(view_key) = app.focused_view {
+                        let view = &mut app.view_map[view_key];
                         if let Some(edit_buf) = &mut view.view.edit_buffer_mut() {
                             if !edit_buf.move_cursor_forward() {
                                 edit_buf.move_cursor_begin();
@@ -462,8 +472,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         }
         Key::PageUp => match app.interact_mode {
             InteractMode::View => {
-                if let Some(idx) = app.focused_view {
-                    app.named_views[idx].view.scroll_page_up();
+                if let Some(key) = app.focused_view {
+                    app.view_map[key].view.scroll_page_up();
                 }
             }
             InteractMode::Edit => {
@@ -472,8 +482,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::PageDown => match app.interact_mode {
             InteractMode::View => {
-                if let Some(idx) = app.focused_view {
-                    app.named_views[idx].view.scroll_page_down();
+                if let Some(key) = app.focused_view {
+                    app.view_map[key].view.scroll_page_down();
                 }
             }
             InteractMode::Edit => {
@@ -481,8 +491,8 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             }
         },
         Key::Home => {
-            if let Some(idx) = app.focused_view {
-                let view = &mut app.named_views[idx].view;
+            if let Some(key) = app.focused_view {
+                let view = &mut app.view_map[key].view;
                 match app.interact_mode {
                     InteractMode::View => {
                         view.go_home();
@@ -495,43 +505,34 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::End => match app.interact_mode {
             InteractMode::View => {
-                if let Some(idx) = app.focused_view {
-                    app.named_views[idx].view.scroll_to_end(&app.perspectives, &app.regions);
+                if let Some(key) = app.focused_view {
+                    app.view_map[key].view.scroll_to_end(&app.perspectives, &app.regions);
                 }
             }
             InteractMode::Edit => {
                 // TODO: Implement
             }
         },
-        Key::Tab if shift => {
-            if let Some(idx) = &mut app.focused_view {
-                if *idx + 1 < app.named_views.len() {
-                    *idx += 1;
-                } else {
-                    *idx = 0;
-                }
-            }
-        }
         Key::F1 => app.interact_mode = InteractMode::View,
         Key::F2 => app.interact_mode = InteractMode::Edit,
         Key::F5 => app.ui.views_window.open.toggle(),
         Key::F6 => app.ui.perspectives_window.open.toggle(),
         Key::F7 => app.ui.regions_window.open ^= true,
         Key::Escape => {
-            if let Some(view_idx) = app.focused_view {
-                app.named_views[view_idx].view.cancel_editing();
+            if let Some(view_key) = app.focused_view {
+                app.view_map[view_key].view.cancel_editing();
             }
             app.select_a = None;
             app.select_b = None;
         }
         Key::Enter => {
-            if let Some(view_idx) = app.focused_view {
+            if let Some(view_key) = app.focused_view {
                 let mut view = std::mem::replace(
-                    &mut app.named_views[view_idx].view,
+                    &mut app.view_map[view_key].view,
                     crate::view::View::zeroed(),
                 );
                 view.finish_editing(app);
-                app.named_views[view_idx].view = view;
+                app.view_map[view_key].view = view;
             }
         }
         Key::F if ctrl => {

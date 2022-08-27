@@ -35,8 +35,6 @@ pub struct View {
     pub scroll_speed: i16,
     /// How many bytes are required for a single block in the view
     pub bytes_per_block: u8,
-    /// A view can be deactivated to not render or interact, but can later be reactivated
-    pub active: bool,
     /// The perspective this view is associated with
     pub perspective: PerspectiveKey,
     /// Color schemes, etc.
@@ -53,7 +51,6 @@ impl View {
             scroll_offset: ScrollOffset::default(),
             scroll_speed: 0,
             bytes_per_block: 1,
-            active: true,
             perspective,
             presentation: Presentation::default(),
         };
@@ -75,7 +72,6 @@ impl View {
             scroll_offset: Default::default(),
             scroll_speed: 0,
             bytes_per_block: 0,
-            active: false,
             perspective: PerspectiveKey::null(),
             presentation: Presentation::default(),
         }

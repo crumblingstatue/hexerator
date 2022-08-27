@@ -23,8 +23,8 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
         if let Some(b) = app.select_b {
             ui.label(format!("b: {}", b));
         }
-        if let Some(sel) = App::selection(&app.select_a, &app.select_b) && let Some(view_idx) = app.focused_view {
-            let view = &app.named_views[view_idx].view;
+        if let Some(sel) = App::selection(&app.select_a, &app.select_b) && let Some(view_key) = app.focused_view {
+            let view = &app.view_map[view_key].view;
             let (rows, rem) = app.perspectives[view.perspective].region_row_span(sel);
             ui.label(format!(
                 "{rows} rows * {} cols + {rem} = {}",
@@ -32,8 +32,8 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
                 sel.len()
             ));
         }
-        if let Some(view_idx) = app.focused_view {
-            let presentation = &mut app.named_views[view_idx].view.presentation;
+        if let Some(view_key) = app.focused_view {
+            let presentation = &mut app.view_map[view_key].view.presentation;
             ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.checkbox(&mut presentation.invert_color, "invert");
                 ComboBox::new("color_combo", "Color")

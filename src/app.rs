@@ -1,4 +1,4 @@
-mod edit_state;
+pub mod edit_state;
 pub mod interact_mode;
 pub mod perspective;
 pub mod presentation;
@@ -75,10 +75,12 @@ impl EventTrigger {
 new_key_type! {
     pub struct PerspectiveKey;
     pub struct RegionKey;
+    pub struct ViewKey;
 }
 
 pub type PerspectiveMap = SlotMap<PerspectiveKey, Perspective>;
 pub type RegionMap = SlotMap<RegionKey, NamedRegion>;
+pub type ViewMap = SlotMap<ViewKey, NamedView>;
 
 /// The hexerator application state
 pub struct App {
@@ -89,8 +91,9 @@ pub struct App {
     pub edit_state: EditState,
     pub input: Input,
     pub interact_mode: InteractMode,
-    pub named_views: Vec<NamedView>,
-    pub focused_view: Option<usize>,
+    pub shown_views: Vec<ViewKey>,
+    pub view_map: ViewMap,
+    pub focused_view: Option<ViewKey>,
     /// The rectangle area that's available for the hex interface
     pub hex_iface_rect: ViewportRect,
     pub ui: crate::ui::Ui,
@@ -107,7 +110,7 @@ pub struct App {
     pub source: Option<Source>,
     pub col_change_lock_x: bool,
     pub col_change_lock_y: bool,
-    flash_cursor_timer: Timer,
+    pub flash_cursor_timer: Timer,
     pub just_reloaded: bool,
     pub regions: SlotMap<RegionKey, NamedRegion>,
     /// Whether metafile needs saving
@@ -164,7 +167,7 @@ impl App {
             edit_state: EditState::default(),
             input: Input::default(),
             interact_mode: InteractMode::View,
-            named_views: Vec::default(),
+            shown_views: Vec::default(),
             focused_view: None,
             ui: crate::ui::Ui::default(),
             resize_views: EventTrigger::default(),
@@ -188,9 +191,10 @@ impl App {
             hex_iface_rect: ViewportRect::default(),
             bg_color: [0.; 3],
             show_alt_overlay: false,
+            view_map: ViewMap::default(),
         };
         if load_success {
-            this.new_file_readjust(font, &ViewportRect::default());
+            this.new_file_readjust(font);
             if let Some(meta_path) = &this.args.meta {
                 consume_meta_from_file(meta_path.clone(), &mut this)?;
             } else {
@@ -260,8 +264,8 @@ impl App {
     }
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
-        if let Some(idx) = self.focused_view {
-            self.named_views[idx]
+        if let Some(key) = self.focused_view {
+            self.view_map[key]
                 .view
                 .center_on_offset(offset, &self.perspectives);
         }
@@ -315,8 +319,8 @@ impl App {
         self.col_change_impl(|col| *col -= 1);
     }
     fn col_change_impl(&mut self, f: impl FnOnce(&mut usize)) {
-        if let Some(idx) = self.focused_view {
-            let view = &mut self.named_views[idx].view;
+        if let Some(key) = self.focused_view {
+            let view = &mut self.view_map[key].view;
             col_change_impl_view_perspective(
                 view,
                 &mut self.perspectives,
@@ -374,7 +378,7 @@ impl App {
     }
 
     /// Readjust to a new file
-    fn new_file_readjust(&mut self, font: &Font, hex_iface_rect: &ViewportRect) {
+    fn new_file_readjust(&mut self, font: &Font) {
         let def_region = self.regions.insert(NamedRegion {
             name: "Default region".into(),
             region: Region {
@@ -387,10 +391,15 @@ impl App {
             cols: 48,
             flip_row_order: false,
         });
-        self.named_views = default_views(font, hex_iface_rect, default_perspective);
+        self.shown_views.clear();
+        self.view_map.clear();
+        for view in default_views(font, default_perspective) {
+            let k = self.view_map.insert(view);
+            self.shown_views.push(k);
+        }
         // If we have no focused view, let's focus on the default view
         if self.focused_view.is_none() {
-            self.focused_view = Some(0);
+            self.focused_view = Some(self.shown_views[0]);
         }
     }
 
@@ -427,7 +436,7 @@ impl App {
         self.flash_cursor_timer = Timer::set(Duration::from_millis(1500));
     }
     /// If the cursor should be flashing, returns a timer value that can be used to color cursor
-    pub fn cursor_flash_timer(&self) -> Option<u32> {
+    pub fn cursor_flash_timer(app_flash_cursor_timer: &Timer) -> Option<u32> {
         #[expect(
             clippy::cast_possible_truncation,
             reason = "
@@ -437,7 +446,7 @@ impl App {
         only a few seconds at most.
         "
         )]
-        self.flash_cursor_timer
+        app_flash_cursor_timer
             .overtime()
             .map(|dur| dur.as_millis() as u32)
     }
@@ -447,8 +456,8 @@ impl App {
         if !src.attr.stream {
             return;
         };
-        let Some(idx) = self.focused_view else { return };
-        let view = &self.named_views[idx].view;
+        let Some(view_key) = self.focused_view else { return };
+        let view = &self.view_map[view_key].view;
         let view_byte_offset = view.offsets(&self.perspectives, &self.regions).byte;
         let bytes_per_page = view.bytes_per_page(&self.perspectives);
         // Don't read past what we need for our current view offset
@@ -497,33 +506,30 @@ impl App {
     // Byte offset of a pixel position in the viewport
     //
     // Also returns the index of the view the position is from
-    pub fn byte_offset_at_pos(&mut self, x: i16, y: i16) -> Option<(usize, usize)> {
-        for (view_idx, view) in self.named_views.iter().map(|v| &v.view).enumerate() {
-            if !view.active {
-                continue;
-            }
+    pub fn byte_offset_at_pos(&mut self, x: i16, y: i16) -> Option<(usize, ViewKey)> {
+        for &view_key in &self.shown_views {
+            let view = &self.view_map[view_key];
             if let Some((row, col)) =
-                view.row_col_offset_of_pos(x, y, &self.perspectives, &self.regions)
+                view.view
+                    .row_col_offset_of_pos(x, y, &self.perspectives, &self.regions)
             {
                 return Some((
-                    self.perspectives[view.perspective].byte_offset_of_row_col(
+                    self.perspectives[view.view.perspective].byte_offset_of_row_col(
                         row,
                         col,
                         &self.regions,
                     ),
-                    view_idx,
+                    view_key,
                 ));
             }
         }
         None
     }
-    pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<usize> {
-        for (view_idx, view) in self.named_views.iter().enumerate() {
-            if !view.view.active {
-                continue;
-            }
+    pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<ViewKey> {
+        for &view_key in &self.shown_views {
+            let view = &self.view_map[view_key];
             if view.view.viewport_rect.contains_pos(x, y) {
-                return Some(view_idx);
+                return Some(view_key);
             }
         }
         None
@@ -531,8 +537,9 @@ impl App {
     pub fn consume_meta(&mut self, meta: Metafile) {
         self.regions = meta.named_regions;
         self.perspectives = meta.perspectives;
-        self.named_views = meta.views;
-        for view in &mut self.named_views {
+        self.shown_views = meta.shown_views;
+        self.view_map = meta.view_map;
+        for view in self.view_map.values_mut() {
             // Needed to initialize edit buffers, etc.
             view.view.adjust_state_to_kind();
         }
@@ -541,7 +548,8 @@ impl App {
         Metafile {
             named_regions: self.regions.clone(),
             perspectives: self.perspectives.clone(),
-            views: self.named_views.clone(),
+            shown_views: self.shown_views.clone(),
+            view_map: self.view_map.clone(),
         }
     }
     pub fn save_meta(&self) -> anyhow::Result<()> {
@@ -582,8 +590,7 @@ impl App {
             self.args = args;
         }
         if !self.preferences.keep_meta {
-            let iface_rect = self.hex_iface_rect;
-            self.new_file_readjust(font, &iface_rect);
+            self.new_file_readjust(font);
             try_consume_metafile(self)?;
         }
         Ok(())
@@ -591,7 +598,7 @@ impl App {
     /// Called every frame
     pub(crate) fn update(&mut self) {
         if self.auto_view_layout || self.resize_views.triggered() {
-            named_views_auto_layout(&mut self.named_views, &self.hex_iface_rect);
+            shown_views_auto_layout(&self.shown_views, &mut self.view_map, &self.hex_iface_rect);
         }
         if self.auto_reload
             && self.last_reload.elapsed().as_millis() >= u128::from(self.auto_reload_interval_ms)
@@ -648,7 +655,11 @@ pub fn col_change_impl_view_perspective(
     view.scroll_to_byte_offset(prev_offset.byte, perspectives, lock_x, lock_y);
 }
 
-fn named_views_auto_layout(named_views: &mut [NamedView], hex_iface_rect: &ViewportRect) {
+fn shown_views_auto_layout(
+    shown_views: &[ViewKey],
+    view_map: &mut ViewMap,
+    hex_iface_rect: &ViewportRect,
+) {
     if hex_iface_rect.w == 0 {
         // Can't deal with 0 viewport w, do nothing
         return;
@@ -660,19 +671,15 @@ fn named_views_auto_layout(named_views: &mut [NamedView], hex_iface_rect: &Viewp
         clippy::cast_possible_wrap,
         reason = "Number of views won't exceed i16"
     )]
-    let n_views = named_views.iter().filter(|v| v.view.active).count() as ViewportScalar;
+    let n_views = shown_views.len() as ViewportScalar;
     if n_views == 0 {
         return;
     }
     #[expect(clippy::cast_sign_loss, reason = "n_views is always positive")]
     let slice = hex_iface_rect.w / (2i16.pow(n_views as u32) - 1);
     let mut x = hex_iface_rect.x + hex_iface_rect.w;
-    for (i, rect) in named_views
-        .iter_mut()
-        .rev()
-        .filter_map(|v| v.view.active.then_some(&mut v.view.viewport_rect))
-        .enumerate()
-    {
+    for (i, &view_key) in shown_views.iter().rev().enumerate() {
+        let rect = &mut view_map[view_key].view.viewport_rect;
         // Horizontal layout
         #[expect(
             clippy::cast_possible_truncation,
@@ -689,12 +696,8 @@ fn named_views_auto_layout(named_views: &mut [NamedView], hex_iface_rect: &Viewp
     }
 }
 
-pub fn default_views(
-    font: &Font,
-    hex_iface_rect: &ViewportRect,
-    perspective: PerspectiveKey,
-) -> Vec<NamedView> {
-    let mut v = vec![
+pub fn default_views(font: &Font, perspective: PerspectiveKey) -> Vec<NamedView> {
+    vec![
         NamedView {
             view: View::new(ViewKind::Hex(HexData::default()), perspective),
             name: "Default hex".into(),
@@ -710,9 +713,7 @@ pub fn default_views(
             view: View::new(ViewKind::Block, perspective),
             name: "Default block".into(),
         },
-    ];
-    named_views_auto_layout(&mut v, hex_iface_rect);
-    v
+    ]
 }
 
 /// Returns if the file was actually loaded.

@@ -205,8 +205,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.label("Seek to byte offset");
                 let re = ui.text_edit_singleline(&mut app.ui.seek_byte_offset_input);
                 if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
-                    if let Some(idx) = app.focused_view {
-                        app.named_views[idx].view.scroll_to_byte_offset(
+                    if let Some(view_key) = app.focused_view {
+                        app.view_map[view_key].view.scroll_to_byte_offset(
                             app.ui.seek_byte_offset_input.parse().unwrap_or(0),
                             &app.perspectives,
                             app.col_change_lock_x,
@@ -219,8 +219,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
         });
         ui.menu_button("Perspective", |ui| {
-            let Some(view_idx) = app.focused_view else { return };
-            let view = &mut app.named_views[view_idx].view;
+            let Some(view_key) = app.focused_view else { return };
+            let view = &mut app.view_map[view_key].view;
             if button_with_shortcut(ui, "Perspectives...", "F6").clicked() {
                 app.ui.perspectives_window.open.toggle();
                 ui.close_menu();

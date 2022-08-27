@@ -1,10 +1,10 @@
 use std::{hash::Hash, ops::RangeInclusive};
 
-use egui_sfml::egui::{self, emath::Numeric, Button};
+use egui_sfml::egui::{self, emath::Numeric};
 use egui_sfml::sfml::graphics::Font;
 use slotmap::Key;
 
-use crate::app::{PerspectiveMap, RegionMap};
+use crate::app::{PerspectiveMap, RegionMap, ViewKey};
 use crate::{
     app::{NamedView, PerspectiveKey},
     view::{HexData, TextData, TextKind, View, ViewKind, ViewportRect},
@@ -15,7 +15,7 @@ use super::window_open::WindowOpen;
 #[derive(Default)]
 pub struct ViewsWindow {
     pub open: WindowOpen,
-    pub selected: usize,
+    pub selected: ViewKey,
     rename: bool,
 }
 
@@ -39,56 +39,37 @@ pub const MAX_FONT_SIZE: u16 = 256;
 
 impl ViewsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App, font: &Font) {
-        if app.ui.views_window.open.just_opened() && let Some(view_idx) = app.focused_view {
-            app.ui.views_window.selected = view_idx;
+        if app.ui.views_window.open.just_opened() && let Some(view_key) = app.focused_view {
+            app.ui.views_window.selected = view_key;
         }
         let mut removed_idx = None;
         ui.heading("Views");
-        if app.named_views.is_empty() {
+        if app.view_map.is_empty() {
             ui.label("No views");
             return;
         }
-        let last_idx = app.named_views.len() - 1;
-        let mut swap = None;
-        for (i, view) in app.named_views.iter_mut().enumerate() {
+        for (k, view) in app.view_map.iter_mut() {
             ui.horizontal(|ui| {
-                ui.checkbox(&mut view.view.active, "")
-                    .on_hover_text("Active");
-                if ui.add_enabled(i != 0, Button::new("⏶")).clicked() {
-                    swap = Some((i, i - 1));
-                }
-                if ui.add_enabled(i != last_idx, Button::new("⏷")).clicked() {
-                    swap = Some((i, i + 1));
-                }
                 if ui
-                    .selectable_label(i == app.ui.views_window.selected, &view.name)
+                    .selectable_label(k == app.ui.views_window.selected, &view.name)
                     .clicked()
                 {
-                    app.ui.views_window.selected = i;
+                    app.ui.views_window.selected = k;
                 }
                 ui.label(egui::RichText::new(view.view.kind.name()).code());
             });
         }
-        if let Some((a, b)) = swap {
-            let mut arr = [a, b];
-            // Select the swapped-to location. This makes it easier for the user to
-            // "follow" the item if they want to keep moving it up/down the list.
-            app.ui.views_window.selected = b;
-            arr.sort();
-            let [a, b] = index_many::simple::index_many_mut(&mut app.named_views, arr);
-            std::mem::swap(&mut a.view.viewport_rect, &mut b.view.viewport_rect);
-            std::mem::swap(a, b);
-        }
         ui.separator();
         if ui.button("Add new").clicked() {
-            app.named_views.push(NamedView {
+            let k = app.view_map.insert(NamedView {
                 view: View::new(ViewKind::Hex(HexData::default()), PerspectiveKey::null()),
                 name: "Unnamed view".into(),
             });
+            app.shown_views.push(k);
             app.resize_views.reset();
         }
         ui.separator();
-        if let Some(view) = app.named_views.get_mut(app.ui.views_window.selected) {
+        if let Some(view) = app.view_map.get_mut(app.ui.views_window.selected) {
             ui.horizontal(|ui| {
                 if app.ui.views_window.rename {
                     if ui
@@ -206,15 +187,9 @@ impl ViewsWindow {
                 app.resize_views.reset();
             }
         }
-        if let Some(rem_idx) = removed_idx {
-            app.named_views.remove(rem_idx);
-            if let Some(focused) = &mut app.focused_view && *focused >= rem_idx {
-                if app.named_views.is_empty() {
-                    app.focused_view = None;
-                } else if *focused > 0 {
-                    *focused -= 1;
-                }
-            }
+        if let Some(rem_key) = removed_idx {
+            app.view_map.remove(rem_key);
+            app.focused_view = None;
         }
         app.ui.views_window.open.post_ui();
     }
