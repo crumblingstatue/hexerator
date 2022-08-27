@@ -152,7 +152,7 @@ impl App {
     pub fn new(mut args: Args, mut cfg: Config, font: &Font) -> anyhow::Result<Self> {
         let mut data = Vec::new();
         let mut source = None;
-        if args.load_recent && let Some(recent) = cfg.recent.most_recent() {
+        if args.recent && let Some(recent) = cfg.recent.most_recent() {
             args.src = recent.clone();
         }
         let load_success = load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
@@ -362,7 +362,7 @@ impl App {
                     stream: false,
                 },
                 instance: false,
-                load_recent: false,
+                recent: false,
             },
             font,
         )

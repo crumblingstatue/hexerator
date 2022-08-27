@@ -558,7 +558,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(Args{ src: args, instance: false, load_recent: false },font),
+                    app.load_file_args(Args{ src: args, instance: false, recent: false },font),
                     "Failed to load file",
                 );
             }

@@ -13,9 +13,9 @@ pub struct Args {
     /// Open content in existing instance
     #[clap(long)]
     pub instance: bool,
-    /// Load most recently used file
+    /// Open most recently used file
     #[clap(long)]
-    pub load_recent: bool,
+    pub recent: bool,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
