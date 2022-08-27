@@ -155,7 +155,7 @@ impl App {
         if args.recent && let Some(recent) = cfg.recent.most_recent() {
             args.src = recent.clone();
         }
-        let load_success = load_file_from_args(&mut args, &mut cfg, &mut source, &mut data);
+        let load_success = load_file_from_src_args(&mut args.src, &mut cfg, &mut source, &mut data);
         let mut this = Self {
             scissor_views: true,
             perspectives: SlotMap::default(),
@@ -204,7 +204,7 @@ impl App {
         match &mut self.source {
             Some(src) => match &mut src.provider {
                 SourceProvider::File(file) => {
-                    self.data = read_contents(&self.args, file)?;
+                    self.data = read_contents(&self.args.src, file)?;
                     self.dirty_region = None;
                 }
                 SourceProvider::Stdin(_) => {
@@ -568,7 +568,12 @@ impl App {
     }
 
     pub(crate) fn load_file_args(&mut self, mut args: Args, font: &Font) -> anyhow::Result<()> {
-        if load_file_from_args(&mut args, &mut self.cfg, &mut self.source, &mut self.data) {
+        if load_file_from_src_args(
+            &mut args.src,
+            &mut self.cfg,
+            &mut self.source,
+            &mut self.data,
+        ) {
             self.args = args;
         }
         if !self.preferences.keep_meta {
@@ -706,13 +711,13 @@ pub fn default_views(
 }
 
 /// Returns if the file was actually loaded.
-fn load_file_from_args(
-    args: &mut Args,
+fn load_file_from_src_args(
+    src_args: &mut SourceArgs,
     cfg: &mut Config,
     source: &mut Option<Source>,
     data: &mut Vec<u8>,
 ) -> bool {
-    if let Some(file_arg) = &args.src.file {
+    if let Some(file_arg) = &src_args.file {
         if file_arg.as_os_str() == "-" {
             *source = Some(Source {
                 provider: SourceProvider::Stdin(std::io::stdin()),
@@ -729,9 +734,9 @@ fn load_file_from_args(
             true
         } else {
             let result: Result<(), anyhow::Error> = try {
-                let mut file = open_file(file_arg, args.src.read_only)?;
+                let mut file = open_file(file_arg, src_args.read_only)?;
                 data.clear();
-                if let Some(path) = &mut args.src.file {
+                if let Some(path) = &mut src_args.file {
                     match path.canonicalize() {
                         Ok(canon) => *path = canon,
                         Err(e) => msg_warn(&format!(
@@ -742,18 +747,18 @@ fn load_file_from_args(
                         )),
                     }
                 }
-                cfg.recent.use_(args.src.clone());
-                if !args.src.stream {
-                    *data = read_contents(&*args, &mut file)?;
+                cfg.recent.use_(src_args.clone());
+                if !src_args.stream {
+                    *data = read_contents(&*src_args, &mut file)?;
                 }
                 *source = Some(Source {
                     provider: SourceProvider::File(file),
                     attr: SourceAttributes {
                         seekable: true,
-                        stream: args.src.stream,
+                        stream: src_args.stream,
                         permissions: SourcePermissions {
                             read: true,
-                            write: !args.src.read_only,
+                            write: !src_args.read_only,
                         },
                     },
                     state: SourceState::default(),
@@ -780,11 +785,11 @@ fn open_file(path: &Path, read_only: bool) -> Result<File, anyhow::Error> {
         .context("Failed to open file")
 }
 
-fn read_contents(args: &Args, file: &mut File) -> anyhow::Result<Vec<u8>> {
-    let seek = args.src.hard_seek.unwrap_or(0);
+fn read_contents(args: &SourceArgs, file: &mut File) -> anyhow::Result<Vec<u8>> {
+    let seek = args.hard_seek.unwrap_or(0);
     file.seek(SeekFrom::Start(seek as u64))?;
     let mut data = Vec::new();
-    match args.src.take {
+    match args.take {
         Some(amount) => (&*file).take(amount as u64).read_to_end(&mut data)?,
         None => file.read_to_end(&mut data)?,
     };
