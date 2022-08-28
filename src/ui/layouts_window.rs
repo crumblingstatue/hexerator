@@ -45,28 +45,30 @@ impl LayoutsWindow {
                                     ui.close_menu();
                                 }
                             }
-                            if ui.button("Delete").clicked() {
+                            if ui.button("🗑 Delete").clicked() {
                                 retain = false;
                                 ui.close_menu();
                             }
                         });
                         retain
                     });
-                    ui.menu_button("New view", |ui| {
+                    ui.menu_button("✚", |ui| {
                         for &k in &unused_views {
                             if ui.button(&app.view_map[k].name).clicked() {
                                 row.push(k);
                                 ui.close_menu();
                             }
                         }
-                    });
-                    if ui.button("Delete row").clicked() {
+                    })
+                    .response
+                    .on_hover_text("Add view");
+                    if ui.button("🗑").on_hover_text("Delete row").clicked() {
                         retain_row = false;
                     }
                     ui.end_row();
                     retain_row
                 });
-                if ui.button("New row").clicked() {
+                if ui.button("✚").on_hover_text("Add row").clicked() {
                     layout.view_grid.push(Vec::new());
                 }
             });
