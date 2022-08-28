@@ -69,6 +69,9 @@ impl LayoutsWindow {
                         retain_row = false;
                     }
                     ui.end_row();
+                    if row.is_empty() {
+                        retain_row = false;
+                    }
                     retain_row
                 });
                 ui.add_enabled_ui(!unused_views.is_empty(), |ui| {
