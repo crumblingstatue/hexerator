@@ -1,5 +1,5 @@
 use egui_sfml::sfml::graphics::Font;
-use gamedebug_core::{imm_msg, per_msg};
+use gamedebug_core::per_msg;
 use serde::{Deserialize, Serialize};
 use slotmap::Key;
 
@@ -198,7 +198,6 @@ impl View {
         }
         let row = self.scroll_offset.row;
         let col = self.scroll_offset.col;
-        imm_msg!((row, col, rel_x, rel_y, rel_col, rel_row));
         #[expect(
             clippy::cast_sign_loss,
             reason = "rel_x and rel_y being positive also ensure rel_row and rel_col are"

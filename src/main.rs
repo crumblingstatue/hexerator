@@ -49,7 +49,6 @@ use egui_sfml::sfml::{
     window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };
 use egui_sfml::SfEgui;
-use gamedebug_core::imm_msg;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
@@ -189,8 +188,6 @@ fn do_frame(
     window.display();
     // Should only be true on the frame right after reloading
     app.just_reloaded = false;
-    imm_msg!(&app.perspectives);
-    imm_msg!(&app.hex_iface_rect);
     gamedebug_core::inc_frame();
 }
 

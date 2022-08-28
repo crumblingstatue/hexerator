@@ -6,7 +6,6 @@ use egui_sfml::sfml::{
     system::Vector2,
 };
 use either::Either;
-use gamedebug_core::imm_msg;
 use glu_sys::GLint;
 use slotmap::Key;
 
@@ -573,7 +572,6 @@ impl View {
             overlay_text = Some(text);
         }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
-        imm_msg!(vertex_buffer.len());
         if app.scissor_views {
             unsafe {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
