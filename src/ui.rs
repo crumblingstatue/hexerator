@@ -4,6 +4,7 @@ pub mod dialogs;
 mod find_dialog;
 mod help_window;
 pub mod inspect_panel;
+mod layouts_window;
 mod perspectives_window;
 mod regions_window;
 mod top_menu;
@@ -33,6 +34,7 @@ pub struct Ui {
     pub seek_byte_offset_input: String,
     pub regions_window: RegionsWindow,
     pub dialogs: Vec<Box<dyn Dialog>>,
+    pub layouts_window: LayoutsWindow,
     pub views_window: ViewsWindow,
     pub perspectives_window: PerspectivesWindow,
     pub help_window: HelpWindow,
@@ -50,6 +52,7 @@ impl Ui {
     }
 }
 
+use self::layouts_window::LayoutsWindow;
 use self::{
     find_dialog::FindDialog, help_window::HelpWindow, inspect_panel::InspectPanel,
     perspectives_window::PerspectivesWindow, regions_window::RegionsWindow,
@@ -76,8 +79,13 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             .open(&mut open)
             .show(ctx, |ui| RegionsWindow::ui(ui, app));
         app.ui.regions_window.open = open;
+        open = app.ui.layouts_window.open.is_open();
+        Window::new("Layouts")
+            .open(&mut open)
+            .show(ctx, |ui| LayoutsWindow::ui(ui, app));
+        app.ui.layouts_window.open.set_open(open);
         open = app.ui.views_window.open.is_open();
-        Window::new("View configuration")
+        Window::new("Views")
             .open(&mut open)
             .show(ctx, |ui| ViewsWindow::ui(ui, app, font));
         app.ui.views_window.open.set_open(open);

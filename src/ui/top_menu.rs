@@ -202,6 +202,10 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                     }
                 }
             });
+            if button_with_shortcut(ui, "Layouts...", "F5").clicked() {
+                app.ui.layouts_window.open.toggle();
+                ui.close_menu();
+            }
             if button_with_shortcut(ui, "Views...", "F6").clicked() {
                 app.ui.views_window.open.toggle();
                 ui.close_menu();

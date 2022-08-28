@@ -400,15 +400,15 @@ impl App {
         self.view_map.clear();
         let mut layout = Layout {
             name: "Default layout".into(),
-            view_keys: vec![vec![]],
+            view_grid: vec![vec![]],
         };
         for view in default_views(font, default_perspective) {
             let k = self.view_map.insert(view);
-            layout.view_keys[0].push(k);
+            layout.view_grid[0].push(k);
         }
         // If we have no focused view, let's focus on the default view
         if self.focused_view.is_none() {
-            self.focused_view = Some(layout.view_keys[0][0]);
+            self.focused_view = Some(layout.view_grid[0][0]);
         }
         let layout_key = self.view_layout_map.insert(layout);
         self.current_layout = layout_key;
@@ -672,7 +672,7 @@ pub fn col_change_impl_view_perspective(
 }
 
 fn shown_views_auto_layout(layout: &Layout, view_map: &mut ViewMap, hex_iface_rect: &ViewportRect) {
-    let shown_views = &layout.view_keys[0];
+    let shown_views = &layout.view_grid[0];
     if hex_iface_rect.w == 0 {
         // Can't deal with 0 viewport w, do nothing
         return;

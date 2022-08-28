@@ -6,12 +6,12 @@ use crate::app::ViewKey;
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Layout {
     pub name: String,
-    pub view_keys: Vec<Vec<ViewKey>>,
+    pub view_grid: Vec<Vec<ViewKey>>,
 }
 
 impl Layout {
     /// Iterate through all view keys
     pub fn iter(&self) -> impl Iterator<Item = ViewKey> + '_ {
-        self.view_keys.iter().flatten().cloned()
+        self.view_grid.iter().flatten().cloned()
     }
 }
