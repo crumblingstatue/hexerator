@@ -333,9 +333,7 @@ impl View {
                     }
                 }
                 ViewKind::Text(text) => {
-                    if text.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
-                        || app.preferences.quick_edit
-                    {
+                    if text.edit_buf.enter_byte(unicode as u8) || app.preferences.quick_edit {
                         self.finish_editing(app);
                     }
                 }
