@@ -37,11 +37,13 @@ pub fn do_auto_layout(
 ) {
     let mut x_cursor = hex_iface_rect.x + layout.margin;
     let mut y_cursor = hex_iface_rect.y + layout.margin;
+    let layout_n_rows = i16::try_from(layout.view_grid.len()).expect("Too many rows in layout");
     for row in &layout.view_grid {
-        let max_allowed_h = hex_iface_rect.h / layout.view_grid.len() as i16;
+        let max_allowed_h = hex_iface_rect.h / layout_n_rows;
         let mut max_h = 0;
+        let row_n_cols = i16::try_from(row.len()).expect("Too many columns in layout");
         for &view_key in row {
-            let max_allowed_w = hex_iface_rect.w / row.len() as i16;
+            let max_allowed_w = hex_iface_rect.w / row_n_cols;
             let view = &mut view_map[view_key].view;
             let max_needed_size = view.max_needed_size(perspectives, regions);
             let w = min(max_needed_size.x, max_allowed_w);
