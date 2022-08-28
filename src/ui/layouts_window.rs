@@ -28,7 +28,8 @@ impl LayoutsWindow {
             let layout = &mut app.view_layout_map[app.ui.layouts_window.selected];
             ui.heading(&layout.name);
             egui::Grid::new("view_grid").show(ui, |ui| {
-                for row in &mut layout.view_grid {
+                layout.view_grid.retain_mut(|row| {
+                    let mut retain_row = true;
                     row.retain_mut(|view_key| {
                         let mut retain = true;
                         let view = &app.view_map[*view_key];
@@ -54,8 +55,12 @@ impl LayoutsWindow {
                             }
                         }
                     });
+                    if ui.button("Delete row").clicked() {
+                        retain_row = false;
+                    }
                     ui.end_row();
-                }
+                    retain_row
+                });
                 if ui.button("New row").clicked() {
                     layout.view_grid.push(Vec::new());
                 }
