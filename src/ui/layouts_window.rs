@@ -2,7 +2,7 @@ use egui_sfml::egui;
 use slotmap::Key;
 
 use crate::{
-    app::LayoutKey,
+    app::{LayoutKey, ViewKey},
     layout::{default_margin, Layout},
 };
 
@@ -27,6 +27,11 @@ impl LayoutsWindow {
             ui.separator();
             let layout = &mut app.view_layout_map[app.ui.layouts_window.selected];
             ui.heading(&layout.name);
+            let unused_views: Vec<ViewKey> = app
+                .view_map
+                .keys()
+                .filter(|&k| !layout.iter().any(|k2| k2 == k))
+                .collect();
             egui::Grid::new("view_grid").show(ui, |ui| {
                 layout.view_grid.retain_mut(|row| {
                     let mut retain_row = true;
@@ -34,8 +39,8 @@ impl LayoutsWindow {
                         let mut retain = true;
                         let view = &app.view_map[*view_key];
                         ui.menu_button(&view.name, |ui| {
-                            for (k, v) in &app.view_map {
-                                if ui.button(&v.name).clicked() {
+                            for &k in &unused_views {
+                                if ui.button(&app.view_map[k].name).clicked() {
                                     *view_key = k;
                                     ui.close_menu();
                                 }
@@ -48,8 +53,8 @@ impl LayoutsWindow {
                         retain
                     });
                     ui.menu_button("New view", |ui| {
-                        for (k, v) in &app.view_map {
-                            if ui.button(&v.name).clicked() {
+                        for &k in &unused_views {
+                            if ui.button(&app.view_map[k].name).clicked() {
                                 row.push(k);
                                 ui.close_menu();
                             }
