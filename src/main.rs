@@ -265,24 +265,8 @@ fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &m
     }
     for view_key in app.view_layout_map[app.current_layout].iter() {
         let view = &app.view_map[view_key];
-        view.view.draw(
-            view_key,
-            &app.perspectives,
-            &app.regions,
-            &app.data,
-            &app.select_a,
-            &app.select_b,
-            &app.ui,
-            &app.edit_state,
-            &app.focused_view,
-            app.scissor_views,
-            app.show_alt_overlay,
-            &app.flash_cursor_timer,
-            window,
-            vertex_buffer,
-            font,
-            &view.name,
-        );
+        view.view
+            .draw(view_key, app, window, vertex_buffer, font, &view.name);
     }
 }
 

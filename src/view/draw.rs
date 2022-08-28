@@ -11,13 +11,10 @@ use glu_sys::GLint;
 use slotmap::Key;
 
 use crate::{
-    app::{
-        edit_state::EditState, presentation::Presentation, App, PerspectiveMap, RegionMap, ViewKey,
-    },
+    app::{presentation::Presentation, App, PerspectiveMap, RegionMap, ViewKey},
     color::invert_color,
     dec_conv, hex_conv,
     region::Region,
-    timer::Timer,
     ui::Ui,
     view::ViewKind,
 };
@@ -309,17 +306,7 @@ impl View {
     pub fn draw(
         &self,
         key: ViewKey,
-        app_perspectives: &PerspectiveMap,
-        app_regions: &RegionMap,
-        app_data: &[u8],
-        app_select_a: &Option<usize>,
-        app_select_b: &Option<usize>,
-        app_ui: &Ui,
-        app_edit_state: &EditState,
-        app_focused_view: &Option<ViewKey>,
-        app_scissor_views: bool,
-        app_show_alt_overlay: bool,
-        app_flash_cursor_timer: &Timer,
+        app: &App,
         window: &mut RenderWindow,
         vertex_buffer: &mut Vec<Vertex>,
         font: &Font,
@@ -331,15 +318,15 @@ impl View {
             ViewKind::Hex(hex) => {
                 draw_view(
                     self,
-                    app_perspectives,
-                    app_regions,
-                    app_data,
+                    &app.perspectives,
+                    &app.regions,
+                    &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
                         if selected_or_find_result_contains(
-                            App::selection(app_select_a, app_select_b),
+                            App::selection(&app.select_a, &app.select_b),
                             idx,
-                            app_ui,
+                            &app.ui,
                         ) {
                             draw_rect(
                                 vertex_buffer,
@@ -355,7 +342,7 @@ impl View {
                             .into_iter()
                             .enumerate()
                         {
-                            if idx == app_edit_state.cursor && hex.edit_buf.dirty {
+                            if idx == app.edit_state.cursor && hex.edit_buf.dirty {
                                 d = hex.edit_buf.buf[i];
                             }
                             draw_glyph(
@@ -370,13 +357,13 @@ impl View {
                             gx += f32::from(hex.font_size - 4);
                         }
                         let extra_x = hex.edit_buf.cursor * (hex.font_size - 4);
-                        if idx == app_edit_state.cursor {
+                        if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
                                 y,
                                 vertex_buffer,
-                                *app_focused_view == Some(key),
-                                App::cursor_flash_timer(app_flash_cursor_timer),
+                                app.focused_view == Some(key),
+                                App::cursor_flash_timer(&app.flash_cursor_timer),
                                 &self.presentation,
                                 hex.font_size,
                             );
@@ -388,15 +375,15 @@ impl View {
             ViewKind::Dec(dec) => {
                 draw_view(
                     self,
-                    app_perspectives,
-                    app_regions,
-                    app_data,
+                    &app.perspectives,
+                    &app.regions,
+                    &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
                         if selected_or_find_result_contains(
-                            App::selection(app_select_a, app_select_b),
+                            App::selection(&app.select_a, &app.select_b),
                             idx,
-                            app_ui,
+                            &app.ui,
                         ) {
                             draw_rect(
                                 vertex_buffer,
@@ -412,7 +399,7 @@ impl View {
                             .into_iter()
                             .enumerate()
                         {
-                            if idx == app_edit_state.cursor && dec.edit_buf.dirty {
+                            if idx == app.edit_state.cursor && dec.edit_buf.dirty {
                                 d = dec.edit_buf.buf[i];
                             }
                             draw_glyph(
@@ -427,13 +414,13 @@ impl View {
                             gx += f32::from(dec.font_size - 4);
                         }
                         let extra_x = dec.edit_buf.cursor * (dec.font_size - 4);
-                        if idx == app_edit_state.cursor {
+                        if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
                                 y,
                                 vertex_buffer,
-                                *app_focused_view == Some(key),
-                                App::cursor_flash_timer(app_flash_cursor_timer),
+                                app.focused_view == Some(key),
+                                App::cursor_flash_timer(&app.flash_cursor_timer),
                                 &self.presentation,
                                 dec.font_size,
                             );
@@ -445,15 +432,15 @@ impl View {
             ViewKind::Text(text) => {
                 draw_view(
                     self,
-                    app_perspectives,
-                    app_regions,
-                    app_data,
+                    &app.perspectives,
+                    &app.regions,
+                    &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
                         if selected_or_find_result_contains(
-                            App::selection(app_select_a, app_select_b),
+                            App::selection(&app.select_a, &app.select_b),
                             idx,
-                            app_ui,
+                            &app.ui,
                         ) {
                             draw_rect(
                                 vertex_buffer,
@@ -483,13 +470,13 @@ impl View {
                             _ => raw_data,
                         };
                         draw_glyph(font, text.font_size.into(), vertex_buffer, x, y, glyph, c);
-                        if idx == app_edit_state.cursor {
+                        if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x,
                                 y,
                                 vertex_buffer,
-                                *app_focused_view == Some(key),
-                                App::cursor_flash_timer(app_flash_cursor_timer),
+                                app.focused_view == Some(key),
+                                App::cursor_flash_timer(&app.flash_cursor_timer),
                                 &self.presentation,
                                 text.font_size,
                             );
@@ -501,15 +488,15 @@ impl View {
             ViewKind::Block => {
                 draw_view(
                     self,
-                    app_perspectives,
-                    app_regions,
-                    app_data,
+                    &app.perspectives,
+                    &app.regions,
+                    &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, _byte, idx, mut c| {
                         if selected_or_find_result_contains(
-                            App::selection(app_select_a, app_select_b),
+                            App::selection(&app.select_a, &app.select_b),
                             idx,
-                            app_ui,
+                            &app.ui,
                         ) {
                             c = invert_color(c);
                         }
@@ -521,13 +508,13 @@ impl View {
                             f32::from(self.row_h),
                             c,
                         );
-                        if idx == app_edit_state.cursor {
+                        if idx == app.edit_state.cursor {
                             draw_block_cursor(
                                 x,
                                 y,
                                 vertex_buffer,
-                                *app_focused_view == Some(key),
-                                App::cursor_flash_timer(app_flash_cursor_timer),
+                                app.focused_view == Some(key),
+                                App::cursor_flash_timer(&app.flash_cursor_timer),
                                 &self.presentation,
                                 self,
                             );
@@ -542,14 +529,14 @@ impl View {
             self.viewport_rect.y.into(),
             self.viewport_rect.w.into(),
             self.viewport_rect.h.into(),
-            if Some(key) == *app_focused_view {
+            if Some(key) == app.focused_view {
                 Color::rgb(255, 255, 150)
             } else {
                 Color::rgb(120, 120, 150)
             },
             1.0,
         );
-        if app_scissor_views {
+        if app.scissor_views {
             unsafe {
                 glu_sys::glEnable(glu_sys::GL_SCISSOR_TEST);
                 #[expect(
@@ -568,7 +555,7 @@ impl View {
             }
         }
         let mut overlay_text = None;
-        if app_show_alt_overlay {
+        if app.show_alt_overlay {
             let mut text = Text::new(name, font, 16);
             text.set_position((
                 f32::from(self.viewport_rect.x),
@@ -587,7 +574,7 @@ impl View {
         }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
         imm_msg!(vertex_buffer.len());
-        if app_scissor_views {
+        if app.scissor_views {
             unsafe {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
             }
