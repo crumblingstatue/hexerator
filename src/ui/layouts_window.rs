@@ -24,6 +24,7 @@ impl LayoutsWindow {
                 .clicked()
             {
                 app.ui.layouts_window.selected = k;
+                app.current_layout = k;
             }
         }
         if !app.ui.layouts_window.selected.is_null() {
@@ -94,11 +95,13 @@ impl LayoutsWindow {
         }
         ui.separator();
         if ui.button("New layout").clicked() {
-            app.ui.layouts_window.selected = app.view_layout_map.insert(Layout {
+            let key = app.view_layout_map.insert(Layout {
                 name: "New layout".into(),
                 view_grid: Vec::new(),
                 margin: default_margin(),
             });
+            app.ui.layouts_window.selected = key;
+            app.current_layout = key;
         }
         app.ui.layouts_window.open.post_ui();
     }
