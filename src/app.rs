@@ -413,6 +413,7 @@ impl App {
         }
         let layout_key = self.view_layout_map.insert(layout);
         self.current_layout = layout_key;
+        self.focused_view = None;
     }
 
     pub fn close_file(&mut self) {
