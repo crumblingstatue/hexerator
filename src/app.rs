@@ -25,7 +25,7 @@ use crate::{
     config::Config,
     damage_region::DamageRegion,
     input::Input,
-    layout::{do_auto_layout, Layout},
+    layout::{default_margin, do_auto_layout, Layout},
     metafile::Metafile,
     region::Region,
     shell::{msg_if_fail, msg_warn},
@@ -401,6 +401,7 @@ impl App {
         let mut layout = Layout {
             name: "Default layout".into(),
             view_grid: vec![vec![]],
+            margin: default_margin(),
         };
         for view in default_views(font, default_perspective) {
             let k = self.view_map.insert(view);

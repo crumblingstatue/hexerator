@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     app::{PerspectiveMap, RegionMap, ViewKey, ViewMap},
-    view::ViewportRect,
+    view::{ViewportRect, ViewportScalar},
 };
 
 /// A view layout grid for laying out views.
@@ -12,6 +12,13 @@ use crate::{
 pub struct Layout {
     pub name: String,
     pub view_grid: Vec<Vec<ViewKey>>,
+    /// Margin around views
+    #[serde(default = "default_margin")]
+    pub margin: ViewportScalar,
+}
+
+pub const fn default_margin() -> ViewportScalar {
+    6
 }
 
 impl Layout {
@@ -28,8 +35,8 @@ pub fn do_auto_layout(
     perspectives: &PerspectiveMap,
     regions: &RegionMap,
 ) {
-    let mut x_cursor = hex_iface_rect.x;
-    let mut y_cursor = hex_iface_rect.y;
+    let mut x_cursor = hex_iface_rect.x + layout.margin;
+    let mut y_cursor = hex_iface_rect.y + layout.margin;
     for row in &layout.view_grid {
         let max_allowed_h = hex_iface_rect.h / layout.view_grid.len() as i16;
         let mut max_h = 0;
@@ -44,9 +51,9 @@ pub fn do_auto_layout(
             view.viewport_rect.w = w;
             view.viewport_rect.h = h;
             max_h = max(max_h, h);
-            x_cursor += w;
+            x_cursor += w + layout.margin;
         }
-        x_cursor = hex_iface_rect.x;
-        y_cursor += max_h;
+        x_cursor = hex_iface_rect.x + layout.margin;
+        y_cursor += max_h + layout.margin;
     }
 }

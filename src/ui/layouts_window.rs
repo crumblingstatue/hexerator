@@ -1,7 +1,10 @@
 use egui_sfml::egui;
 use slotmap::Key;
 
-use crate::{app::LayoutKey, layout::Layout};
+use crate::{
+    app::LayoutKey,
+    layout::{default_margin, Layout},
+};
 
 use super::window_open::WindowOpen;
 
@@ -63,6 +66,7 @@ impl LayoutsWindow {
             app.ui.layouts_window.selected = app.view_layout_map.insert(Layout {
                 name: "New layout".into(),
                 view_grid: Vec::new(),
+                margin: default_margin(),
             });
         }
     }
