@@ -45,7 +45,7 @@ impl LayoutsWindow {
                                     ui.close_menu();
                                 }
                             }
-                            if ui.button("🗑 Delete").clicked() {
+                            if ui.button("🗑 Remove").clicked() {
                                 retain = false;
                                 ui.close_menu();
                             }
