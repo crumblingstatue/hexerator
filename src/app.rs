@@ -25,13 +25,13 @@ use crate::{
     config::Config,
     damage_region::DamageRegion,
     input::Input,
-    layout::Layout,
+    layout::{do_auto_layout, Layout},
     metafile::Metafile,
     region::Region,
     shell::{msg_if_fail, msg_warn},
     source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     timer::Timer,
-    view::{HexData, TextData, View, ViewKind, ViewportRect, ViewportScalar},
+    view::{HexData, TextData, View, ViewKind, ViewportRect},
 };
 
 use self::{edit_state::EditState, interact_mode::InteractMode, perspective::Perspective};
@@ -614,7 +614,13 @@ impl App {
             && !self.current_layout.is_null()
         {
             let layout = &self.view_layout_map[self.current_layout];
-            shown_views_auto_layout(layout, &mut self.view_map, &self.hex_iface_rect);
+            do_auto_layout(
+                layout,
+                &mut self.view_map,
+                &self.hex_iface_rect,
+                &self.perspectives,
+                &self.regions,
+            );
         }
         if self.auto_reload
             && self.last_reload.elapsed().as_millis() >= u128::from(self.auto_reload_interval_ms)
@@ -669,44 +675,6 @@ pub fn col_change_impl_view_perspective(
     f(&mut perspectives[view.perspective].cols);
     perspectives[view.perspective].clamp_cols(regions);
     view.scroll_to_byte_offset(prev_offset.byte, perspectives, lock_x, lock_y);
-}
-
-fn shown_views_auto_layout(layout: &Layout, view_map: &mut ViewMap, hex_iface_rect: &ViewportRect) {
-    let shown_views = &layout.view_grid[0];
-    if hex_iface_rect.w == 0 {
-        // Can't deal with 0 viewport w, do nothing
-        return;
-    }
-    // Horizontal auto layout algorithm by Callie
-    let padding = 4;
-    #[expect(
-        clippy::cast_possible_truncation,
-        clippy::cast_possible_wrap,
-        reason = "Number of views won't exceed i16"
-    )]
-    let n_views = shown_views.len() as ViewportScalar;
-    if n_views == 0 {
-        return;
-    }
-    #[expect(clippy::cast_sign_loss, reason = "n_views is always positive")]
-    let slice = hex_iface_rect.w / (2i16.pow(n_views as u32) - 1);
-    let mut x = hex_iface_rect.x + hex_iface_rect.w;
-    for (i, &view_key) in shown_views.iter().rev().enumerate() {
-        let rect = &mut view_map[view_key].view.viewport_rect;
-        // Horizontal layout
-        #[expect(
-            clippy::cast_possible_truncation,
-            reason = "Number of views doesn't exceed u32"
-        )]
-        {
-            rect.w = slice * 2i16.pow(i as u32) - padding;
-        }
-        x -= rect.w + padding;
-        rect.x = x;
-        // Vertical is always the same (for now)
-        rect.y = hex_iface_rect.y;
-        rect.h = hex_iface_rect.h;
-    }
 }
 
 pub fn default_views(font: &Font, perspective: PerspectiveKey) -> Vec<NamedView> {
