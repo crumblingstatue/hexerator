@@ -202,7 +202,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                     }
                 }
             });
-            if button_with_shortcut(ui, "Views...", "F5").clicked() {
+            if button_with_shortcut(ui, "Views...", "F6").clicked() {
                 app.ui.views_window.open.toggle();
                 ui.close_menu();
             }
@@ -229,7 +229,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         ui.menu_button("Perspective", |ui| {
             let Some(view_key) = app.focused_view else { return };
             let view = &mut app.view_map[view_key].view;
-            if button_with_shortcut(ui, "Perspectives...", "F6").clicked() {
+            if button_with_shortcut(ui, "Perspectives...", "F7").clicked() {
                 app.ui.perspectives_window.open.toggle();
                 ui.close_menu();
             }
@@ -262,7 +262,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
         });
         ui.menu_button("Meta", |ui| {
-            if button_with_shortcut(ui, "Regions...", "F7").clicked() {
+            if button_with_shortcut(ui, "Regions...", "F8").clicked() {
                 app.ui.regions_window.open ^= true;
                 ui.close_menu();
             }
