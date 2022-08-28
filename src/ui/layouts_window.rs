@@ -12,6 +12,7 @@ use super::window_open::WindowOpen;
 pub struct LayoutsWindow {
     pub open: WindowOpen,
     selected: LayoutKey,
+    edit_name: bool,
 }
 impl LayoutsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
@@ -30,7 +31,18 @@ impl LayoutsWindow {
         if !app.ui.layouts_window.selected.is_null() {
             ui.separator();
             let layout = &mut app.view_layout_map[app.ui.layouts_window.selected];
-            ui.heading(&layout.name);
+            ui.horizontal(|ui| {
+                if app.ui.layouts_window.edit_name {
+                    if ui.text_edit_singleline(&mut layout.name).lost_focus() {
+                        app.ui.layouts_window.edit_name = false;
+                    }
+                } else {
+                    ui.heading(&layout.name);
+                }
+                if ui.button("✏").clicked() {
+                    app.ui.layouts_window.edit_name ^= true;
+                }
+            });
             let unused_views: Vec<ViewKey> = app
                 .view_map
                 .keys()
