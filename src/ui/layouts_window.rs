@@ -15,6 +15,9 @@ pub struct LayoutsWindow {
 }
 impl LayoutsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
+        if app.ui.layouts_window.open.just_opened() {
+            app.ui.layouts_window.selected = app.current_layout;
+        }
         for (k, v) in &app.view_layout_map {
             if ui
                 .selectable_label(app.ui.layouts_window.selected == k, &v.name)
@@ -97,5 +100,6 @@ impl LayoutsWindow {
                 margin: default_margin(),
             });
         }
+        app.ui.layouts_window.open.post_ui();
     }
 }
