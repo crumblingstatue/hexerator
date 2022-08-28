@@ -44,7 +44,7 @@ use args::Args;
 use clap::Parser;
 use config::Config;
 use egui_sfml::sfml::{
-    graphics::{Color, Font, Rect, RenderTarget, RenderWindow, Vertex, View},
+    graphics::{Color, Font, Rect, RenderTarget, RenderWindow, Text, Transformable, Vertex, View},
     system::Vector2,
     window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };
@@ -54,6 +54,7 @@ use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use shell::{msg_if_fail, msg_warn};
+use slotmap::Key as _;
 use ui::dialogs::SetCursorDialog;
 use view::COMFY_MARGIN;
 
@@ -253,6 +254,15 @@ fn update(app: &mut App) {
 }
 
 fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
+    if app.current_layout.is_null() {
+        let mut t = Text::new("No active layout", font, 20);
+        t.set_position((
+            f32::from(app.hex_iface_rect.x),
+            f32::from(app.hex_iface_rect.y),
+        ));
+        window.draw(&t);
+        return;
+    }
     for view_key in app.view_layout_map[app.current_layout].iter() {
         let view = &app.view_map[view_key];
         view.view.draw(
@@ -301,6 +311,9 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_panic((x, y));
                 if button == mouse::Button::Left {
+                    if app.current_layout.is_null() {
+                        continue;
+                    }
                     if let Some((off, _view_idx)) = app.byte_offset_at_pos(mp.x, mp.y) {
                         app.edit_state.set_cursor(off);
                     }

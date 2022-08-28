@@ -610,7 +610,9 @@ impl App {
     }
     /// Called every frame
     pub(crate) fn update(&mut self) {
-        if self.auto_view_layout || self.resize_views.triggered() {
+        if (self.auto_view_layout || self.resize_views.triggered())
+            && !self.current_layout.is_null()
+        {
             let layout = &self.view_layout_map[self.current_layout];
             shown_views_auto_layout(layout, &mut self.view_map, &self.hex_iface_rect);
         }

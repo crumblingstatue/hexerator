@@ -2,6 +2,7 @@ use std::{array::TryFromSliceError, marker::PhantomData};
 
 use egui_sfml::egui::{self, Ui};
 use egui_sfml::sfml::window::clipboard;
+use slotmap::Key;
 use thiserror::Error;
 
 use crate::{
@@ -407,6 +408,10 @@ enum Action {
 }
 
 pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
+    if app.current_layout.is_null() {
+        ui.label("No active layout");
+        return;
+    }
     let offset = match app.interact_mode {
         InteractMode::View => {
             if let Some((off, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {

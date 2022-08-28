@@ -1,4 +1,5 @@
 use egui_sfml::egui::{text::LayoutJob, Align, DragValue, Stroke, TextFormat, TextStyle, Ui};
+use slotmap::Key;
 
 use crate::{
     app::{interact_mode::InteractMode, App},
@@ -56,7 +57,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             "cursor: {} ({:x})",
             app.edit_state.cursor, app.edit_state.cursor
         ));
-        if let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
+        if !app.current_layout.is_null() && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
             ui.label(format!("mouse: {} ({:x})", offset, offset));
         }
     });
