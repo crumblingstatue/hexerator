@@ -36,12 +36,14 @@ pub fn do_auto_layout(
     regions: &RegionMap,
 ) {
     let layout_n_rows = i16::try_from(layout.view_grid.len()).expect("Too many rows in layout");
+    let mut total_h = 0;
     // Determine sizes
     for row in &layout.view_grid {
         let max_allowed_h =
             (hex_iface_rect.h - (layout.margin * (layout_n_rows + 1))) / layout_n_rows;
         let row_n_cols = i16::try_from(row.len()).expect("Too many columns in layout");
         let mut total_row_w = 0;
+        let mut max_h = 0;
         for &view_key in row {
             let max_allowed_w =
                 (hex_iface_rect.w - (layout.margin * (row_n_cols + 1))) / row_n_cols;
@@ -52,12 +54,14 @@ pub fn do_auto_layout(
             view.viewport_rect.w = w;
             total_row_w += w;
             view.viewport_rect.h = h;
+            max_h = max(max_h, view.viewport_rect.h);
         }
+        total_h += max_h;
+        // Distribute remaining width to views in order
         let w_to_fill_viewport = hex_iface_rect.w - (layout.margin * (row_n_cols + 1));
         let mut w_remaining = w_to_fill_viewport - total_row_w;
-        // Distribute remaining width to views in order
         for &view_key in row {
-            if w_remaining < 0 {
+            if w_remaining <= 0 {
                 break;
             }
             let view = &mut view_map[view_key].view;
@@ -67,6 +71,24 @@ pub fn do_auto_layout(
             view.viewport_rect.w += can_add;
             w_remaining -= can_add;
         }
+    }
+    // Distribute remaining height to rows in order
+    let h_to_fill_viewport = hex_iface_rect.h - (layout.margin * (layout_n_rows + 1));
+    let mut h_remaining = h_to_fill_viewport - total_h;
+    for row in &layout.view_grid {
+        if h_remaining <= 0 {
+            break;
+        }
+        let mut max_can_add = 0;
+        for &view_key in row {
+            let view = &mut view_map[view_key].view;
+            let max_needed_h = view.max_needed_size(perspectives, regions).y;
+            let missing_for_max_needed = max_needed_h - view.viewport_rect.h;
+            let can_add = min(missing_for_max_needed, h_remaining);
+            max_can_add = max(max_can_add, can_add);
+            view.viewport_rect.h += can_add;
+        }
+        h_remaining -= max_can_add;
     }
     // Lay out
     let mut x_cursor = hex_iface_rect.x + layout.margin;
