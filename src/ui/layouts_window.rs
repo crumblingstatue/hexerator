@@ -52,16 +52,19 @@ impl LayoutsWindow {
                         });
                         retain
                     });
-                    ui.menu_button("✚", |ui| {
-                        for &k in &unused_views {
-                            if ui.button(&app.view_map[k].name).clicked() {
-                                row.push(k);
-                                ui.close_menu();
+                    ui.add_enabled_ui(!unused_views.is_empty(), |ui| {
+                        ui.menu_button("✚", |ui| {
+                            for &k in &unused_views {
+                                if ui.button(&app.view_map[k].name).clicked() {
+                                    row.push(k);
+                                    ui.close_menu();
+                                }
                             }
-                        }
-                    })
-                    .response
-                    .on_hover_text("Add view");
+                        })
+                        .response
+                        .on_hover_text("Add view")
+                        .on_disabled_hover_text("No views to add (all added)");
+                    });
                     if ui.button("🗑").on_hover_text("Delete row").clicked() {
                         retain_row = false;
                     }
