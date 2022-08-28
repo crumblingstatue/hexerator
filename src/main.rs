@@ -253,7 +253,7 @@ fn update(app: &mut App) {
     }
 }
 
-fn draw(app: &mut App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
+fn draw(app: &App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
     if app.current_layout.is_null() {
         let mut t = Text::new("No active layout", font, 20);
         t.set_position((
