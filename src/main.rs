@@ -245,6 +245,19 @@ fn update(app: &mut App) {
             if view.scroll_offset.col == 0 && view.scroll_offset.pix_xoff < 0 {
                 view.scroll_offset.pix_xoff = 0;
             }
+            let per = &app.perspectives[view.perspective];
+            if view.cols() < 0 {
+                eprintln!("view.cols for some reason is less than 0. Probably a bug.");
+                return;
+            }
+            if view.scroll_offset.col + 1 > per.cols {
+                view.scroll_offset.col = per.cols - 1;
+                view.scroll_offset.pix_xoff = 0;
+            }
+            if view.scroll_offset.row + 1 > per.n_rows(&app.regions) {
+                view.scroll_offset.row = per.n_rows(&app.regions) - 1;
+                view.scroll_offset.pix_yoff = 0;
+            }
         }
     }
 }
