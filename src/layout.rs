@@ -35,14 +35,13 @@ pub fn do_auto_layout(
     perspectives: &PerspectiveMap,
     regions: &RegionMap,
 ) {
-    let mut x_cursor = hex_iface_rect.x + layout.margin;
-    let mut y_cursor = hex_iface_rect.y + layout.margin;
     let layout_n_rows = i16::try_from(layout.view_grid.len()).expect("Too many rows in layout");
+    // Determine sizes
     for row in &layout.view_grid {
         let max_allowed_h =
             (hex_iface_rect.h - (layout.margin * (layout_n_rows + 1))) / layout_n_rows;
-        let mut max_h = 0;
         let row_n_cols = i16::try_from(row.len()).expect("Too many columns in layout");
+        let mut total_row_w = 0;
         for &view_key in row {
             let max_allowed_w =
                 (hex_iface_rect.w - (layout.margin * (row_n_cols + 1))) / row_n_cols;
@@ -50,12 +49,36 @@ pub fn do_auto_layout(
             let max_needed_size = view.max_needed_size(perspectives, regions);
             let w = min(max_needed_size.x, max_allowed_w);
             let h = min(max_needed_size.y, max_allowed_h);
+            view.viewport_rect.w = w;
+            total_row_w += w;
+            view.viewport_rect.h = h;
+        }
+        let w_to_fill_viewport = hex_iface_rect.w - (layout.margin * (row_n_cols + 1));
+        let mut w_remaining = w_to_fill_viewport - total_row_w;
+        // Distribute remaining width to views in order
+        for &view_key in row {
+            if w_remaining < 0 {
+                break;
+            }
+            let view = &mut view_map[view_key].view;
+            let max_needed_w = view.max_needed_size(perspectives, regions).x;
+            let missing_for_max_needed = max_needed_w - view.viewport_rect.w;
+            let can_add = min(missing_for_max_needed, w_remaining);
+            view.viewport_rect.w += can_add;
+            w_remaining -= can_add;
+        }
+    }
+    // Lay out
+    let mut x_cursor = hex_iface_rect.x + layout.margin;
+    let mut y_cursor = hex_iface_rect.y + layout.margin;
+    for row in &layout.view_grid {
+        let mut max_h = 0;
+        for &view_key in row {
+            let view = &mut view_map[view_key].view;
             view.viewport_rect.x = x_cursor;
             view.viewport_rect.y = y_cursor;
-            view.viewport_rect.w = w;
-            view.viewport_rect.h = h;
-            max_h = max(max_h, h);
-            x_cursor += w + layout.margin;
+            x_cursor += view.viewport_rect.w + layout.margin;
+            max_h = max(max_h, view.viewport_rect.h);
         }
         x_cursor = hex_iface_rect.x + layout.margin;
         y_cursor += max_h + layout.margin;
