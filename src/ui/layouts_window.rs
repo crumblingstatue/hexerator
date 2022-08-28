@@ -71,9 +71,19 @@ impl LayoutsWindow {
                     ui.end_row();
                     retain_row
                 });
-                if ui.button("✚").on_hover_text("Add row").clicked() {
-                    layout.view_grid.push(Vec::new());
-                }
+                ui.add_enabled_ui(!unused_views.is_empty(), |ui| {
+                    ui.menu_button("✚", |ui| {
+                        for &k in &unused_views {
+                            if ui.button(&app.view_map[k].name).clicked() {
+                                layout.view_grid.push(vec![k]);
+                                ui.close_menu();
+                            }
+                        }
+                    })
+                    .response
+                    .on_hover_text("Add view")
+                    .on_disabled_hover_text("No views to add (all added)");
+                });
             });
         }
         ui.separator();
