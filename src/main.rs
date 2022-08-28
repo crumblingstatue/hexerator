@@ -55,7 +55,6 @@ use serde::{Deserialize, Serialize};
 use shell::{msg_if_fail, msg_warn};
 use slotmap::Key as _;
 use ui::dialogs::SetCursorDialog;
-use view::COMFY_MARGIN;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct InstanceRequest {
@@ -240,11 +239,11 @@ fn update(app: &mut App) {
         for NamedView { view, name: _ } in app.view_map.values_mut() {
             view.sync_to(src_row, src_yoff, src_col, src_xoff, src_row_h, src_col_w);
             // Also clamp view ranges
-            if view.scroll_offset.row == 0 && view.scroll_offset.pix_yoff < COMFY_MARGIN {
-                view.scroll_offset.pix_yoff = COMFY_MARGIN;
+            if view.scroll_offset.row == 0 && view.scroll_offset.pix_yoff < 0 {
+                view.scroll_offset.pix_yoff = 0;
             }
-            if view.scroll_offset.col == 0 && view.scroll_offset.pix_xoff < COMFY_MARGIN {
-                view.scroll_offset.pix_xoff = COMFY_MARGIN;
+            if view.scroll_offset.col == 0 && view.scroll_offset.pix_xoff < 0 {
+                view.scroll_offset.pix_xoff = 0;
             }
         }
     }

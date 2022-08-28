@@ -139,8 +139,8 @@ impl View {
     pub(crate) fn go_home(&mut self) {
         self.scroll_offset.row = 0;
         self.scroll_offset.col = 0;
-        self.scroll_offset.pix_xoff = COMFY_MARGIN;
-        self.scroll_offset.pix_yoff = COMFY_MARGIN;
+        self.scroll_offset.pix_xoff = 0;
+        self.scroll_offset.pix_yoff = 0;
     }
     /// Scroll so the perspective's last row is visible
     pub(crate) fn scroll_to_end(&mut self, perspectives: &PerspectiveMap, regions: &RegionMap) {
@@ -155,8 +155,8 @@ impl View {
         self.scroll_page_up();
         self.scroll_page_left();
         self.scroll_offset.floor();
-        self.scroll_offset.pix_xoff = -COMFY_MARGIN;
-        self.scroll_offset.pix_yoff = -COMFY_MARGIN;
+        self.scroll_offset.pix_xoff = 0;
+        self.scroll_offset.pix_yoff = 0;
     }
 
     /// Row/col offset of relative position, including scrolling
@@ -451,11 +451,6 @@ pub struct Offsets {
     pub col: usize,
     pub byte: usize,
 }
-
-/// It's "comfortable" to scroll a bit before the data when we're "home".
-///
-/// It visually indicates that we are at the beginning and there is no more data before.
-pub const COMFY_MARGIN: i16 = -12;
 
 /// When scrolling past 0 whole, allows unbounded negative pixel offset
 fn scroll_impl(whole: &mut usize, pixel: &mut i16, pixels_per_whole: i16, scroll_by: i16) {
