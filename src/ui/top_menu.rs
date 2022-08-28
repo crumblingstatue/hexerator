@@ -194,7 +194,15 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
         });
         ui.menu_button("View", |ui| {
-            if button_with_shortcut(ui, "View configuration...", "F5").clicked() {
+            ui.menu_button("Current layout", |ui| {
+                for (k, v) in &app.view_layout_map {
+                    if ui.button(&v.name).clicked() {
+                        app.current_layout = k;
+                        ui.close_menu();
+                    }
+                }
+            });
+            if button_with_shortcut(ui, "Views...", "F5").clicked() {
                 app.ui.views_window.open.toggle();
                 ui.close_menu();
             }
