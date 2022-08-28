@@ -352,6 +352,9 @@ impl View {
         perspectives: &PerspectiveMap,
         regions: &RegionMap,
     ) -> ViewportVec {
+        if self.perspective.is_null() {
+            return ViewportVec { x: 0, y: 0 };
+        }
         let p = &perspectives[self.perspective];
         let n_rows = p.n_rows(regions);
         ViewportVec {
