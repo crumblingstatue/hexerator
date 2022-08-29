@@ -31,7 +31,7 @@ pub struct Bookmark {
 }
 
 /// Meta-information about a file that the user collects.
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct Meta {
     pub regions: RegionMap,
     pub perspectives: PerspectiveMap,
@@ -42,10 +42,10 @@ pub struct Meta {
 
 impl Meta {
     pub fn consume_metafile(&mut self, meta: Metafile) {
-        self.regions = meta.named_regions;
+        self.regions = meta.regions;
         self.perspectives = meta.perspectives;
-        self.layouts = meta.layout_map;
-        self.views = meta.view_map;
+        self.layouts = meta.layouts;
+        self.views = meta.views;
         self.bookmarks = meta.bookmarks;
         for view in self.views.values_mut() {
             // Needed to initialize edit buffers, etc.
@@ -54,10 +54,10 @@ impl Meta {
     }
     pub fn make_metafile(&self) -> Metafile {
         Metafile {
-            named_regions: self.regions.clone(),
+            regions: self.regions.clone(),
             perspectives: self.perspectives.clone(),
-            layout_map: self.layouts.clone(),
-            view_map: self.views.clone(),
+            layouts: self.layouts.clone(),
+            views: self.views.clone(),
             bookmarks: self.bookmarks.clone(),
         }
     }
@@ -75,12 +75,4 @@ pub struct NamedView {
     pub view: View,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct Metafile {
-    pub named_regions: RegionMap,
-    pub perspectives: PerspectiveMap,
-    pub view_map: ViewMap,
-    pub layout_map: LayoutMap,
-    #[serde(default)]
-    pub bookmarks: Vec<Bookmark>,
-}
+pub type Metafile = Meta;
