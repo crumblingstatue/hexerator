@@ -61,6 +61,7 @@ impl LayoutsWindow {
                                     ui.close_menu();
                                 }
                             }
+                            ui.separator();
                             if ui.button("🗑 Remove").clicked() {
                                 retain = false;
                                 ui.close_menu();
