@@ -41,24 +41,11 @@ pub struct Meta {
 }
 
 impl Meta {
-    pub fn consume_metafile(&mut self, meta: Metafile) {
-        self.regions = meta.regions;
-        self.perspectives = meta.perspectives;
-        self.layouts = meta.layouts;
-        self.views = meta.views;
-        self.bookmarks = meta.bookmarks;
+    /// Init required after deserializing
+    pub fn post_load_init(&mut self) {
         for view in self.views.values_mut() {
             // Needed to initialize edit buffers, etc.
             view.view.adjust_state_to_kind();
-        }
-    }
-    pub fn make_metafile(&self) -> Metafile {
-        Metafile {
-            regions: self.regions.clone(),
-            perspectives: self.perspectives.clone(),
-            layouts: self.layouts.clone(),
-            views: self.views.clone(),
-            bookmarks: self.bookmarks.clone(),
         }
     }
 }
@@ -74,5 +61,3 @@ pub struct NamedView {
     pub name: String,
     pub view: View,
 }
-
-pub type Metafile = Meta;

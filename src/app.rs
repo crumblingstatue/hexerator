@@ -539,8 +539,7 @@ impl App {
     }
 
     pub fn save_meta_to_file(&self, path: PathBuf) -> Result<(), anyhow::Error> {
-        let meta = self.meta.make_metafile();
-        let data = rmp_serde::to_vec(&meta)?;
+        let data = rmp_serde::to_vec(&self.meta)?;
         std::fs::write(path, &data)?;
         Ok(())
     }
@@ -608,8 +607,8 @@ fn try_consume_metafile(this: &mut App) -> Result<(), anyhow::Error> {
 
 pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
     let data = std::fs::read(path)?;
-    let meta = rmp_serde::from_slice(&data)?;
-    this.meta.consume_metafile(meta);
+    this.meta = rmp_serde::from_slice(&data)?;
+    this.meta.post_load_init();
     Ok(())
 }
 
