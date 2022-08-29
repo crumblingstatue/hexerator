@@ -169,7 +169,7 @@ fn do_frame(
     vertex_buffer: &mut Vec<Vertex>,
 ) {
     handle_events(app, window, sf_egui, font);
-    update(app);
+    update(app, sf_egui.context().wants_keyboard_input());
     app.update();
     let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
     ui::do_egui(sf_egui, app, mp, font);
@@ -208,13 +208,16 @@ where
     }
 }
 
-fn update(app: &mut App) {
+fn update(app: &mut App, egui_wants_kb: bool) {
     app.try_read_stream();
     if app.data.is_empty() {
         return;
     }
     app.show_alt_overlay = app.input.key_down(Key::LAlt);
-    if app.interact_mode == InteractMode::View && !app.input.key_down(Key::LControl) {
+    if !egui_wants_kb
+        && app.interact_mode == InteractMode::View
+        && !app.input.key_down(Key::LControl)
+    {
         let Some(key) = app.focused_view else { return };
         let spd = if app.input.key_down(Key::LShift) {
             10
@@ -309,7 +312,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
                 ctrl,
                 alt,
                 ..
-            } => handle_key_events(code, app, ctrl, shift, alt, font),
+            } => handle_key_events(code, app, ctrl, shift, alt, font, wants_kb),
             Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_panic((x, y));
@@ -384,11 +387,19 @@ fn handle_text_entered(app: &mut App, unicode: char) {
     }
 }
 
-fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: bool, font: &Font) {
+fn handle_key_events(
+    code: Key,
+    app: &mut App,
+    ctrl: bool,
+    shift: bool,
+    alt: bool,
+    font: &Font,
+    egui_wants_kb: bool,
+) {
     if code == Key::F12 && !shift && !ctrl && !alt {
         app.toggle_debug()
     }
-    if app.data.is_empty() {
+    if app.data.is_empty() || egui_wants_kb {
         return;
     }
     match code {
