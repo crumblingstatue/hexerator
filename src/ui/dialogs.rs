@@ -134,11 +134,20 @@ impl Dialog for LuaFillDialog {
             ui.heading("No active selection");
             return true;
         };
+        let ctrl_enter = ui
+            .input_mut()
+            .consume_key(egui::Modifiers::CTRL, egui::Key::Enter);
+        let ctrl_s = ui
+            .input_mut()
+            .consume_key(egui::Modifiers::CTRL, egui::Key::S);
+        if ctrl_s {
+            msg_if_fail(app.save(), "Failed to save");
+        }
         egui::TextEdit::multiline(&mut app.meta.misc.fill_lua_script)
             .code_editor()
             .desired_width(f32::INFINITY)
             .show(ui);
-        if ui.button("Execute").clicked() {
+        if ui.button("Execute").clicked() || ctrl_enter {
             let lua = Lua::default();
             lua.context(|ctx| {
                 let chunk = ctx.load(&app.meta.misc.fill_lua_script);
@@ -156,6 +165,22 @@ impl Dialog for LuaFillDialog {
                 }
             });
         }
-        !ui.button("Close").clicked()
+        let close = ui.button("Close").clicked();
+        if app.dirty_region.is_some() {
+            ui.label(
+                egui::RichText::new("Unsaved changes")
+                    .italics()
+                    .color(egui::Color32::YELLOW)
+                    .code(),
+            );
+        } else {
+            ui.label(
+                egui::RichText::new("No unsaved changes")
+                    .color(egui::Color32::GREEN)
+                    .code(),
+            );
+        }
+        easy_mark(ui, "`ctrl+enter` to execute, `ctrl+s` to save file");
+        !close
     }
 }
