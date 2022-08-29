@@ -34,7 +34,7 @@ impl Perspective {
     }
     pub(crate) fn row_col_of_byte_offset(&self, offset: usize, rmap: &RegionMap) -> (usize, usize) {
         let reg = &rmap[self.region];
-        let offset = offset - reg.region.begin;
+        let offset = offset.saturating_sub(reg.region.begin);
         (offset / self.cols, offset % self.cols)
     }
     /// Whether the columns are within `cols` and the calculated offset is within the region
