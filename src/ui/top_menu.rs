@@ -200,7 +200,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("View", |ui| {
             ui.menu_button("Current layout", |ui| {
-                for (k, v) in &app.meta.view_layout_map {
+                for (k, v) in &app.meta.layouts {
                     if ui.button(&v.name).clicked() {
                         app.current_layout = k;
                         ui.close_menu();
@@ -220,7 +220,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 let re = ui.text_edit_singleline(&mut app.ui.seek_byte_offset_input);
                 if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
                     if let Some(view_key) = app.focused_view {
-                        app.meta.view_map[view_key].view.scroll_to_byte_offset(
+                        app.meta.views[view_key].view.scroll_to_byte_offset(
                             app.ui.seek_byte_offset_input.parse().unwrap_or(0),
                             &app.meta.perspectives,
                             &app.meta.regions,
@@ -235,7 +235,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Perspective", |ui| {
             let Some(view_key) = app.focused_view else { return };
-            let view = &mut app.meta.view_map[view_key].view;
+            let view = &mut app.meta.views[view_key].view;
             if button_with_shortcut(ui, "Perspectives...", "F7").clicked() {
                 app.ui.perspectives_window.open.toggle();
                 ui.close_menu();

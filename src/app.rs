@@ -235,7 +235,7 @@ impl App {
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
         if let Some(key) = self.focused_view {
-            self.meta.view_map[key].view.center_on_offset(
+            self.meta.views[key].view.center_on_offset(
                 offset,
                 &self.meta.perspectives,
                 &self.meta.regions,
@@ -292,7 +292,7 @@ impl App {
     }
     fn col_change_impl(&mut self, f: impl FnOnce(&mut usize)) {
         if let Some(key) = self.focused_view {
-            let view = &mut self.meta.view_map[key].view;
+            let view = &mut self.meta.views[key].view;
             col_change_impl_view_perspective(
                 view,
                 &mut self.meta.perspectives,
@@ -363,22 +363,22 @@ impl App {
             cols: 48,
             flip_row_order: false,
         });
-        self.meta.view_layout_map.clear();
-        self.meta.view_map.clear();
+        self.meta.layouts.clear();
+        self.meta.views.clear();
         let mut layout = Layout {
             name: "Default layout".into(),
             view_grid: vec![vec![]],
             margin: default_margin(),
         };
         for view in default_views(font, default_perspective) {
-            let k = self.meta.view_map.insert(view);
+            let k = self.meta.views.insert(view);
             layout.view_grid[0].push(k);
         }
         // If we have no focused view, let's focus on the default view
         if self.focused_view.is_none() {
             self.focused_view = Some(layout.view_grid[0][0]);
         }
-        let layout_key = self.meta.view_layout_map.insert(layout);
+        let layout_key = self.meta.layouts.insert(layout);
         self.current_layout = layout_key;
         self.focused_view = None;
     }
@@ -437,7 +437,7 @@ impl App {
             return;
         };
         let Some(view_key) = self.focused_view else { return };
-        let view = &self.meta.view_map[view_key].view;
+        let view = &self.meta.views[view_key].view;
         let view_byte_offset = view
             .offsets(&self.meta.perspectives, &self.meta.regions)
             .byte;
@@ -489,9 +489,9 @@ impl App {
     //
     // Also returns the index of the view the position is from
     pub fn byte_offset_at_pos(&mut self, x: i16, y: i16) -> Option<(usize, ViewKey)> {
-        let layout = &self.meta.view_layout_map[self.current_layout];
+        let layout = &self.meta.layouts[self.current_layout];
         for view_key in layout.iter() {
-            let view = &self.meta.view_map[view_key];
+            let view = &self.meta.views[view_key];
             if let Some((row, col)) =
                 view.view
                     .row_col_offset_of_pos(x, y, &self.meta.perspectives, &self.meta.regions)
@@ -509,9 +509,9 @@ impl App {
         None
     }
     pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<ViewKey> {
-        let layout = &self.meta.view_layout_map[self.current_layout];
+        let layout = &self.meta.layouts[self.current_layout];
         for view_key in layout.iter() {
-            let view = &self.meta.view_map[view_key];
+            let view = &self.meta.views[view_key];
             if view.view.viewport_rect.contains_pos(x, y) {
                 return Some(view_key);
             }
@@ -521,10 +521,10 @@ impl App {
     pub fn consume_meta(&mut self, meta: Metafile) {
         self.meta.regions = meta.named_regions;
         self.meta.perspectives = meta.perspectives;
-        self.meta.view_layout_map = meta.layout_map;
-        self.meta.view_map = meta.view_map;
+        self.meta.layouts = meta.layout_map;
+        self.meta.views = meta.view_map;
         self.meta.bookmarks = meta.bookmarks;
-        for view in self.meta.view_map.values_mut() {
+        for view in self.meta.views.values_mut() {
             // Needed to initialize edit buffers, etc.
             view.view.adjust_state_to_kind();
         }
@@ -533,8 +533,8 @@ impl App {
         Metafile {
             named_regions: self.meta.regions.clone(),
             perspectives: self.meta.perspectives.clone(),
-            layout_map: self.meta.view_layout_map.clone(),
-            view_map: self.meta.view_map.clone(),
+            layout_map: self.meta.layouts.clone(),
+            view_map: self.meta.views.clone(),
             bookmarks: self.meta.bookmarks.clone(),
         }
     }
@@ -584,10 +584,10 @@ impl App {
     /// Called every frame
     pub(crate) fn update(&mut self) {
         if !self.current_layout.is_null() {
-            let layout = &self.meta.view_layout_map[self.current_layout];
+            let layout = &self.meta.layouts[self.current_layout];
             do_auto_layout(
                 layout,
-                &mut self.meta.view_map,
+                &mut self.meta.views,
                 &self.hex_iface_rect,
                 &self.meta.perspectives,
                 &self.meta.regions,

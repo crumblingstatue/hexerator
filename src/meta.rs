@@ -35,8 +35,8 @@ pub struct Bookmark {
 pub struct Meta {
     pub regions: RegionMap,
     pub perspectives: PerspectiveMap,
-    pub view_map: ViewMap,
-    pub view_layout_map: LayoutMap,
+    pub views: ViewMap,
+    pub layouts: LayoutMap,
     pub bookmarks: Vec<Bookmark>,
 }
 
