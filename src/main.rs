@@ -49,6 +49,7 @@ use egui_sfml::sfml::{
     window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
 };
 use egui_sfml::SfEgui;
+use gamedebug_core::per_msg;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
@@ -245,9 +246,12 @@ fn update(app: &mut App) {
             if view.scroll_offset.col == 0 && view.scroll_offset.pix_xoff < 0 {
                 view.scroll_offset.pix_xoff = 0;
             }
-            let per = &app.perspectives[view.perspective];
+            let Some(per) = &app.perspectives.get(view.perspective) else {
+                per_msg!("View doesn't have a perspective. Probably a bug.");
+                continue;
+            };
             if view.cols() < 0 {
-                eprintln!("view.cols for some reason is less than 0. Probably a bug.");
+                per_msg!("view.cols for some reason is less than 0. Probably a bug.");
                 return;
             }
             if view.scroll_offset.col + 1 > per.cols {
