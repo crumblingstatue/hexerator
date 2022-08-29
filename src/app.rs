@@ -26,8 +26,8 @@ use crate::{
     input::Input,
     layout::{default_margin, do_auto_layout, Layout},
     meta::{
-        perspective::Perspective, LayoutKey, Meta, PerspectiveKey, PerspectiveMap, RegionMap,
-        ViewKey,
+        perspective::Perspective, LayoutKey, Meta, NamedRegion, PerspectiveKey, PerspectiveMap,
+        RegionMap, ViewKey,
     },
     metafile::Metafile,
     region::Region,
@@ -129,12 +129,6 @@ pub struct Preferences {
     pub auto_save: bool,
     /// Keep metadata when loading.
     pub keep_meta: bool,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct NamedRegion {
-    pub name: String,
-    pub region: Region,
 }
 
 impl App {

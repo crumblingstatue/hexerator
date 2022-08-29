@@ -2,8 +2,8 @@ use egui_extras::{Size, TableBuilder};
 use egui_sfml::egui::{self, Ui};
 
 use crate::{
-    app::{App, NamedRegion},
-    meta::RegionKey,
+    app::App,
+    meta::{NamedRegion, RegionKey},
 };
 
 #[derive(Debug, Default)]
