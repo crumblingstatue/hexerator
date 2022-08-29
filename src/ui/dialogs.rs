@@ -1,10 +1,11 @@
 use egui_sfml::egui;
+use rlua::{Function, Lua};
 
 use crate::{
     app::App,
     damage_region::DamageRegion,
     parse_radix::parse_guess_radix,
-    shell::{msg_fail, msg_warn},
+    shell::{msg_fail, msg_if_fail, msg_warn},
     slice_ext::SliceExt,
 };
 
@@ -106,5 +107,56 @@ impl Dialog for PatternFillDialog {
         } else {
             true
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct LuaFillDialog {
+    lua_code: String,
+}
+
+const DEFAULT_CODE: &str = r#"-- Return a byte value based on `i`
+function(i)
+   return i
+end"#;
+
+impl Default for LuaFillDialog {
+    fn default() -> Self {
+        Self {
+            lua_code: DEFAULT_CODE.into(),
+        }
+    }
+}
+
+impl Dialog for LuaFillDialog {
+    fn title(&self) -> &str {
+        "Lua fill"
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+        let Some(sel) = App::selection(&app.select_a, &app.select_b) else {
+            ui.heading("No active selection");
+            return true;
+        };
+        ui.text_edit_multiline(&mut self.lua_code);
+        if ui.button("Execute").clicked() {
+            let lua = Lua::default();
+            lua.context(|ctx| {
+                let chunk = ctx.load(&self.lua_code);
+                match chunk.eval::<Function>() {
+                    Ok(f) => {
+                        let res: rlua::Result<()> = try {
+                            for (i, b) in app.data[sel.begin..=sel.end].iter_mut().enumerate() {
+                                *b = f.call(i)?;
+                            }
+                        };
+                        msg_if_fail(res, "Failed to execute lua");
+                        app.dirty_region = Some(sel);
+                    }
+                    Err(e) => msg_fail(&e, "Failed to exec lua"),
+                }
+            });
+        }
+        !ui.button("Close").clicked()
     }
 }

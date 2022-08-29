@@ -10,6 +10,7 @@ use crate::{
     source::SourceProvider,
 };
 
+use super::dialogs::LuaFillDialog;
 use super::{
     dialogs::{AutoSaveReloadDialog, PatternFillDialog, SetCursorDialog},
     util::{button_with_shortcut, ButtonWithShortcut},
@@ -131,6 +132,10 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             ui.separator();
             if ui.button("Pattern fill...").clicked() {
                 app.ui.add_dialog(PatternFillDialog::default());
+                ui.close_menu();
+            }
+            if ui.button("Lua fill...").clicked() {
+                app.ui.add_dialog(LuaFillDialog::default());
                 ui.close_menu();
             }
             if ui.button("Random fill").clicked() {
