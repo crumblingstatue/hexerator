@@ -65,9 +65,6 @@ impl EventTrigger {
             Self::Inactive => {}
         }
     }
-    pub fn triggered(&self) -> bool {
-        matches!(self, Self::Triggered)
-    }
     pub fn reset(&mut self) {
         *self = Self::Init;
     }
@@ -102,8 +99,6 @@ pub struct App {
     pub hex_iface_rect: ViewportRect,
     pub ui: crate::ui::Ui,
     pub resize_views: EventTrigger,
-    /// Automatic view layout every frame
-    pub auto_view_layout: bool,
     /// "a" point of selection. Could be smaller or larger than "b".
     /// The length of selection is absolute difference between a and b
     pub select_a: Option<usize>,
@@ -175,7 +170,6 @@ impl App {
             focused_view: None,
             ui: crate::ui::Ui::default(),
             resize_views: EventTrigger::default(),
-            auto_view_layout: true,
             select_a: None,
             select_b: None,
             args,
@@ -612,9 +606,7 @@ impl App {
     }
     /// Called every frame
     pub(crate) fn update(&mut self) {
-        if (self.auto_view_layout || self.resize_views.triggered())
-            && !self.current_layout.is_null()
-        {
+        if !self.current_layout.is_null() {
             let layout = &self.view_layout_map[self.current_layout];
             do_auto_layout(
                 layout,

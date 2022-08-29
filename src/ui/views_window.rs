@@ -7,7 +7,7 @@ use slotmap::Key;
 use crate::app::{PerspectiveMap, RegionMap, ViewKey};
 use crate::{
     app::{NamedView, PerspectiveKey},
-    view::{HexData, TextData, TextKind, View, ViewKind, ViewportRect},
+    view::{HexData, TextData, TextKind, View, ViewKind},
 };
 
 use super::window_open::WindowOpen;
@@ -181,7 +181,6 @@ impl ViewsWindow {
                     1..=64,
                 );
             });
-            viewport_rect_ui(ui, &mut view.view.viewport_rect);
             if ui.button("Delete").clicked() {
                 removed_idx = Some(app.ui.views_window.selected);
                 app.resize_views.reset();
@@ -250,20 +249,6 @@ fn view_combo(
             }
         });
     changed
-}
-
-fn viewport_rect_ui(ui: &mut egui::Ui, viewport_rect: &mut ViewportRect) {
-    ui.group(|ui| {
-        ui.label("Viewport rect");
-        ui.horizontal(|ui| {
-            labelled_drag(ui, "x", &mut viewport_rect.x, None);
-            labelled_drag(ui, "y", &mut viewport_rect.y, None);
-        });
-        ui.horizontal(|ui| {
-            labelled_drag(ui, "w", &mut viewport_rect.w, None);
-            labelled_drag(ui, "h", &mut viewport_rect.h, None);
-        });
-    });
 }
 
 fn labelled_drag<T: Numeric>(

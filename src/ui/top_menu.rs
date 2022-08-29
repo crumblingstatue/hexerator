@@ -210,9 +210,6 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 app.ui.views_window.open.toggle();
                 ui.close_menu();
             }
-            if ui.checkbox(&mut app.auto_view_layout, "Auto view layout").clicked() {
-                ui.close_menu();
-            }
             ui.horizontal(|ui| {
                 ui.label("Seek to byte offset");
                 let re = ui.text_edit_singleline(&mut app.ui.seek_byte_offset_input);
