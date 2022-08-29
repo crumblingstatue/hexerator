@@ -134,7 +134,10 @@ impl Dialog for LuaFillDialog {
             ui.heading("No active selection");
             return true;
         };
-        ui.text_edit_multiline(&mut app.meta.misc.fill_lua_script);
+        egui::TextEdit::multiline(&mut app.meta.misc.fill_lua_script)
+            .code_editor()
+            .desired_width(f32::INFINITY)
+            .show(ui);
         if ui.button("Execute").clicked() {
             let lua = Lua::default();
             lua.context(|ctx| {
