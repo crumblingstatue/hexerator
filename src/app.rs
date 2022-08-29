@@ -96,7 +96,7 @@ pub struct Bookmark {
 /// Meta-information about a file that the user collects.
 #[derive(Default)]
 pub struct Meta {
-    pub regions: SlotMap<RegionKey, NamedRegion>,
+    pub regions: RegionMap,
     pub perspectives: PerspectiveMap,
     pub view_map: ViewMap,
     pub view_layout_map: LayoutMap,
