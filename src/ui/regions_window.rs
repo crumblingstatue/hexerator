@@ -111,6 +111,13 @@ impl RegionsWindow {
                 app.select_a = None;
                 app.select_b = None;
             }
+            if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
+                if ui.button("Set to selection").clicked() {
+                    reg.region = sel;
+                }
+            } else {
+                ui.add_enabled(false, egui::Button::new("Set to selection"));
+            }
             if ui.button("Delete").clicked() {
                 app.regions.remove(key);
                 app.ui.regions_window.selected_key = None;
