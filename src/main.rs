@@ -534,6 +534,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::F6 => app.ui.views_window.open.toggle(),
         Key::F7 => app.ui.perspectives_window.open.toggle(),
         Key::F8 => app.ui.regions_window.open ^= true,
+        Key::F9 => app.ui.bookmarks_window.open.toggle(),
         Key::Escape => {
             if let Some(view_key) = app.focused_view {
                 app.view_map[view_key].view.cancel_editing();

@@ -1,3 +1,4 @@
+mod bookmarks_window;
 mod bottom_panel;
 mod debug_window;
 pub mod dialogs;
@@ -33,6 +34,7 @@ pub struct Ui {
     pub center_offset_input: String,
     pub seek_byte_offset_input: String,
     pub regions_window: RegionsWindow,
+    pub bookmarks_window: BookmarksWindow,
     pub dialogs: Vec<Box<dyn Dialog>>,
     pub layouts_window: LayoutsWindow,
     pub views_window: ViewsWindow,
@@ -52,6 +54,7 @@ impl Ui {
     }
 }
 
+use self::bookmarks_window::BookmarksWindow;
 use self::layouts_window::LayoutsWindow;
 use self::{
     find_dialog::FindDialog, help_window::HelpWindow, inspect_panel::InspectPanel,
@@ -79,6 +82,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             .open(&mut open)
             .show(ctx, |ui| RegionsWindow::ui(ui, app));
         app.ui.regions_window.open = open;
+        open = app.ui.bookmarks_window.open.is_open();
+        Window::new("Bookmarks")
+            .open(&mut open)
+            .show(ctx, |ui| BookmarksWindow::ui(ui, app));
+        app.ui.bookmarks_window.open.set_open(open);
         open = app.ui.layouts_window.open.is_open();
         Window::new("Layouts")
             .open(&mut open)

@@ -82,6 +82,17 @@ pub type RegionMap = SlotMap<RegionKey, NamedRegion>;
 pub type ViewMap = SlotMap<ViewKey, NamedView>;
 pub type LayoutMap = SlotMap<LayoutKey, Layout>;
 
+/// A bookmark for an offset in a file
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Bookmark {
+    /// Offset the bookmark applies to
+    pub offset: usize,
+    /// Short label
+    pub label: String,
+    /// Extended description
+    pub desc: String,
+}
+
 /// The hexerator application state
 pub struct App {
     /// The default perspective
@@ -127,6 +138,7 @@ pub struct App {
     pub bg_color: [f32; 3],
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
+    pub bookmarks: Vec<Bookmark>,
 }
 
 #[derive(Debug, Default)]
@@ -191,6 +203,7 @@ impl App {
             show_alt_overlay: false,
             view_map: ViewMap::default(),
             current_layout: LayoutKey::null(),
+            bookmarks: Vec::new(),
         };
         if load_success {
             this.new_file_readjust(font);
@@ -548,6 +561,7 @@ impl App {
         self.perspectives = meta.perspectives;
         self.view_layout_map = meta.layout_map;
         self.view_map = meta.view_map;
+        self.bookmarks = meta.bookmarks;
         for view in self.view_map.values_mut() {
             // Needed to initialize edit buffers, etc.
             view.view.adjust_state_to_kind();
@@ -559,6 +573,7 @@ impl App {
             perspectives: self.perspectives.clone(),
             layout_map: self.view_layout_map.clone(),
             view_map: self.view_map.clone(),
+            bookmarks: self.bookmarks.clone(),
         }
     }
     pub fn save_meta(&self) -> anyhow::Result<()> {
