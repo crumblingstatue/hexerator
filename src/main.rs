@@ -358,7 +358,6 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
                     width as f32,
                     height as f32,
                 )));
-                app.resize_views.reset();
             }
             _ => {}
         }

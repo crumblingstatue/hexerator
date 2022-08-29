@@ -123,9 +123,6 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
         {
             app.hex_iface_rect.y = top_re.response.rect.bottom() as ViewportScalar + padding;
         }
-        if right_re.drag_released() {
-            app.resize_views.reset();
-        }
         #[expect(
             clippy::cast_possible_truncation,
             reason = "Window size can't exceed i16"
@@ -151,5 +148,4 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
         });
         app.ui.dialogs = dialogs;
     });
-    app.resize_views.weak_trigger();
 }

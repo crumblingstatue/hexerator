@@ -63,7 +63,6 @@ impl ViewsWindow {
                 name: "Unnamed view".into(),
             });
             app.meta.layouts[app.current_layout].view_grid[0].push(k);
-            app.resize_views.reset();
         }
         ui.separator();
         if let Some(view) = app.meta.views.get_mut(app.ui.views_window.selected) {
@@ -180,7 +179,6 @@ impl ViewsWindow {
             });
             if ui.button("Delete").clicked() {
                 removed_idx = Some(app.ui.views_window.selected);
-                app.resize_views.reset();
             }
         }
         if let Some(rem_key) = removed_idx {

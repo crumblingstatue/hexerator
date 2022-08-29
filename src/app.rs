@@ -37,34 +37,6 @@ use crate::{
 
 use self::{edit_state::EditState, interact_mode::InteractMode};
 
-/// An event that can be triggered weakly.
-///
-/// A weak trigger can be called repeatedly every frame, and it will only
-/// trigger on the first time.
-#[derive(Default)]
-pub enum EventTrigger {
-    /// Initial state
-    #[default]
-    Init,
-    /// The event was triggered
-    Triggered,
-    /// The event was already triggered once
-    Inactive,
-}
-
-impl EventTrigger {
-    pub fn weak_trigger(&mut self) {
-        match self {
-            Self::Init => *self = Self::Triggered,
-            Self::Triggered => *self = Self::Inactive,
-            Self::Inactive => {}
-        }
-    }
-    pub fn reset(&mut self) {
-        *self = Self::Init;
-    }
-}
-
 /// The hexerator application state
 pub struct App {
     pub data: Vec<u8>,
@@ -77,7 +49,6 @@ pub struct App {
     /// The rectangle area that's available for the hex interface
     pub hex_iface_rect: ViewportRect,
     pub ui: crate::ui::Ui,
-    pub resize_views: EventTrigger,
     /// "a" point of selection. Could be smaller or larger than "b".
     /// The length of selection is absolute difference between a and b
     pub select_a: Option<usize>,
@@ -140,7 +111,6 @@ impl App {
             interact_mode: InteractMode::View,
             focused_view: None,
             ui: crate::ui::Ui::default(),
-            resize_views: EventTrigger::default(),
             select_a: None,
             select_b: None,
             args,
