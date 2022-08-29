@@ -9,8 +9,9 @@ Legend:
 - [x] Suitable for [process memory editing](#process-memory-editing)
 - [x] [Multiple source types](#multiple-source-types) (file/streamed sources)
 - [x] [Rich command line options](commandline.md)
-- [ ] [Bookmarks](#bookmarks)
-- [ ] [Multiple configurable views](#multiple-configurable-views)
+- [x] [Bookmarks](#bookmarks)
+- [x] [Multiple configurable views](#multiple-configurable-views)
+- [x] Lua scripting support for various operations, like fill.
 - [ ] [Huge file support through memory mapped files](#huge-file-support-through-memory-mapped-files)
 
 # Non-features
@@ -50,13 +51,13 @@ Hexerator supports opening both files and streamed sources like standard input o
 
 ## Bookmarks
 
-Quickly and easily save and access regions of interest in the file.
-To be implemented.
+Quickly and easily save and access points of interest in the data.
+Support for extended descriptions.
 
 ## Multiple configurable views
 
-Each bookmarked region can have multiple views of different configuration, like different column size.
-To be implemented.
+You can have different views into different regions of the same file, with
+different column counts and other configurable properties.
 
 ## Huge file support through memory mapped files
 
