@@ -143,10 +143,17 @@ impl Dialog for LuaFillDialog {
         if ctrl_s {
             msg_if_fail(app.save(), "Failed to save");
         }
-        egui::TextEdit::multiline(&mut app.meta.misc.fill_lua_script)
-            .code_editor()
-            .desired_width(f32::INFINITY)
-            .show(ui);
+        egui::ScrollArea::vertical()
+            // 100.0 is an estimation of ui size below.
+            // If we don't subtract that, the text edit tries to expand
+            // beyond window height
+            .max_height(ui.available_height() - 100.0)
+            .show(ui, |ui| {
+                egui::TextEdit::multiline(&mut app.meta.misc.fill_lua_script)
+                    .code_editor()
+                    .desired_width(f32::INFINITY)
+                    .show(ui);
+            });
         if ui.button("Execute").clicked() || ctrl_enter {
             let lua = Lua::default();
             lua.context(|ctx| {
