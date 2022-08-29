@@ -234,10 +234,15 @@ fn update(app: &mut App) {
     // Sync all other views to active view
     if let Some(key) = app.focused_view {
         let src = &app.view_map[key].view;
+        let src_perspective = src.perspective;
         let (src_row, src_col) = (src.scroll_offset.row(), src.scroll_offset.col());
         let (src_yoff, src_xoff) = (src.scroll_offset.pix_yoff(), src.scroll_offset.pix_xoff());
         let (src_row_h, src_col_w) = (src.row_h, src.col_w);
         for NamedView { view, name: _ } in app.view_map.values_mut() {
+            // Only sync views that have the same perspective
+            if view.perspective != src_perspective {
+                continue;
+            }
             view.sync_to(src_row, src_yoff, src_col, src_xoff, src_row_h, src_col_w);
             // Also clamp view ranges
             if view.scroll_offset.row == 0 && view.scroll_offset.pix_yoff < 0 {
