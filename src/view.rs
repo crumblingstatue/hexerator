@@ -216,8 +216,13 @@ impl View {
         }
     }
 
-    pub(crate) fn center_on_offset(&mut self, offset: usize, perspectives: &PerspectiveMap) {
-        let (row, col) = perspectives[self.perspective].row_col_of_byte_offset(offset);
+    pub(crate) fn center_on_offset(
+        &mut self,
+        offset: usize,
+        perspectives: &PerspectiveMap,
+        regions: &RegionMap,
+    ) {
+        let (row, col) = perspectives[self.perspective].row_col_of_byte_offset(offset, regions);
         self.center_on_row_col(row, col);
     }
 
@@ -243,10 +248,11 @@ impl View {
         &mut self,
         offset: usize,
         perspectives: &PerspectiveMap,
+        regions: &RegionMap,
         do_col: bool,
         do_row: bool,
     ) {
-        let (row, col) = perspectives[self.perspective].row_col_of_byte_offset(offset);
+        let (row, col) = perspectives[self.perspective].row_col_of_byte_offset(offset, regions);
         if do_row {
             self.scroll_offset.row = row;
         }

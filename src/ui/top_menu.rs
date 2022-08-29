@@ -218,6 +218,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                         app.view_map[view_key].view.scroll_to_byte_offset(
                             app.ui.seek_byte_offset_input.parse().unwrap_or(0),
                             &app.perspectives,
+                            &app.regions,
                             app.col_change_lock_x,
                             app.col_change_lock_y,
                         );

@@ -279,7 +279,7 @@ impl App {
         if let Some(key) = self.focused_view {
             self.view_map[key]
                 .view
-                .center_on_offset(offset, &self.perspectives);
+                .center_on_offset(offset, &self.perspectives, &self.regions);
         }
     }
 
@@ -683,7 +683,7 @@ pub fn col_change_impl_view_perspective(
     let prev_offset = view.offsets(perspectives, regions);
     f(&mut perspectives[view.perspective].cols);
     perspectives[view.perspective].clamp_cols(regions);
-    view.scroll_to_byte_offset(prev_offset.byte, perspectives, lock_x, lock_y);
+    view.scroll_to_byte_offset(prev_offset.byte, perspectives, regions, lock_x, lock_y);
 }
 
 pub fn default_views(font: &Font, perspective: PerspectiveKey) -> Vec<NamedView> {
