@@ -26,6 +26,7 @@ impl Dialog for SetCursorDialog {
             ui.text_edit_singleline(&mut self.string_buf)
                 .request_focus();
         });
+        ui.label("Accepts both decimal and hexadecimal.\nPrefix with 0x to force hex.");
         if ui.input().key_pressed(egui::Key::Enter) {
             match parse_guess_radix(&self.string_buf) {
                 Ok(offset) => {
