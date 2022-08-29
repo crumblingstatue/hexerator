@@ -16,7 +16,6 @@ use anyhow::{bail, Context};
 
 use egui_sfml::sfml::graphics::Font;
 use rfd::MessageButtons;
-use serde::{Deserialize, Serialize};
 use slotmap::Key;
 
 use crate::{
@@ -26,8 +25,8 @@ use crate::{
     input::Input,
     layout::{default_margin, do_auto_layout, Layout},
     meta::{
-        perspective::Perspective, LayoutKey, Meta, NamedRegion, PerspectiveKey, PerspectiveMap,
-        RegionMap, ViewKey,
+        perspective::Perspective, LayoutKey, Meta, NamedRegion, NamedView, PerspectiveKey,
+        PerspectiveMap, RegionMap, ViewKey,
     },
     metafile::Metafile,
     region::Region,
@@ -38,12 +37,6 @@ use crate::{
 };
 
 use self::{edit_state::EditState, interact_mode::InteractMode};
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct NamedView {
-    pub name: String,
-    pub view: View,
-}
 
 /// An event that can be triggered weakly.
 ///

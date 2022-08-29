@@ -3,7 +3,7 @@ pub mod perspective;
 use serde::{Deserialize, Serialize};
 use slotmap::{new_key_type, SlotMap};
 
-use crate::{app::NamedView, layout::Layout, region::Region};
+use crate::{layout::Layout, region::Region, view::View};
 
 use self::perspective::Perspective;
 
@@ -44,4 +44,10 @@ pub struct Meta {
 pub struct NamedRegion {
     pub name: String,
     pub region: Region,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct NamedView {
+    pub name: String,
+    pub view: View,
 }

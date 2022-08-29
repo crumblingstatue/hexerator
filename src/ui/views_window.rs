@@ -4,11 +4,8 @@ use egui_sfml::egui::{self, emath::Numeric};
 use egui_sfml::sfml::graphics::Font;
 use slotmap::Key;
 
-use crate::meta::{PerspectiveKey, PerspectiveMap, RegionMap, ViewKey};
-use crate::{
-    app::NamedView,
-    view::{HexData, TextData, TextKind, View, ViewKind},
-};
+use crate::meta::{NamedView, PerspectiveKey, PerspectiveMap, RegionMap, ViewKey};
+use crate::view::{HexData, TextData, TextKind, View, ViewKind};
 
 use super::window_open::WindowOpen;
 

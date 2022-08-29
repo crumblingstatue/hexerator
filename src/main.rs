@@ -40,7 +40,7 @@ use std::{
 
 use crate::{app::App, view::ViewportVec};
 use anyhow::Context;
-use app::{interact_mode::InteractMode, NamedView};
+use app::interact_mode::InteractMode;
 use args::Args;
 use clap::Parser;
 use config::Config;
@@ -52,6 +52,7 @@ use egui_sfml::sfml::{
 use egui_sfml::SfEgui;
 use gamedebug_core::per_msg;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
+use meta::NamedView;
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use shell::{msg_if_fail, msg_warn};
