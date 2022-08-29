@@ -1,10 +1,11 @@
+use egui_easy_mark_standalone::easy_mark;
 use egui_sfml::egui;
 use rlua::{Function, Lua};
 
 use crate::{
     app::App,
     damage_region::DamageRegion,
-    parse_radix::parse_guess_radix,
+    parse_radix::{parse_offset_maybe_relative, Relativity},
     shell::{msg_fail, msg_if_fail, msg_warn},
     slice_ext::SliceExt,
 };
@@ -26,10 +27,19 @@ impl Dialog for SetCursorDialog {
             ui.text_edit_singleline(&mut self.string_buf)
                 .request_focus();
         });
-        ui.label("Accepts both decimal and hexadecimal.\nPrefix with 0x to force hex.");
+        easy_mark(
+            ui,
+            "Accepts both decimal and hexadecimal.\nPrefix with `0x` to force hex.\n\
+             Prefix with `+` to add to current offset, `-` to subtract",
+        );
         if ui.input().key_pressed(egui::Key::Enter) {
-            match parse_guess_radix(&self.string_buf) {
-                Ok(offset) => {
+            match parse_offset_maybe_relative(&self.string_buf) {
+                Ok((offset, relativity)) => {
+                    let offset = match relativity {
+                        Relativity::Absolute => offset,
+                        Relativity::RelAdd => app.edit_state.cursor.saturating_add(offset),
+                        Relativity::RelSub => app.edit_state.cursor.saturating_sub(offset),
+                    };
                     app.edit_state.cursor = offset;
                     app.center_view_on_offset(offset);
                     app.flash_cursor();
