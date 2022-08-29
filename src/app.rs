@@ -3,6 +3,7 @@ pub mod interact_mode;
 pub mod presentation;
 
 use std::{
+    cell::Cell,
     ffi::OsString,
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
@@ -15,6 +16,7 @@ use std::{
 use anyhow::{bail, Context};
 
 use egui_sfml::sfml::graphics::Font;
+use gamedebug_core::per_msg;
 use rfd::MessageButtons;
 use slotmap::Key;
 
@@ -77,16 +79,7 @@ pub struct App {
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
     pub meta: Meta,
-}
-
-impl Drop for App {
-    fn drop(&mut self) {
-        // Save a temp metafile backup, even in case of panic unwind
-        msg_if_fail(
-            self.save_temp_metafile_backup(),
-            "Failed to save temp metafile backup",
-        );
-    }
+    pub last_meta_backup: Cell<Instant>,
 }
 
 #[derive(Debug, Default)]
@@ -141,6 +134,7 @@ impl App {
             show_alt_overlay: false,
             current_layout: LayoutKey::null(),
             meta: Meta::default(),
+            last_meta_backup: Cell::new(Instant::now()),
         };
         if load_success {
             this.new_file_readjust(font);
@@ -202,10 +196,16 @@ impl App {
         };
         file.write_all(data_to_write)?;
         self.dirty_region = None;
+        msg_if_fail(
+            self.save_temp_metafile_backup(),
+            "Failed to save metafile backup",
+        );
         Ok(())
     }
     pub fn save_temp_metafile_backup(&self) -> anyhow::Result<()> {
         self.save_meta_to_file(temp_metafile_backup_path())?;
+        self.last_meta_backup.set(Instant::now());
+        per_msg!("Saved temp metafile backup");
         Ok(())
     }
     pub fn toggle_debug(&mut self) {

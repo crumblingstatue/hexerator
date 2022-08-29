@@ -35,6 +35,7 @@ use std::{
     fmt::Display,
     io::{Read, Write},
     path::Path,
+    time::Duration,
 };
 
 use crate::{app::App, view::ViewportVec};
@@ -128,7 +129,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
             let mut buf = Vec::new();
             stream.read_to_end(&mut buf)?;
             let req: InstanceRequest = rmp_serde::from_slice(&buf)?;
-            app = App::new(req.args, std::mem::take(&mut app.cfg), &font)?;
+            app = App::new(req.args, app.cfg, &font)?;
             window.request_focus();
         }
         do_frame(
@@ -138,6 +139,13 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
             &font,
             &mut vertex_buffer,
         );
+        // Save a metafile backup every so often
+        if app.last_meta_backup.get().elapsed() >= Duration::from_secs(60) {
+            msg_if_fail(
+                app.save_temp_metafile_backup(),
+                "Failed to save temp metafile backup",
+            );
+        }
     }
     app.close_file();
     app.cfg.save()?;
