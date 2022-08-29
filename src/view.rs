@@ -22,6 +22,7 @@ mod draw;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct View {
     /// The rectangle to occupy in the viewport
+    #[serde(skip)]
     pub viewport_rect: ViewportRect,
     /// The kind of view (hex, ascii, block, etc)
     pub kind: ViewKind,
@@ -553,7 +554,7 @@ impl ScrollOffset {
 /// or get mouse positions higher than that.
 pub type ViewportScalar = i16;
 
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct ViewportRect {
     pub x: ViewportScalar,
     pub y: ViewportScalar,
