@@ -10,9 +10,10 @@ use glu_sys::GLint;
 use slotmap::Key;
 
 use crate::{
-    app::{presentation::Presentation, App, PerspectiveMap, RegionMap, ViewKey},
+    app::{presentation::Presentation, App},
     color::invert_color,
     dec_conv, hex_conv,
+    meta::{PerspectiveMap, RegionMap, ViewKey},
     region::Region,
     ui::Ui,
     view::ViewKind,

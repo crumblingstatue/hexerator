@@ -4,10 +4,11 @@ use serde::{Deserialize, Serialize};
 use slotmap::Key;
 
 use crate::{
-    app::{presentation::Presentation, App, PerspectiveKey, PerspectiveMap, RegionMap},
+    app::{presentation::Presentation, App},
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
+    meta::{PerspectiveKey, PerspectiveMap, RegionMap},
     shell::{msg_if_fail, msg_warn},
 };
 

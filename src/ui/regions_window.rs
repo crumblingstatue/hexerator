@@ -1,7 +1,10 @@
 use egui_extras::{Size, TableBuilder};
 use egui_sfml::egui::{self, Ui};
 
-use crate::app::{App, NamedRegion, RegionKey};
+use crate::{
+    app::{App, NamedRegion},
+    meta::RegionKey,
+};
 
 #[derive(Debug, Default)]
 pub struct RegionsWindow {

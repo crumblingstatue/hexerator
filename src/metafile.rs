@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::app::{Bookmark, LayoutMap, PerspectiveMap, RegionMap, ViewMap};
+use crate::meta::{Bookmark, LayoutMap, PerspectiveMap, RegionMap, ViewMap};
 
 #[derive(Serialize, Deserialize)]
 pub struct Metafile {

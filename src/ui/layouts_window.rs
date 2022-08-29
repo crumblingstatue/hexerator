@@ -2,8 +2,8 @@ use egui_sfml::egui;
 use slotmap::Key;
 
 use crate::{
-    app::{LayoutKey, ViewKey},
     layout::{default_margin, Layout},
+    meta::{LayoutKey, ViewKey},
 };
 
 use super::window_open::WindowOpen;

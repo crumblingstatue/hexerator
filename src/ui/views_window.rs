@@ -4,9 +4,9 @@ use egui_sfml::egui::{self, emath::Numeric};
 use egui_sfml::sfml::graphics::Font;
 use slotmap::Key;
 
-use crate::app::{PerspectiveMap, RegionMap, ViewKey};
+use crate::meta::{PerspectiveKey, PerspectiveMap, RegionMap, ViewKey};
 use crate::{
-    app::{NamedView, PerspectiveKey},
+    app::NamedView,
     view::{HexData, TextData, TextKind, View, ViewKind},
 };
 

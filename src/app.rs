@@ -18,7 +18,7 @@ use anyhow::{bail, Context};
 use egui_sfml::sfml::graphics::Font;
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
-use slotmap::{new_key_type, Key, SlotMap};
+use slotmap::Key;
 
 use crate::{
     args::{Args, SourceArgs},
@@ -26,6 +26,7 @@ use crate::{
     damage_region::DamageRegion,
     input::Input,
     layout::{default_margin, do_auto_layout, Layout},
+    meta::{LayoutKey, Meta, PerspectiveKey, PerspectiveMap, RegionMap, ViewKey},
     metafile::Metafile,
     region::Region,
     shell::{msg_if_fail, msg_warn},
@@ -68,39 +69,6 @@ impl EventTrigger {
     pub fn reset(&mut self) {
         *self = Self::Init;
     }
-}
-
-new_key_type! {
-    pub struct PerspectiveKey;
-    pub struct RegionKey;
-    pub struct ViewKey;
-    pub struct LayoutKey;
-}
-
-pub type PerspectiveMap = SlotMap<PerspectiveKey, Perspective>;
-pub type RegionMap = SlotMap<RegionKey, NamedRegion>;
-pub type ViewMap = SlotMap<ViewKey, NamedView>;
-pub type LayoutMap = SlotMap<LayoutKey, Layout>;
-
-/// A bookmark for an offset in a file
-#[derive(Serialize, Deserialize, Clone)]
-pub struct Bookmark {
-    /// Offset the bookmark applies to
-    pub offset: usize,
-    /// Short label
-    pub label: String,
-    /// Extended description
-    pub desc: String,
-}
-
-/// Meta-information about a file that the user collects.
-#[derive(Default)]
-pub struct Meta {
-    pub regions: RegionMap,
-    pub perspectives: PerspectiveMap,
-    pub view_map: ViewMap,
-    pub view_layout_map: LayoutMap,
-    pub bookmarks: Vec<Bookmark>,
 }
 
 /// The hexerator application state

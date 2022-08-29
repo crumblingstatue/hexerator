@@ -20,6 +20,7 @@ pub mod edit_buffer;
 mod hex_conv;
 mod input;
 mod layout;
+mod meta;
 mod metafile;
 mod parse_radix;
 mod region;

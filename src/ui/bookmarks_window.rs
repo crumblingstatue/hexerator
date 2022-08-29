@@ -1,6 +1,6 @@
 use egui_sfml::egui::{self, Ui};
 
-use crate::app::{App, Bookmark};
+use crate::{app::App, meta::Bookmark};
 
 use super::window_open::WindowOpen;
 
