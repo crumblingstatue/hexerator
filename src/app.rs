@@ -93,18 +93,24 @@ pub struct Bookmark {
     pub desc: String,
 }
 
+/// Meta-information about a file that the user collects.
+#[derive(Default)]
+pub struct Meta {
+    pub regions: SlotMap<RegionKey, NamedRegion>,
+    pub perspectives: PerspectiveMap,
+    pub view_map: ViewMap,
+    pub view_layout_map: LayoutMap,
+    pub bookmarks: Vec<Bookmark>,
+}
+
 /// The hexerator application state
 pub struct App {
-    /// The default perspective
-    pub perspectives: PerspectiveMap,
-    pub dirty_region: Option<Region>,
     pub data: Vec<u8>,
+    pub dirty_region: Option<Region>,
     pub edit_state: EditState,
     pub input: Input,
     pub interact_mode: InteractMode,
-    pub view_layout_map: LayoutMap,
     pub current_layout: LayoutKey,
-    pub view_map: ViewMap,
     pub focused_view: Option<ViewKey>,
     /// The rectangle area that's available for the hex interface
     pub hex_iface_rect: ViewportRect,
@@ -122,7 +128,6 @@ pub struct App {
     pub col_change_lock_y: bool,
     pub flash_cursor_timer: Timer,
     pub just_reloaded: bool,
-    pub regions: SlotMap<RegionKey, NamedRegion>,
     /// Whether metafile needs saving
     pub meta_dirty: bool,
     pub stream_read_recv: Option<Receiver<Vec<u8>>>,
@@ -138,7 +143,7 @@ pub struct App {
     pub bg_color: [f32; 3],
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
-    pub bookmarks: Vec<Bookmark>,
+    pub meta: Meta,
 }
 
 #[derive(Debug, Default)]
@@ -172,13 +177,11 @@ impl App {
         let load_success = load_file_from_src_args(&mut args.src, &mut cfg, &mut source, &mut data);
         let mut this = Self {
             scissor_views: true,
-            perspectives: SlotMap::default(),
             dirty_region: None,
             data,
             edit_state: EditState::default(),
             input: Input::default(),
             interact_mode: InteractMode::View,
-            view_layout_map: LayoutMap::default(),
             focused_view: None,
             ui: crate::ui::Ui::default(),
             resize_views: EventTrigger::default(),
@@ -190,7 +193,6 @@ impl App {
             col_change_lock_y: true,
             flash_cursor_timer: Timer::default(),
             just_reloaded: true,
-            regions: SlotMap::default(),
             meta_dirty: false,
             stream_read_recv: None,
             cfg,
@@ -201,9 +203,8 @@ impl App {
             hex_iface_rect: ViewportRect::default(),
             bg_color: [0.; 3],
             show_alt_overlay: false,
-            view_map: ViewMap::default(),
             current_layout: LayoutKey::null(),
-            bookmarks: Vec::new(),
+            meta: Meta::default(),
         };
         if load_success {
             this.new_file_readjust(font);
@@ -277,9 +278,11 @@ impl App {
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
         if let Some(key) = self.focused_view {
-            self.view_map[key]
-                .view
-                .center_on_offset(offset, &self.perspectives, &self.regions);
+            self.meta.view_map[key].view.center_on_offset(
+                offset,
+                &self.meta.perspectives,
+                &self.meta.regions,
+            );
         }
     }
 
@@ -332,11 +335,11 @@ impl App {
     }
     fn col_change_impl(&mut self, f: impl FnOnce(&mut usize)) {
         if let Some(key) = self.focused_view {
-            let view = &mut self.view_map[key].view;
+            let view = &mut self.meta.view_map[key].view;
             col_change_impl_view_perspective(
                 view,
-                &mut self.perspectives,
-                &self.regions,
+                &mut self.meta.perspectives,
+                &self.meta.regions,
                 f,
                 self.col_change_lock_x,
                 self.col_change_lock_y,
@@ -391,34 +394,34 @@ impl App {
 
     /// Readjust to a new file
     fn new_file_readjust(&mut self, font: &Font) {
-        let def_region = self.regions.insert(NamedRegion {
+        let def_region = self.meta.regions.insert(NamedRegion {
             name: "Default region".into(),
             region: Region {
                 begin: 0,
                 end: self.data.len().saturating_sub(1),
             },
         });
-        let default_perspective = self.perspectives.insert(Perspective {
+        let default_perspective = self.meta.perspectives.insert(Perspective {
             region: def_region,
             cols: 48,
             flip_row_order: false,
         });
-        self.view_layout_map.clear();
-        self.view_map.clear();
+        self.meta.view_layout_map.clear();
+        self.meta.view_map.clear();
         let mut layout = Layout {
             name: "Default layout".into(),
             view_grid: vec![vec![]],
             margin: default_margin(),
         };
         for view in default_views(font, default_perspective) {
-            let k = self.view_map.insert(view);
+            let k = self.meta.view_map.insert(view);
             layout.view_grid[0].push(k);
         }
         // If we have no focused view, let's focus on the default view
         if self.focused_view.is_none() {
             self.focused_view = Some(layout.view_grid[0][0]);
         }
-        let layout_key = self.view_layout_map.insert(layout);
+        let layout_key = self.meta.view_layout_map.insert(layout);
         self.current_layout = layout_key;
         self.focused_view = None;
     }
@@ -477,9 +480,11 @@ impl App {
             return;
         };
         let Some(view_key) = self.focused_view else { return };
-        let view = &self.view_map[view_key].view;
-        let view_byte_offset = view.offsets(&self.perspectives, &self.regions).byte;
-        let bytes_per_page = view.bytes_per_page(&self.perspectives);
+        let view = &self.meta.view_map[view_key].view;
+        let view_byte_offset = view
+            .offsets(&self.meta.perspectives, &self.meta.regions)
+            .byte;
+        let bytes_per_page = view.bytes_per_page(&self.meta.perspectives);
         // Don't read past what we need for our current view offset
         if view_byte_offset + bytes_per_page < self.data.len() {
             return;
@@ -494,8 +499,8 @@ impl App {
                         src.state.stream_end = true;
                     } else {
                         self.data.extend_from_slice(&buf[..]);
-                        let perspective = &self.perspectives[view.perspective];
-                        let region = &mut self.regions[perspective.region].region;
+                        let perspective = &self.meta.perspectives[view.perspective];
+                        let region = &mut self.meta.regions[perspective.region].region;
                         region.end = self.data.len() - 1;
                     }
                 }
@@ -527,18 +532,18 @@ impl App {
     //
     // Also returns the index of the view the position is from
     pub fn byte_offset_at_pos(&mut self, x: i16, y: i16) -> Option<(usize, ViewKey)> {
-        let layout = &self.view_layout_map[self.current_layout];
+        let layout = &self.meta.view_layout_map[self.current_layout];
         for view_key in layout.iter() {
-            let view = &self.view_map[view_key];
+            let view = &self.meta.view_map[view_key];
             if let Some((row, col)) =
                 view.view
-                    .row_col_offset_of_pos(x, y, &self.perspectives, &self.regions)
+                    .row_col_offset_of_pos(x, y, &self.meta.perspectives, &self.meta.regions)
             {
                 return Some((
-                    self.perspectives[view.view.perspective].byte_offset_of_row_col(
+                    self.meta.perspectives[view.view.perspective].byte_offset_of_row_col(
                         row,
                         col,
-                        &self.regions,
+                        &self.meta.regions,
                     ),
                     view_key,
                 ));
@@ -547,9 +552,9 @@ impl App {
         None
     }
     pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<ViewKey> {
-        let layout = &self.view_layout_map[self.current_layout];
+        let layout = &self.meta.view_layout_map[self.current_layout];
         for view_key in layout.iter() {
-            let view = &self.view_map[view_key];
+            let view = &self.meta.view_map[view_key];
             if view.view.viewport_rect.contains_pos(x, y) {
                 return Some(view_key);
             }
@@ -557,23 +562,23 @@ impl App {
         None
     }
     pub fn consume_meta(&mut self, meta: Metafile) {
-        self.regions = meta.named_regions;
-        self.perspectives = meta.perspectives;
-        self.view_layout_map = meta.layout_map;
-        self.view_map = meta.view_map;
-        self.bookmarks = meta.bookmarks;
-        for view in self.view_map.values_mut() {
+        self.meta.regions = meta.named_regions;
+        self.meta.perspectives = meta.perspectives;
+        self.meta.view_layout_map = meta.layout_map;
+        self.meta.view_map = meta.view_map;
+        self.meta.bookmarks = meta.bookmarks;
+        for view in self.meta.view_map.values_mut() {
             // Needed to initialize edit buffers, etc.
             view.view.adjust_state_to_kind();
         }
     }
     pub fn make_meta(&self) -> Metafile {
         Metafile {
-            named_regions: self.regions.clone(),
-            perspectives: self.perspectives.clone(),
-            layout_map: self.view_layout_map.clone(),
-            view_map: self.view_map.clone(),
-            bookmarks: self.bookmarks.clone(),
+            named_regions: self.meta.regions.clone(),
+            perspectives: self.meta.perspectives.clone(),
+            layout_map: self.meta.view_layout_map.clone(),
+            view_map: self.meta.view_map.clone(),
+            bookmarks: self.meta.bookmarks.clone(),
         }
     }
     pub fn save_meta(&self) -> anyhow::Result<()> {
@@ -622,13 +627,13 @@ impl App {
     /// Called every frame
     pub(crate) fn update(&mut self) {
         if !self.current_layout.is_null() {
-            let layout = &self.view_layout_map[self.current_layout];
+            let layout = &self.meta.view_layout_map[self.current_layout];
             do_auto_layout(
                 layout,
-                &mut self.view_map,
+                &mut self.meta.view_map,
                 &self.hex_iface_rect,
-                &self.perspectives,
-                &self.regions,
+                &self.meta.perspectives,
+                &self.meta.regions,
             );
         }
         if self.auto_reload

@@ -200,7 +200,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("View", |ui| {
             ui.menu_button("Current layout", |ui| {
-                for (k, v) in &app.view_layout_map {
+                for (k, v) in &app.meta.view_layout_map {
                     if ui.button(&v.name).clicked() {
                         app.current_layout = k;
                         ui.close_menu();
@@ -220,10 +220,10 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 let re = ui.text_edit_singleline(&mut app.ui.seek_byte_offset_input);
                 if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
                     if let Some(view_key) = app.focused_view {
-                        app.view_map[view_key].view.scroll_to_byte_offset(
+                        app.meta.view_map[view_key].view.scroll_to_byte_offset(
                             app.ui.seek_byte_offset_input.parse().unwrap_or(0),
-                            &app.perspectives,
-                            &app.regions,
+                            &app.meta.perspectives,
+                            &app.meta.regions,
                             app.col_change_lock_x,
                             app.col_change_lock_y,
                         );
@@ -235,13 +235,13 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Perspective", |ui| {
             let Some(view_key) = app.focused_view else { return };
-            let view = &mut app.view_map[view_key].view;
+            let view = &mut app.meta.view_map[view_key].view;
             if button_with_shortcut(ui, "Perspectives...", "F7").clicked() {
                 app.ui.perspectives_window.open.toggle();
                 ui.close_menu();
             }
             if ui.button("Set offset to cursor").clicked() {
-                app.regions[app.perspectives[view.perspective].region].region.begin = app.edit_state.cursor;
+                app.meta.regions[app.meta.perspectives[view.perspective].region].region.begin = app.edit_state.cursor;
                 ui.close_menu();
             }
             if ui.button("Fill focused view").on_hover_text("Make the column count as big as the active view can fit").clicked() {
@@ -253,8 +253,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                         let cols = view.cols() as usize;
                         col_change_impl_view_perspective(
                             view,
-                            &mut app.perspectives,
-                            &app.regions,
+                            &mut app.meta.perspectives,
+                            &app.meta.regions,
                             |c| *c = cols,
                             app.col_change_lock_x,
                             app.col_change_lock_y
@@ -262,7 +262,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                     }
             }
             if ui.checkbox(
-                &mut app.perspectives[view.perspective].flip_row_order,
+                &mut app.meta.perspectives[view.perspective].flip_row_order,
                 "Flip row order (experimental)",
             ).clicked() {
                 ui.close_menu();

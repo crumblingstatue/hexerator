@@ -17,7 +17,7 @@ impl RegionsWindow {
         match App::selection(&app.select_a, &app.select_b) {
             Some(sel) => {
                 if ui.add(button).clicked() {
-                    app.regions.insert(NamedRegion {
+                    app.meta.regions.insert(NamedRegion {
                         name: String::from("<Unnamed>"),
                         region: sel,
                     });
@@ -51,11 +51,11 @@ impl RegionsWindow {
                 });
             })
             .body(|mut body| {
-                let mut keys: Vec<RegionKey> = app.regions.keys().collect();
-                keys.sort_by_key(|k| app.regions[*k].region.begin);
+                let mut keys: Vec<RegionKey> = app.meta.regions.keys().collect();
+                keys.sort_by_key(|k| app.meta.regions[*k].region.begin);
                 for k in keys {
                     body.row(20.0, |mut row| {
-                        let reg = &app.regions[k];
+                        let reg = &app.meta.regions[k];
                         row.col(|ui| {
                             if ui
                                 .selectable_label(
@@ -81,7 +81,7 @@ impl RegionsWindow {
             });
         ui.separator();
         if let &Some(key) = &app.ui.regions_window.selected_key {
-            let reg = &mut app.regions[key];
+            let reg = &mut app.meta.regions[key];
             ui.horizontal(|ui| {
                 if app.ui.regions_window.rename_active {
                     if ui.text_edit_singleline(&mut reg.name).lost_focus() {
@@ -119,7 +119,7 @@ impl RegionsWindow {
                 ui.add_enabled(false, egui::Button::new("Set to selection"));
             }
             if ui.button("Delete").clicked() {
-                app.regions.remove(key);
+                app.meta.regions.remove(key);
                 app.ui.regions_window.selected_key = None;
             }
         }

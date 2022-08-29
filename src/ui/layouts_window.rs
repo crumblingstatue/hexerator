@@ -21,7 +21,7 @@ impl LayoutsWindow {
         if win.open.just_opened() {
             win.selected = app.current_layout;
         }
-        for (k, v) in &app.view_layout_map {
+        for (k, v) in &app.meta.view_layout_map {
             if ui.selectable_label(win.selected == k, &v.name).clicked() {
                 win.selected = k;
                 app.current_layout = k;
@@ -29,7 +29,7 @@ impl LayoutsWindow {
         }
         if !win.selected.is_null() {
             ui.separator();
-            let layout = &mut app.view_layout_map[win.selected];
+            let layout = &mut app.meta.view_layout_map[win.selected];
             ui.horizontal(|ui| {
                 if win.edit_name {
                     if ui.text_edit_singleline(&mut layout.name).lost_focus() {
@@ -43,6 +43,7 @@ impl LayoutsWindow {
                 }
             });
             let unused_views: Vec<ViewKey> = app
+                .meta
                 .view_map
                 .keys()
                 .filter(|&k| !layout.iter().any(|k2| k2 == k))
@@ -53,7 +54,7 @@ impl LayoutsWindow {
                     let mut retain_row = true;
                     row.retain_mut(|view_key| {
                         let mut retain = true;
-                        let view = &app.view_map[*view_key];
+                        let view = &app.meta.view_map[*view_key];
                         if win.swap_a == *view_key {
                             if ui.selectable_label(true, &view.name).clicked() {
                                 win.swap_a = ViewKey::null();
@@ -65,7 +66,7 @@ impl LayoutsWindow {
                         } else {
                             ui.menu_button(&view.name, |ui| {
                                 for &k in &unused_views {
-                                    if ui.button(&app.view_map[k].name).clicked() {
+                                    if ui.button(&app.meta.view_map[k].name).clicked() {
                                         *view_key = k;
                                         ui.close_menu();
                                     }
@@ -87,7 +88,7 @@ impl LayoutsWindow {
                     ui.add_enabled_ui(!unused_views.is_empty(), |ui| {
                         ui.menu_button("✚", |ui| {
                             for &k in &unused_views {
-                                if ui.button(&app.view_map[k].name).clicked() {
+                                if ui.button(&app.meta.view_map[k].name).clicked() {
                                     row.push(k);
                                     ui.close_menu();
                                 }
@@ -121,7 +122,7 @@ impl LayoutsWindow {
                 ui.add_enabled_ui(!unused_views.is_empty(), |ui| {
                     ui.menu_button("✚", |ui| {
                         for &k in &unused_views {
-                            if ui.button(&app.view_map[k].name).clicked() {
+                            if ui.button(&app.meta.view_map[k].name).clicked() {
                                 layout.view_grid.push(vec![k]);
                                 ui.close_menu();
                             }
@@ -135,7 +136,7 @@ impl LayoutsWindow {
         }
         ui.separator();
         if ui.button("New layout").clicked() {
-            let key = app.view_layout_map.insert(Layout {
+            let key = app.meta.view_layout_map.insert(Layout {
                 name: "New layout".into(),
                 view_grid: Vec::new(),
                 margin: default_margin(),

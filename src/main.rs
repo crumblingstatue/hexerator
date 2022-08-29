@@ -221,24 +221,24 @@ fn update(app: &mut App) {
             1
         };
         if app.input.key_down(Key::Left) {
-            app.view_map[key].view.scroll_x(-spd);
+            app.meta.view_map[key].view.scroll_x(-spd);
         } else if app.input.key_down(Key::Right) {
-            app.view_map[key].view.scroll_x(spd);
+            app.meta.view_map[key].view.scroll_x(spd);
         }
         if app.input.key_down(Key::Up) {
-            app.view_map[key].view.scroll_y(-spd);
+            app.meta.view_map[key].view.scroll_y(-spd);
         } else if app.input.key_down(Key::Down) {
-            app.view_map[key].view.scroll_y(spd);
+            app.meta.view_map[key].view.scroll_y(spd);
         }
     }
     // Sync all other views to active view
     if let Some(key) = app.focused_view {
-        let src = &app.view_map[key].view;
+        let src = &app.meta.view_map[key].view;
         let src_perspective = src.perspective;
         let (src_row, src_col) = (src.scroll_offset.row(), src.scroll_offset.col());
         let (src_yoff, src_xoff) = (src.scroll_offset.pix_yoff(), src.scroll_offset.pix_xoff());
         let (src_row_h, src_col_w) = (src.row_h, src.col_w);
-        for NamedView { view, name: _ } in app.view_map.values_mut() {
+        for NamedView { view, name: _ } in app.meta.view_map.values_mut() {
             // Only sync views that have the same perspective
             if view.perspective != src_perspective {
                 continue;
@@ -251,7 +251,7 @@ fn update(app: &mut App) {
             if view.scroll_offset.col == 0 && view.scroll_offset.pix_xoff < 0 {
                 view.scroll_offset.pix_xoff = 0;
             }
-            let Some(per) = &app.perspectives.get(view.perspective) else {
+            let Some(per) = &app.meta.perspectives.get(view.perspective) else {
                 per_msg!("View doesn't have a perspective. Probably a bug.");
                 continue;
             };
@@ -263,8 +263,8 @@ fn update(app: &mut App) {
                 view.scroll_offset.col = per.cols - 1;
                 view.scroll_offset.pix_xoff = 0;
             }
-            if view.scroll_offset.row + 1 > per.n_rows(&app.regions) {
-                view.scroll_offset.row = per.n_rows(&app.regions) - 1;
+            if view.scroll_offset.row + 1 > per.n_rows(&app.meta.regions) {
+                view.scroll_offset.row = per.n_rows(&app.meta.regions) - 1;
                 view.scroll_offset.pix_yoff = 0;
             }
         }
@@ -281,8 +281,8 @@ fn draw(app: &App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut V
         window.draw(&t);
         return;
     }
-    for view_key in app.view_layout_map[app.current_layout].iter() {
-        let view = &app.view_map[view_key];
+    for view_key in app.meta.view_layout_map[app.current_layout].iter() {
+        let view = &app.meta.view_map[view_key];
         view.view
             .draw(view_key, app, window, vertex_buffer, font, &view.name);
     }
@@ -373,10 +373,12 @@ fn handle_text_entered(app: &mut App, unicode: char) {
             let Some(focused) = app.focused_view else {
                 return
             };
-            let mut view =
-                std::mem::replace(&mut app.view_map[focused].view, crate::view::View::zeroed());
+            let mut view = std::mem::replace(
+                &mut app.meta.view_map[focused].view,
+                crate::view::View::zeroed(),
+            );
             view.handle_text_entered(unicode, app);
-            app.view_map[focused].view = view;
+            app.meta.view_map[focused].view = view;
         }
         InteractMode::View => {}
     }
@@ -393,16 +395,16 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::Up => match app.interact_mode {
             InteractMode::View => {
                 if ctrl && let Some(view_key) = app.focused_view {
-                    let key = app.view_map[view_key].view.perspective;
-                    app.regions[app.perspectives[key].region].region.begin = app.regions[app.perspectives[key].region].region.begin.saturating_sub(1);
+                    let key = app.meta.view_map[view_key].view.perspective;
+                    app.meta.regions[app.meta.perspectives[key].region].region.begin = app.meta.regions[app.meta.perspectives[key].region].region.begin.saturating_sub(1);
                 }
             }
             InteractMode::Edit => {
                 if let Some(view_key) = app.focused_view {
-                    let view = &mut app.view_map[view_key].view;
+                    let view = &mut app.meta.view_map[view_key].view;
                     view.undirty_edit_buffer();
                     app.edit_state.set_cursor_no_history(
-                        app.edit_state.cursor.saturating_sub(app.perspectives[view.perspective].cols),
+                        app.edit_state.cursor.saturating_sub(app.meta.perspectives[view.perspective].cols),
                     );
                 }
             }
@@ -410,16 +412,16 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::Down => match app.interact_mode {
             InteractMode::View => {
                 if ctrl && let Some(view_key) = app.focused_view {
-                    let key = app.view_map[view_key].view.perspective;
-                    app.regions[app.perspectives[key].region].region.begin += 1;
+                    let key = app.meta.view_map[view_key].view.perspective;
+                    app.meta.regions[app.meta.perspectives[key].region].region.begin += 1;
                 }
             }
             InteractMode::Edit => {
                 if let Some(view_key) = app.focused_view {
-                    let view = &mut app.view_map[view_key].view;
+                    let view = &mut app.meta.view_map[view_key].view;
                     view.undirty_edit_buffer();
-                    if app.edit_state.cursor + app.perspectives[view.perspective].cols < app.data.len() {
-                        app.edit_state.offset_cursor(app.perspectives[view.perspective].cols);
+                    if app.edit_state.cursor + app.meta.perspectives[view.perspective].cols < app.data.len() {
+                        app.edit_state.offset_cursor(app.meta.perspectives[view.perspective].cols);
                     }
                 }
             }
@@ -434,7 +436,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                     || (!app.preferences.move_edit_cursor && ctrl);
                 if move_edit {
                     if let Some(view_key) = app.focused_view {
-                        let view = &mut app.view_map[view_key];
+                        let view = &mut app.meta.view_map[view_key];
                         if let Some(edit_buf) = view.view.edit_buffer_mut() {
                             if !edit_buf.move_cursor_back() {
                                 edit_buf.move_cursor_end();
@@ -465,7 +467,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
                     || (!app.preferences.move_edit_cursor && ctrl);
                 if move_edit {
                     if let Some(view_key) = app.focused_view {
-                        let view = &mut app.view_map[view_key];
+                        let view = &mut app.meta.view_map[view_key];
                         if let Some(edit_buf) = &mut view.view.edit_buffer_mut() {
                             if !edit_buf.move_cursor_forward() {
                                 edit_buf.move_cursor_begin();
@@ -488,7 +490,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::PageUp => match app.interact_mode {
             InteractMode::View => {
                 if let Some(key) = app.focused_view {
-                    app.view_map[key].view.scroll_page_up();
+                    app.meta.view_map[key].view.scroll_page_up();
                 }
             }
             InteractMode::Edit => {
@@ -498,7 +500,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::PageDown => match app.interact_mode {
             InteractMode::View => {
                 if let Some(key) = app.focused_view {
-                    app.view_map[key].view.scroll_page_down();
+                    app.meta.view_map[key].view.scroll_page_down();
                 }
             }
             InteractMode::Edit => {
@@ -507,7 +509,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         },
         Key::Home => {
             if let Some(key) = app.focused_view {
-                let view = &mut app.view_map[key].view;
+                let view = &mut app.meta.view_map[key].view;
                 match app.interact_mode {
                     InteractMode::View => {
                         view.go_home();
@@ -521,7 +523,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::End => match app.interact_mode {
             InteractMode::View => {
                 if let Some(key) = app.focused_view {
-                    app.view_map[key].view.scroll_to_end(&app.perspectives, &app.regions);
+                    app.meta.view_map[key].view.scroll_to_end(&app.meta.perspectives, &app.meta.regions);
                 }
             }
             InteractMode::Edit => {
@@ -537,7 +539,7 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::F9 => app.ui.bookmarks_window.open.toggle(),
         Key::Escape => {
             if let Some(view_key) = app.focused_view {
-                app.view_map[view_key].view.cancel_editing();
+                app.meta.view_map[view_key].view.cancel_editing();
             }
             app.select_a = None;
             app.select_b = None;
@@ -545,11 +547,11 @@ fn handle_key_events(code: Key, app: &mut App, ctrl: bool, shift: bool, alt: boo
         Key::Enter => {
             if let Some(view_key) = app.focused_view {
                 let mut view = std::mem::replace(
-                    &mut app.view_map[view_key].view,
+                    &mut app.meta.view_map[view_key].view,
                     crate::view::View::zeroed(),
                 );
                 view.finish_editing(app);
-                app.view_map[view_key].view = view;
+                app.meta.view_map[view_key].view = view;
             }
         }
         Key::F if ctrl => {

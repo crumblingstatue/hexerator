@@ -44,11 +44,11 @@ impl ViewsWindow {
         }
         let mut removed_idx = None;
         ui.heading("Views");
-        if app.view_map.is_empty() {
+        if app.meta.view_map.is_empty() {
             ui.label("No views");
             return;
         }
-        for (k, view) in app.view_map.iter_mut() {
+        for (k, view) in app.meta.view_map.iter_mut() {
             ui.horizontal(|ui| {
                 if ui
                     .selectable_label(k == app.ui.views_window.selected, &view.name)
@@ -61,15 +61,15 @@ impl ViewsWindow {
         }
         ui.separator();
         if ui.button("Add new").clicked() {
-            let k = app.view_map.insert(NamedView {
+            let k = app.meta.view_map.insert(NamedView {
                 view: View::new(ViewKind::Hex(HexData::default()), PerspectiveKey::null()),
                 name: "Unnamed view".into(),
             });
-            app.view_layout_map[app.current_layout].view_grid[0].push(k);
+            app.meta.view_layout_map[app.current_layout].view_grid[0].push(k);
             app.resize_views.reset();
         }
         ui.separator();
-        if let Some(view) = app.view_map.get_mut(app.ui.views_window.selected) {
+        if let Some(view) = app.meta.view_map.get_mut(app.ui.views_window.selected) {
             ui.horizontal(|ui| {
                 if app.ui.views_window.rename {
                     if ui
@@ -90,16 +90,16 @@ impl ViewsWindow {
             });
             egui::ComboBox::new("new_perspective_combo", "Perspective")
                 .selected_text(perspective_label(
-                    &app.perspectives,
-                    &app.regions,
+                    &app.meta.perspectives,
+                    &app.meta.regions,
                     view.view.perspective,
                 ))
                 .show_ui(ui, |ui| {
-                    for k in app.perspectives.keys() {
+                    for k in app.meta.perspectives.keys() {
                         if ui
                             .selectable_label(
                                 k == view.view.perspective,
-                                perspective_label(&app.perspectives, &app.regions, k),
+                                perspective_label(&app.meta.perspectives, &app.meta.regions, k),
                             )
                             .clicked()
                         {
@@ -187,7 +187,7 @@ impl ViewsWindow {
             }
         }
         if let Some(rem_key) = removed_idx {
-            app.view_map.remove(rem_key);
+            app.meta.view_map.remove(rem_key);
             app.focused_view = None;
         }
         app.ui.views_window.open.post_ui();

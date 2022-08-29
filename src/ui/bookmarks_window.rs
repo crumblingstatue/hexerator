@@ -14,7 +14,7 @@ pub struct BookmarksWindow {
 impl BookmarksWindow {
     pub fn ui(ui: &mut Ui, app: &mut App) {
         let win = &mut app.ui.bookmarks_window;
-        let bookmarks = &mut app.bookmarks;
+        let bookmarks = &mut app.meta.bookmarks;
         let mut jump_to = None;
         for (i, mark) in bookmarks.iter_mut().enumerate() {
             ui.horizontal(|ui| {
@@ -57,7 +57,7 @@ impl BookmarksWindow {
         }
         ui.separator();
         if ui.button("Add new at cursor").clicked() {
-            app.bookmarks.push(Bookmark {
+            app.meta.bookmarks.push(Bookmark {
                 offset: app.edit_state.cursor,
                 label: format!("New bookmark at {}", app.edit_state.cursor),
                 desc: String::new(),
