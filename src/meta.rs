@@ -38,7 +38,31 @@ pub struct Meta {
     pub views: ViewMap,
     pub layouts: LayoutMap,
     pub bookmarks: Vec<Bookmark>,
+    pub misc: Misc,
 }
+
+/// Misc information that's worth saving
+#[derive(Serialize, Deserialize)]
+pub struct Misc {
+    /// Lua script for the "Lua fill" feature.
+    ///
+    /// Worth saving because it can be used for binary file change testing, which can
+    /// take a long time over many sessions.
+    pub fill_lua_script: String,
+}
+
+impl Default for Misc {
+    fn default() -> Self {
+        Self {
+            fill_lua_script: DEFAULT_CODE.into(),
+        }
+    }
+}
+
+const DEFAULT_CODE: &str = r#"-- Return a byte value based on `i`
+function(i)
+   return i
+end"#;
 
 impl Meta {
     /// Init required after deserializing

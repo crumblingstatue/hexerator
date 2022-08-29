@@ -121,23 +121,8 @@ impl Dialog for PatternFillDialog {
     }
 }
 
-#[derive(Debug)]
-pub struct LuaFillDialog {
-    lua_code: String,
-}
-
-const DEFAULT_CODE: &str = r#"-- Return a byte value based on `i`
-function(i)
-   return i
-end"#;
-
-impl Default for LuaFillDialog {
-    fn default() -> Self {
-        Self {
-            lua_code: DEFAULT_CODE.into(),
-        }
-    }
-}
+#[derive(Debug, Default)]
+pub struct LuaFillDialog;
 
 impl Dialog for LuaFillDialog {
     fn title(&self) -> &str {
@@ -149,11 +134,11 @@ impl Dialog for LuaFillDialog {
             ui.heading("No active selection");
             return true;
         };
-        ui.text_edit_multiline(&mut self.lua_code);
+        ui.text_edit_multiline(&mut app.meta.misc.fill_lua_script);
         if ui.button("Execute").clicked() {
             let lua = Lua::default();
             lua.context(|ctx| {
-                let chunk = ctx.load(&self.lua_code);
+                let chunk = ctx.load(&app.meta.misc.fill_lua_script);
                 match chunk.eval::<Function>() {
                     Ok(f) => {
                         let res: rlua::Result<()> = try {
