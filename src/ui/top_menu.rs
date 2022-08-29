@@ -287,6 +287,10 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 }
                 ui.close_menu();
             }
+            if ui.button("Load from temp backup").on_hover_text("Load from temporary backup (auto generated on save/exit)").clicked() {
+                msg_if_fail(crate::app::consume_meta_from_file(crate::app::temp_metafile_backup_path(), app), "Failed to load temp metafile");
+                ui.close_menu();
+            }
             if ui.button("Save to file...").clicked() {
                 if let Some(path) = rfd::FileDialog::default().save_file() {
                     msg_if_fail(app.save_meta_to_file(path), "Failed to save metafile");

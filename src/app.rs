@@ -79,6 +79,16 @@ pub struct App {
     pub meta: Meta,
 }
 
+impl Drop for App {
+    fn drop(&mut self) {
+        // Save a temp metafile backup, even in case of panic unwind
+        msg_if_fail(
+            self.save_temp_metafile_backup(),
+            "Failed to save temp metafile backup",
+        );
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct Preferences {
     /// Move the edit cursor with the cursor keys, instead of block cursor
@@ -192,6 +202,10 @@ impl App {
         };
         file.write_all(data_to_write)?;
         self.dirty_region = None;
+        Ok(())
+    }
+    pub fn save_temp_metafile_backup(&self) -> anyhow::Result<()> {
+        self.save_meta_to_file(temp_metafile_backup_path())?;
         Ok(())
     }
     pub fn toggle_debug(&mut self) {
@@ -564,6 +578,10 @@ impl App {
             None
         }
     }
+}
+
+pub fn temp_metafile_backup_path() -> PathBuf {
+    std::env::temp_dir().join("hexerator_meta_backup.meta")
 }
 
 fn try_consume_metafile(this: &mut App) -> Result<(), anyhow::Error> {

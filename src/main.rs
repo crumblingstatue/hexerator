@@ -128,7 +128,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
             let mut buf = Vec::new();
             stream.read_to_end(&mut buf)?;
             let req: InstanceRequest = rmp_serde::from_slice(&buf)?;
-            app = App::new(req.args, app.cfg, &font)?;
+            app = App::new(req.args, std::mem::take(&mut app.cfg), &font)?;
             window.request_focus();
         }
         do_frame(
