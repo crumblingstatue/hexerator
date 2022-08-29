@@ -28,7 +28,6 @@ use crate::{
         perspective::Perspective, LayoutKey, Meta, NamedRegion, NamedView, PerspectiveKey,
         PerspectiveMap, RegionMap, ViewKey,
     },
-    metafile::Metafile,
     region::Region,
     shell::{msg_if_fail, msg_warn},
     source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
@@ -518,26 +517,6 @@ impl App {
         }
         None
     }
-    pub fn consume_meta(&mut self, meta: Metafile) {
-        self.meta.regions = meta.named_regions;
-        self.meta.perspectives = meta.perspectives;
-        self.meta.layouts = meta.layout_map;
-        self.meta.views = meta.view_map;
-        self.meta.bookmarks = meta.bookmarks;
-        for view in self.meta.views.values_mut() {
-            // Needed to initialize edit buffers, etc.
-            view.view.adjust_state_to_kind();
-        }
-    }
-    pub fn make_meta(&self) -> Metafile {
-        Metafile {
-            named_regions: self.meta.regions.clone(),
-            perspectives: self.meta.perspectives.clone(),
-            layout_map: self.meta.layouts.clone(),
-            view_map: self.meta.views.clone(),
-            bookmarks: self.meta.bookmarks.clone(),
-        }
-    }
     pub fn save_meta(&self) -> anyhow::Result<()> {
         if !self.meta_dirty {
             return Ok(());
@@ -560,7 +539,7 @@ impl App {
     }
 
     pub fn save_meta_to_file(&self, path: PathBuf) -> Result<(), anyhow::Error> {
-        let meta = self.make_meta();
+        let meta = self.meta.make_metafile();
         let data = rmp_serde::to_vec(&meta)?;
         std::fs::write(path, &data)?;
         Ok(())
@@ -630,7 +609,7 @@ fn try_consume_metafile(this: &mut App) -> Result<(), anyhow::Error> {
 pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
     let data = std::fs::read(path)?;
     let meta = rmp_serde::from_slice(&data)?;
-    this.consume_meta(meta);
+    this.meta.consume_metafile(meta);
     Ok(())
 }
 
