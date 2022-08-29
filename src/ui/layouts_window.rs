@@ -12,35 +12,34 @@ use super::window_open::WindowOpen;
 pub struct LayoutsWindow {
     pub open: WindowOpen,
     selected: LayoutKey,
+    swap_a: ViewKey,
     edit_name: bool,
 }
 impl LayoutsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
-        if app.ui.layouts_window.open.just_opened() {
-            app.ui.layouts_window.selected = app.current_layout;
+        let win = &mut app.ui.layouts_window;
+        if win.open.just_opened() {
+            win.selected = app.current_layout;
         }
         for (k, v) in &app.view_layout_map {
-            if ui
-                .selectable_label(app.ui.layouts_window.selected == k, &v.name)
-                .clicked()
-            {
-                app.ui.layouts_window.selected = k;
+            if ui.selectable_label(win.selected == k, &v.name).clicked() {
+                win.selected = k;
                 app.current_layout = k;
             }
         }
-        if !app.ui.layouts_window.selected.is_null() {
+        if !win.selected.is_null() {
             ui.separator();
-            let layout = &mut app.view_layout_map[app.ui.layouts_window.selected];
+            let layout = &mut app.view_layout_map[win.selected];
             ui.horizontal(|ui| {
-                if app.ui.layouts_window.edit_name {
+                if win.edit_name {
                     if ui.text_edit_singleline(&mut layout.name).lost_focus() {
-                        app.ui.layouts_window.edit_name = false;
+                        win.edit_name = false;
                     }
                 } else {
                     ui.heading(&layout.name);
                 }
                 if ui.button("✏").clicked() {
-                    app.ui.layouts_window.edit_name ^= true;
+                    win.edit_name ^= true;
                 }
             });
             let unused_views: Vec<ViewKey> = app
@@ -49,24 +48,40 @@ impl LayoutsWindow {
                 .filter(|&k| !layout.iter().any(|k2| k2 == k))
                 .collect();
             egui::Grid::new("view_grid").show(ui, |ui| {
+                let mut swap = None;
                 layout.view_grid.retain_mut(|row| {
                     let mut retain_row = true;
                     row.retain_mut(|view_key| {
                         let mut retain = true;
                         let view = &app.view_map[*view_key];
-                        ui.menu_button(&view.name, |ui| {
-                            for &k in &unused_views {
-                                if ui.button(&app.view_map[k].name).clicked() {
-                                    *view_key = k;
+                        if win.swap_a == *view_key {
+                            if ui.selectable_label(true, &view.name).clicked() {
+                                win.swap_a = ViewKey::null();
+                            }
+                        } else if !win.swap_a.is_null() {
+                            if ui.button(&format!("🔃 {}", view.name)).clicked() {
+                                swap = Some((win.swap_a, *view_key));
+                            }
+                        } else {
+                            ui.menu_button(&view.name, |ui| {
+                                for &k in &unused_views {
+                                    if ui.button(&app.view_map[k].name).clicked() {
+                                        *view_key = k;
+                                        ui.close_menu();
+                                    }
+                                }
+                                ui.separator();
+                                if ui.button("🔃 Swap").clicked() {
+                                    win.swap_a = *view_key;
                                     ui.close_menu();
                                 }
-                            }
-                            ui.separator();
-                            if ui.button("🗑 Remove").clicked() {
-                                retain = false;
-                                ui.close_menu();
-                            }
-                        });
+                                if ui.button("🗑 Remove").clicked() {
+                                    retain = false;
+                                    ui.close_menu();
+                                }
+                            });
+                        }
+
                         retain
                     });
                     ui.add_enabled_ui(!unused_views.is_empty(), |ui| {
@@ -91,6 +106,18 @@ impl LayoutsWindow {
                     }
                     retain_row
                 });
+                if let Some((a, b)) = swap {
+                    if let Some((a_row, a_col)) = layout.idx_of_key(a) {
+                        if let Some((b_row, b_col)) = layout.idx_of_key(b) {
+                            let addr_a = std::ptr::addr_of_mut!(layout.view_grid[a_row][a_col]);
+                            let addr_b = std::ptr::addr_of_mut!(layout.view_grid[b_row][b_col]);
+                            unsafe {
+                                std::ptr::swap(addr_a, addr_b);
+                            }
+                            win.swap_a = ViewKey::null();
+                        }
+                    }
+                }
                 ui.add_enabled_ui(!unused_views.is_empty(), |ui| {
                     ui.menu_button("✚", |ui| {
                         for &k in &unused_views {
@@ -113,9 +140,9 @@ impl LayoutsWindow {
                 view_grid: Vec::new(),
                 margin: default_margin(),
             });
-            app.ui.layouts_window.selected = key;
+            win.selected = key;
             app.current_layout = key;
         }
-        app.ui.layouts_window.open.post_ui();
+        win.open.post_ui();
     }
 }

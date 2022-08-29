@@ -26,6 +26,16 @@ impl Layout {
     pub fn iter(&self) -> impl Iterator<Item = ViewKey> + '_ {
         self.view_grid.iter().flatten().cloned()
     }
+
+    pub(crate) fn idx_of_key(&self, key: ViewKey) -> Option<(usize, usize)> {
+        self.view_grid
+            .iter()
+            .enumerate()
+            .find_map(|(row_idx, row)| {
+                let col_pos = row.iter().position(|k| *k == key)?;
+                Some((row_idx, col_pos))
+            })
+    }
 }
 
 pub fn do_auto_layout(
