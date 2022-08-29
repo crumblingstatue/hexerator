@@ -1,7 +1,7 @@
 use egui_sfml::egui;
 use slotmap::Key;
 
-use crate::app::perspective::Perspective;
+use crate::meta::perspective::Perspective;
 
 use super::window_open::WindowOpen;
 

@@ -1,6 +1,5 @@
 pub mod edit_state;
 pub mod interact_mode;
-pub mod perspective;
 pub mod presentation;
 
 use std::{
@@ -26,7 +25,10 @@ use crate::{
     damage_region::DamageRegion,
     input::Input,
     layout::{default_margin, do_auto_layout, Layout},
-    meta::{LayoutKey, Meta, PerspectiveKey, PerspectiveMap, RegionMap, ViewKey},
+    meta::{
+        perspective::Perspective, LayoutKey, Meta, PerspectiveKey, PerspectiveMap, RegionMap,
+        ViewKey,
+    },
     metafile::Metafile,
     region::Region,
     shell::{msg_if_fail, msg_warn},
@@ -35,7 +37,7 @@ use crate::{
     view::{HexData, TextData, View, ViewKind, ViewportRect},
 };
 
-use self::{edit_state::EditState, interact_mode::InteractMode, perspective::Perspective};
+use self::{edit_state::EditState, interact_mode::InteractMode};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NamedView {
