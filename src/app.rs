@@ -588,6 +588,33 @@ impl App {
             self.select_b = Some(r.region.end);
         }
     }
+
+    pub(crate) fn source_file(&self) -> Option<&Path> {
+        self.args.src.file.as_deref()
+    }
+
+    pub(crate) fn diff_with_file(&mut self, path: &Path) -> anyhow::Result<()> {
+        let file_data = std::fs::read(path)?;
+        let mut diff_entries = Vec::new();
+        for ((offset, &my_byte), &file_byte) in self.data.iter().enumerate().zip(file_data.iter()) {
+            if my_byte != file_byte {
+                diff_entries.push(FileDiffEntry {
+                    my_val: my_byte,
+                    file_val: file_byte,
+                    offset,
+                });
+            }
+        }
+        self.ui.file_diff_result_window.diff_entries = diff_entries;
+        self.ui.file_diff_result_window.open.set_open(true);
+        Ok(())
+    }
+}
+
+pub struct FileDiffEntry {
+    pub my_val: u8,
+    pub file_val: u8,
+    pub offset: usize,
 }
 
 pub fn temp_metafile_backup_path() -> PathBuf {

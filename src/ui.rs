@@ -2,6 +2,7 @@ mod bookmarks_window;
 mod bottom_panel;
 mod debug_window;
 pub mod dialogs;
+mod file_diff_result_window;
 mod find_dialog;
 mod help_window;
 pub mod inspect_panel;
@@ -40,6 +41,7 @@ pub struct Ui {
     pub views_window: ViewsWindow,
     pub perspectives_window: PerspectivesWindow,
     pub help_window: HelpWindow,
+    pub file_diff_result_window: FileDiffResultWindow,
 }
 
 pub trait Dialog: Debug {
@@ -55,6 +57,7 @@ impl Ui {
 }
 
 use self::bookmarks_window::BookmarksWindow;
+use self::file_diff_result_window::FileDiffResultWindow;
 use self::layouts_window::LayoutsWindow;
 use self::{
     find_dialog::FindDialog, help_window::HelpWindow, inspect_panel::InspectPanel,
@@ -108,6 +111,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             .open(&mut open)
             .show(ctx, |ui| HelpWindow::ui(ui, app));
         app.ui.help_window.open = open;
+        open = app.ui.file_diff_result_window.open.is_open();
+        Window::new("File diff results")
+            .open(&mut open)
+            .show(ctx, |ui| FileDiffResultWindow::ui(ui, app));
+        app.ui.file_diff_result_window.open.set_open(open);
         let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app, font));
         let bot_re = TopBottomPanel::bottom("bottom_panel")
             .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos));

@@ -307,6 +307,19 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 msg_info(format);
                 ui.close_menu();
             }
+            if ui.button("Diff with file...").clicked() {
+                ui.close_menu();
+                if let Some(path) = rfd::FileDialog::default().pick_file() {
+                    msg_if_fail(app.diff_with_file(&path), "Failed to diff");
+                }
+            }
+            if ui.button("Diff with source file").clicked() {
+                ui.close_menu();
+                if let Some(path) = app.source_file() {
+                    let path = path.to_owned();
+                    msg_if_fail(app.diff_with_file(&path), "Failed to diff");
+                }
+            }
         });
         ui.menu_button("Help", |ui| {
             if ui.button("Help...").clicked() {
