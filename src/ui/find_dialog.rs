@@ -81,6 +81,11 @@ impl FindDialog {
                 app.search_focus(off);
             }
         }
+        ui.horizontal(|ui| {
+            ui.label("Offset");
+            ui.separator();
+            ui.label("Region");
+        });
         let row_height = ui.text_style_height(&egui::TextStyle::Body);
         ScrollArea::vertical().max_height(480.).show_rows(
             ui,
