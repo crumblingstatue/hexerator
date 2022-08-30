@@ -167,7 +167,7 @@ impl Dialog for LuaFillDialog {
                     Ok(f) => {
                         let res: rlua::Result<()> = try {
                             for (i, b) in app.data[sel.begin..=sel.end].iter_mut().enumerate() {
-                                *b = f.call(i)?;
+                                *b = f.call((i, *b))?;
                             }
                         };
                         msg_if_fail(res, "Failed to execute lua");

@@ -59,9 +59,9 @@ impl Default for Misc {
     }
 }
 
-const DEFAULT_CODE: &str = r#"-- Return a byte value based on `i`
-function(i)
-   return i
+const DEFAULT_CODE: &str = r#"-- Return a byte based on offset `off` and the current byte value `b`
+function(off, b)
+   return off % 256
 end"#;
 
 impl Meta {
