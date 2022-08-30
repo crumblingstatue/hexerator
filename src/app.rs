@@ -593,8 +593,8 @@ impl App {
         self.args.src.file.as_deref()
     }
 
-    pub(crate) fn diff_with_file(&mut self, path: &Path) -> anyhow::Result<()> {
-        let file_data = std::fs::read(path)?;
+    pub(crate) fn diff_with_file(&mut self, path: PathBuf) -> anyhow::Result<()> {
+        let file_data = std::fs::read(&path)?;
         let mut diff_entries = Vec::new();
         for ((offset, &my_byte), &file_byte) in self.data.iter().enumerate().zip(file_data.iter()) {
             if my_byte != file_byte {
@@ -606,6 +606,7 @@ impl App {
             }
         }
         self.ui.file_diff_result_window.diff_entries = diff_entries;
+        self.ui.file_diff_result_window.path = path;
         self.ui.file_diff_result_window.open.set_open(true);
         Ok(())
     }

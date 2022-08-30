@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use egui_extras::Size;
 
 use crate::app::FileDiffEntry;
@@ -8,6 +10,7 @@ use super::window_open::WindowOpen;
 pub struct FileDiffResultWindow {
     pub diff_entries: Vec<FileDiffEntry>,
     pub open: WindowOpen,
+    pub path: PathBuf,
 }
 impl FileDiffResultWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
@@ -15,6 +18,7 @@ impl FileDiffResultWindow {
             ui.label("No difference");
             return;
         }
+        ui.label(app.ui.file_diff_result_window.path.display().to_string());
         let mut action = Action::None;
         egui_extras::TableBuilder::new(ui)
             .columns(Size::initial(100.0), 5)
