@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use egui_easy_mark_standalone::easy_mark;
 use egui_sfml::egui;
 use rlua::{Function, Lua};
@@ -122,7 +124,9 @@ impl Dialog for PatternFillDialog {
 }
 
 #[derive(Debug, Default)]
-pub struct LuaFillDialog;
+pub struct LuaFillDialog {
+    exec_time_string: String,
+}
 
 impl Dialog for LuaFillDialog {
     fn title(&self) -> &str {
@@ -155,6 +159,7 @@ impl Dialog for LuaFillDialog {
                     .show(ui);
             });
         if ui.button("Execute").clicked() || ctrl_enter {
+            let start_time = Instant::now();
             let lua = Lua::default();
             lua.context(|ctx| {
                 let chunk = ctx.load(&app.meta.misc.fill_lua_script);
@@ -170,6 +175,8 @@ impl Dialog for LuaFillDialog {
                     }
                     Err(e) => msg_fail(&e, "Failed to exec lua"),
                 }
+                self.exec_time_string =
+                    format!("Script took {} ms", start_time.elapsed().as_millis());
             });
         }
         let close = ui.button("Close").clicked();
@@ -188,6 +195,9 @@ impl Dialog for LuaFillDialog {
             );
         }
         easy_mark(ui, "`ctrl+enter` to execute, `ctrl+s` to save file");
+        if !self.exec_time_string.is_empty() {
+            ui.label(&self.exec_time_string);
+        }
         !close
     }
 }
