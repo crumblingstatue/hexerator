@@ -55,6 +55,7 @@ impl RegionsWindow {
             })
             .body(|mut body| {
                 let mut keys: Vec<RegionKey> = app.meta.regions.keys().collect();
+                let mut go_to = None;
                 keys.sort_by_key(|k| app.meta.regions[*k].region.begin);
                 for k in keys {
                     body.row(20.0, |mut row| {
@@ -71,15 +72,24 @@ impl RegionsWindow {
                             }
                         });
                         row.col(|ui| {
-                            ui.label(reg.region.begin.to_string());
+                            if ui.button(reg.region.begin.to_string()).clicked() {
+                                go_to = Some(reg.region.begin);
+                            }
                         });
                         row.col(|ui| {
-                            ui.label(reg.region.end.to_string());
+                            if ui.button(reg.region.end.to_string()).clicked() {
+                                go_to = Some(reg.region.end);
+                            }
                         });
                         row.col(|ui| {
                             ui.label(((reg.region.end + 1) - reg.region.begin).to_string());
                         });
                     });
+                }
+                if let Some(off) = go_to {
+                    app.center_view_on_offset(off);
+                    app.edit_state.set_cursor(off);
+                    app.flash_cursor();
                 }
             });
         ui.separator();
