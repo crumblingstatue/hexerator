@@ -32,6 +32,7 @@ pub struct View {
     /// Height of a row
     pub row_h: u16,
     /// The scrolling offset
+    #[serde(skip)]
     pub scroll_offset: ScrollOffset,
     /// The amount scrolled for a single scroll operation, in pixels
     pub scroll_speed: i16,
