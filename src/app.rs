@@ -214,6 +214,7 @@ impl App {
     pub fn search_focus(&mut self, offset: usize) {
         self.edit_state.cursor = offset;
         self.center_view_on_offset(offset);
+        self.flash_cursor();
     }
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
