@@ -19,20 +19,46 @@ impl FileDiffResultWindow {
             return;
         }
         ui.label(app.ui.file_diff_result_window.path.display().to_string());
-        if ui
-            .button("Filter unchanged")
-            .on_hover_text("Keep only the unchanged values")
-            .clicked()
-        {
-            let result: anyhow::Result<()> = try {
-                let file_data = std::fs::read(&app.ui.file_diff_result_window.path)?;
-                app.ui
-                    .file_diff_result_window
-                    .diff_entries
-                    .retain(|en| en.file_val == file_data[en.offset]);
-            };
-            msg_if_fail(result, "Filter unchanged failed");
-        }
+        ui.horizontal(|ui| {
+            if ui
+                .button("Filter unchanged")
+                .on_hover_text("Keep only the unchanged values")
+                .clicked()
+            {
+                let result: anyhow::Result<()> = try {
+                    let file_data = std::fs::read(&app.ui.file_diff_result_window.path)?;
+                    app.ui
+                        .file_diff_result_window
+                        .diff_entries
+                        .retain(|en| en.file_val == file_data[en.offset]);
+                };
+                msg_if_fail(result, "Filter unchanged failed");
+            }
+            if ui
+                .button("Filter changed")
+                .on_hover_text("Keep only the values that changed")
+                .clicked()
+            {
+                let result: anyhow::Result<()> = try {
+                    let file_data = std::fs::read(&app.ui.file_diff_result_window.path)?;
+                    app.ui
+                        .file_diff_result_window
+                        .diff_entries
+                        .retain(|en| en.file_val != file_data[en.offset]);
+                };
+                msg_if_fail(result, "Filter unchanged failed");
+            }
+            if ui.button("Refresh").clicked() {
+                let result: anyhow::Result<()> = try {
+                    let file_data = std::fs::read(&app.ui.file_diff_result_window.path)?;
+                    for en in &mut app.ui.file_diff_result_window.diff_entries {
+                        en.file_val = file_data[en.offset];
+                    }
+                };
+                msg_if_fail(result, "Refresh failed");
+            }
+        });
+        ui.separator();
         let mut action = Action::None;
         egui_extras::TableBuilder::new(ui)
             .columns(Size::initial(100.0), 5)
