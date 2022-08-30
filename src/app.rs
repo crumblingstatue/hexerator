@@ -578,6 +578,15 @@ impl App {
             None
         }
     }
+    pub(crate) fn focused_view_select_all(&mut self) {
+        if let Some(view) = self.focused_view {
+            let p_key = self.meta.views[view].view.perspective;
+            let p = &self.meta.perspectives[p_key];
+            let r = &self.meta.regions[p.region];
+            self.select_a = Some(r.region.begin);
+            self.select_b = Some(r.region.end);
+        }
+    }
 }
 
 pub fn temp_metafile_backup_path() -> PathBuf {

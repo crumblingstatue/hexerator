@@ -573,6 +573,9 @@ fn handle_key_events(
                 app.meta.views[view_key].view = view;
             }
         }
+        Key::A if ctrl => {
+            app.focused_view_select_all();
+        }
         Key::F if ctrl => {
             app.ui.find_dialog.open ^= true;
         }
