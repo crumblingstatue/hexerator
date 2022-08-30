@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use egui_extras::Size;
 
-use crate::app::FileDiffEntry;
+use crate::{app::FileDiffEntry, shell::msg_if_fail};
 
 use super::window_open::WindowOpen;
 
@@ -19,6 +19,20 @@ impl FileDiffResultWindow {
             return;
         }
         ui.label(app.ui.file_diff_result_window.path.display().to_string());
+        if ui
+            .button("Filter unchanged")
+            .on_hover_text("Keep only the unchanged values")
+            .clicked()
+        {
+            let result: anyhow::Result<()> = try {
+                let file_data = std::fs::read(&app.ui.file_diff_result_window.path)?;
+                app.ui
+                    .file_diff_result_window
+                    .diff_entries
+                    .retain(|en| en.file_val == file_data[en.offset]);
+            };
+            msg_if_fail(result, "Filter unchanged failed");
+        }
         let mut action = Action::None;
         egui_extras::TableBuilder::new(ui)
             .columns(Size::initial(100.0), 5)
