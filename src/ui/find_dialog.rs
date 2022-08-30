@@ -92,13 +92,29 @@ impl FindDialog {
                     .enumerate()
                 {
                     let i = i + range.start;
-                    let re =
-                        ui.selectable_label(app.ui.find_dialog.result_cursor == i, off.to_string());
+                    let sel_label_re = ui
+                        .horizontal(|ui| {
+                            let re = ui.selectable_label(
+                                app.ui.find_dialog.result_cursor == i,
+                                off.to_string(),
+                            );
+                            ui.separator();
+                            match app.meta.find_most_specific_region_for_offset(off) {
+                                Some(key) => {
+                                    ui.label(&app.meta.regions[key].name);
+                                }
+                                None => {
+                                    ui.label("[no region]");
+                                }
+                            }
+                            re
+                        })
+                        .inner;
                     if let Some(scroll_off) = app.ui.find_dialog.scroll_to && scroll_off == i {
-                        re.scroll_to_me(None);
+                        sel_label_re.scroll_to_me(None);
                         app.ui.find_dialog.scroll_to = None;
                     }
-                    if re.clicked() {
+                    if sel_label_re.clicked() {
                         app.search_focus(off);
                         app.ui.find_dialog.result_cursor = i;
                         break;

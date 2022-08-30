@@ -72,6 +72,25 @@ impl Meta {
             view.view.adjust_state_to_kind();
         }
     }
+
+    pub(crate) fn find_most_specific_region_for_offset(&self, off: usize) -> Option<RegionKey> {
+        let mut most_specific = None;
+        for (key, reg) in self.regions.iter() {
+            if reg.region.contains(off) {
+                match &mut most_specific {
+                    Some(most_spec_key) => {
+                        // A region is more specific if it's smaller
+                        let most_spec_reg = &self.regions[*most_spec_key];
+                        if reg.region.len() < most_spec_reg.region.len() {
+                            *most_spec_key = key;
+                        }
+                    }
+                    None => most_specific = Some(key),
+                }
+            }
+        }
+        most_specific
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
