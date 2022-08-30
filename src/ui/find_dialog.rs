@@ -33,6 +33,7 @@ pub struct FindDialog {
     /// When Some, the results list should be scrolled to the offset of that result
     pub scroll_to: Option<usize>,
     pub find_type: FindType,
+    pub filter_results: bool,
 }
 
 impl FindDialog {
@@ -56,31 +57,10 @@ impl FindDialog {
             .lost_focus()
             && ui.input().key_pressed(egui::Key::Enter)
         {
-            app.ui.find_dialog.results_vec.clear();
-            app.ui.find_dialog.results_set.clear();
-            match app.ui.find_dialog.find_type {
-                FindType::U8 => match parse_guess_radix(&app.ui.find_dialog.input) {
-                    Ok(needle) => {
-                        for (offset, &byte) in app.data.iter().enumerate() {
-                            if byte == needle {
-                                app.ui.find_dialog.results_vec.push(offset);
-                                app.ui.find_dialog.results_set.insert(offset);
-                            }
-                        }
-                    }
-                    Err(e) => msg_warn(&format!("Parse fail: {}", e)),
-                },
-                FindType::Ascii => {
-                    for offset in memchr::memmem::find_iter(&app.data, &app.ui.find_dialog.input) {
-                        app.ui.find_dialog.results_vec.push(offset);
-                        app.ui.find_dialog.results_set.insert(offset);
-                    }
-                }
-            }
-            if let Some(&off) = app.ui.find_dialog.results_vec.first() {
-                app.search_focus(off);
-            }
+            do_search(app);
         }
+        ui.checkbox(&mut app.ui.find_dialog.filter_results, "Filter results")
+            .on_hover_text("Base search on existing results");
         ui.horizontal(|ui| {
             ui.label("Offset");
             ui.separator();
@@ -149,5 +129,53 @@ impl FindDialog {
             }
             ui.label(format!("{} results", app.ui.find_dialog.results_vec.len()));
         });
+    }
+}
+
+fn do_search(app: &mut App) {
+    if !app.ui.find_dialog.filter_results {
+        app.ui.find_dialog.results_vec.clear();
+        app.ui.find_dialog.results_set.clear();
+    }
+    match app.ui.find_dialog.find_type {
+        FindType::U8 => match parse_guess_radix(&app.ui.find_dialog.input) {
+            Ok(needle) => {
+                if app.ui.find_dialog.filter_results {
+                    let results_vec_clone = app.ui.find_dialog.results_vec.clone();
+                    app.ui.find_dialog.results_vec.clear();
+                    app.ui.find_dialog.results_set.clear();
+                    u8_search(
+                        &mut app.ui.find_dialog,
+                        results_vec_clone.iter().map(|&off| (off, app.data[off])),
+                        needle,
+                    );
+                } else {
+                    u8_search(
+                        &mut app.ui.find_dialog,
+                        app.data.iter().cloned().enumerate(),
+                        needle,
+                    );
+                }
+            }
+            Err(e) => msg_warn(&format!("Parse fail: {}", e)),
+        },
+        FindType::Ascii => {
+            for offset in memchr::memmem::find_iter(&app.data, &app.ui.find_dialog.input) {
+                app.ui.find_dialog.results_vec.push(offset);
+                app.ui.find_dialog.results_set.insert(offset);
+            }
+        }
+    }
+    if let Some(&off) = app.ui.find_dialog.results_vec.first() {
+        app.search_focus(off);
+    }
+}
+
+fn u8_search(dialog: &mut FindDialog, haystack: impl Iterator<Item = (usize, u8)>, needle: u8) {
+    for (offset, byte) in haystack {
+        if byte == needle {
+            dialog.results_vec.push(offset);
+            dialog.results_set.insert(offset);
+        }
     }
 }
