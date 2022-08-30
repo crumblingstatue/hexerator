@@ -122,6 +122,7 @@ impl FindDialog {
                 }
             },
         );
+        ui.separator();
         ui.horizontal(|ui| {
             ui.set_enabled(!app.ui.find_dialog.results_vec.is_empty());
             if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
