@@ -9,6 +9,7 @@ use crate::{
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
     meta::{PerspectiveKey, PerspectiveMap, RegionMap},
+    region::Region,
     shell::{msg_if_fail, msg_warn},
 };
 
@@ -434,6 +435,12 @@ impl View {
             ViewKind::Text(data) => Some(&mut data.edit_buf),
             ViewKind::Block => None,
         }
+    }
+
+    pub(crate) fn contains_region(&self, reg: &Region, meta: &crate::meta::Meta) -> bool {
+        meta.regions[meta.perspectives[self.perspective].region]
+            .region
+            .contains_region(reg)
     }
 }
 

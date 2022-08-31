@@ -55,17 +55,34 @@ impl RegionsWindow {
             })
             .body(|mut body| {
                 let mut keys: Vec<RegionKey> = app.meta.regions.keys().collect();
-                let mut go_to = None;
+                let mut action = Action::None;
                 keys.sort_by_key(|k| app.meta.regions[*k].region.begin);
                 for k in keys {
                     body.row(20.0, |mut row| {
                         let reg = &app.meta.regions[k];
                         row.col(|ui| {
+                            let ctx_menu = |ui: &mut egui::Ui| {
+                                ui.menu_button("Containing layouts", |ui| {
+                                    for (key, layout) in app.meta.layouts.iter() {
+                                        if let Some(v) =
+                                            layout.view_containing_region(&reg.region, &app.meta)
+                                        {
+                                            if ui.button(&layout.name).clicked() {
+                                                app.current_layout = key;
+                                                app.focused_view = Some(v);
+                                                action = Action::Goto(reg.region.begin);
+                                                ui.close_menu();
+                                            }
+                                        }
+                                    }
+                                });
+                            };
                             if ui
                                 .selectable_label(
                                     app.ui.regions_window.selected_key == Some(k),
                                     &reg.name,
                                 )
+                                .context_menu(ctx_menu)
                                 .clicked()
                             {
                                 app.ui.regions_window.selected_key = Some(k);
@@ -73,12 +90,12 @@ impl RegionsWindow {
                         });
                         row.col(|ui| {
                             if ui.link(reg.region.begin.to_string()).clicked() {
-                                go_to = Some(reg.region.begin);
+                                action = Action::Goto(reg.region.begin);
                             }
                         });
                         row.col(|ui| {
                             if ui.link(reg.region.end.to_string()).clicked() {
-                                go_to = Some(reg.region.end);
+                                action = Action::Goto(reg.region.end);
                             }
                         });
                         row.col(|ui| {
@@ -86,10 +103,13 @@ impl RegionsWindow {
                         });
                     });
                 }
-                if let Some(off) = go_to {
-                    app.center_view_on_offset(off);
-                    app.edit_state.set_cursor(off);
-                    app.flash_cursor();
+                match action {
+                    Action::None => {}
+                    Action::Goto(off) => {
+                        app.center_view_on_offset(off);
+                        app.edit_state.set_cursor(off);
+                        app.flash_cursor();
+                    }
                 }
             });
         ui.separator();
@@ -137,4 +157,9 @@ impl RegionsWindow {
             }
         }
     }
+}
+
+enum Action {
+    None,
+    Goto(usize),
 }

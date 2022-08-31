@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     meta::{PerspectiveMap, RegionMap, ViewKey, ViewMap},
+    region::Region,
     view::{ViewportRect, ViewportScalar},
 };
 
@@ -35,6 +36,15 @@ impl Layout {
                 let col_pos = row.iter().position(|k| *k == key)?;
                 Some((row_idx, col_pos))
             })
+    }
+
+    pub(crate) fn view_containing_region(
+        &self,
+        reg: &Region,
+        meta: &crate::meta::Meta,
+    ) -> Option<ViewKey> {
+        self.iter()
+            .find(|view_key| meta.views[*view_key].view.contains_region(reg, meta))
     }
 }
 

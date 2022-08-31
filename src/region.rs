@@ -15,4 +15,8 @@ impl Region {
     pub(crate) fn contains(&self, idx: usize) -> bool {
         (self.begin..=self.end).contains(&idx)
     }
+
+    pub(crate) fn contains_region(&self, reg: &Region) -> bool {
+        self.begin <= reg.begin && self.end >= reg.end
+    }
 }
