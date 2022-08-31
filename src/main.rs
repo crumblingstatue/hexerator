@@ -59,7 +59,7 @@ use egui_sfml::sfml::{
 use egui_sfml::SfEgui;
 use gamedebug_core::per_msg;
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
-use meta::NamedView;
+use meta::{NamedView, PerspectiveMap, RegionMap};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use shell::{msg_if_fail, msg_warn};
@@ -396,6 +396,12 @@ fn handle_text_entered(app: &mut App, unicode: char) {
                 crate::view::View::zeroed(),
             );
             view.handle_text_entered(unicode, app);
+            keep_cursor_in_view(
+                &mut view,
+                &app.meta.perspectives,
+                &app.meta.regions,
+                &mut app.edit_state.cursor,
+            );
             app.meta.views[focused].view = view;
         }
         InteractMode::View => {}
@@ -433,6 +439,7 @@ fn handle_key_events(
                     app.edit_state.set_cursor_no_history(
                         app.edit_state.cursor.saturating_sub(app.meta.perspectives[view.perspective].cols),
                     );
+                    keep_cursor_in_view(view, &app.meta.perspectives, &app.meta.regions, &mut app.edit_state.cursor);
                 }
             }
         },
@@ -450,6 +457,7 @@ fn handle_key_events(
                     if app.edit_state.cursor + app.meta.perspectives[view.perspective].cols < app.data.len() {
                         app.edit_state.offset_cursor(app.meta.perspectives[view.perspective].cols);
                     }
+                    keep_cursor_in_view(view, &app.meta.perspectives, &app.meta.regions, &mut app.edit_state.cursor);
                 }
             }
         },
@@ -461,9 +469,9 @@ fn handle_key_events(
             if app.interact_mode == InteractMode::Edit {
                 let move_edit = (app.preferences.move_edit_cursor && !ctrl)
                     || (!app.preferences.move_edit_cursor && ctrl);
-                if move_edit {
                     if let Some(view_key) = app.focused_view {
                         let view = &mut app.meta.views[view_key];
+                if move_edit {
                         if let Some(edit_buf) = view.view.edit_buffer_mut() {
                             if !edit_buf.move_cursor_back() {
                                 edit_buf.move_cursor_end();
@@ -471,10 +479,11 @@ fn handle_key_events(
                                 app.edit_state.step_cursor_back();
                             }
                         }
-                    }
                 } else {
                     app.edit_state.step_cursor_back();
+                    keep_cursor_in_view(&mut view.view, &app.meta.perspectives, &app.meta.regions, &mut app.edit_state.cursor);
                 }
+            }
             } else if ctrl {
                 if shift {
                     app.halve_cols();
@@ -492,9 +501,9 @@ fn handle_key_events(
             {
                 let move_edit = (app.preferences.move_edit_cursor && !ctrl)
                     || (!app.preferences.move_edit_cursor && ctrl);
-                if move_edit {
                     if let Some(view_key) = app.focused_view {
                         let view = &mut app.meta.views[view_key];
+                if move_edit {
                         if let Some(edit_buf) = &mut view.view.edit_buffer_mut() {
                             if !edit_buf.move_cursor_forward() {
                                 edit_buf.move_cursor_begin();
@@ -502,10 +511,11 @@ fn handle_key_events(
                                 app.edit_state.step_cursor_forward();
                             }
                         }
-                    }
                 } else {
                     app.edit_state.step_cursor_forward();
+                    keep_cursor_in_view(&mut view.view, &app.meta.perspectives, &app.meta.regions, &mut app.edit_state.cursor);
                 }
+            }
             } else if ctrl {
                 if shift {
                     app.double_cols();
@@ -618,5 +628,34 @@ fn handle_key_events(
         Key::Num1 if shift => app.select_a = Some(app.edit_state.cursor),
         Key::Num2 if shift => app.select_b = Some(app.edit_state.cursor),
         _ => {}
+    }
+}
+
+fn keep_cursor_in_view(
+    view: &mut view::View,
+    perspectives: &PerspectiveMap,
+    regions: &RegionMap,
+    cursor: &mut usize,
+) {
+    let view_offs = view.offsets(perspectives, regions);
+    let (cur_row, cur_col) =
+        perspectives[view.perspective].row_col_of_byte_offset(*cursor, regions);
+    view.scroll_offset.pix_xoff = 0;
+    view.scroll_offset.pix_yoff = 0;
+    if view_offs.row > cur_row {
+        view.scroll_offset.row = cur_row;
+    }
+    #[expect(clippy::cast_sign_loss, reason = "rows is always unsigned")]
+    let view_rows = view.rows() as usize;
+    if (view_offs.row + view_rows) < cur_row {
+        view.scroll_offset.row = cur_row - view_rows;
+    }
+    if view_offs.col > cur_col {
+        view.scroll_offset.col = cur_col;
+    }
+    #[expect(clippy::cast_sign_loss, reason = "cols is always unsigned")]
+    let view_cols = view.cols() as usize;
+    if (view_offs.col + view_cols) < cur_col {
+        view.scroll_offset.col = cur_col - view_cols;
     }
 }
