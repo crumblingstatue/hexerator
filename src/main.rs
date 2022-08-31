@@ -64,7 +64,7 @@ use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use shell::{msg_if_fail, msg_warn};
 use slotmap::Key as _;
-use ui::dialogs::SetCursorDialog;
+use ui::{dialogs::SetCursorDialog, ContextMenu, ContextMenuData};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct InstanceRequest {
@@ -331,16 +331,28 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
             Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_panic((x, y));
+                if app.current_layout.is_null() {
+                    continue;
+                }
                 if button == mouse::Button::Left {
-                    if app.current_layout.is_null() {
-                        continue;
-                    }
+                    app.ui.context_menu = None;
                     if let Some((off, _view_idx)) = app.byte_offset_at_pos(mp.x, mp.y) {
                         app.edit_state.set_cursor(off);
                     }
                     if let Some(view_idx) = app.view_idx_at_pos(mp.x, mp.y) {
                         app.focused_view = Some(view_idx);
                         app.ui.views_window.selected = view_idx;
+                    }
+                } else if button == mouse::Button::Right {
+                    if let Some((off, view_key)) = app.byte_offset_at_pos(mp.x, mp.y) {
+                        app.ui.context_menu = Some(ContextMenu::new(
+                            mp.x,
+                            mp.y,
+                            ContextMenuData::ViewByte {
+                                view: view_key,
+                                byte_off: off,
+                            },
+                        ));
                     }
                 }
             }
@@ -575,6 +587,7 @@ fn handle_key_events(
         Key::F8 => app.ui.regions_window.open ^= true,
         Key::F9 => app.ui.bookmarks_window.open.toggle(),
         Key::Escape => {
+            app.ui.context_menu = None;
             if let Some(view_key) = app.focused_view {
                 app.meta.views[view_key].view.cancel_editing();
             }

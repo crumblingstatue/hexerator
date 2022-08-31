@@ -23,6 +23,7 @@ use egui_sfml::{
     SfEgui,
 };
 
+use crate::meta::ViewKey;
 use crate::{
     app::App,
     view::{ViewportScalar, ViewportVec},
@@ -42,6 +43,25 @@ pub struct Ui {
     pub perspectives_window: PerspectivesWindow,
     pub help_window: HelpWindow,
     pub file_diff_result_window: FileDiffResultWindow,
+    pub context_menu: Option<ContextMenu>,
+}
+
+pub struct ContextMenu {
+    pos: egui::Pos2,
+    data: ContextMenuData,
+}
+
+impl ContextMenu {
+    pub fn new(mx: ViewportScalar, my: ViewportScalar, data: ContextMenuData) -> Self {
+        Self {
+            pos: egui::pos2(f32::from(mx), f32::from(my)),
+            data,
+        }
+    }
+}
+
+pub enum ContextMenuData {
+    ViewByte { view: ViewKey, byte_off: usize },
 }
 
 pub trait Dialog: Debug {
@@ -116,6 +136,39 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             .open(&mut open)
             .show(ctx, |ui| FileDiffResultWindow::ui(ui, app));
         app.ui.file_diff_result_window.open.set_open(open);
+        // Context menu
+        if let Some(menu) = &app.ui.context_menu {
+            let mut close = false;
+            egui::Area::new("rootless_ctx_menu")
+                .fixed_pos(menu.pos)
+                .show(ctx, |ui| {
+                    ui.set_max_width(180.0);
+                    egui::Frame::menu(ui.style())
+                        .inner_margin(2.0)
+                        .show(ui, |ui| match &menu.data {
+                            &ContextMenuData::ViewByte { view, byte_off } => {
+                                if ui
+                                    .button("Increase byte")
+                                    .on_hover_text("Context menu test")
+                                    .clicked()
+                                {
+                                    app.data[byte_off] += 1;
+                                    close = true;
+                                }
+                                ui.separator();
+                                if ui.button("View properties...").clicked() {
+                                    app.ui.views_window.selected = view;
+                                    app.ui.views_window.open.set_open(true);
+                                    close = true;
+                                }
+                            }
+                        });
+                });
+            if close {
+                app.ui.context_menu = None;
+            }
+        }
+        // Panels
         let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app, font));
         let bot_re = TopBottomPanel::bottom("bottom_panel")
             .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos));
