@@ -1,4 +1,11 @@
-#![feature(lint_reasons, let_else, try_blocks, array_chunks, is_some_with)]
+#![feature(
+    lint_reasons,
+    let_else,
+    try_blocks,
+    array_chunks,
+    is_some_with,
+    let_chains
+)]
 #![warn(
     trivial_casts,
     trivial_numeric_casts,
