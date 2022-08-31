@@ -422,7 +422,8 @@ fn handle_key_events(
             InteractMode::View => {
                 if ctrl && let Some(view_key) = app.focused_view {
                     let key = app.meta.views[view_key].view.perspective;
-                    app.meta.regions[app.meta.perspectives[key].region].region.begin = app.meta.regions[app.meta.perspectives[key].region].region.begin.saturating_sub(1);
+                    let reg = &mut app.meta.regions[app.meta.perspectives[key].region].region;
+                    reg.begin = reg.begin.saturating_sub(1);
                 }
             }
             InteractMode::Edit => {
