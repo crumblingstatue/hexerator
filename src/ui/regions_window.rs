@@ -76,6 +76,11 @@ impl RegionsWindow {
                                         }
                                     }
                                 });
+                                if ui.button("Select").clicked() {
+                                    app.select_a = Some(reg.region.begin);
+                                    app.select_b = Some(reg.region.end);
+                                    ui.close_menu();
+                                }
                             };
                             if ui
                                 .selectable_label(
