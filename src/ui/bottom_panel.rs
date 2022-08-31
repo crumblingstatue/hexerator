@@ -1,4 +1,6 @@
-use egui_sfml::egui::{text::LayoutJob, Align, DragValue, Stroke, TextFormat, TextStyle, Ui};
+use egui_sfml::egui::{
+    text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui,
+};
 use slotmap::Key;
 
 use crate::{
@@ -15,6 +17,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
         {
             app.interact_mode = InteractMode::View;
         }
+        ui.style_mut().visuals.selection.bg_fill = Color32::from_rgb(168, 150, 32);
         let job = key_label(ui, "F2", "Edit");
         if ui
             .selectable_label(app.interact_mode == InteractMode::Edit, job)
