@@ -218,21 +218,6 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 app.ui.views_window.open.toggle();
                 ui.close_menu();
             }
-            ui.horizontal(|ui| {
-                ui.label("Seek to byte offset");
-                let re = ui.text_edit_singleline(&mut app.ui.seek_byte_offset_input);
-                if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
-                    if let Some(view_key) = app.focused_view {
-                        app.meta.views[view_key].view.scroll_to_byte_offset(
-                            app.ui.seek_byte_offset_input.parse().unwrap_or(0),
-                            &app.meta.perspectives,
-                            &app.meta.regions,
-                            app.col_change_lock_x,
-                            app.col_change_lock_y,
-                        );
-                    }
-                }
-            });
             ui.checkbox(&mut app.col_change_lock_x, "Lock x on column change");
             ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
         });
