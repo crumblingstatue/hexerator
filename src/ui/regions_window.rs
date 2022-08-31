@@ -72,12 +72,12 @@ impl RegionsWindow {
                             }
                         });
                         row.col(|ui| {
-                            if ui.button(reg.region.begin.to_string()).clicked() {
+                            if ui.link(reg.region.begin.to_string()).clicked() {
                                 go_to = Some(reg.region.begin);
                             }
                         });
                         row.col(|ui| {
-                            if ui.button(reg.region.end.to_string()).clicked() {
+                            if ui.link(reg.region.end.to_string()).clicked() {
                                 go_to = Some(reg.region.end);
                             }
                         });
