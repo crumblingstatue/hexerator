@@ -140,9 +140,22 @@ impl FileDiffResultWindow {
                             }
                         });
                         row.col(|ui| {
-                            match app.meta.bookmarks.iter().find(|b| b.offset == entry.offset) {
-                                Some(bookmark) => {
-                                    ui.label(&bookmark.label).on_hover_text(&bookmark.desc);
+                            match app
+                                .meta
+                                .bookmarks
+                                .iter()
+                                .enumerate()
+                                .find(|(_i, b)| b.offset == entry.offset)
+                            {
+                                Some((idx, bookmark)) => {
+                                    if ui
+                                        .link(&bookmark.label)
+                                        .on_hover_text(&bookmark.desc)
+                                        .clicked()
+                                    {
+                                        app.ui.bookmarks_window.open.set_open(true);
+                                        app.ui.bookmarks_window.selected = Some(idx);
+                                    }
                                 }
                                 None => {
                                     ui.label("-");
