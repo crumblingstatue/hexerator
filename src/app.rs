@@ -335,7 +335,7 @@ impl App {
     /// Readjust to a new file
     fn new_file_readjust(&mut self, font: &Font) {
         let def_region = self.meta.regions.insert(NamedRegion {
-            name: "Default region".into(),
+            name: "default".into(),
             region: Region {
                 begin: 0,
                 end: self.data.len().saturating_sub(1),
