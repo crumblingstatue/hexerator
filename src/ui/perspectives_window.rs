@@ -2,7 +2,10 @@ use egui_extras::{Size, TableBuilder};
 use egui_sfml::egui;
 use slotmap::Key;
 
-use crate::meta::{perspective::Perspective, PerspectiveKey, RegionKey};
+use crate::{
+    meta::{perspective::Perspective, PerspectiveKey, RegionKey},
+    region_context_menu,
+};
 
 use super::window_open::WindowOpen;
 
@@ -34,17 +37,17 @@ impl PerspectivesWindow {
                 let keys: Vec<_> = app.meta.perspectives.keys().collect();
                 let mut action = Action::None;
                 body.rows(20.0, keys.len(), |idx, mut row| {
-                    let per = &mut app.meta.perspectives[keys[idx]];
                     row.col(|ui| {
                         if app.ui.perspectives_window.rename_idx == keys[idx] {
-                            let re = ui.text_edit_singleline(&mut per.name);
+                            let re =
+                                ui.text_edit_singleline(&mut app.meta.perspectives[keys[idx]].name);
                             if re.lost_focus() {
                                 app.ui.perspectives_window.rename_idx = PerspectiveKey::null();
                             } else {
                                 re.request_focus();
                             }
                         } else {
-                            ui.menu_button(&per.name, |ui| {
+                            ui.menu_button(&app.meta.perspectives[keys[idx]].name, |ui| {
                                 if ui.button("✏ Rename").clicked() {
                                     app.ui.perspectives_window.rename_idx = keys[idx];
                                     ui.close_menu();
@@ -57,15 +60,23 @@ impl PerspectivesWindow {
                         }
                     });
                     row.col(|ui| {
-                        if ui.link(&app.meta.regions[per.region].name).clicked() {
+                        let per = &app.meta.perspectives[keys[idx]];
+                        let reg = &app.meta.regions[per.region];
+                        if ui
+                            .link(&reg.name)
+                            .context_menu(region_context_menu!(app, reg, action))
+                            .clicked()
+                        {
                             action = Action::OpenRegion(per.region);
                         }
                     });
                     row.col(|ui| {
-                        ui.add(egui::DragValue::new(&mut per.cols));
+                        ui.add(egui::DragValue::new(
+                            &mut app.meta.perspectives[keys[idx]].cols,
+                        ));
                     });
                     row.col(|ui| {
-                        ui.checkbox(&mut per.flip_row_order, "");
+                        ui.checkbox(&mut app.meta.perspectives[keys[idx]].flip_row_order, "");
                     });
                 });
                 match action {
@@ -76,6 +87,11 @@ impl PerspectivesWindow {
                     Action::OpenRegion(key) => {
                         app.ui.regions_window.open = true;
                         app.ui.regions_window.selected_key = Some(key);
+                    }
+                    Action::Goto(off) => {
+                        app.center_view_on_offset(off);
+                        app.edit_state.set_cursor(off);
+                        app.flash_cursor();
                     }
                 }
             });
@@ -98,4 +114,5 @@ enum Action {
     None,
     Remove(PerspectiveKey),
     OpenRegion(RegionKey),
+    Goto(usize),
 }

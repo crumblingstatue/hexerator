@@ -14,6 +14,31 @@ pub struct RegionsWindow {
     rename_active: bool,
 }
 
+#[macro_export]
+macro_rules! region_context_menu {
+    ($app:expr, $reg:expr, $action:expr) => {
+        |ui: &mut egui::Ui| {
+            ui.menu_button("Containing layouts", |ui| {
+                for (key, layout) in $app.meta.layouts.iter() {
+                    if let Some(v) = layout.view_containing_region(&$reg.region, &$app.meta) {
+                        if ui.button(&layout.name).clicked() {
+                            $app.current_layout = key;
+                            $app.focused_view = Some(v);
+                            $action = Action::Goto($reg.region.begin);
+                            ui.close_menu();
+                        }
+                    }
+                }
+            });
+            if ui.button("Select").clicked() {
+                $app.select_a = Some($reg.region.begin);
+                $app.select_b = Some($reg.region.end);
+                ui.close_menu();
+            }
+        }
+    };
+}
+
 impl RegionsWindow {
     pub fn ui(ui: &mut Ui, app: &mut App) {
         let button = egui::Button::new("Add selection as region");
@@ -61,27 +86,7 @@ impl RegionsWindow {
                     body.row(20.0, |mut row| {
                         let reg = &app.meta.regions[k];
                         row.col(|ui| {
-                            let ctx_menu = |ui: &mut egui::Ui| {
-                                ui.menu_button("Containing layouts", |ui| {
-                                    for (key, layout) in app.meta.layouts.iter() {
-                                        if let Some(v) =
-                                            layout.view_containing_region(&reg.region, &app.meta)
-                                        {
-                                            if ui.button(&layout.name).clicked() {
-                                                app.current_layout = key;
-                                                app.focused_view = Some(v);
-                                                action = Action::Goto(reg.region.begin);
-                                                ui.close_menu();
-                                            }
-                                        }
-                                    }
-                                });
-                                if ui.button("Select").clicked() {
-                                    app.select_a = Some(reg.region.begin);
-                                    app.select_b = Some(reg.region.end);
-                                    ui.close_menu();
-                                }
-                            };
+                            let ctx_menu = region_context_menu!(app, reg, action);
                             if ui
                                 .selectable_label(
                                     app.ui.regions_window.selected_key == Some(k),
