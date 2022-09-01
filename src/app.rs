@@ -345,6 +345,7 @@ impl App {
             region: def_region,
             cols: 48,
             flip_row_order: false,
+            name: "default".to_string(),
         });
         self.meta.layouts.clear();
         self.meta.views.clear();

@@ -1,5 +1,4 @@
 use egui_sfml::egui;
-use slotmap::Key;
 
 use crate::meta::perspective::Perspective;
 
@@ -8,20 +7,26 @@ use super::window_open::WindowOpen;
 #[derive(Default)]
 pub struct PerspectivesWindow {
     pub open: WindowOpen,
+    pub rename: bool,
 }
 impl PerspectivesWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
         app.meta.perspectives.retain(|k, per| {
             let mut retain = true;
-            let (heading, sel_text) = if per.region.is_null() {
-                ("<null perspective>".to_string(), "<null>")
+            if app.ui.perspectives_window.rename {
+                if ui.text_edit_singleline(&mut per.name).lost_focus() {
+                    app.ui.perspectives_window.rename = false;
+                }
             } else {
-                let name = &app.meta.regions[per.region].name;
-                (format!("{}:{}", name, per.cols), name.as_str())
-            };
-            ui.heading(heading);
+                ui.horizontal(|ui| {
+                    ui.heading(&per.name);
+                    if ui.button("✏").on_hover_text("Rename").clicked() {
+                        app.ui.perspectives_window.rename ^= true;
+                    }
+                });
+            }
             egui::ComboBox::new(egui::Id::new("region_combo").with(k), "region")
-                .selected_text(sel_text)
+                .selected_text(&app.meta.regions[per.region].name)
                 .show_ui(ui, |ui| {
                     for (reg_k, reg) in &app.meta.regions {
                         ui.selectable_value(&mut per.region, reg_k, &reg.name);
@@ -38,8 +43,15 @@ impl PerspectivesWindow {
             retain
         });
         ui.separator();
-        if ui.button("Add new").clicked() {
-            app.meta.perspectives.insert(Perspective::default());
-        }
+        ui.menu_button("New from region", |ui| {
+            for (key, region) in app.meta.regions.iter() {
+                if ui.button(&region.name).clicked() {
+                    app.meta
+                        .perspectives
+                        .insert(Perspective::from_region(key, region.name.clone()));
+                    return;
+                }
+            }
+        });
     }
 }

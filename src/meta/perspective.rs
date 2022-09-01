@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use slotmap::Key;
 
 use crate::meta::{RegionKey, RegionMap};
 
@@ -18,6 +17,7 @@ pub struct Perspective {
     /// Sometimes binary files store images or other data "upside-down".
     /// A row order flipped perspective helps view and manipulate this kind of data better.
     pub flip_row_order: bool,
+    pub name: String,
 }
 
 impl Perspective {
@@ -59,14 +59,13 @@ impl Perspective {
         }
         rows
     }
-}
 
-impl Default for Perspective {
-    fn default() -> Self {
+    pub(crate) fn from_region(key: RegionKey, name: String) -> Self {
         Self {
-            region: RegionKey::null(),
-            cols: 0,
+            region: key,
+            cols: 48,
             flip_row_order: false,
+            name,
         }
     }
 }
