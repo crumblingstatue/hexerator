@@ -59,6 +59,7 @@ impl ViewsWindow {
         ui.menu_button("New from perspective", |ui| {
             for (key, perspective) in app.meta.perspectives.iter() {
                 if ui.button(&perspective.name).clicked() {
+                    ui.close_menu();
                     let k = app.meta.views.insert(NamedView {
                         view: View::new(ViewKind::Hex(HexData::default()), key),
                         name: perspective.name.to_owned(),
