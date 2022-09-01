@@ -45,6 +45,10 @@ impl Layout {
         self.iter()
             .find(|view_key| meta.views[*view_key].view.contains_region(reg, meta))
     }
+
+    pub(crate) fn contains_view(&self, key: ViewKey) -> bool {
+        self.iter().any(|k| k == key)
+    }
 }
 
 pub fn do_auto_layout(

@@ -1,9 +1,11 @@
 use std::{hash::Hash, ops::RangeInclusive};
 
+use egui_extras::{Size, TableBuilder};
 use egui_sfml::egui::{self, emath::Numeric};
 use egui_sfml::sfml::graphics::Font;
 
 use crate::meta::{NamedView, ViewKey};
+use crate::region_context_menu;
 use crate::view::{HexData, TextData, TextKind, View, ViewKind};
 
 use super::window_open::WindowOpen;
@@ -39,22 +41,84 @@ impl ViewsWindow {
             app.ui.views_window.selected = view_key;
         }
         let mut removed_idx = None;
-        ui.heading("Views");
         if app.meta.views.is_empty() {
             ui.label("No views");
             return;
         }
-        for (k, view) in app.meta.views.iter_mut() {
-            ui.horizontal(|ui| {
-                if ui
-                    .selectable_label(k == app.ui.views_window.selected, &view.name)
-                    .clicked()
-                {
-                    app.ui.views_window.selected = k;
+        TableBuilder::new(ui)
+            .columns(Size::remainder().at_least(100.0), 4)
+            .header(24.0, |mut row| {
+                row.col(|ui| {
+                    ui.label("Name");
+                });
+                row.col(|ui| {
+                    ui.label("Kind");
+                });
+                row.col(|ui| {
+                    ui.label("Perspective");
+                });
+                row.col(|ui| {
+                    ui.label("Region");
+                });
+            })
+            .body(|body| {
+                let keys: Vec<ViewKey> = app.meta.views.keys().collect();
+                let mut action = Action::None;
+                body.rows(20.0, keys.len(), |idx, mut row| {
+                    let view_key = keys[idx];
+                    let view = &app.meta.views[view_key];
+                    row.col(|ui| {
+                        let ctx_menu = |ui: &mut egui::Ui| {
+                            ui.menu_button("Containing layouts", |ui| {
+                                for (key, layout) in app.meta.layouts.iter() {
+                                    if layout.contains_view(view_key)
+                                        && ui.button(&layout.name).clicked()
+                                    {
+                                        app.current_layout = key;
+                                        app.focused_view = Some(view_key);
+                                        ui.close_menu();
+                                    }
+                                }
+                            });
+                        };
+                        if ui
+                            .selectable_label(view_key == app.ui.views_window.selected, &view.name)
+                            .context_menu(ctx_menu)
+                            .clicked()
+                        {
+                            app.ui.views_window.selected = view_key;
+                        }
+                    });
+                    row.col(|ui| {
+                        ui.label(egui::RichText::new(view.view.kind.name()).code());
+                    });
+                    row.col(|ui| {
+                        if ui
+                            .link(&app.meta.perspectives[view.view.perspective].name)
+                            .clicked()
+                        {
+                            app.ui.perspectives_window.open.set_open(true);
+                        }
+                    });
+                    row.col(|ui| {
+                        let per = &app.meta.perspectives[view.view.perspective];
+                        let reg = &app.meta.regions[per.region];
+                        let ctx_menu = region_context_menu!(app, reg, action);
+                        if ui.link(&reg.name).context_menu(ctx_menu).clicked() {
+                            app.ui.regions_window.open = true;
+                            app.ui.regions_window.selected_key = Some(per.region);
+                        }
+                    });
+                });
+                match action {
+                    Action::None => {}
+                    Action::Goto(off) => {
+                        app.edit_state.cursor = off;
+                        app.center_view_on_offset(off);
+                        app.flash_cursor();
+                    }
                 }
-                ui.label(egui::RichText::new(view.view.kind.name()).code());
             });
-        }
         ui.separator();
         ui.menu_button("New from perspective", |ui| {
             for (key, perspective) in app.meta.perspectives.iter() {
@@ -247,4 +311,9 @@ fn labelled_drag<T: Numeric>(
         ui.add(dv)
     })
     .inner
+}
+
+enum Action {
+    None,
+    Goto(usize),
 }
