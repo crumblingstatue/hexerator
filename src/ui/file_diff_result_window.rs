@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use egui_extras::Size;
 
-use crate::{app::FileDiffEntry, shell::msg_if_fail};
+use crate::{app::FileDiffEntry, meta::find_most_specific_region_for_offset, shell::msg_if_fail};
 
 use super::window_open::WindowOpen;
 
@@ -99,7 +99,10 @@ impl FileDiffResultWindow {
                             }
                         });
                         row.col(|ui| {
-                            match app.meta.find_most_specific_region_for_offset(entry.offset) {
+                            match find_most_specific_region_for_offset(
+                                &app.meta.regions,
+                                entry.offset,
+                            ) {
                                 Some(reg) => {
                                     let reg = &app.meta.regions[reg];
                                     ui.label(&reg.name);

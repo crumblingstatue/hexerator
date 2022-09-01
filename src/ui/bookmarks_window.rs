@@ -1,6 +1,11 @@
+use egui_extras::{Size, TableBuilder};
 use egui_sfml::egui::{self, Ui};
 
-use crate::{app::App, meta::Bookmark};
+use crate::{
+    app::App,
+    meta::{find_most_specific_region_for_offset, Bookmark},
+    region_context_menu,
+};
 
 use super::window_open::WindowOpen;
 
@@ -14,24 +19,61 @@ pub struct BookmarksWindow {
 impl BookmarksWindow {
     pub fn ui(ui: &mut Ui, app: &mut App) {
         let win = &mut app.ui.bookmarks_window;
-        let bookmarks = &mut app.meta.bookmarks;
-        let mut jump_to = None;
-        for (i, mark) in bookmarks.iter_mut().enumerate() {
-            ui.horizontal(|ui| {
-                if ui
-                    .selectable_label(win.selected == Some(i), &mark.label)
-                    .clicked()
-                {
-                    win.selected = Some(i);
-                }
-                if ui.button("⮩").clicked() {
-                    jump_to = Some(mark.offset);
-                }
+        let mut action = Action::None;
+        TableBuilder::new(ui)
+            .columns(Size::remainder(), 3)
+            .header(24.0, |mut row| {
+                row.col(|ui| {
+                    ui.label("Name");
+                });
+                row.col(|ui| {
+                    ui.label("Offset");
+                });
+                row.col(|ui| {
+                    ui.label("Region");
+                });
+            })
+            .body(|body| {
+                body.rows(20.0, app.meta.bookmarks.len(), |idx, mut row| {
+                    row.col(|ui| {
+                        if ui
+                            .selectable_label(
+                                win.selected == Some(idx),
+                                &app.meta.bookmarks[idx].label,
+                            )
+                            .clicked()
+                        {
+                            win.selected = Some(idx);
+                        }
+                    });
+                    row.col(|ui| {
+                        if ui
+                            .link(app.meta.bookmarks[idx].offset.to_string())
+                            .clicked()
+                        {
+                            action = Action::Goto(app.meta.bookmarks[idx].offset);
+                        }
+                    });
+                    row.col(|ui| {
+                        let off = app.meta.bookmarks[idx].offset;
+                        if let Some(region_key) =
+                            find_most_specific_region_for_offset(&app.meta.regions, off)
+                        {
+                            let region = &app.meta.regions[region_key];
+                            let ctx_menu = region_context_menu!(app, region, action);
+                            if ui.link(&region.name).context_menu(ctx_menu).clicked() {
+                                app.ui.regions_window.open = true;
+                                app.ui.regions_window.selected_key = Some(region_key);
+                            }
+                        } else {
+                            ui.label("<no region>");
+                        }
+                    });
+                });
             });
-        }
         if let Some(idx) = win.selected {
             ui.separator();
-            let mark = &mut bookmarks[idx];
+            let mark = &mut app.meta.bookmarks[idx];
             ui.horizontal(|ui| {
                 if win.edit_name {
                     if ui.text_edit_singleline(&mut mark.label).lost_focus() {
@@ -51,7 +93,7 @@ impl BookmarksWindow {
             ui.heading("Description");
             ui.text_edit_multiline(&mut mark.desc);
             if ui.button("Delete").clicked() {
-                bookmarks.remove(idx);
+                app.meta.bookmarks.remove(idx);
                 win.selected = None;
             }
         }
@@ -63,10 +105,18 @@ impl BookmarksWindow {
                 desc: String::new(),
             })
         }
-        if let Some(off) = jump_to {
-            app.edit_state.cursor = off;
-            app.center_view_on_offset(off);
-            app.flash_cursor();
+        match action {
+            Action::None => {}
+            Action::Goto(off) => {
+                app.edit_state.cursor = off;
+                app.center_view_on_offset(off);
+                app.flash_cursor();
+            }
         }
     }
+}
+
+enum Action {
+    None,
+    Goto(usize),
 }

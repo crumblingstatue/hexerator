@@ -2,7 +2,10 @@ use std::collections::HashSet;
 
 use egui_sfml::egui::{self, ScrollArea, Ui};
 
-use crate::{app::App, parse_radix::parse_guess_radix, shell::msg_warn};
+use crate::{
+    app::App, meta::find_most_specific_region_for_offset, parse_radix::parse_guess_radix,
+    shell::msg_warn,
+};
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub enum FindType {
@@ -84,7 +87,7 @@ impl FindDialog {
                                 off.to_string(),
                             );
                             ui.separator();
-                            match app.meta.find_most_specific_region_for_offset(off) {
+                            match find_most_specific_region_for_offset(&app.meta.regions, off) {
                                 Some(key) => {
                                     ui.label(&app.meta.regions[key].name);
                                 }
