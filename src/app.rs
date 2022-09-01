@@ -78,6 +78,7 @@ pub struct App {
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
     pub meta: Meta,
+    pub current_meta_path: PathBuf,
     pub last_meta_backup: Cell<Instant>,
 }
 
@@ -134,6 +135,7 @@ impl App {
             current_layout: LayoutKey::null(),
             meta: Meta::default(),
             last_meta_backup: Cell::new(Instant::now()),
+            current_meta_path: PathBuf::new(),
         };
         if load_success {
             this.new_file_readjust(font);
@@ -201,7 +203,7 @@ impl App {
         );
         Ok(())
     }
-    pub fn save_temp_metafile_backup(&self) -> anyhow::Result<()> {
+    pub fn save_temp_metafile_backup(&mut self) -> anyhow::Result<()> {
         self.save_meta_to_file(temp_metafile_backup_path())?;
         self.last_meta_backup.set(Instant::now());
         per_msg!("Saved temp metafile backup");
@@ -502,7 +504,7 @@ impl App {
         }
         None
     }
-    pub fn save_meta(&self) -> anyhow::Result<()> {
+    pub fn save_meta(&mut self) -> anyhow::Result<()> {
         if !self.meta_dirty {
             return Ok(());
         }
@@ -523,9 +525,10 @@ impl App {
         Ok(())
     }
 
-    pub fn save_meta_to_file(&self, path: PathBuf) -> Result<(), anyhow::Error> {
+    pub fn save_meta_to_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
         let data = rmp_serde::to_vec(&self.meta)?;
-        std::fs::write(path, &data)?;
+        std::fs::write(&path, &data)?;
+        self.current_meta_path = path;
         Ok(())
     }
 
@@ -632,8 +635,9 @@ fn try_consume_metafile(this: &mut App) -> Result<(), anyhow::Error> {
 }
 
 pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
-    let data = std::fs::read(path)?;
+    let data = std::fs::read(&path)?;
     this.meta = rmp_serde::from_slice(&data)?;
+    this.current_meta_path = path;
     this.meta.post_load_init();
     Ok(())
 }
