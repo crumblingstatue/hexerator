@@ -2,7 +2,12 @@ use std::path::PathBuf;
 
 use egui_extras::Size;
 
-use crate::{app::FileDiffEntry, meta::find_most_specific_region_for_offset, shell::msg_if_fail};
+use crate::{
+    app::FileDiffEntry,
+    meta::{find_most_specific_region_for_offset, RegionKey},
+    region_context_menu,
+    shell::msg_if_fail,
+};
 
 use super::window_open::WindowOpen;
 
@@ -95,7 +100,7 @@ impl FileDiffResultWindow {
                         });
                         row.col(|ui| {
                             if ui.link(entry.offset.to_string()).clicked() {
-                                action = Action::GoToOffset(entry.offset);
+                                action = Action::Goto(entry.offset);
                             }
                         });
                         row.col(|ui| {
@@ -103,9 +108,16 @@ impl FileDiffResultWindow {
                                 &app.meta.regions,
                                 entry.offset,
                             ) {
-                                Some(reg) => {
-                                    let reg = &app.meta.regions[reg];
-                                    ui.label(&reg.name);
+                                Some(reg_key) => {
+                                    let reg = &app.meta.regions[reg_key];
+                                    ui.menu_button(&reg.name, |ui| {
+                                        if ui.button("Remove region from results").clicked() {
+                                            action = Action::RemoveRegion(reg_key);
+                                            ui.close_menu();
+                                        }
+                                    })
+                                    .response
+                                    .context_menu(region_context_menu!(app, reg, action));
                                 }
                                 None => {
                                     ui.label("[no region]");
@@ -127,16 +139,21 @@ impl FileDiffResultWindow {
             });
         match action {
             Action::None => {}
-            Action::GoToOffset(off) => {
+            Action::Goto(off) => {
                 app.center_view_on_offset(off);
                 app.edit_state.set_cursor(off);
                 app.flash_cursor();
             }
+            Action::RemoveRegion(key) => app.ui.file_diff_result_window.diff_entries.retain(|en| {
+                let reg = find_most_specific_region_for_offset(&app.meta.regions, en.offset);
+                reg != Some(key)
+            }),
         }
     }
 }
 
 enum Action {
     None,
-    GoToOffset(usize),
+    Goto(usize),
+    RemoveRegion(RegionKey),
 }

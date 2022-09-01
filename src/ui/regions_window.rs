@@ -17,7 +17,7 @@ pub struct RegionsWindow {
 #[macro_export]
 macro_rules! region_context_menu {
     ($app:expr, $reg:expr, $action:expr) => {
-        |ui: &mut egui::Ui| {
+        |ui: &mut egui_sfml::egui::Ui| {
             ui.menu_button("Containing layouts", |ui| {
                 for (key, layout) in $app.meta.layouts.iter() {
                     if let Some(v) = layout.view_containing_region(&$reg.region, &$app.meta) {
