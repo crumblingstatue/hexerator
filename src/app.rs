@@ -325,6 +325,8 @@ impl App {
 
     /// Readjust to a new file
     fn new_file_readjust(&mut self, font: &Font) {
+        self.meta = Meta::default();
+        self.current_meta_path.clear();
         let def_region = self.meta.regions.insert(NamedRegion {
             name: "default".into(),
             region: Region {
@@ -338,8 +340,6 @@ impl App {
             flip_row_order: false,
             name: "default".to_string(),
         });
-        self.meta.layouts.clear();
-        self.meta.views.clear();
         let mut layout = Layout {
             name: "Default layout".into(),
             view_grid: vec![vec![]],
