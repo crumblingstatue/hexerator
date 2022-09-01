@@ -1,11 +1,12 @@
 pub mod perspective;
+pub mod region;
 
 use serde::{Deserialize, Serialize};
 use slotmap::{new_key_type, SlotMap};
 
-use crate::{layout::Layout, region::Region, view::View};
+use crate::{layout::Layout, view::View};
 
-use self::perspective::Perspective;
+use self::{perspective::Perspective, region::Region};
 
 new_key_type! {
     pub struct PerspectiveKey;

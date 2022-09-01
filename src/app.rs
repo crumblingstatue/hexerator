@@ -27,10 +27,9 @@ use crate::{
     input::Input,
     layout::{default_margin, do_auto_layout, Layout},
     meta::{
-        perspective::Perspective, LayoutKey, Meta, NamedRegion, NamedView, PerspectiveKey,
-        PerspectiveMap, RegionMap, ViewKey,
+        perspective::Perspective, region::Region, LayoutKey, Meta, NamedRegion, NamedView,
+        PerspectiveKey, PerspectiveMap, RegionMap, ViewKey,
     },
-    region::Region,
     shell::{msg_if_fail, msg_warn},
     source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     timer::Timer,

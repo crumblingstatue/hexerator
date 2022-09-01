@@ -8,8 +8,7 @@ use crate::{
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
-    meta::{PerspectiveKey, PerspectiveMap, RegionMap},
-    region::Region,
+    meta::{region::Region, PerspectiveKey, PerspectiveMap, RegionMap},
     shell::{msg_if_fail, msg_warn},
 };
 

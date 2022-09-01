@@ -29,7 +29,6 @@ mod input;
 mod layout;
 mod meta;
 mod parse_radix;
-mod region;
 mod shell;
 mod slice_ext;
 mod source;

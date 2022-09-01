@@ -13,8 +13,7 @@ use crate::{
     app::{presentation::Presentation, App},
     color::invert_color,
     dec_conv, hex_conv,
-    meta::{PerspectiveMap, RegionMap, ViewKey},
-    region::Region,
+    meta::{region::Region, PerspectiveMap, RegionMap, ViewKey},
     ui::Ui,
     view::ViewKind,
 };

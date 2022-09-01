@@ -1,10 +1,9 @@
 use serde::{Deserialize, Serialize};
 use slotmap::Key;
 
-use crate::{
-    meta::{RegionKey, RegionMap},
-    region::Region,
-};
+use crate::meta::{RegionKey, RegionMap};
+
+use super::region::Region;
 
 /// A "perspectived" (column count) view of a region
 #[derive(Debug, Serialize, Deserialize, Clone)]

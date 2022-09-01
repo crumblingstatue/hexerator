@@ -3,8 +3,7 @@ use std::cmp::{max, min};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    meta::{PerspectiveMap, RegionMap, ViewKey, ViewMap},
-    region::Region,
+    meta::{region::Region, PerspectiveMap, RegionMap, ViewKey, ViewMap},
     view::{ViewportRect, ViewportScalar},
 };
 
