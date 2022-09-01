@@ -35,7 +35,11 @@ impl BookmarksWindow {
                 });
             })
             .body(|body| {
-                body.rows(20.0, app.meta.bookmarks.len(), |idx, mut row| {
+                // Sort by offset
+                let mut keys: Vec<usize> = (0..app.meta.bookmarks.len()).collect();
+                keys.sort_by_key(|&idx| app.meta.bookmarks[idx].offset);
+                body.rows(20.0, keys.len(), |idx, mut row| {
+                    let idx = keys[idx];
                     row.col(|ui| {
                         if ui
                             .selectable_label(
