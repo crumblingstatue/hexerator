@@ -266,6 +266,10 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             ui.separator();
+            if ui.add_enabled(!app.current_meta_path.as_os_str().is_empty(), egui::Button::new("Reload")).on_hover_text(format!("Reload from {}", app.current_meta_path.display())).clicked() {
+                msg_if_fail(crate::app::consume_meta_from_file(app.current_meta_path.clone(), app), "Failed to load metafile");
+                ui.close_menu();
+            }
             if ui.button("Load from file...").clicked() {
                 if let Some(path) = rfd::FileDialog::default().pick_file() {
                     msg_if_fail(crate::app::consume_meta_from_file(path, app), "Failed to load metafile");
@@ -276,6 +280,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 msg_if_fail(crate::app::consume_meta_from_file(crate::app::temp_metafile_backup_path(), app), "Failed to load temp metafile");
                 ui.close_menu();
             }
+            ui.separator();
             if ui.add_enabled(!app.current_meta_path.as_os_str().is_empty(), egui::Button::new("Save")).on_hover_text(format!("Save to {}", app.current_meta_path.display())).clicked() {
                 msg_if_fail(app.save_meta_to_file(app.current_meta_path.clone()), "Failed to save metafile");
                 ui.close_menu();
