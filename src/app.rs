@@ -17,7 +17,6 @@ use anyhow::{bail, Context};
 
 use egui_sfml::sfml::graphics::Font;
 use gamedebug_core::per_msg;
-use rfd::MessageButtons;
 use slotmap::Key;
 
 use crate::{
@@ -141,8 +140,6 @@ impl App {
             this.new_file_readjust(font);
             if let Some(meta_path) = &this.args.meta {
                 consume_meta_from_file(meta_path.clone(), &mut this)?;
-            } else {
-                try_consume_metafile(&mut this)?;
             }
         }
         if let Some(offset) = this.args.src.jump {
@@ -232,14 +229,6 @@ impl App {
         self.args.src.file.as_ref().map(|file| {
             let mut os_string = OsString::from(file);
             os_string.push(".hexerator_bak");
-            os_string.into()
-        })
-    }
-
-    pub(crate) fn meta_path(&self) -> Option<PathBuf> {
-        self.args.src.file.as_ref().map(|file| {
-            let mut os_string = OsString::from(file);
-            os_string.push(".hexerator_meta");
             os_string.into()
         })
     }
@@ -372,7 +361,6 @@ impl App {
     pub fn close_file(&mut self) {
         // We potentially had large data, free it instead of clearing the Vec
         self.data = Vec::new();
-        msg_if_fail(self.save_meta(), "Failed to save .hexerator_meta");
         self.args.src.file = None;
         self.source = None;
     }
@@ -504,26 +492,6 @@ impl App {
         }
         None
     }
-    pub fn save_meta(&mut self) -> anyhow::Result<()> {
-        if !self.meta_dirty {
-            return Ok(());
-        }
-        if let Some(path) = self.meta_path() {
-            if !path.exists() {
-                let ans = rfd::MessageDialog::new()
-                    .set_buttons(MessageButtons::YesNo)
-                    .set_description(
-                        "You have added some meta information. Would you like to save a metafile?",
-                    )
-                    .show();
-                if !ans {
-                    return Ok(());
-                }
-            }
-            self.save_meta_to_file(path)?;
-        }
-        Ok(())
-    }
 
     pub fn save_meta_to_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
         let data = rmp_serde::to_vec(&self.meta)?;
@@ -543,7 +511,6 @@ impl App {
         }
         if !self.preferences.keep_meta {
             self.new_file_readjust(font);
-            try_consume_metafile(self)?;
         }
         Ok(())
     }
@@ -623,15 +590,6 @@ pub struct FileDiffEntry {
 
 pub fn temp_metafile_backup_path() -> PathBuf {
     std::env::temp_dir().join("hexerator_meta_backup.meta")
-}
-
-fn try_consume_metafile(this: &mut App) -> Result<(), anyhow::Error> {
-    if let Some(path) = this.meta_path() {
-        if path.exists() {
-            consume_meta_from_file(path, this)?;
-        }
-    };
-    Ok(())
 }
 
 pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
