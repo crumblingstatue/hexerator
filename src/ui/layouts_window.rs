@@ -71,13 +71,20 @@ impl LayoutsWindow {
                                         ui.close_menu();
                                     }
                                 }
-                                ui.separator();
+                            })
+                            .response
+                            .context_menu(|ui| {
                                 if ui.button("🔃 Swap").clicked() {
                                     win.swap_a = *view_key;
                                     ui.close_menu();
                                 }
                                 if ui.button("🗑 Remove").clicked() {
                                     retain = false;
+                                    ui.close_menu();
+                                }
+                                if ui.button("👁 View properties").clicked() {
+                                    app.ui.views_window.open.set_open(true);
+                                    app.ui.views_window.selected = *view_key;
                                     ui.close_menu();
                                 }
                             });
