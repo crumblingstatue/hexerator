@@ -201,7 +201,7 @@ impl App {
         Ok(())
     }
     pub fn save_temp_metafile_backup(&mut self) -> anyhow::Result<()> {
-        self.save_meta_to_file(temp_metafile_backup_path())?;
+        self.save_meta_to_file(temp_metafile_backup_path(), true)?;
         self.last_meta_backup.set(Instant::now());
         per_msg!("Saved temp metafile backup");
         Ok(())
@@ -493,10 +493,12 @@ impl App {
         None
     }
 
-    pub fn save_meta_to_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
+    pub fn save_meta_to_file(&mut self, path: PathBuf, temp: bool) -> Result<(), anyhow::Error> {
         let data = rmp_serde::to_vec(&self.meta)?;
         std::fs::write(&path, &data)?;
-        self.current_meta_path = path;
+        if !temp {
+            self.current_meta_path = path;
+        }
         Ok(())
     }
 

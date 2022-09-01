@@ -282,12 +282,12 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             ui.separator();
             if ui.add_enabled(!app.current_meta_path.as_os_str().is_empty(), egui::Button::new("Save")).on_hover_text(format!("Save to {}", app.current_meta_path.display())).clicked() {
-                msg_if_fail(app.save_meta_to_file(app.current_meta_path.clone()), "Failed to save metafile");
+                msg_if_fail(app.save_meta_to_file(app.current_meta_path.clone(), false), "Failed to save metafile");
                 ui.close_menu();
             }
             if ui.button("Save as...").clicked() {
                 if let Some(path) = rfd::FileDialog::default().save_file() {
-                    msg_if_fail(app.save_meta_to_file(path), "Failed to save metafile");
+                    msg_if_fail(app.save_meta_to_file(path, false), "Failed to save metafile");
                 }
                 ui.close_menu();
             }
