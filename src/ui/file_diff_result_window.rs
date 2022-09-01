@@ -4,7 +4,7 @@ use egui_extras::Size;
 
 use crate::{
     app::FileDiffEntry,
-    meta::{find_most_specific_region_for_offset, RegionKey},
+    meta::{find_most_specific_region_for_offset, Bookmark, RegionKey},
     region_context_menu,
     shell::msg_if_fail,
 };
@@ -99,7 +99,22 @@ impl FileDiffResultWindow {
                             ui.label(entry.file_val.to_string());
                         });
                         row.col(|ui| {
-                            if ui.link(entry.offset.to_string()).clicked() {
+                            if ui
+                                .link(entry.offset.to_string())
+                                .context_menu(|ui| {
+                                    if ui.button("Add bookmark").clicked() {
+                                        let idx = app.meta.bookmarks.len();
+                                        app.meta.bookmarks.push(Bookmark {
+                                            offset: entry.offset,
+                                            label: "New bookmark".into(),
+                                            desc: String::new(),
+                                        });
+                                        app.ui.bookmarks_window.open.set_open(true);
+                                        app.ui.bookmarks_window.selected = Some(idx);
+                                    }
+                                })
+                                .clicked()
+                            {
                                 action = Action::Goto(entry.offset);
                             }
                         });
