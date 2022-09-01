@@ -2,9 +2,8 @@ use std::{hash::Hash, ops::RangeInclusive};
 
 use egui_sfml::egui::{self, emath::Numeric};
 use egui_sfml::sfml::graphics::Font;
-use slotmap::Key;
 
-use crate::meta::{NamedView, PerspectiveKey, ViewKey};
+use crate::meta::{NamedView, ViewKey};
 use crate::view::{HexData, TextData, TextKind, View, ViewKind};
 
 use super::window_open::WindowOpen;
@@ -57,13 +56,17 @@ impl ViewsWindow {
             });
         }
         ui.separator();
-        if ui.button("Add new").clicked() {
-            let k = app.meta.views.insert(NamedView {
-                view: View::new(ViewKind::Hex(HexData::default()), PerspectiveKey::null()),
-                name: "Unnamed view".into(),
-            });
-            app.meta.layouts[app.current_layout].view_grid[0].push(k);
-        }
+        ui.menu_button("New from perspective", |ui| {
+            for (key, perspective) in app.meta.perspectives.iter() {
+                if ui.button(&perspective.name).clicked() {
+                    let k = app.meta.views.insert(NamedView {
+                        view: View::new(ViewKind::Hex(HexData::default()), key),
+                        name: perspective.name.to_owned(),
+                    });
+                    app.meta.layouts[app.current_layout].view_grid[0].push(k);
+                }
+            }
+        });
         ui.separator();
         if let Some(view) = app.meta.views.get_mut(app.ui.views_window.selected) {
             ui.horizontal(|ui| {
