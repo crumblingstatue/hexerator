@@ -22,6 +22,7 @@ impl BookmarksWindow {
         let mut action = Action::None;
         TableBuilder::new(ui)
             .columns(Size::remainder(), 3)
+            .striped(true)
             .header(24.0, |mut row| {
                 row.col(|ui| {
                     ui.label("Name");
