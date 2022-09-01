@@ -311,6 +311,15 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                     msg_if_fail(app.diff_with_file(path), "Failed to diff");
                 }
             }
+            match app.backup_path() {
+                Some(path) if path.exists() => {
+                    if ui.button("Diff with backup").clicked() {
+                        ui.close_menu();
+                        msg_if_fail(app.diff_with_file(path), "Failed to diff");
+                    }
+                }
+                _ => { ui.add_enabled(false, egui::Button::new("Diff with backup")); }
+            }
         });
         ui.menu_button("Help", |ui| {
             if ui.button("Help...").clicked() {
