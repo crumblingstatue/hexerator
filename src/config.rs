@@ -15,7 +15,7 @@ impl Config {
         let proj_dirs = project_dirs().context("Failed to get project dirs")?;
         let cfg_dir = proj_dirs.config_dir();
         if !cfg_dir.exists() {
-            std::fs::create_dir_all(&cfg_dir)?;
+            std::fs::create_dir_all(cfg_dir)?;
         }
         let cfg_file = cfg_dir.join(FILENAME);
         if !cfg_file.exists() {

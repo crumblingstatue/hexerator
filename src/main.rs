@@ -109,7 +109,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
                 "Failed to bind IPC listener: {}\nGoing to try again.",
                 e
             ));
-            let _ = std::fs::remove_file(&sock_path);
+            let _ = std::fs::remove_file(sock_path);
             LocalSocketListener::bind(sock_path)?
         }
     };
