@@ -5,7 +5,7 @@ use crate::meta::{RegionKey, RegionMap};
 use super::region::Region;
 
 /// A "perspectived" (column count) view of a region
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Perspective {
     /// The associated region
     pub region: RegionKey,

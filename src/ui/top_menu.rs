@@ -266,6 +266,11 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             ui.separator();
+            if ui.button("Diff with clean meta").on_hover_text("See and manage changes to metafile").clicked() {
+                app.ui.meta_diff_window.open.toggle();
+                ui.close_menu();
+            }
+            ui.separator();
             if ui.add_enabled(!app.current_meta_path.as_os_str().is_empty(), egui::Button::new("Reload")).on_hover_text(format!("Reload from {}", app.current_meta_path.display())).clicked() {
                 msg_if_fail(crate::app::consume_meta_from_file(app.current_meta_path.clone(), app), "Failed to load metafile");
                 ui.close_menu();

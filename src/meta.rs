@@ -32,7 +32,7 @@ pub struct Bookmark {
 }
 
 /// Meta-information about a file that the user collects.
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Meta {
     pub regions: RegionMap,
     pub perspectives: PerspectiveMap,
@@ -65,7 +65,7 @@ pub(crate) fn find_most_specific_region_for_offset(
 }
 
 /// Misc information that's worth saving
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Misc {
     /// Lua script for the "Lua fill" feature.
     ///
@@ -97,13 +97,13 @@ impl Meta {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct NamedRegion {
     pub name: String,
     pub region: Region,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct NamedView {
     pub name: String,
     pub view: View,

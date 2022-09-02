@@ -7,6 +7,7 @@ mod find_dialog;
 mod help_window;
 pub mod inspect_panel;
 mod layouts_window;
+mod meta_diff_window;
 mod perspectives_window;
 mod regions_window;
 mod top_menu;
@@ -44,6 +45,7 @@ pub struct Ui {
     pub help_window: HelpWindow,
     pub file_diff_result_window: FileDiffResultWindow,
     pub context_menu: Option<ContextMenu>,
+    pub meta_diff_window: MetaDiffWindow,
 }
 
 pub struct ContextMenu {
@@ -79,6 +81,7 @@ impl Ui {
 use self::bookmarks_window::BookmarksWindow;
 use self::file_diff_result_window::FileDiffResultWindow;
 use self::layouts_window::LayoutsWindow;
+use self::meta_diff_window::MetaDiffWindow;
 use self::{
     find_dialog::FindDialog, help_window::HelpWindow, inspect_panel::InspectPanel,
     perspectives_window::PerspectivesWindow, regions_window::RegionsWindow,
@@ -136,6 +139,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             .open(&mut open)
             .show(ctx, |ui| FileDiffResultWindow::ui(ui, app));
         app.ui.file_diff_result_window.open.set_open(open);
+        open = app.ui.meta_diff_window.open.is_open();
+        Window::new("Diff against clean meta")
+            .open(&mut open)
+            .show(ctx, |ui| MetaDiffWindow::ui(ui, app));
+        app.ui.meta_diff_window.open.set_open(open);
         // Context menu
         if let Some(menu) = &app.ui.context_menu {
             let mut close = false;

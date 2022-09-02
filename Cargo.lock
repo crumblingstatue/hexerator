@@ -514,6 +514,7 @@ dependencies = [
  "glu-sys",
  "index_many",
  "interprocess",
+ "itertools",
  "memchr",
  "num-traits",
  "rand",
@@ -576,6 +577,15 @@ dependencies = [
  "rustc_version",
  "to_method",
  "winapi",
+]
+
+[[package]]
+name = "itertools"
+version = "0.10.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a9a9d19fa1e79b6215ff29b9d6880b706147f16e9b1dbb1e4e5947b5b02bc5e3"
+dependencies = [
+ "either",
 ]
 
 [[package]]

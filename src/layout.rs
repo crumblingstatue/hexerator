@@ -8,7 +8,7 @@ use crate::{
 };
 
 /// A view layout grid for laying out views.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct Layout {
     pub name: String,
     pub view_grid: Vec<Vec<ViewKey>>,

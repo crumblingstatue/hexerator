@@ -44,6 +44,19 @@ pub struct View {
     pub presentation: Presentation,
 }
 
+impl PartialEq for View {
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind
+            && self.col_w == other.col_w
+            && self.row_h == other.row_h
+            && self.scroll_speed == other.scroll_speed
+            && self.bytes_per_block == other.bytes_per_block
+            && self.presentation == other.presentation
+    }
+}
+
+impl Eq for View {}
+
 impl View {
     pub fn new(kind: ViewKind, perspective: PerspectiveKey) -> Self {
         let mut this = Self {
@@ -605,7 +618,7 @@ impl TryFrom<(i32, i32)> for ViewportVec {
 }
 
 /// The kind of view (hex, ascii, block, etc)
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub enum ViewKind {
     Hex(HexData),
     Dec(HexData),
@@ -623,12 +636,30 @@ pub struct TextData {
     pub font_size: u16,
 }
 
+impl PartialEq for TextData {
+    fn eq(&self, other: &Self) -> bool {
+        self.text_kind == other.text_kind
+            && self.line_spacing == other.line_spacing
+            && self.font_size == other.font_size
+    }
+}
+
+impl Eq for TextData {}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct HexData {
     #[serde(skip)]
     pub edit_buf: EditBuffer,
     pub font_size: u16,
 }
+
+impl PartialEq for HexData {
+    fn eq(&self, other: &Self) -> bool {
+        self.font_size == other.font_size
+    }
+}
+
+impl Eq for HexData {}
 
 impl Default for HexData {
     fn default() -> Self {

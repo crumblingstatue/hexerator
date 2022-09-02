@@ -77,6 +77,8 @@ pub struct App {
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
     pub meta: Meta,
+    /// Clean copy of the metadata from last load/save
+    pub clean_meta: Meta,
     pub current_meta_path: PathBuf,
     pub last_meta_backup: Cell<Instant>,
 }
@@ -133,6 +135,7 @@ impl App {
             show_alt_overlay: false,
             current_layout: LayoutKey::null(),
             meta: Meta::default(),
+            clean_meta: Meta::default(),
             last_meta_backup: Cell::new(Instant::now()),
             current_meta_path: PathBuf::new(),
         };
@@ -614,6 +617,7 @@ pub fn temp_metafile_backup_path() -> PathBuf {
 pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
     let data = std::fs::read(&path)?;
     this.meta = rmp_serde::from_slice(&data)?;
+    this.clean_meta = this.meta.clone();
     this.current_meta_path = path;
     this.meta.post_load_init();
     Ok(())

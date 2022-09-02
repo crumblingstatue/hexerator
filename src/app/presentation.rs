@@ -5,7 +5,7 @@ use serde_with::{serde_as, FromInto};
 use crate::color::ColorMethod;
 
 #[serde_as]
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Presentation {
     pub color_method: ColorMethod,
     pub invert_color: bool,
