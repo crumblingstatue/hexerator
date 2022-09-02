@@ -124,6 +124,9 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     window.set_vertical_sync_enabled(true);
     window.set_position(Vector2::new(0, 0));
     let mut sf_egui = SfEgui::new(&window);
+    let mut style = egui_sfml::egui::Style::default();
+    style.interaction.show_tooltips_only_when_still = true;
+    sf_egui.context().set_style(style);
     let font = unsafe {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
