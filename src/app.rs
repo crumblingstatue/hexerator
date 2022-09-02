@@ -503,6 +503,7 @@ impl App {
         std::fs::write(&path, &data)?;
         if !temp {
             self.current_meta_path = path;
+            self.clean_meta = self.meta.clone();
         }
         Ok(())
     }
