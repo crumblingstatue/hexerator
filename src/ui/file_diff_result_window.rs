@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use egui_extras::Size;
 
 use crate::{
-    app::FileDiffEntry,
+    app::{read_source_to_buf, FileDiffEntry},
     meta::{find_most_specific_region_for_offset, Bookmark, RegionKey},
     region_context_menu,
     shell::msg_if_fail,
@@ -45,7 +45,8 @@ impl FileDiffResultWindow {
                 .clicked()
             {
                 let result: anyhow::Result<()> = try {
-                    let file_data = std::fs::read(&app.ui.file_diff_result_window.path)?;
+                    let file_data =
+                        read_source_to_buf(&app.ui.file_diff_result_window.path, &app.args.src)?;
                     app.ui
                         .file_diff_result_window
                         .diff_entries
@@ -55,7 +56,8 @@ impl FileDiffResultWindow {
             }
             if ui.button("Refresh").clicked() {
                 let result: anyhow::Result<()> = try {
-                    let file_data = std::fs::read(&app.ui.file_diff_result_window.path)?;
+                    let file_data =
+                        read_source_to_buf(&app.ui.file_diff_result_window.path, &app.args.src)?;
                     for en in &mut app.ui.file_diff_result_window.diff_entries {
                         en.file_val = file_data[en.offset];
                     }

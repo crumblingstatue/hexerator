@@ -568,7 +568,7 @@ impl App {
     }
 
     pub(crate) fn diff_with_file(&mut self, path: PathBuf) -> anyhow::Result<()> {
-        let file_data = std::fs::read(&path)?;
+        let file_data = read_source_to_buf(&path, &self.args.src)?;
         let mut diff_entries = Vec::new();
         for ((offset, &my_byte), &file_byte) in self.data.iter().enumerate().zip(file_data.iter()) {
             if my_byte != file_byte {
@@ -584,6 +584,21 @@ impl App {
         self.ui.file_diff_result_window.open.set_open(true);
         Ok(())
     }
+}
+
+pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, anyhow::Error> {
+    let mut f = std::fs::File::open(path)?;
+    if let &Some(to) = &args.hard_seek {
+        f.seek(std::io::SeekFrom::Current(to as i64))?;
+    }
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "On 32 bit, max supported file size is 4 GB"
+    )]
+    let len = args.take.unwrap_or(f.metadata()?.len() as usize);
+    let mut buf = vec![0; len];
+    f.read_exact(&mut buf)?;
+    Ok(buf)
 }
 
 pub struct FileDiffEntry {
