@@ -201,8 +201,10 @@ impl App {
         Ok(())
     }
     pub fn save_temp_metafile_backup(&mut self) -> anyhow::Result<()> {
-        self.save_meta_to_file(temp_metafile_backup_path(), true)?;
+        // We set the last_meta_backup first, so if save fails, we don't get
+        // a never ending stream of constant save failures.
         self.last_meta_backup.set(Instant::now());
+        self.save_meta_to_file(temp_metafile_backup_path(), true)?;
         per_msg!("Saved temp metafile backup");
         Ok(())
     }
