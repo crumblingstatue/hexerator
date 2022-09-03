@@ -19,6 +19,7 @@ pub type PerspectiveMap = SlotMap<PerspectiveKey, Perspective>;
 pub type RegionMap = SlotMap<RegionKey, NamedRegion>;
 pub type ViewMap = SlotMap<ViewKey, NamedView>;
 pub type LayoutMap = SlotMap<LayoutKey, Layout>;
+pub type Bookmarks = Vec<Bookmark>;
 
 /// A bookmark for an offset in a file
 #[derive(Serialize, Deserialize, Clone)]
@@ -38,7 +39,7 @@ pub struct Meta {
     pub perspectives: PerspectiveMap,
     pub views: ViewMap,
     pub layouts: LayoutMap,
-    pub bookmarks: Vec<Bookmark>,
+    pub bookmarks: Bookmarks,
     pub misc: Misc,
 }
 
@@ -94,6 +95,16 @@ impl Meta {
             // Needed to initialize edit buffers, etc.
             view.view.adjust_state_to_kind();
         }
+    }
+    /// Returns offset and reference to a bookmark, if it corresponds to an offset
+    pub fn bookmark_for_offset(
+        meta_bookmarks: &Bookmarks,
+        off: usize,
+    ) -> Option<(usize, &Bookmark)> {
+        meta_bookmarks
+            .iter()
+            .enumerate()
+            .find(|(_i, b)| b.offset == off)
     }
 }
 

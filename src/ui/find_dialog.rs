@@ -4,8 +4,11 @@ use egui_extras::{Size, StripBuilder, TableBuilder};
 use egui_sfml::egui::{self, Align, Ui};
 
 use crate::{
-    app::App, meta::find_most_specific_region_for_offset, parse_radix::parse_guess_radix,
-    region_context_menu, shell::msg_warn,
+    app::App,
+    meta::{find_most_specific_region_for_offset, Meta},
+    parse_radix::parse_guess_radix,
+    region_context_menu,
+    shell::msg_warn,
 };
 
 use super::window_open::WindowOpen;
@@ -72,13 +75,19 @@ impl FindDialog {
                 let mut action = Action::None;
                 TableBuilder::new(ui)
                 .striped(true)
-                .columns(Size::remainder(), 2)
+                .columns(Size::remainder(), 4)
                 .header(16.0, |mut row| {
                     row.col(|ui| {
                         ui.label("Offset");
                     });
                     row.col(|ui| {
+                        ui.label("Value");
+                    });
+                    row.col(|ui| {
                         ui.label("Region");
+                    });
+                    row.col(|ui| {
+                        ui.label("Bookmark");
                     });
                 })
                 .body(|body| {
@@ -97,6 +106,9 @@ impl FindDialog {
                                 }
                             });
                             row.col(|ui| {
+                                ui.label(app.data[off].to_string());
+                            });
+                            row.col(|ui| {
                                 match find_most_specific_region_for_offset(&app.meta.regions, off) {
                                     Some(key) => {
                                         let reg = &app.meta.regions[key];
@@ -108,6 +120,17 @@ impl FindDialog {
                                     None => {
                                         ui.label("[no region]");
                                     }
+                                }
+                            });
+                            row.col(|ui| {
+                                match Meta::bookmark_for_offset(&app.meta.bookmarks, off) {
+                                    Some((bm_idx, bm)) => {
+                                        if ui.link(&bm.label).on_hover_text(&bm.desc).clicked() {
+                                            app.ui.bookmarks_window.open.set(true);
+                                            app.ui.bookmarks_window.selected = Some(bm_idx);
+                                        }
+                                    },
+                                    None => { ui.label("-"); }
                                 }
                             });
                             if let Some(scroll_off) = app.ui.find_dialog.scroll_to && scroll_off == i {
