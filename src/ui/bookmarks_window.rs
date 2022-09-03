@@ -72,7 +72,7 @@ impl BookmarksWindow {
                         match &bm.value_type {
                             ValueType::None => {}
                             ValueType::U8 => {
-                                ui.label(app.data[bm.offset].to_string());
+                                ui.add(egui::DragValue::new(&mut app.data[bm.offset]));
                             }
                             ValueType::StringMap(list) => {
                                 let val = &mut app.data[bm.offset];
