@@ -1,11 +1,14 @@
 use std::collections::HashSet;
 
-use egui_sfml::egui::{self, ScrollArea, Ui};
+use egui_extras::{Size, StripBuilder, TableBuilder};
+use egui_sfml::egui::{self, Align, Ui};
 
 use crate::{
     app::App, meta::find_most_specific_region_for_offset, parse_radix::parse_guess_radix,
-    shell::msg_warn,
+    region_context_menu, shell::msg_warn,
 };
+
+use super::window_open::WindowOpen;
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub enum FindType {
@@ -23,9 +26,9 @@ impl FindType {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct FindDialog {
-    pub open: bool,
+    pub open: WindowOpen,
     pub input: String,
     /// Results, as a Bec that can be indexed. Needed because of search cursor.
     pub results_vec: Vec<usize>,
@@ -55,84 +58,108 @@ impl FindDialog {
                     FindType::Ascii.label(),
                 );
             });
-        if ui
-            .text_edit_singleline(&mut app.ui.find_dialog.input)
-            .lost_focus()
-            && ui.input().key_pressed(egui::Key::Enter)
-        {
+        let re = ui.text_edit_singleline(&mut app.ui.find_dialog.input);
+        if app.ui.find_dialog.open.just_opened() {
+            re.request_focus();
+        }
+        if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
             do_search(app);
         }
         ui.checkbox(&mut app.ui.find_dialog.filter_results, "Filter results")
             .on_hover_text("Base search on existing results");
-        ui.horizontal(|ui| {
-            ui.label("Offset");
-            ui.separator();
-            ui.label("Region");
-        });
-        let row_height = ui.text_style_height(&egui::TextStyle::Body);
-        ScrollArea::vertical().max_height(480.).show_rows(
-            ui,
-            row_height,
-            app.ui.find_dialog.results_vec.len(),
-            |ui, range| {
-                for (i, &off) in app.ui.find_dialog.results_vec[range.clone()]
-                    .iter()
-                    .enumerate()
-                {
-                    let i = i + range.start;
-                    let sel_label_re = ui
-                        .horizontal(|ui| {
-                            let re = ui.selectable_label(
-                                app.ui.find_dialog.result_cursor == i,
-                                off.to_string(),
-                            );
-                            ui.separator();
-                            match find_most_specific_region_for_offset(&app.meta.regions, off) {
-                                Some(key) => {
-                                    ui.label(&app.meta.regions[key].name);
+        StripBuilder::new(ui).size(Size::initial(400.0)).size(Size::exact(20.0)).vertical(|mut strip| {
+            strip.cell(|ui| {
+                let mut action = Action::None;
+                TableBuilder::new(ui)
+                .striped(true)
+                .columns(Size::remainder(), 2)
+                .header(16.0, |mut row| {
+                    row.col(|ui| {
+                        ui.label("Offset");
+                    });
+                    row.col(|ui| {
+                        ui.label("Region");
+                    });
+                })
+                .body(|body| {
+                    body.rows(
+                        20.0,
+                        app.ui.find_dialog.results_vec.len(),
+                        |i, mut row| {
+                            let off = app.ui.find_dialog.results_vec[i];
+                            let col1_re = row.col(|ui| {
+                                if ui.selectable_label(
+                                    app.ui.find_dialog.result_cursor == i,
+                                    off.to_string(),
+                                ).clicked() {
+                                    app.search_focus(off);
+                                    app.ui.find_dialog.result_cursor = i;
                                 }
-                                None => {
-                                    ui.label("[no region]");
+                            });
+                            row.col(|ui| {
+                                match find_most_specific_region_for_offset(&app.meta.regions, off) {
+                                    Some(key) => {
+                                        let reg = &app.meta.regions[key];
+                                        if ui.link(&reg.name).context_menu(region_context_menu!(app, reg, action)).clicked() {
+                                            app.ui.regions_window.open = true;
+                                            app.ui.regions_window.selected_key = Some(key);
+                                        }
+                                    }
+                                    None => {
+                                        ui.label("[no region]");
+                                    }
                                 }
+                            });
+                            if let Some(scroll_off) = app.ui.find_dialog.scroll_to && scroll_off == i {
+                                // We use center align, because it keeps the selected element in
+                                // view at all times, preventing the issue of it becoming out
+                                // of view, and scroll_to_me not being called because of that.
+                                col1_re.scroll_to_me(Some(Align::Center));
+                                app.ui.find_dialog.scroll_to = None;
                             }
-                            re
-                        })
-                        .inner;
-                    if let Some(scroll_off) = app.ui.find_dialog.scroll_to && scroll_off == i {
-                        sel_label_re.scroll_to_me(None);
-                        app.ui.find_dialog.scroll_to = None;
+                        },
+                    );
+                });
+                match action {
+                    Action::Goto(off) => {
+                        app.center_view_on_offset(off);
+                        app.edit_state.set_cursor(off);
+                        app.flash_cursor();
                     }
-                    if sel_label_re.clicked() {
-                        app.search_focus(off);
-                        app.ui.find_dialog.result_cursor = i;
-                        break;
-                    }
+                    Action::None => {},
                 }
-            },
-        );
-        ui.separator();
-        ui.horizontal(|ui| {
-            ui.set_enabled(!app.ui.find_dialog.results_vec.is_empty());
-            if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
-                && app.ui.find_dialog.result_cursor > 0
-            {
-                app.ui.find_dialog.result_cursor -= 1;
-                let off = app.ui.find_dialog.results_vec[app.ui.find_dialog.result_cursor];
-                app.search_focus(off);
-                app.ui.find_dialog.scroll_to = Some(app.ui.find_dialog.result_cursor);
-            }
-            ui.label((app.ui.find_dialog.result_cursor + 1).to_string());
-            if (ui.button("Next (N)").clicked() || ui.input().key_pressed(egui::Key::N))
-                && app.ui.find_dialog.result_cursor + 1 < app.ui.find_dialog.results_vec.len()
-            {
-                app.ui.find_dialog.result_cursor += 1;
-                let off = app.ui.find_dialog.results_vec[app.ui.find_dialog.result_cursor];
-                app.search_focus(off);
-                app.ui.find_dialog.scroll_to = Some(app.ui.find_dialog.result_cursor);
-            }
-            ui.label(format!("{} results", app.ui.find_dialog.results_vec.len()));
+            });
+            strip.cell(|ui| {
+                ui.horizontal(|ui| {
+                    ui.set_enabled(!app.ui.find_dialog.results_vec.is_empty());
+                    if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
+                        && app.ui.find_dialog.result_cursor > 0
+                    {
+                        app.ui.find_dialog.result_cursor -= 1;
+                        let off = app.ui.find_dialog.results_vec[app.ui.find_dialog.result_cursor];
+                        app.search_focus(off);
+                        app.ui.find_dialog.scroll_to = Some(app.ui.find_dialog.result_cursor);
+                    }
+                    ui.label((app.ui.find_dialog.result_cursor + 1).to_string());
+                    if (ui.button("Next (N)").clicked() || ui.input().key_pressed(egui::Key::N))
+                        && app.ui.find_dialog.result_cursor + 1 < app.ui.find_dialog.results_vec.len()
+                    {
+                        app.ui.find_dialog.result_cursor += 1;
+                        let off = app.ui.find_dialog.results_vec[app.ui.find_dialog.result_cursor];
+                        app.search_focus(off);
+                        app.ui.find_dialog.scroll_to = Some(app.ui.find_dialog.result_cursor);
+                    }
+                    ui.label(format!("{} results", app.ui.find_dialog.results_vec.len()));
+                });
+            });
         });
+        app.ui.find_dialog.open.post_ui();
     }
+}
+
+enum Action {
+    Goto(usize),
+    None,
 }
 
 fn do_search(app: &mut App) {

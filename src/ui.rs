@@ -98,11 +98,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
         if was_open && !open {
             gamedebug_core::toggle();
         }
-        open = app.ui.find_dialog.open;
+        open = app.ui.find_dialog.open.is_open();
         Window::new("Find")
             .open(&mut open)
             .show(ctx, |ui| FindDialog::ui(ui, app));
-        app.ui.find_dialog.open = open;
+        app.ui.find_dialog.open.set_open(open);
         open = app.ui.regions_window.open;
         Window::new("Regions")
             .open(&mut open)

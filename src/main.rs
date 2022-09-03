@@ -610,7 +610,7 @@ fn handle_key_events(
             app.focused_view_select_all();
         }
         Key::F if ctrl => {
-            app.ui.find_dialog.open ^= true;
+            app.ui.find_dialog.open.toggle();
         }
         Key::S if ctrl => match &mut app.source {
             Some(source) => {

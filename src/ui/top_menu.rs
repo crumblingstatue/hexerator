@@ -112,7 +112,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Edit", |ui| {
             if button_with_shortcut(ui, "Find...", "Ctrl+F").clicked() {
-                app.ui.find_dialog.open ^= true;
+                app.ui.find_dialog.open.toggle();
                 ui.close_menu();
             }
             ui.separator();
