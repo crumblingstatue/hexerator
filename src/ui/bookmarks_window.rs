@@ -19,11 +19,13 @@ pub struct BookmarksWindow {
     pub selected: Option<usize>,
     edit_name: bool,
     value_type_string_buf: String,
+    name_filter_string: String,
 }
 
 impl BookmarksWindow {
     pub fn ui(ui: &mut Ui, app: &mut App) {
         let win = &mut app.ui.bookmarks_window;
+        ui.add(egui::TextEdit::singleline(&mut win.name_filter_string).hint_text("Filter by name"));
         let mut action = Action::None;
         TableBuilder::new(ui)
             .columns(Size::remainder(), 4)
@@ -46,6 +48,12 @@ impl BookmarksWindow {
                 // Sort by offset
                 let mut keys: Vec<usize> = (0..app.meta.bookmarks.len()).collect();
                 keys.sort_by_key(|&idx| app.meta.bookmarks[idx].offset);
+                keys.retain(|&k| {
+                    win.name_filter_string.is_empty()
+                        || app.meta.bookmarks[k]
+                            .label
+                            .contains(&win.name_filter_string)
+                });
                 body.rows(20.0, keys.len(), |idx, mut row| {
                     let idx = keys[idx];
                     row.col(|ui| {
