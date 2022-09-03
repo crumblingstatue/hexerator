@@ -1,6 +1,7 @@
 pub mod perspective;
 pub mod region;
 
+use egui_sfml::egui::epaint::ahash::HashMap;
 use serde::{Deserialize, Serialize};
 use slotmap::{new_key_type, SlotMap};
 
@@ -40,6 +41,7 @@ pub enum ValueType {
     #[default]
     None,
     U8,
+    StringMap(HashMap<u8, String>),
 }
 
 /// Meta-information about a file that the user collects.

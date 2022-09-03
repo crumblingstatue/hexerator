@@ -1,3 +1,6 @@
+use std::mem::discriminant;
+
+use anyhow::Context;
 use egui_extras::{Size, TableBuilder};
 use egui_sfml::egui::{self, Ui};
 
@@ -5,6 +8,7 @@ use crate::{
     app::App,
     meta::{find_most_specific_region_for_offset, Bookmark, ValueType},
     region_context_menu,
+    shell::msg_if_fail,
 };
 
 use super::window_open::WindowOpen;
@@ -14,6 +18,7 @@ pub struct BookmarksWindow {
     pub open: WindowOpen,
     pub selected: Option<usize>,
     edit_name: bool,
+    value_type_string_buf: String,
 }
 
 impl BookmarksWindow {
@@ -64,10 +69,25 @@ impl BookmarksWindow {
                     });
                     row.col(|ui| {
                         let bm = &app.meta.bookmarks[idx];
-                        match bm.value_type {
+                        match &bm.value_type {
                             ValueType::None => {}
                             ValueType::U8 => {
                                 ui.label(app.data[bm.offset].to_string());
+                            }
+                            ValueType::StringMap(list) => {
+                                let val = &mut app.data[bm.offset];
+                                let mut s = String::new();
+                                let label = list.get(val).unwrap_or_else(|| {
+                                    s = format!("[unmapped: {}]", val);
+                                    &s
+                                });
+                                egui::ComboBox::new("val_combo", "")
+                                    .selected_text(label)
+                                    .show_ui(ui, |ui| {
+                                        for (k, v) in list {
+                                            ui.selectable_value(val, *k, v);
+                                        }
+                                    });
                             }
                         }
                     });
@@ -116,7 +136,40 @@ impl BookmarksWindow {
                         ValueType::None.label(),
                     );
                     ui.selectable_value(&mut mark.value_type, ValueType::U8, ValueType::U8.label());
+                    let val = ValueType::StringMap(Default::default());
+                    if ui
+                        .selectable_label(
+                            discriminant(&mark.value_type) == discriminant(&val),
+                            val.label(),
+                        )
+                        .clicked()
+                    {
+                        mark.value_type = val;
+                    }
                 });
+            #[expect(clippy::single_match, reason = "Want to add more variants in future")]
+            match &mut mark.value_type {
+                ValueType::StringMap(list) => {
+                    let text_edit_finished = ui
+                        .add(
+                            egui::TextEdit::singleline(&mut win.value_type_string_buf)
+                                .hint_text("key = value"),
+                        )
+                        .lost_focus()
+                        && ui.input().key_pressed(egui::Key::Enter);
+                    if text_edit_finished || ui.button("Set key = value").clicked() {
+                        let result: anyhow::Result<()> = try {
+                            let s = &win.value_type_string_buf;
+                            let (k, v) = s.split_once('=').context("Missing `=`")?;
+                            let k: u8 = k.trim().parse()?;
+                            let v = v.trim().to_owned();
+                            list.insert(k, v);
+                        };
+                        msg_if_fail(result, "Failed to set value list kvpair");
+                    }
+                }
+                _ => {}
+            }
             ui.heading("Description");
             ui.text_edit_multiline(&mut mark.desc);
             if ui.button("Delete").clicked() {
@@ -149,6 +202,7 @@ impl ValueType {
         match self {
             ValueType::None => "none",
             ValueType::U8 => "u8",
+            ValueType::StringMap(_) => "string list",
         }
     }
 }
