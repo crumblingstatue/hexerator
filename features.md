@@ -53,7 +53,10 @@ Hexerator supports opening both files and streamed sources like standard input o
 ## Bookmarks
 
 Quickly and easily save and access points of interest in the data.
-Support for extended descriptions.
+
+Additional support for setting a type for a bookmark to display and manipulate the data
+associated with it.
+![Bookmarks](screenshots/bookmarks.png)
 
 ## Multiple configurable views
 
