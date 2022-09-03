@@ -82,6 +82,17 @@ impl BookmarksWindow {
                             ValueType::U8 => {
                                 ui.add(egui::DragValue::new(&mut app.data[bm.offset]));
                             }
+                            ValueType::U16Le => {
+                                let result: anyhow::Result<()> = try {
+                                    let mut val = u16::from_le_bytes(
+                                        app.data[bm.offset..bm.offset + 2].try_into()?,
+                                    );
+                                    ui.add(egui::DragValue::new(&mut val));
+                                    app.data[bm.offset..bm.offset + 2]
+                                        .copy_from_slice(&val.to_le_bytes());
+                                };
+                                msg_if_fail(result, "Failed u16-le conversion");
+                            }
                             ValueType::StringMap(list) => {
                                 let val = &mut app.data[bm.offset];
                                 let mut s = String::new();
@@ -144,6 +155,11 @@ impl BookmarksWindow {
                         ValueType::None.label(),
                     );
                     ui.selectable_value(&mut mark.value_type, ValueType::U8, ValueType::U8.label());
+                    ui.selectable_value(
+                        &mut mark.value_type,
+                        ValueType::U16Le,
+                        ValueType::U16Le.label(),
+                    );
                     let val = ValueType::StringMap(Default::default());
                     if ui
                         .selectable_label(
@@ -210,6 +226,7 @@ impl ValueType {
         match self {
             ValueType::None => "none",
             ValueType::U8 => "u8",
+            ValueType::U16Le => "u16-le",
             ValueType::StringMap(_) => "string list",
         }
     }
