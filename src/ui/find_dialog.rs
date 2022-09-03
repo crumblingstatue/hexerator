@@ -5,7 +5,7 @@ use egui_sfml::egui::{self, Align, Ui};
 
 use crate::{
     app::App,
-    meta::{find_most_specific_region_for_offset, Bookmark, Meta},
+    meta::{find_most_specific_region_for_offset, Bookmark, Meta, ValueType},
     parse_radix::parse_guess_radix,
     region_context_menu,
     shell::msg_warn,
@@ -136,6 +136,7 @@ impl FindDialog {
                                             offset: off,
                                             label: "New bookmark".into(),
                                             desc: String::new(),
+                                            value_type: ValueType::None,
                                         });
                                         app.ui.bookmarks_window.open.set(true);
                                         app.ui.bookmarks_window.selected = Some(idx);

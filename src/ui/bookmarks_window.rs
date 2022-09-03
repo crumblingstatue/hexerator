@@ -3,7 +3,7 @@ use egui_sfml::egui::{self, Ui};
 
 use crate::{
     app::App,
-    meta::{find_most_specific_region_for_offset, Bookmark},
+    meta::{find_most_specific_region_for_offset, Bookmark, ValueType},
     region_context_menu,
 };
 
@@ -21,7 +21,7 @@ impl BookmarksWindow {
         let win = &mut app.ui.bookmarks_window;
         let mut action = Action::None;
         TableBuilder::new(ui)
-            .columns(Size::remainder(), 3)
+            .columns(Size::remainder(), 4)
             .striped(true)
             .header(24.0, |mut row| {
                 row.col(|ui| {
@@ -29,6 +29,9 @@ impl BookmarksWindow {
                 });
                 row.col(|ui| {
                     ui.label("Offset");
+                });
+                row.col(|ui| {
+                    ui.label("Value");
                 });
                 row.col(|ui| {
                     ui.label("Region");
@@ -57,6 +60,15 @@ impl BookmarksWindow {
                             .clicked()
                         {
                             action = Action::Goto(app.meta.bookmarks[idx].offset);
+                        }
+                    });
+                    row.col(|ui| {
+                        let bm = &app.meta.bookmarks[idx];
+                        match bm.value_type {
+                            ValueType::None => {}
+                            ValueType::U8 => {
+                                ui.label(app.data[bm.offset].to_string());
+                            }
                         }
                     });
                     row.col(|ui| {
@@ -95,6 +107,16 @@ impl BookmarksWindow {
                 ui.label("Offset");
                 ui.add(egui::DragValue::new(&mut mark.offset));
             });
+            egui::ComboBox::new("type_combo", "value type")
+                .selected_text(mark.value_type.label())
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(
+                        &mut mark.value_type,
+                        ValueType::None,
+                        ValueType::None.label(),
+                    );
+                    ui.selectable_value(&mut mark.value_type, ValueType::U8, ValueType::U8.label());
+                });
             ui.heading("Description");
             ui.text_edit_multiline(&mut mark.desc);
             if ui.button("Delete").clicked() {
@@ -108,6 +130,7 @@ impl BookmarksWindow {
                 offset: app.edit_state.cursor,
                 label: format!("New bookmark at {}", app.edit_state.cursor),
                 desc: String::new(),
+                value_type: ValueType::None,
             })
         }
         match action {
@@ -117,6 +140,15 @@ impl BookmarksWindow {
                 app.center_view_on_offset(off);
                 app.flash_cursor();
             }
+        }
+    }
+}
+
+impl ValueType {
+    fn label(&self) -> &str {
+        match self {
+            ValueType::None => "none",
+            ValueType::U8 => "u8",
         }
     }
 }

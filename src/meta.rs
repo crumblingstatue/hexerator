@@ -30,6 +30,16 @@ pub struct Bookmark {
     pub label: String,
     /// Extended description
     pub desc: String,
+    /// A bookmark can optionally have a type, which can be used to display its value, etc.
+    #[serde(default)]
+    pub value_type: ValueType,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Default)]
+pub enum ValueType {
+    #[default]
+    None,
+    U8,
 }
 
 /// Meta-information about a file that the user collects.
