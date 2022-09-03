@@ -59,7 +59,7 @@ impl FindDialog {
                 );
             });
         let re = ui.text_edit_singleline(&mut app.ui.find_dialog.input);
-        if app.ui.find_dialog.open.just_opened() {
+        if app.ui.find_dialog.open.just_now() {
             re.request_focus();
         }
         if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {

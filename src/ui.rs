@@ -98,52 +98,52 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
         if was_open && !open {
             gamedebug_core::toggle();
         }
-        open = app.ui.find_dialog.open.is_open();
+        open = app.ui.find_dialog.open.is();
         Window::new("Find")
             .open(&mut open)
             .show(ctx, |ui| FindDialog::ui(ui, app));
-        app.ui.find_dialog.open.set_open(open);
+        app.ui.find_dialog.open.set(open);
         open = app.ui.regions_window.open;
         Window::new("Regions")
             .open(&mut open)
             .show(ctx, |ui| RegionsWindow::ui(ui, app));
         app.ui.regions_window.open = open;
-        open = app.ui.bookmarks_window.open.is_open();
+        open = app.ui.bookmarks_window.open.is();
         Window::new("Bookmarks")
             .open(&mut open)
             .show(ctx, |ui| BookmarksWindow::ui(ui, app));
-        app.ui.bookmarks_window.open.set_open(open);
-        open = app.ui.layouts_window.open.is_open();
+        app.ui.bookmarks_window.open.set(open);
+        open = app.ui.layouts_window.open.is();
         Window::new("Layouts")
             .open(&mut open)
             .show(ctx, |ui| LayoutsWindow::ui(ui, app));
-        app.ui.layouts_window.open.set_open(open);
-        open = app.ui.views_window.open.is_open();
+        app.ui.layouts_window.open.set(open);
+        open = app.ui.views_window.open.is();
         Window::new("Views")
             .open(&mut open)
             .show(ctx, |ui| ViewsWindow::ui(ui, app, font));
-        app.ui.views_window.open.set_open(open);
-        open = app.ui.perspectives_window.open.is_open();
+        app.ui.views_window.open.set(open);
+        open = app.ui.perspectives_window.open.is();
         Window::new("Perspectives")
             .open(&mut open)
             .show(ctx, |ui| PerspectivesWindow::ui(ui, app));
-        app.ui.perspectives_window.open.set_open(open);
+        app.ui.perspectives_window.open.set(open);
         open = app.ui.help_window.open;
         Window::new("Help")
             .default_size(egui::vec2(800., 600.))
             .open(&mut open)
             .show(ctx, |ui| HelpWindow::ui(ui, app));
         app.ui.help_window.open = open;
-        open = app.ui.file_diff_result_window.open.is_open();
+        open = app.ui.file_diff_result_window.open.is();
         Window::new("File diff results")
             .open(&mut open)
             .show(ctx, |ui| FileDiffResultWindow::ui(ui, app));
-        app.ui.file_diff_result_window.open.set_open(open);
-        open = app.ui.meta_diff_window.open.is_open();
+        app.ui.file_diff_result_window.open.set(open);
+        open = app.ui.meta_diff_window.open.is();
         Window::new("Diff against clean meta")
             .open(&mut open)
             .show(ctx, |ui| MetaDiffWindow::ui(ui, app));
-        app.ui.meta_diff_window.open.set_open(open);
+        app.ui.meta_diff_window.open.set(open);
         // Context menu
         if let Some(menu) = &app.ui.context_menu {
             let mut close = false;
@@ -166,7 +166,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
                                 ui.separator();
                                 if ui.button("View properties...").clicked() {
                                     app.ui.views_window.selected = view;
-                                    app.ui.views_window.open.set_open(true);
+                                    app.ui.views_window.open.set(true);
                                     close = true;
                                 }
                             }

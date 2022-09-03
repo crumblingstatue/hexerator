@@ -111,7 +111,7 @@ impl FileDiffResultWindow {
                                             label: "New bookmark".into(),
                                             desc: String::new(),
                                         });
-                                        app.ui.bookmarks_window.open.set_open(true);
+                                        app.ui.bookmarks_window.open.set(true);
                                         app.ui.bookmarks_window.selected = Some(idx);
                                     }
                                 })
@@ -155,7 +155,7 @@ impl FileDiffResultWindow {
                                         .on_hover_text(&bookmark.desc)
                                         .clicked()
                                     {
-                                        app.ui.bookmarks_window.open.set_open(true);
+                                        app.ui.bookmarks_window.open.set(true);
                                         app.ui.bookmarks_window.selected = Some(idx);
                                     }
                                 }

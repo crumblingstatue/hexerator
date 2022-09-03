@@ -585,7 +585,7 @@ impl App {
         }
         self.ui.file_diff_result_window.diff_entries = diff_entries;
         self.ui.file_diff_result_window.path = path;
-        self.ui.file_diff_result_window.open.set_open(true);
+        self.ui.file_diff_result_window.open.set(true);
         Ok(())
     }
 }

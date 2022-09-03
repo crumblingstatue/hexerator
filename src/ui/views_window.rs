@@ -37,7 +37,7 @@ pub const MAX_FONT_SIZE: u16 = 256;
 
 impl ViewsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App, font: &Font) {
-        if app.ui.views_window.open.just_opened() && let Some(view_key) = app.focused_view {
+        if app.ui.views_window.open.just_now() && let Some(view_key) = app.focused_view {
             app.ui.views_window.selected = view_key;
         }
         let mut removed_idx = None;
@@ -97,7 +97,7 @@ impl ViewsWindow {
                             .link(&app.meta.perspectives[view.view.perspective].name)
                             .clicked()
                         {
-                            app.ui.perspectives_window.open.set_open(true);
+                            app.ui.perspectives_window.open.set(true);
                         }
                     });
                     row.col(|ui| {
