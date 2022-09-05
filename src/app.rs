@@ -338,6 +338,7 @@ impl App {
                 begin: 0,
                 end: self.data.len().saturating_sub(1),
             },
+            desc: String::new(),
         });
         let default_perspective = self.meta.perspectives.insert(Perspective {
             region: def_region,

@@ -64,6 +64,7 @@ impl PerspectivesWindow {
                         let reg = &app.meta.regions[per.region];
                         if ui
                             .link(&reg.name)
+                            .on_hover_text(&reg.desc)
                             .context_menu(region_context_menu!(app, reg, action))
                             .clicked()
                         {

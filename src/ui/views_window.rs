@@ -104,7 +104,12 @@ impl ViewsWindow {
                         let per = &app.meta.perspectives[view.view.perspective];
                         let reg = &app.meta.regions[per.region];
                         let ctx_menu = region_context_menu!(app, reg, action);
-                        if ui.link(&reg.name).context_menu(ctx_menu).clicked() {
+                        if ui
+                            .link(&reg.name)
+                            .on_hover_text(&reg.desc)
+                            .context_menu(ctx_menu)
+                            .clicked()
+                        {
                             app.ui.regions_window.open = true;
                             app.ui.regions_window.selected_key = Some(per.region);
                         }

@@ -117,7 +117,12 @@ impl BookmarksWindow {
                         {
                             let region = &app.meta.regions[region_key];
                             let ctx_menu = region_context_menu!(app, region, action);
-                            if ui.link(&region.name).context_menu(ctx_menu).clicked() {
+                            if ui
+                                .link(&region.name)
+                                .on_hover_text(&region.desc)
+                                .context_menu(ctx_menu)
+                                .clicked()
+                            {
                                 app.ui.regions_window.open = true;
                                 app.ui.regions_window.selected_key = Some(region_key);
                             }

@@ -125,6 +125,8 @@ impl Meta {
 pub struct NamedRegion {
     pub name: String,
     pub region: Region,
+    #[serde(default)]
+    pub desc: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

@@ -48,6 +48,7 @@ impl RegionsWindow {
                     app.meta.regions.insert(NamedRegion {
                         name: String::from("<Unnamed>"),
                         region: sel,
+                        desc: String::new(),
                     });
                     app.meta_dirty = true;
                 }
@@ -92,6 +93,7 @@ impl RegionsWindow {
                                     app.ui.regions_window.selected_key == Some(k),
                                     &reg.name,
                                 )
+                                .on_hover_text(&reg.desc)
                                 .context_menu(ctx_menu)
                                 .clicked()
                             {
@@ -161,6 +163,8 @@ impl RegionsWindow {
             } else {
                 ui.add_enabled(false, egui::Button::new("Set to selection"));
             }
+            ui.label("Description");
+            ui.text_edit_multiline(&mut reg.desc);
             if ui.button("Delete").clicked() {
                 app.meta.regions.remove(key);
                 app.ui.regions_window.selected_key = None;
