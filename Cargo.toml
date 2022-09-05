@@ -33,6 +33,8 @@ serde-big-array = "0.4.1"
 egui_extras = { version = "0.19.0", default-features = false }
 rlua = "0.19.4"
 itertools = "0.10.3"
+sysinfo = { version = "0.26.2", default-features = false }
+proc-maps = "0.2.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

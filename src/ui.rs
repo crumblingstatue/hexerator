@@ -8,6 +8,7 @@ mod help_window;
 pub mod inspect_panel;
 mod layouts_window;
 mod meta_diff_window;
+mod open_process_window;
 mod perspectives_window;
 mod regions_window;
 mod top_menu;
@@ -46,6 +47,7 @@ pub struct Ui {
     pub file_diff_result_window: FileDiffResultWindow,
     pub context_menu: Option<ContextMenu>,
     pub meta_diff_window: MetaDiffWindow,
+    pub open_process_window: OpenProcessWindow,
 }
 
 pub struct ContextMenu {
@@ -82,6 +84,7 @@ use self::bookmarks_window::BookmarksWindow;
 use self::file_diff_result_window::FileDiffResultWindow;
 use self::layouts_window::LayoutsWindow;
 use self::meta_diff_window::MetaDiffWindow;
+use self::open_process_window::OpenProcessWindow;
 use self::{
     find_dialog::FindDialog, help_window::HelpWindow, inspect_panel::InspectPanel,
     perspectives_window::PerspectivesWindow, regions_window::RegionsWindow,
@@ -144,6 +147,11 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             .open(&mut open)
             .show(ctx, |ui| MetaDiffWindow::ui(ui, app));
         app.ui.meta_diff_window.open.set(open);
+        open = app.ui.open_process_window.open.is();
+        Window::new("Open process")
+            .open(&mut open)
+            .show(ctx, |ui| OpenProcessWindow::ui(ui, app, font));
+        app.ui.open_process_window.open.set(open);
         // Context menu
         if let Some(menu) = &app.ui.context_menu {
             let mut close = false;

@@ -32,6 +32,10 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 }
                 ui.close_menu();
             }
+            if ui.button("Open process...").clicked() {
+                app.ui.open_process_window.open.toggle();
+                ui.close_menu();
+            }
             let mut load = None;
             if button_with_shortcut(ui, "Open previous", "Ctrl+P").on_hover_text("Can be used to switch between 2 files quickly for comparison").clicked() {
                 crate::shell::open_previous(app, &mut load);

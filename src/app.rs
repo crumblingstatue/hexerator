@@ -643,6 +643,47 @@ impl App {
             }
         }
     }
+
+    pub(crate) fn load_proc_memory(
+        &mut self,
+        pid: sysinfo::Pid,
+        start: usize,
+        size: usize,
+        is_write: bool,
+        font: &Font,
+    ) -> anyhow::Result<()> {
+        #[cfg(target_os = "linux")]
+        return load_proc_memory_linux(self, pid, start, size, is_write, font);
+        #[cfg(not(target_os = "linux"))]
+        bail!("Only supported on linux right now. Sorry!")
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn load_proc_memory_linux(
+    app: &mut App,
+    pid: sysinfo::Pid,
+    start: usize,
+    size: usize,
+    is_write: bool,
+    font: &Font,
+) -> anyhow::Result<()> {
+    app.load_file_args(
+        Args {
+            src: SourceArgs {
+                file: Some(Path::new("/proc/").join(pid.to_string()).join("mem")),
+                jump: None,
+                hard_seek: Some(start),
+                take: Some(size),
+                read_only: !is_write,
+                stream: false,
+            },
+            instance: false,
+            recent: false,
+            meta: None,
+        },
+        font,
+    )
 }
 
 pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, anyhow::Error> {
