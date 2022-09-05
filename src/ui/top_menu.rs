@@ -126,6 +126,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             if button_with_shortcut(ui, "Select all in view", "Ctrl+A").clicked() {
                 app.focused_view_select_all();
+                ui.close_menu();
             }
             if button_with_shortcut(ui, "Unselect all", "Esc").clicked() {
                 app.select_a = None;
