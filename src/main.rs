@@ -312,9 +312,14 @@ fn draw(app: &App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut V
 fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui, font: &Font) {
     while let Some(event) = window.poll_event() {
         app.input.update_from_event(&event);
-        sf_egui.add_event(&event);
-        let wants_pointer = sf_egui.context().wants_pointer_input();
-        let wants_kb = sf_egui.context().wants_keyboard_input();
+        let egui_ctx = sf_egui.context();
+        let wants_pointer = egui_ctx.wants_pointer_input();
+        let wants_kb = egui_ctx.wants_keyboard_input();
+        let block_event_from_egui = (matches!(event, Event::KeyPressed { code: Key::Tab, .. })
+            && !(wants_kb || wants_pointer));
+        if !block_event_from_egui {
+            sf_egui.add_event(&event);
+        }
         if wants_kb {
             if event == Event::Closed {
                 window.close();
