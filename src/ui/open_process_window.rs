@@ -12,6 +12,7 @@ pub struct OpenProcessWindow {
     pub sys: sysinfo::System,
     pub selected_pid: Option<sysinfo::Pid>,
     pub map_ranges: Vec<proc_maps::MapRange>,
+    proc_name_filter_string: String,
 }
 
 impl OpenProcessWindow {
@@ -104,14 +105,20 @@ impl OpenProcessWindow {
                         ui.label("pid");
                     });
                     row.col(|ui| {
-                        ui.label("name");
+                        ui.add(
+                            egui::TextEdit::singleline(&mut win!().proc_name_filter_string)
+                                .hint_text("🔎 Name"),
+                        );
                     });
                 })
                 .body(|body| {
                     let procs = win!().sys.processes();
-                    let mut pids: Vec<&sysinfo::Pid> = procs.keys().collect();
+                    let mut pids: Vec<&sysinfo::Pid> = procs
+                        .keys()
+                        .filter(|&pid| procs[pid].name().contains(&win!().proc_name_filter_string))
+                        .collect();
                     pids.sort();
-                    body.rows(20.0, win!().sys.processes().len(), |idx, mut row| {
+                    body.rows(20.0, pids.len(), |idx, mut row| {
                         let pid = pids[idx];
                         row.col(|ui| {
                             if ui
