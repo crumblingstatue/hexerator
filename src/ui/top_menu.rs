@@ -204,7 +204,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         ui.menu_button("View", |ui| {
             ui.menu_button("Current layout", |ui| {
                 for (k, v) in &app.meta.layouts {
-                    if ui.button(&v.name).clicked() {
+                    if ui.selectable_label(app.current_layout == k, &v.name).clicked() {
                         app.current_layout = k;
                         ui.close_menu();
                     }
