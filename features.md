@@ -46,6 +46,9 @@ You can see a YouTube video of it in action here:
 
 [![Video](https://img.youtube.com/vi/W8ab3-Hp-f0/0.jpg)](https://www.youtube.com/watch?v=W8ab3-Hp-f0)
 
+Built-in support for opening process memory only works on Linux right now.
+You need to run hexerator with root/admin privileges to open memory of other processes.
+
 ## Multiple source types
 Hexerator supports opening both files and streamed sources like standard input or character devices like `/dev/urandom`.
 
