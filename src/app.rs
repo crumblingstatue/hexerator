@@ -611,6 +611,38 @@ impl App {
         self.current_layout = LayoutKey::null();
         self.focused_view = None;
     }
+
+    pub(crate) fn focus_prev_view_in_layout(&mut self) {
+        if let Some(focused_view_key) = self.focused_view {
+            let layout = &self.meta.layouts[self.current_layout];
+            if let Some(focused_idx) = layout.iter().position(|k| k == focused_view_key) {
+                let new_idx = if focused_idx == 0 {
+                    layout.iter().count() - 1
+                } else {
+                    focused_idx - 1
+                };
+                if let Some(new_key) = layout.iter().nth(new_idx) {
+                    self.focused_view = Some(new_key);
+                }
+            }
+        }
+    }
+
+    pub(crate) fn focus_next_view_in_layout(&mut self) {
+        if let Some(focused_view_key) = self.focused_view {
+            let layout = &self.meta.layouts[self.current_layout];
+            if let Some(focused_idx) = layout.iter().position(|k| k == focused_view_key) {
+                let new_idx = if focused_idx == layout.iter().count() - 1 {
+                    0
+                } else {
+                    focused_idx + 1
+                };
+                if let Some(new_key) = layout.iter().nth(new_idx) {
+                    self.focused_view = Some(new_key);
+                }
+            }
+        }
+    }
 }
 
 pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, anyhow::Error> {

@@ -647,6 +647,8 @@ fn handle_key_events(
         Key::J if ctrl => app.ui.add_dialog(SetCursorDialog::default()),
         Key::Num1 if shift => app.select_a = Some(app.edit_state.cursor),
         Key::Num2 if shift => app.select_b = Some(app.edit_state.cursor),
+        Key::Tab if shift => app.focus_prev_view_in_layout(),
+        Key::Tab => app.focus_next_view_in_layout(),
         _ => {}
     }
 }

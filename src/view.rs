@@ -62,8 +62,10 @@ impl View {
         let mut this = Self {
             viewport_rect: ViewportRect::default(),
             kind,
-            col_w: 0,
-            row_h: 0,
+            // TODO: Hack. We're setting this to 4, 4 to avoid zeroed default block view.
+            // Solve in a better way.
+            col_w: 4,
+            row_h: 4,
             scroll_offset: ScrollOffset::default(),
             scroll_speed: 0,
             bytes_per_block: 1,
@@ -298,7 +300,13 @@ impl View {
         reason = "block size is never greater than i16::MAX"
     )]
     pub(crate) fn cols(&self) -> i16 {
-        self.viewport_rect.w / self.col_w as i16
+        match self.viewport_rect.w.checked_div(self.col_w as i16) {
+            Some(result) => result,
+            None => {
+                per_msg!("Divide by zero in View::cols. Bug.");
+                0
+            }
+        }
     }
 
     pub fn adjust_block_size(&mut self) {
