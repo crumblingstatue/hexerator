@@ -5,9 +5,19 @@ use serde::{Deserialize, Serialize};
 
 use crate::args::SourceArgs;
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub recent: RecentlyUsedList<SourceArgs>,
+}
+
+const DEFAULT_RECENT_CAPACITY: usize = 16;
+
+impl Default for Config {
+    fn default() -> Self {
+        let mut recent = RecentlyUsedList::default();
+        recent.set_capacity(DEFAULT_RECENT_CAPACITY);
+        Self { recent }
+    }
 }
 
 impl Config {
