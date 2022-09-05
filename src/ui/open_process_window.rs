@@ -13,6 +13,7 @@ pub struct OpenProcessWindow {
     pub selected_pid: Option<sysinfo::Pid>,
     pub map_ranges: Vec<proc_maps::MapRange>,
     proc_name_filter_string: String,
+    path_filter_string: String,
 }
 
 impl OpenProcessWindow {
@@ -47,12 +48,28 @@ impl OpenProcessWindow {
                         ui.label("r/w/x");
                     });
                     row.col(|ui| {
-                        ui.label("path");
+                        ui.add(
+                            egui::TextEdit::singleline(&mut win!().path_filter_string)
+                                .hint_text("🔎 Path"),
+                        );
                     });
                 })
                 .body(|body| {
-                    body.rows(20.0, win!().map_ranges.len(), |idx, mut row| {
-                        let map_range = win!().map_ranges[idx].clone();
+                    let mut filtered = win!().map_ranges.clone();
+                    filtered.retain(|range| {
+                        if win!().path_filter_string.is_empty() {
+                            return true;
+                        }
+                        match range.filename() {
+                            Some(path) => path
+                                .display()
+                                .to_string()
+                                .contains(&win!().path_filter_string),
+                            None => false,
+                        }
+                    });
+                    body.rows(20.0, filtered.len(), |idx, mut row| {
+                        let map_range = filtered[idx].clone();
                         row.col(|ui| {
                             if ui
                                 .add_enabled(
