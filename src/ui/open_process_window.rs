@@ -29,8 +29,12 @@ impl OpenProcessWindow {
                 win!().selected_pid = None;
             }
             TableBuilder::new(ui)
-                .columns(Size::remainder(), 4)
+                .column(Size::initial(140.0))
+                .column(Size::initial(80.0))
+                .column(Size::initial(40.0))
+                .column(Size::initial(300.0))
                 .striped(true)
+                .resizable(true)
                 .header(20.0, |mut row| {
                     row.col(|ui| {
                         ui.label("start");
@@ -52,7 +56,7 @@ impl OpenProcessWindow {
                             if ui
                                 .add_enabled(
                                     map_range.is_read(),
-                                    egui::Button::new(map_range.start().to_string()),
+                                    egui::Button::new(format!("{:X}", map_range.start())),
                                 )
                                 .clicked()
                             {
@@ -91,7 +95,9 @@ impl OpenProcessWindow {
                 });
         } else {
             TableBuilder::new(ui)
-                .columns(Size::remainder(), 2)
+                .column(Size::initial(100.0))
+                .column(Size::remainder())
+                .resizable(true)
                 .striped(true)
                 .header(20.0, |mut row| {
                     row.col(|ui| {
