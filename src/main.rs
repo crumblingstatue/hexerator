@@ -150,10 +150,9 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
         );
         // Save a metafile backup every so often
         if app.last_meta_backup.get().elapsed() >= Duration::from_secs(60) {
-            msg_if_fail(
-                app.save_temp_metafile_backup(),
-                "Failed to save temp metafile backup",
-            );
+            if let Err(e) = app.save_temp_metafile_backup() {
+                per_msg!("Failed to save temp metafile backup: {}", e);
+            }
         }
     }
     app.close_file();
