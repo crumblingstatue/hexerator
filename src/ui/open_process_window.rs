@@ -14,10 +14,43 @@ pub struct OpenProcessWindow {
     pub map_ranges: Vec<proc_maps::MapRange>,
     proc_name_filter_string: String,
     path_filter_string: String,
+    pid_sort: Sort,
+    size_sort: Sort,
+}
+
+#[derive(Default, Clone, Copy)]
+enum Sort {
+    #[default]
+    Ascending,
+    Descending,
+}
+
+impl Sort {
+    fn flip(&mut self) {
+        *self = match *self {
+            Sort::Ascending => Sort::Descending,
+            Sort::Descending => Sort::Ascending,
+        }
+    }
+}
+
+fn sort_button(ui: &mut egui::Ui, label: &str, active: bool, sort: Sort) -> egui::Response {
+    let arrow_str = if active {
+        match sort {
+            Sort::Ascending => "⏶",
+            Sort::Descending => "⏷",
+        }
+    } else {
+        ""
+    };
+    if active {
+        ui.style_mut().visuals.faint_bg_color = egui::Color32::RED;
+    }
+    ui.button(format!("{} {}", label, arrow_str))
 }
 
 impl OpenProcessWindow {
-    pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App, font: &Font) {
+    pub(crate) fn ui(ui: &mut egui::Ui, app: &mut crate::app::App, font: &Font) {
         macro_rules! win {
             () => {
                 app.ui.open_process_window
@@ -42,7 +75,9 @@ impl OpenProcessWindow {
                         ui.label("start");
                     });
                     row.col(|ui| {
-                        ui.label("size");
+                        if sort_button(ui, "size", true, win!().size_sort).clicked() {
+                            win!().size_sort.flip();
+                        }
                     });
                     row.col(|ui| {
                         ui.label("r/w/x");
@@ -67,6 +102,10 @@ impl OpenProcessWindow {
                                 .contains(&win!().path_filter_string),
                             None => false,
                         }
+                    });
+                    filtered.sort_by(|range1, range2| match win!().size_sort {
+                        Sort::Ascending => range1.size().cmp(&range2.size()),
+                        Sort::Descending => range1.size().cmp(&range2.size()).reverse(),
                     });
                     body.rows(20.0, filtered.len(), |idx, mut row| {
                         let map_range = filtered[idx].clone();
@@ -119,7 +158,9 @@ impl OpenProcessWindow {
                 .striped(true)
                 .header(20.0, |mut row| {
                     row.col(|ui| {
-                        ui.label("pid");
+                        if sort_button(ui, "pid", true, win!().pid_sort).clicked() {
+                            win!().pid_sort.flip()
+                        }
                     });
                     row.col(|ui| {
                         ui.add(
@@ -134,7 +175,10 @@ impl OpenProcessWindow {
                         .keys()
                         .filter(|&pid| procs[pid].name().contains(&win!().proc_name_filter_string))
                         .collect();
-                    pids.sort();
+                    pids.sort_by(|pid1, pid2| match win!().pid_sort {
+                        Sort::Ascending => pid1.cmp(pid2),
+                        Sort::Descending => pid1.cmp(pid2).reverse(),
+                    });
                     body.rows(20.0, pids.len(), |idx, mut row| {
                         let pid = pids[idx];
                         row.col(|ui| {
