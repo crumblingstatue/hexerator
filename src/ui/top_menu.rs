@@ -215,6 +215,14 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 app.ui.layouts_window.open.toggle();
                 ui.close_menu();
             }
+            if button_with_shortcut(ui, "Prev view", "Shift+Tab").clicked() {
+                app.focus_prev_view_in_layout();
+                ui.close_menu();
+            }
+            if button_with_shortcut(ui, "Next view", "Tab").clicked() {
+                app.focus_next_view_in_layout();
+                ui.close_menu();
+            }
             if button_with_shortcut(ui, "Views...", "F6").clicked() {
                 app.ui.views_window.open.toggle();
                 ui.close_menu();
