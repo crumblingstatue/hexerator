@@ -197,10 +197,9 @@ impl App {
         };
         file.write_all(data_to_write)?;
         self.dirty_region = None;
-        msg_if_fail(
-            self.save_temp_metafile_backup(),
-            "Failed to save metafile backup",
-        );
+        if let Err(e) = self.save_temp_metafile_backup() {
+            per_msg!("Failed to save metafile backup: {}", e);
+        }
         Ok(())
     }
     pub fn save_temp_metafile_backup(&mut self) -> anyhow::Result<()> {
