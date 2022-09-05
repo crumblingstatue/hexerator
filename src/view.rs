@@ -306,7 +306,7 @@ impl View {
             ViewKind::Hex(hex) => (hex.font_size * 2 - 2, hex.font_size),
             ViewKind::Dec(dec) => (dec.font_size * 3 - 6, dec.font_size),
             ViewKind::Text(data) => (data.font_size, data.line_spacing.max(1)),
-            ViewKind::Block => (4, 4),
+            ViewKind::Block => (self.col_w, self.row_h),
         }
     }
     /// Adjust state after kind was changed
