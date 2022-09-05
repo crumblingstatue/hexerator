@@ -14,6 +14,7 @@ pub struct OpenProcessWindow {
     pub map_ranges: Vec<proc_maps::MapRange>,
     proc_name_filter_string: String,
     path_filter_string: String,
+    addr_filter_string: String,
     pid_sort: Sort,
     size_sort: Sort,
 }
@@ -72,7 +73,10 @@ impl OpenProcessWindow {
                 .resizable(true)
                 .header(20.0, |mut row| {
                     row.col(|ui| {
-                        ui.label("start");
+                        ui.add(
+                            egui::TextEdit::singleline(&mut win!().addr_filter_string)
+                                .hint_text("🔎 Addr"),
+                        );
                     });
                     row.col(|ui| {
                         if sort_button(ui, "size", true, win!().size_sort).clicked() {
@@ -92,6 +96,11 @@ impl OpenProcessWindow {
                 .body(|body| {
                     let mut filtered = win!().map_ranges.clone();
                     filtered.retain(|range| {
+                        if let Ok(addr) = usize::from_str_radix(&win!().addr_filter_string, 16) {
+                            if !(range.start() <= addr && range.start() + range.size() >= addr) {
+                                return false;
+                            }
+                        }
                         if win!().path_filter_string.is_empty() {
                             return true;
                         }
