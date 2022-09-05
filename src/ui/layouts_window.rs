@@ -2,6 +2,7 @@ use egui_sfml::egui;
 use slotmap::Key;
 
 use crate::{
+    app::App,
     layout::{default_margin, Layout},
     meta::{LayoutKey, ViewKey},
 };
@@ -24,7 +25,12 @@ impl LayoutsWindow {
         for (k, v) in &app.meta.layouts {
             if ui.selectable_label(win.selected == k, &v.name).clicked() {
                 win.selected = k;
-                app.current_layout = k;
+                App::switch_layout(
+                    &mut app.current_layout,
+                    &mut app.focused_view,
+                    &app.meta.layouts,
+                    k,
+                );
             }
         }
         if !win.selected.is_null() {
@@ -153,7 +159,12 @@ impl LayoutsWindow {
                 margin: default_margin(),
             });
             win.selected = key;
-            app.current_layout = key;
+            App::switch_layout(
+                &mut app.current_layout,
+                &mut app.focused_view,
+                &app.meta.layouts,
+                key,
+            );
         }
         win.open.post_ui();
     }

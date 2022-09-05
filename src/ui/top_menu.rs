@@ -205,7 +205,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             ui.menu_button("Layout", |ui| {
                 for (k, v) in &app.meta.layouts {
                     if ui.selectable_label(app.current_layout == k, &v.name).clicked() {
-                        app.current_layout = k;
+                        App::switch_layout(&mut app.current_layout, &mut app.focused_view, &app.meta.layouts, k);
                         ui.close_menu();
                     }
                 }

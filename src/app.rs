@@ -26,8 +26,8 @@ use crate::{
     input::Input,
     layout::{default_margin, do_auto_layout, Layout},
     meta::{
-        perspective::Perspective, region::Region, LayoutKey, Meta, NamedRegion, NamedView,
-        PerspectiveKey, PerspectiveMap, RegionMap, ViewKey,
+        perspective::Perspective, region::Region, LayoutKey, LayoutMap, Meta, NamedRegion,
+        NamedView, PerspectiveKey, PerspectiveMap, RegionMap, ViewKey,
     },
     shell::{msg_if_fail, msg_warn},
     source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
@@ -355,13 +355,13 @@ impl App {
             let k = self.meta.views.insert(view);
             layout.view_grid[0].push(k);
         }
-        // If we have no focused view, let's focus on the default view
-        if self.focused_view.is_none() {
-            self.focused_view = Some(layout.view_grid[0][0]);
-        }
         let layout_key = self.meta.layouts.insert(layout);
-        self.current_layout = layout_key;
-        self.focused_view = None;
+        App::switch_layout(
+            &mut self.current_layout,
+            &mut self.focused_view,
+            &self.meta.layouts,
+            layout_key,
+        );
     }
 
     pub fn close_file(&mut self) {
@@ -589,6 +589,28 @@ impl App {
         self.ui.file_diff_result_window.open.set(true);
         Ok(())
     }
+
+    pub(crate) fn switch_layout(
+        app_current_layout: &mut LayoutKey,
+        app_focused_view: &mut Option<ViewKey>,
+        app_meta_layouts: &LayoutMap,
+        k: LayoutKey,
+    ) {
+        *app_current_layout = k;
+        // Set focused view to the first available view in the layout
+        if let Some(view_key) = app_meta_layouts[k]
+            .view_grid
+            .get(0)
+            .and_then(|row| row.get(0))
+        {
+            *app_focused_view = Some(*view_key);
+        }
+    }
+    /// Clear existing meta references, in anticipation for loading new metafile
+    fn clear_meta_refs(&mut self) {
+        self.current_layout = LayoutKey::null();
+        self.focused_view = None;
+    }
 }
 
 pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, anyhow::Error> {
@@ -618,10 +640,20 @@ pub fn temp_metafile_backup_path() -> PathBuf {
 
 pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
     let data = std::fs::read(&path)?;
+    this.clear_meta_refs();
     this.meta = rmp_serde::from_slice(&data)?;
     this.clean_meta = this.meta.clone();
     this.current_meta_path = path;
     this.meta.post_load_init();
+    // Switch to first layout, if there is one
+    if let Some(layout_key) = this.meta.layouts.keys().next() {
+        App::switch_layout(
+            &mut this.current_layout,
+            &mut this.focused_view,
+            &this.meta.layouts,
+            layout_key,
+        );
+    }
     Ok(())
 }
 

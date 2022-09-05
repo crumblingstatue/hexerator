@@ -4,6 +4,7 @@ use egui_extras::{Size, TableBuilder};
 use egui_sfml::egui::{self, emath::Numeric};
 use egui_sfml::sfml::graphics::Font;
 
+use crate::app::App;
 use crate::meta::{NamedView, ViewKey};
 use crate::region_context_menu;
 use crate::view::{HexData, TextData, TextKind, View, ViewKind};
@@ -74,7 +75,12 @@ impl ViewsWindow {
                                     if layout.contains_view(view_key)
                                         && ui.button(&layout.name).clicked()
                                     {
-                                        app.current_layout = key;
+                                        App::switch_layout(
+                                            &mut app.current_layout,
+                                            &mut app.focused_view,
+                                            &app.meta.layouts,
+                                            key,
+                                        );
                                         app.focused_view = Some(view_key);
                                         ui.close_menu();
                                     }
