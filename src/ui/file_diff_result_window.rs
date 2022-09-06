@@ -31,7 +31,8 @@ impl FileDiffResultWindow {
                 .clicked()
             {
                 let result: anyhow::Result<()> = try {
-                    let file_data = std::fs::read(&app.ui.file_diff_result_window.path)?;
+                    let file_data =
+                        read_source_to_buf(&app.ui.file_diff_result_window.path, &app.args.src)?;
                     app.ui
                         .file_diff_result_window
                         .diff_entries
