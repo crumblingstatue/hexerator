@@ -574,6 +574,15 @@ impl App {
         #[cfg(not(target_os = "linux"))]
         bail!("Only supported on linux right now. Sorry!")
     }
+
+    pub(crate) fn start_offset_of_view(
+        view: &mut View,
+        perspectives: &PerspectiveMap,
+        regions: &RegionMap,
+    ) -> usize {
+        let p = &perspectives[view.perspective];
+        regions[p.region].region.begin
+    }
 }
 
 #[cfg(target_os = "linux")]

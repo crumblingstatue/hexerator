@@ -592,7 +592,8 @@ fn handle_key_pressed(
                         view.go_home();
                     }
                     InteractMode::Edit => {
-                        // TODO: Implement
+                        view.go_home();
+                        app.edit_state.cursor = App::start_offset_of_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions);
                     }
                 }
             }
