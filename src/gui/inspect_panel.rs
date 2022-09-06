@@ -459,7 +459,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                     let offset = match gui.inspect_panel.format {
                         Format::Decimal => thingy.buf_mut().parse()?,
                         Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16)?,
-                        Format::Bin => todo!(),
+                        Format::Bin => usize::from_str_radix(thingy.buf_mut(), 2)?,
                     };
                     actions.push(Action::GoToOffset(offset));
                 };
@@ -470,7 +470,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                     let offset = match gui.inspect_panel.format {
                         Format::Decimal => thingy.buf_mut().parse()?,
                         Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16)?,
-                        Format::Bin => todo!(),
+                        Format::Bin => usize::from_str_radix(thingy.buf_mut(), 2)?,
                     };
                     actions.push(Action::JumpForward(offset));
                 };
