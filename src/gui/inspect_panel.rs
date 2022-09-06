@@ -1,5 +1,6 @@
 use std::{array::TryFromSliceError, marker::PhantomData};
 
+use anyhow::bail;
 use egui_sfml::egui::{self, Ui};
 use egui_sfml::sfml::window::clipboard;
 use slotmap::Key;
@@ -228,8 +229,8 @@ impl NumBytesManip for f32 {
     fn from_str(input: &str, format: Format) -> Result<Self, anyhow::Error> {
         let this = match format {
             Format::Decimal => input.parse()?,
-            Format::Hex => todo!(),
-            Format::Bin => todo!(),
+            Format::Hex => bail!("Float doesn't support parsing hex"),
+            Format::Bin => bail!("Float doesn't support parsing bin"),
         };
         Ok(this)
     }
@@ -275,8 +276,8 @@ impl NumBytesManip for f64 {
     fn from_str(input: &str, format: Format) -> Result<Self, anyhow::Error> {
         let this = match format {
             Format::Decimal => input.parse()?,
-            Format::Hex => todo!(),
-            Format::Bin => todo!(),
+            Format::Hex => bail!("Float doesn't support parsing hex"),
+            Format::Bin => bail!("Float doesn't support parsing bin"),
         };
         Ok(this)
     }
