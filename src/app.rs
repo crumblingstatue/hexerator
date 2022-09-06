@@ -3,7 +3,6 @@ pub mod interact_mode;
 pub mod presentation;
 
 use std::{
-    cell::Cell,
     ffi::OsString,
     fs::{File, OpenOptions},
     io::{Read, Seek, SeekFrom, Write},
@@ -29,6 +28,7 @@ use crate::{
         perspective::Perspective, region::Region, LayoutKey, LayoutMap, Meta, NamedRegion,
         NamedView, PerspectiveKey, PerspectiveMap, RegionMap, ViewKey,
     },
+    meta_state::MetaState,
     shell::{msg_if_fail, msg_warn},
     source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     timer::Timer,
@@ -51,28 +51,6 @@ pub struct App {
     pub preferences: Preferences,
     pub hex_ui: HexUi,
     pub meta_state: MetaState,
-}
-
-pub struct MetaState {
-    pub last_meta_backup: Cell<Instant>,
-    pub current_meta_path: PathBuf,
-    /// Clean copy of the metadata from last load/save
-    pub clean_meta: Meta,
-    pub meta: Meta,
-    /// Whether metafile needs saving
-    pub meta_dirty: bool,
-}
-
-impl Default for MetaState {
-    fn default() -> Self {
-        Self {
-            meta: Meta::default(),
-            clean_meta: Meta::default(),
-            last_meta_backup: Cell::new(Instant::now()),
-            current_meta_path: PathBuf::new(),
-            meta_dirty: false,
-        }
-    }
 }
 
 /// State related to the hex view ui, different from the egui gui overlay
