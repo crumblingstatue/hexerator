@@ -135,11 +135,10 @@ impl ViewsWindow {
             for (key, perspective) in app.meta.perspectives.iter() {
                 if ui.button(&perspective.name).clicked() {
                     ui.close_menu();
-                    let k = app.meta.views.insert(NamedView {
+                    app.meta.views.insert(NamedView {
                         view: View::new(ViewKind::Hex(HexData::default()), key),
                         name: perspective.name.to_owned(),
                     });
-                    app.meta.layouts[app.current_layout].view_grid[0].push(k);
                 }
             }
         });
