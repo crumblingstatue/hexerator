@@ -12,7 +12,7 @@ use crate::{
 
 use super::dialogs::LuaFillDialog;
 use super::{
-    dialogs::{AutoSaveReloadDialog, PatternFillDialog, SetCursorDialog},
+    dialogs::{AutoSaveReloadDialog, JumpDialog, PatternFillDialog},
     util::{button_with_shortcut, ButtonWithShortcut},
 };
 
@@ -194,7 +194,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             if button_with_shortcut(ui, "Jump...", "Ctrl+J").clicked() {
                 ui.close_menu();
-                app.ui.add_dialog(SetCursorDialog::default());
+                app.ui.add_dialog(JumpDialog::default());
             }
             if ui.button("Flash cursor").clicked() {
                 app.flash_cursor();

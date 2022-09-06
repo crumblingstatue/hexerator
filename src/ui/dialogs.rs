@@ -15,12 +15,14 @@ use crate::{
 use super::Dialog;
 
 #[derive(Debug, Default)]
-pub struct SetCursorDialog {
+pub struct JumpDialog {
     string_buf: String,
+    relative: bool,
 }
-impl Dialog for SetCursorDialog {
+
+impl Dialog for JumpDialog {
     fn title(&self) -> &str {
-        "Set cursor"
+        "Jump"
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
@@ -34,11 +36,19 @@ impl Dialog for SetCursorDialog {
             "Accepts both decimal and hexadecimal.\nPrefix with `0x` to force hex.\n\
              Prefix with `+` to add to current offset, `-` to subtract",
         );
+        ui.checkbox(&mut self.relative, "Relative")
+            .on_hover_text("Relative to --hard-seek");
         if ui.input().key_pressed(egui::Key::Enter) {
             match parse_offset_maybe_relative(&self.string_buf) {
                 Ok((offset, relativity)) => {
                     let offset = match relativity {
-                        Relativity::Absolute => offset,
+                        Relativity::Absolute => {
+                            if let Some(hard_seek) = app.args.src.hard_seek {
+                                offset.saturating_sub(hard_seek)
+                            } else {
+                                offset
+                            }
+                        }
                         Relativity::RelAdd => app.edit_state.cursor.saturating_add(offset),
                         Relativity::RelSub => app.edit_state.cursor.saturating_sub(offset),
                     };

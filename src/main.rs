@@ -63,7 +63,7 @@ use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use shell::{msg_if_fail, msg_warn};
 use slotmap::Key as _;
-use ui::{dialogs::SetCursorDialog, ContextMenu, ContextMenuData};
+use ui::{dialogs::JumpDialog, ContextMenu, ContextMenuData};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct InstanceRequest {
@@ -643,7 +643,7 @@ fn handle_key_events(
             }
         }
         Key::W if ctrl => app.close_file(),
-        Key::J if ctrl => app.ui.add_dialog(SetCursorDialog::default()),
+        Key::J if ctrl => app.ui.add_dialog(JumpDialog::default()),
         Key::Num1 if shift => app.select_a = Some(app.edit_state.cursor),
         Key::Num2 if shift => app.select_b = Some(app.edit_state.cursor),
         Key::Tab if shift => app.focus_prev_view_in_layout(),
