@@ -1,6 +1,7 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Instant};
 
 use egui_extras::Size;
+use egui_sfml::egui;
 
 use crate::{
     app::{read_source_to_buf, FileDiffEntry},
@@ -11,11 +12,26 @@ use crate::{
 
 use super::window_open::WindowOpen;
 
-#[derive(Default)]
 pub struct FileDiffResultWindow {
     pub diff_entries: Vec<FileDiffEntry>,
     pub open: WindowOpen,
     pub path: PathBuf,
+    pub auto_refresh: bool,
+    pub auto_refresh_interval_ms: u32,
+    pub last_refresh: Instant,
+}
+
+impl Default for FileDiffResultWindow {
+    fn default() -> Self {
+        Self {
+            diff_entries: Default::default(),
+            open: Default::default(),
+            path: Default::default(),
+            auto_refresh: Default::default(),
+            auto_refresh_interval_ms: Default::default(),
+            last_refresh: Instant::now(),
+        }
+    }
 }
 impl FileDiffResultWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
@@ -55,7 +71,19 @@ impl FileDiffResultWindow {
                 };
                 msg_if_fail(result, "Filter unchanged failed");
             }
-            if ui.button("Refresh").clicked() {
+        });
+        ui.horizontal(|ui| {
+            if ui.button("Refresh").clicked()
+                || (app.ui.file_diff_result_window.auto_refresh
+                    && app
+                        .ui
+                        .file_diff_result_window
+                        .last_refresh
+                        .elapsed()
+                        .as_millis()
+                        >= u128::from(app.ui.file_diff_result_window.auto_refresh_interval_ms))
+            {
+                app.ui.file_diff_result_window.last_refresh = Instant::now();
                 let result: anyhow::Result<()> = try {
                     let file_data =
                         read_source_to_buf(&app.ui.file_diff_result_window.path, &app.args.src)?;
@@ -65,6 +93,14 @@ impl FileDiffResultWindow {
                 };
                 msg_if_fail(result, "Refresh failed");
             }
+            ui.checkbox(
+                &mut app.ui.file_diff_result_window.auto_refresh,
+                "Auto refresh",
+            );
+            ui.label("Interval");
+            ui.add(egui::DragValue::new(
+                &mut app.ui.file_diff_result_window.auto_refresh_interval_ms,
+            ));
         });
         ui.separator();
         let mut action = Action::None;
