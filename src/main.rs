@@ -436,7 +436,7 @@ fn handle_text_entered(app: &mut App, unicode: char) {
                 view,
                 &app.meta_state.meta.perspectives,
                 &app.meta_state.meta.regions,
-                &mut app.edit_state.cursor,
+                app.edit_state.cursor,
             );
         }
         InteractMode::View => {}
@@ -479,7 +479,7 @@ fn handle_key_pressed(
                     app.edit_state.set_cursor_no_history(
                         app.edit_state.cursor.saturating_sub(app.meta_state.meta.perspectives[view.perspective].cols),
                     );
-                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, &mut app.edit_state.cursor);
+                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
                 }
             }
         },
@@ -497,7 +497,7 @@ fn handle_key_pressed(
                     if app.edit_state.cursor + app.meta_state.meta.perspectives[view.perspective].cols < app.data.len() {
                         app.edit_state.offset_cursor(app.meta_state.meta.perspectives[view.perspective].cols);
                     }
-                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, &mut app.edit_state.cursor);
+                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
                 }
             }
         },
@@ -521,7 +521,7 @@ fn handle_key_pressed(
                         }
                 } else {
                     app.edit_state.step_cursor_back();
-                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, &mut app.edit_state.cursor);
+                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
                 }
             }
             } else if key_mod.ctrl {
@@ -553,7 +553,7 @@ fn handle_key_pressed(
                         }
                 } else {
                     app.edit_state.step_cursor_forward();
-                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, &mut app.edit_state.cursor);
+                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
                 }
             }
             } else if key_mod.ctrl {
@@ -564,24 +564,36 @@ fn handle_key_pressed(
                 }
             }
         }
-        Key::PageUp => match app.hex_ui.interact_mode {
-            InteractMode::View => {
-                if let Some(key) = app.hex_ui.focused_view {
-                    app.meta_state.meta.views[key].view.scroll_page_up();
+        Key::PageUp => if let Some(key) = app.hex_ui.focused_view {
+            let view = &mut app.meta_state.meta.views[key].view;
+            let per = &app.meta_state.meta.perspectives[view.perspective];
+            match app.hex_ui.interact_mode {
+                InteractMode::View => {
+                    view.scroll_page_up();
                 }
-            }
-            InteractMode::Edit => {
-                // TODO: Implement
+                InteractMode::Edit => {
+                    #[expect(clippy::cast_sign_loss, reason = "view::rows is never negative")]
+                    {
+                        app.edit_state.cursor = app.edit_state.cursor.saturating_sub(view.rows() as usize * per.cols);
+                    }
+                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
+                }
             }
         },
-        Key::PageDown => match app.hex_ui.interact_mode {
-            InteractMode::View => {
-                if let Some(key) = app.hex_ui.focused_view {
+        Key::PageDown => if let Some(key) = app.hex_ui.focused_view {
+            let view = &mut app.meta_state.meta.views[key].view;
+            let per = &app.meta_state.meta.perspectives[view.perspective];
+            match app.hex_ui.interact_mode {
+                InteractMode::View => {
                     app.meta_state.meta.views[key].view.scroll_page_down();
                 }
-            }
-            InteractMode::Edit => {
-                // TODO: Implement
+                InteractMode::Edit => {
+                    #[expect(clippy::cast_sign_loss, reason = "view::rows is never negative")]
+                    {
+                        app.edit_state.cursor = app.edit_state.cursor.saturating_add(view.rows() as usize * per.cols);
+                    }
+                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
+                }
             }
         },
         Key::Home => {
@@ -676,11 +688,10 @@ fn keep_cursor_in_view(
     view: &mut view::View,
     perspectives: &PerspectiveMap,
     regions: &RegionMap,
-    cursor: &mut usize,
+    cursor: usize,
 ) {
     let view_offs = view.offsets(perspectives, regions);
-    let (cur_row, cur_col) =
-        perspectives[view.perspective].row_col_of_byte_offset(*cursor, regions);
+    let (cur_row, cur_col) = perspectives[view.perspective].row_col_of_byte_offset(cursor, regions);
     view.scroll_offset.pix_xoff = 0;
     view.scroll_offset.pix_yoff = 0;
     if view_offs.row > cur_row {
@@ -688,8 +699,8 @@ fn keep_cursor_in_view(
     }
     #[expect(clippy::cast_sign_loss, reason = "rows is always unsigned")]
     let view_rows = view.rows() as usize;
-    if (view_offs.row + view_rows) < cur_row {
-        view.scroll_offset.row = cur_row - view_rows;
+    if (view_offs.row + view_rows) < cur_row.saturating_add(1) {
+        view.scroll_offset.row = (cur_row + 1) - view_rows;
     }
     if view_offs.col > cur_col {
         view.scroll_offset.col = cur_col;
