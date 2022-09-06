@@ -406,7 +406,8 @@ impl View {
                     Some(merged) => app.data[app.edit_state.cursor] = merged,
                     None => per_msg!("finish_editing: Failed to merge hex halves"),
                 }
-                app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                app.edit_state
+                    .widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
             }
             ViewKind::Dec(dec) => {
                 let s =
@@ -414,14 +415,16 @@ impl View {
                 match s.parse() {
                     Ok(num) => {
                         app.data[app.edit_state.cursor] = num;
-                        app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                        app.edit_state
+                            .widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
                     }
                     Err(e) => msg_warn(&format!("Invalid value: {}", e)),
                 }
             }
             ViewKind::Text(text) => {
                 app.data[app.edit_state.cursor] = text.edit_buf.buf[0];
-                app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                app.edit_state
+                    .widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
             }
             ViewKind::Block => {}
         }

@@ -121,7 +121,8 @@ impl Dialog for PatternFillDialog {
                 Ok(values) => {
                     let range = sel.begin..=sel.end;
                     app.data[range.clone()].pattern_fill(&values);
-                    app.widen_dirty_region(DamageRegion::RangeInclusive(range));
+                    app.edit_state
+                        .widen_dirty_region(DamageRegion::RangeInclusive(range));
                     false
                 }
                 Err(e) => {

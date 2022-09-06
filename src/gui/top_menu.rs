@@ -150,7 +150,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
                     let range = sel.begin..=sel.end;
                     thread_rng().fill_bytes(&mut app.data[range.clone()]);
-                    app.widen_dirty_region(DamageRegion::RangeInclusive(range));
+                    app.edit_state.widen_dirty_region(DamageRegion::RangeInclusive(range));
                 }
                 ui.close_menu();
             }

@@ -1,4 +1,4 @@
-use crate::meta::region::Region;
+use crate::{damage_region::DamageRegion, meta::region::Region};
 
 #[derive(Default, Debug)]
 pub struct EditState {
@@ -50,6 +50,33 @@ impl EditState {
             true
         } else {
             false
+        }
+    }
+    pub(crate) fn widen_dirty_region(&mut self, damage: DamageRegion) {
+        match &mut self.dirty_region {
+            Some(dirty_region) => {
+                if damage.begin() < dirty_region.begin {
+                    dirty_region.begin = damage.begin();
+                }
+                if damage.begin() > dirty_region.end {
+                    dirty_region.end = damage.begin();
+                }
+                let end = damage.end();
+                {
+                    if end < dirty_region.begin {
+                        panic!("Wait, what?");
+                    }
+                    if end > dirty_region.end {
+                        dirty_region.end = end;
+                    }
+                }
+            }
+            None => {
+                self.dirty_region = Some(Region {
+                    begin: damage.begin(),
+                    end: damage.end(),
+                })
+            }
         }
     }
 }

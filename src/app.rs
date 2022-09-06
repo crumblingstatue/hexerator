@@ -22,7 +22,6 @@ use slotmap::Key;
 use crate::{
     args::{Args, SourceArgs},
     config::Config,
-    damage_region::DamageRegion,
     gui::Gui,
     input::Input,
     layout::{default_margin, do_auto_layout, Layout},
@@ -274,35 +273,6 @@ impl App {
             os_string.into()
         })
     }
-
-    pub(crate) fn widen_dirty_region(&mut self, damage: DamageRegion) {
-        match &mut self.edit_state.dirty_region {
-            Some(dirty_region) => {
-                if damage.begin() < dirty_region.begin {
-                    dirty_region.begin = damage.begin();
-                }
-                if damage.begin() > dirty_region.end {
-                    dirty_region.end = damage.begin();
-                }
-                let end = damage.end();
-                {
-                    if end < dirty_region.begin {
-                        panic!("Wait, what?");
-                    }
-                    if end > dirty_region.end {
-                        dirty_region.end = end;
-                    }
-                }
-            }
-            None => {
-                self.edit_state.dirty_region = Some(Region {
-                    begin: damage.begin(),
-                    end: damage.end(),
-                })
-            }
-        }
-    }
-
     pub(crate) fn dec_cols(&mut self) {
         self.col_change_impl(|col| *col -= 1);
     }
