@@ -304,21 +304,20 @@ fn draw_rect_outline(
 
 impl View {
     pub fn draw(
-        &self,
         key: ViewKey,
         app: &App,
         gui: &Gui,
         window: &mut RenderWindow,
         vertex_buffer: &mut Vec<Vertex>,
         font: &Font,
-        name: &str,
     ) {
         vertex_buffer.clear();
         let mut rs = RenderStates::default();
-        match &self.kind {
+        let this = &app.meta_state.meta.views[key];
+        match &this.view.kind {
             ViewKind::Hex(hex) => {
                 draw_view(
-                    self,
+                    &this.view,
                     &app.meta_state.meta.perspectives,
                     &app.meta_state.meta.regions,
                     &app.data,
@@ -333,9 +332,9 @@ impl View {
                                 vertex_buffer,
                                 x,
                                 y,
-                                f32::from(self.col_w),
-                                f32::from(self.row_h),
-                                self.presentation.sel_color,
+                                f32::from(this.view.col_w),
+                                f32::from(this.view.row_h),
+                                this.view.presentation.sel_color,
                             )
                         }
                         let mut gx = x;
@@ -365,7 +364,7 @@ impl View {
                                 vertex_buffer,
                                 app.hex_ui.focused_view == Some(key),
                                 App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
-                                &self.presentation,
+                                &this.view.presentation,
                                 hex.font_size,
                             );
                         }
@@ -375,7 +374,7 @@ impl View {
             }
             ViewKind::Dec(dec) => {
                 draw_view(
-                    self,
+                    &this.view,
                     &app.meta_state.meta.perspectives,
                     &app.meta_state.meta.regions,
                     &app.data,
@@ -390,9 +389,9 @@ impl View {
                                 vertex_buffer,
                                 x,
                                 y,
-                                f32::from(self.col_w),
-                                f32::from(self.row_h),
-                                self.presentation.sel_color,
+                                f32::from(this.view.col_w),
+                                f32::from(this.view.row_h),
+                                this.view.presentation.sel_color,
                             )
                         }
                         let mut gx = x;
@@ -422,7 +421,7 @@ impl View {
                                 vertex_buffer,
                                 app.hex_ui.focused_view == Some(key),
                                 App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
-                                &self.presentation,
+                                &this.view.presentation,
                                 dec.font_size,
                             );
                         }
@@ -432,7 +431,7 @@ impl View {
             }
             ViewKind::Text(text) => {
                 draw_view(
-                    self,
+                    &this.view,
                     &app.meta_state.meta.perspectives,
                     &app.meta_state.meta.regions,
                     &app.data,
@@ -447,9 +446,9 @@ impl View {
                                 vertex_buffer,
                                 x,
                                 y,
-                                f32::from(self.col_w),
-                                f32::from(self.row_h),
-                                self.presentation.sel_color,
+                                f32::from(this.view.col_w),
+                                f32::from(this.view.row_h),
+                                this.view.presentation.sel_color,
                             )
                         }
                         let raw_data = match text.text_kind {
@@ -478,7 +477,7 @@ impl View {
                                 vertex_buffer,
                                 app.hex_ui.focused_view == Some(key),
                                 App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
-                                &self.presentation,
+                                &this.view.presentation,
                                 text.font_size,
                             );
                         }
@@ -488,7 +487,7 @@ impl View {
             }
             ViewKind::Block => {
                 draw_view(
-                    self,
+                    &this.view,
                     &app.meta_state.meta.perspectives,
                     &app.meta_state.meta.regions,
                     &app.data,
@@ -505,8 +504,8 @@ impl View {
                             vertex_buffer,
                             x,
                             y,
-                            f32::from(self.col_w),
-                            f32::from(self.row_h),
+                            f32::from(this.view.col_w),
+                            f32::from(this.view.row_h),
                             c,
                         );
                         if idx == app.edit_state.cursor {
@@ -516,8 +515,8 @@ impl View {
                                 vertex_buffer,
                                 app.hex_ui.focused_view == Some(key),
                                 App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
-                                &self.presentation,
-                                self,
+                                &this.view.presentation,
+                                &this.view,
                             );
                         }
                     },
@@ -526,10 +525,10 @@ impl View {
         }
         draw_rect_outline(
             vertex_buffer,
-            self.viewport_rect.x.into(),
-            self.viewport_rect.y.into(),
-            self.viewport_rect.w.into(),
-            self.viewport_rect.h.into(),
+            this.view.viewport_rect.x.into(),
+            this.view.viewport_rect.y.into(),
+            this.view.viewport_rect.w.into(),
+            this.view.viewport_rect.h.into(),
             if Some(key) == app.hex_ui.focused_view {
                 Color::rgb(255, 255, 150)
             } else {
@@ -546,10 +545,10 @@ impl View {
                 )]
                 let vh = window.size().y as i16;
                 let (x, y, w, h) = rect_to_gl_viewport(
-                    self.viewport_rect.x - 1,
-                    self.viewport_rect.y - 1,
-                    self.viewport_rect.w + 2,
-                    self.viewport_rect.h + 2,
+                    this.view.viewport_rect.x - 1,
+                    this.view.viewport_rect.y - 1,
+                    this.view.viewport_rect.w + 2,
+                    this.view.viewport_rect.h + 2,
                     vh,
                 );
                 glu_sys::glScissor(x, y, w, h);
@@ -557,10 +556,10 @@ impl View {
         }
         let mut overlay_text = None;
         if app.hex_ui.show_alt_overlay {
-            let mut text = Text::new(name, font, 16);
+            let mut text = Text::new(&this.name, font, 16);
             text.set_position((
-                f32::from(self.viewport_rect.x),
-                f32::from(self.viewport_rect.y),
+                f32::from(this.view.viewport_rect.x),
+                f32::from(this.view.viewport_rect.y),
             ));
             let text_bounds = text.global_bounds();
             draw_rect(

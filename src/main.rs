@@ -311,9 +311,7 @@ fn draw(
         return;
     }
     for view_key in app.meta_state.meta.layouts[app.hex_ui.current_layout].iter() {
-        let view = &app.meta_state.meta.views[view_key];
-        view.view
-            .draw(view_key, app, gui, window, vertex_buffer, font, &view.name);
+        crate::view::View::draw(view_key, app, gui, window, vertex_buffer, font);
     }
 }
 
