@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use slotmap::Key;
 
 use crate::{
-    app::{edit_state::EditState, presentation::Presentation, App, Preferences},
+    app::{edit_state::EditState, presentation::Presentation, Preferences},
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
@@ -74,25 +74,6 @@ impl View {
         };
         this.adjust_state_to_kind();
         this
-    }
-    /// Used only for `mem::replace` borrow checker workarounds
-    pub fn zeroed() -> Self {
-        Self {
-            viewport_rect: ViewportRect {
-                x: 0,
-                y: 0,
-                w: 0,
-                h: 0,
-            },
-            kind: ViewKind::Hex(HexData::default()),
-            col_w: 0,
-            row_h: 0,
-            scroll_offset: Default::default(),
-            scroll_speed: 0,
-            bytes_per_block: 0,
-            perspective: PerspectiveKey::null(),
-            presentation: Presentation::default(),
-        }
     }
     pub fn scroll_x(&mut self, amount: i16) {
         #[expect(
@@ -337,34 +318,40 @@ impl View {
             ViewKind::Block => 1,
         }
     }
-    pub fn handle_text_entered(&mut self, unicode: char, app: &mut App) {
+    pub fn handle_text_entered(
+        &mut self,
+        unicode: char,
+        edit_state: &mut EditState,
+        preferences: &Preferences,
+        data: &mut [u8],
+    ) {
         if self.char_valid(unicode) {
             match &mut self.kind {
                 ViewKind::Hex(hex) => {
                     if !hex.edit_buf.dirty {
-                        let s = format!("{:02X}", app.data[app.edit_state.cursor]);
+                        let s = format!("{:02X}", data[edit_state.cursor]);
                         hex.edit_buf.update_from_string(&s);
                     }
                     if hex.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
-                        || app.preferences.quick_edit
+                        || preferences.quick_edit
                     {
-                        self.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences);
+                        self.finish_editing(edit_state, data, preferences);
                     }
                 }
                 ViewKind::Dec(dec) => {
                     if !dec.edit_buf.dirty {
-                        let s = format!("{:03}", app.data[app.edit_state.cursor]);
+                        let s = format!("{:03}", data[edit_state.cursor]);
                         dec.edit_buf.update_from_string(&s);
                     }
                     if dec.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
-                        || app.preferences.quick_edit
+                        || preferences.quick_edit
                     {
-                        self.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences);
+                        self.finish_editing(edit_state, data, preferences);
                     }
                 }
                 ViewKind::Text(text) => {
-                    if text.edit_buf.enter_byte(unicode as u8) || app.preferences.quick_edit {
-                        self.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences);
+                    if text.edit_buf.enter_byte(unicode as u8) || preferences.quick_edit {
+                        self.finish_editing(edit_state, data, preferences);
                     }
                 }
                 // Block doesn't do any text input

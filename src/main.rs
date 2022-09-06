@@ -422,18 +422,19 @@ fn handle_text_entered(app: &mut App, unicode: char) {
             let Some(focused) = app.hex_ui.focused_view else {
                 return
             };
-            let mut view = std::mem::replace(
-                &mut app.meta_state.meta.views[focused].view,
-                crate::view::View::zeroed(),
+            let view = &mut app.meta_state.meta.views[focused].view;
+            view.handle_text_entered(
+                unicode,
+                &mut app.edit_state,
+                &app.preferences,
+                &mut app.data,
             );
-            view.handle_text_entered(unicode, app);
             keep_cursor_in_view(
-                &mut view,
+                view,
                 &app.meta_state.meta.perspectives,
                 &app.meta_state.meta.regions,
                 &mut app.edit_state.cursor,
             );
-            app.meta_state.meta.views[focused].view = view;
         }
         InteractMode::View => {}
     }
