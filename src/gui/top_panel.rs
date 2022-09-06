@@ -84,7 +84,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
                             presentation.color_method = ColorMethod::Custom(Box::new(Palette(arr)));
                         }
                     });
-                ui.color_edit_button_rgb(&mut app.bg_color);
+                ui.color_edit_button_rgb(&mut app.preferences.bg_color);
                 ui.label("Bg color");
                 if let ColorMethod::Custom(arr) = &mut presentation.color_method {
                     let col = &mut arr.0[app.data[app.edit_state.cursor] as usize];

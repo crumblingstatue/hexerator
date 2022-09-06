@@ -71,7 +71,6 @@ pub struct App {
     pub auto_reload_interval_ms: u32,
     last_reload: Instant,
     pub preferences: Preferences,
-    pub bg_color: [f32; 3],
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
     pub meta: Meta,
@@ -98,6 +97,8 @@ pub struct Preferences {
     pub col_change_lock_col: bool,
     /// Try to stay on current row when changing column count
     pub col_change_lock_row: bool,
+    /// Background color (mostly for fun)
+    pub bg_color: [f32; 3],
 }
 
 impl Default for Preferences {
@@ -110,6 +111,7 @@ impl Default for Preferences {
             keep_meta: false,
             col_change_lock_col: false,
             col_change_lock_row: true,
+            bg_color: [0.0; 3],
         }
     }
 }
@@ -145,7 +147,6 @@ impl App {
             last_reload: Instant::now(),
             preferences: Preferences::default(),
             hex_iface_rect: ViewportRect::default(),
-            bg_color: [0.; 3],
             show_alt_overlay: false,
             current_layout: LayoutKey::null(),
             meta: Meta::default(),
