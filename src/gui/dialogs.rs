@@ -165,7 +165,7 @@ impl Dialog for LuaFillDialog {
             // beyond window height
             .max_height(ui.available_height() - 100.0)
             .show(ui, |ui| {
-                egui::TextEdit::multiline(&mut app.meta.misc.fill_lua_script)
+                egui::TextEdit::multiline(&mut app.meta_state.meta.misc.fill_lua_script)
                     .code_editor()
                     .desired_width(f32::INFINITY)
                     .show(ui);
@@ -174,7 +174,7 @@ impl Dialog for LuaFillDialog {
             let start_time = Instant::now();
             let lua = Lua::default();
             lua.context(|ctx| {
-                let chunk = ctx.load(&app.meta.misc.fill_lua_script);
+                let chunk = ctx.load(&app.meta_state.meta.misc.fill_lua_script);
                 match chunk.eval::<Function>() {
                     Ok(f) => {
                         let res: rlua::Result<()> = try {

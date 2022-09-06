@@ -46,18 +46,34 @@ pub struct App {
     pub args: Args,
     pub source: Option<Source>,
     pub just_reloaded: bool,
-    /// Whether metafile needs saving
-    pub meta_dirty: bool,
     pub stream_read_recv: Option<Receiver<Vec<u8>>>,
     pub cfg: Config,
     last_reload: Instant,
     pub preferences: Preferences,
-    pub meta: Meta,
+    pub hex_ui: HexUi,
+    pub meta_state: MetaState,
+}
+
+pub struct MetaState {
+    pub last_meta_backup: Cell<Instant>,
+    pub current_meta_path: PathBuf,
     /// Clean copy of the metadata from last load/save
     pub clean_meta: Meta,
-    pub current_meta_path: PathBuf,
-    pub last_meta_backup: Cell<Instant>,
-    pub hex_ui: HexUi,
+    pub meta: Meta,
+    /// Whether metafile needs saving
+    pub meta_dirty: bool,
+}
+
+impl Default for MetaState {
+    fn default() -> Self {
+        Self {
+            meta: Meta::default(),
+            clean_meta: Meta::default(),
+            last_meta_backup: Cell::new(Instant::now()),
+            current_meta_path: PathBuf::new(),
+            meta_dirty: false,
+        }
+    }
 }
 
 /// State related to the hex view ui, different from the egui gui overlay
@@ -157,17 +173,13 @@ impl App {
             source,
 
             just_reloaded: true,
-            meta_dirty: false,
             stream_read_recv: None,
             cfg,
             last_reload: Instant::now(),
             preferences: Preferences::default(),
 
-            meta: Meta::default(),
-            clean_meta: Meta::default(),
-            last_meta_backup: Cell::new(Instant::now()),
-            current_meta_path: PathBuf::new(),
             hex_ui: HexUi::default(),
+            meta_state: MetaState::default(),
         };
         if load_success {
             this.new_file_readjust(font);
@@ -235,7 +247,7 @@ impl App {
     pub fn save_temp_metafile_backup(&mut self) -> anyhow::Result<()> {
         // We set the last_meta_backup first, so if save fails, we don't get
         // a never ending stream of constant save failures.
-        self.last_meta_backup.set(Instant::now());
+        self.meta_state.last_meta_backup.set(Instant::now());
         self.save_meta_to_file(temp_metafile_backup_path(), true)?;
         per_msg!("Saved temp metafile backup");
         Ok(())
@@ -251,10 +263,10 @@ impl App {
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
         if let Some(key) = self.hex_ui.focused_view {
-            self.meta.views[key].view.center_on_offset(
+            self.meta_state.meta.views[key].view.center_on_offset(
                 offset,
-                &self.meta.perspectives,
-                &self.meta.regions,
+                &self.meta_state.meta.perspectives,
+                &self.meta_state.meta.regions,
             );
         }
     }
@@ -300,11 +312,11 @@ impl App {
     }
     fn col_change_impl(&mut self, f: impl FnOnce(&mut usize)) {
         if let Some(key) = self.hex_ui.focused_view {
-            let view = &mut self.meta.views[key].view;
+            let view = &mut self.meta_state.meta.views[key].view;
             col_change_impl_view_perspective(
                 view,
-                &mut self.meta.perspectives,
-                &self.meta.regions,
+                &mut self.meta_state.meta.perspectives,
+                &self.meta_state.meta.regions,
                 f,
                 self.preferences.col_change_lock_col,
                 self.preferences.col_change_lock_row,
@@ -359,9 +371,9 @@ impl App {
 
     /// Readjust to a new file
     fn new_file_readjust(&mut self, font: &Font) {
-        self.meta = Meta::default();
-        self.current_meta_path.clear();
-        let def_region = self.meta.regions.insert(NamedRegion {
+        self.meta_state.meta = Meta::default();
+        self.meta_state.current_meta_path.clear();
+        let def_region = self.meta_state.meta.regions.insert(NamedRegion {
             name: "default".into(),
             region: Region {
                 begin: 0,
@@ -369,7 +381,7 @@ impl App {
             },
             desc: String::new(),
         });
-        let default_perspective = self.meta.perspectives.insert(Perspective {
+        let default_perspective = self.meta_state.meta.perspectives.insert(Perspective {
             region: def_region,
             cols: 48,
             flip_row_order: false,
@@ -381,14 +393,14 @@ impl App {
             margin: default_margin(),
         };
         for view in default_views(font, default_perspective) {
-            let k = self.meta.views.insert(view);
+            let k = self.meta_state.meta.views.insert(view);
             layout.view_grid[0].push(k);
         }
-        let layout_key = self.meta.layouts.insert(layout);
+        let layout_key = self.meta_state.meta.layouts.insert(layout);
         App::switch_layout(
             &mut self.hex_ui.current_layout,
             &mut self.hex_ui.focused_view,
-            &self.meta.layouts,
+            &self.meta_state.meta.layouts,
             layout_key,
         );
     }
@@ -446,11 +458,14 @@ impl App {
             return;
         };
         let Some(view_key) = self.hex_ui.focused_view else { return };
-        let view = &self.meta.views[view_key].view;
+        let view = &self.meta_state.meta.views[view_key].view;
         let view_byte_offset = view
-            .offsets(&self.meta.perspectives, &self.meta.regions)
+            .offsets(
+                &self.meta_state.meta.perspectives,
+                &self.meta_state.meta.regions,
+            )
             .byte;
-        let bytes_per_page = view.bytes_per_page(&self.meta.perspectives);
+        let bytes_per_page = view.bytes_per_page(&self.meta_state.meta.perspectives);
         // Don't read past what we need for our current view offset
         if view_byte_offset + bytes_per_page < self.data.len() {
             return;
@@ -465,8 +480,8 @@ impl App {
                         src.state.stream_end = true;
                     } else {
                         self.data.extend_from_slice(&buf[..]);
-                        let perspective = &self.meta.perspectives[view.perspective];
-                        let region = &mut self.meta.regions[perspective.region].region;
+                        let perspective = &self.meta_state.meta.perspectives[view.perspective];
+                        let region = &mut self.meta_state.meta.regions[perspective.region].region;
                         region.end = self.data.len() - 1;
                     }
                 }
@@ -498,19 +513,18 @@ impl App {
     //
     // Also returns the index of the view the position is from
     pub fn byte_offset_at_pos(&mut self, x: i16, y: i16) -> Option<(usize, ViewKey)> {
-        let layout = &self.meta.layouts[self.hex_ui.current_layout];
+        let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
         for view_key in layout.iter() {
-            let view = &self.meta.views[view_key];
-            if let Some((row, col)) =
-                view.view
-                    .row_col_offset_of_pos(x, y, &self.meta.perspectives, &self.meta.regions)
-            {
+            let view = &self.meta_state.meta.views[view_key];
+            if let Some((row, col)) = view.view.row_col_offset_of_pos(
+                x,
+                y,
+                &self.meta_state.meta.perspectives,
+                &self.meta_state.meta.regions,
+            ) {
                 return Some((
-                    self.meta.perspectives[view.view.perspective].byte_offset_of_row_col(
-                        row,
-                        col,
-                        &self.meta.regions,
-                    ),
+                    self.meta_state.meta.perspectives[view.view.perspective]
+                        .byte_offset_of_row_col(row, col, &self.meta_state.meta.regions),
                     view_key,
                 ));
             }
@@ -518,9 +532,9 @@ impl App {
         None
     }
     pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<ViewKey> {
-        let layout = &self.meta.layouts[self.hex_ui.current_layout];
+        let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
         for view_key in layout.iter() {
-            let view = &self.meta.views[view_key];
+            let view = &self.meta_state.meta.views[view_key];
             if view.view.viewport_rect.contains_pos(x, y) {
                 return Some(view_key);
             }
@@ -529,11 +543,11 @@ impl App {
     }
 
     pub fn save_meta_to_file(&mut self, path: PathBuf, temp: bool) -> Result<(), anyhow::Error> {
-        let data = rmp_serde::to_vec(&self.meta)?;
+        let data = rmp_serde::to_vec(&self.meta_state.meta)?;
         std::fs::write(&path, &data)?;
         if !temp {
-            self.current_meta_path = path;
-            self.clean_meta = self.meta.clone();
+            self.meta_state.current_meta_path = path;
+            self.meta_state.clean_meta = self.meta_state.meta.clone();
         }
         Ok(())
     }
@@ -555,13 +569,13 @@ impl App {
     /// Called every frame
     pub(crate) fn update(&mut self) {
         if !self.hex_ui.current_layout.is_null() {
-            let layout = &self.meta.layouts[self.hex_ui.current_layout];
+            let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
             do_auto_layout(
                 layout,
-                &mut self.meta.views,
+                &mut self.meta_state.meta.views,
                 &self.hex_ui.hex_iface_rect,
-                &self.meta.perspectives,
-                &self.meta.regions,
+                &self.meta_state.meta.perspectives,
+                &self.meta_state.meta.regions,
             );
         }
         if self.preferences.auto_save && self.edit_state.dirty_region.is_some() {
@@ -595,9 +609,9 @@ impl App {
     }
     pub(crate) fn focused_view_select_all(&mut self) {
         if let Some(view) = self.hex_ui.focused_view {
-            let p_key = self.meta.views[view].view.perspective;
-            let p = &self.meta.perspectives[p_key];
-            let r = &self.meta.regions[p.region];
+            let p_key = self.meta_state.meta.views[view].view.perspective;
+            let p = &self.meta_state.meta.perspectives[p_key];
+            let r = &self.meta_state.meta.regions[p.region];
             self.hex_ui.select_a = Some(r.region.begin);
             self.hex_ui.select_b = Some(r.region.end);
         }
@@ -649,7 +663,7 @@ impl App {
 
     pub(crate) fn focus_prev_view_in_layout(&mut self) {
         if let Some(focused_view_key) = self.hex_ui.focused_view {
-            let layout = &self.meta.layouts[self.hex_ui.current_layout];
+            let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
             if let Some(focused_idx) = layout.iter().position(|k| k == focused_view_key) {
                 let new_idx = if focused_idx == 0 {
                     layout.iter().count() - 1
@@ -665,7 +679,7 @@ impl App {
 
     pub(crate) fn focus_next_view_in_layout(&mut self) {
         if let Some(focused_view_key) = self.hex_ui.focused_view {
-            let layout = &self.meta.layouts[self.hex_ui.current_layout];
+            let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
             if let Some(focused_idx) = layout.iter().position(|k| k == focused_view_key) {
                 let new_idx = if focused_idx == layout.iter().count() - 1 {
                     0
@@ -749,16 +763,16 @@ pub fn temp_metafile_backup_path() -> PathBuf {
 pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
     let data = std::fs::read(&path)?;
     this.clear_meta_refs();
-    this.meta = rmp_serde::from_slice(&data)?;
-    this.clean_meta = this.meta.clone();
-    this.current_meta_path = path;
-    this.meta.post_load_init();
+    this.meta_state.meta = rmp_serde::from_slice(&data)?;
+    this.meta_state.clean_meta = this.meta_state.meta.clone();
+    this.meta_state.current_meta_path = path;
+    this.meta_state.meta.post_load_init();
     // Switch to first layout, if there is one
-    if let Some(layout_key) = this.meta.layouts.keys().next() {
+    if let Some(layout_key) = this.meta_state.meta.layouts.keys().next() {
         App::switch_layout(
             &mut this.hex_ui.current_layout,
             &mut this.hex_ui.focused_view,
-            &this.meta.layouts,
+            &this.meta_state.meta.layouts,
             layout_key,
         );
     }

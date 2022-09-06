@@ -34,34 +34,38 @@ impl PerspectivesWindow {
                 });
             })
             .body(|body| {
-                let keys: Vec<_> = app.meta.perspectives.keys().collect();
+                let keys: Vec<_> = app.meta_state.meta.perspectives.keys().collect();
                 let mut action = Action::None;
                 body.rows(20.0, keys.len(), |idx, mut row| {
                     row.col(|ui| {
                         if app.gui.perspectives_window.rename_idx == keys[idx] {
-                            let re =
-                                ui.text_edit_singleline(&mut app.meta.perspectives[keys[idx]].name);
+                            let re = ui.text_edit_singleline(
+                                &mut app.meta_state.meta.perspectives[keys[idx]].name,
+                            );
                             if re.lost_focus() {
                                 app.gui.perspectives_window.rename_idx = PerspectiveKey::null();
                             } else {
                                 re.request_focus();
                             }
                         } else {
-                            ui.menu_button(&app.meta.perspectives[keys[idx]].name, |ui| {
-                                if ui.button("✏ Rename").clicked() {
-                                    app.gui.perspectives_window.rename_idx = keys[idx];
-                                    ui.close_menu();
-                                }
-                                if ui.button("🗑 Delete").clicked() {
-                                    action = Action::Remove(keys[idx]);
-                                    ui.close_menu();
-                                }
-                            });
+                            ui.menu_button(
+                                &app.meta_state.meta.perspectives[keys[idx]].name,
+                                |ui| {
+                                    if ui.button("✏ Rename").clicked() {
+                                        app.gui.perspectives_window.rename_idx = keys[idx];
+                                        ui.close_menu();
+                                    }
+                                    if ui.button("🗑 Delete").clicked() {
+                                        action = Action::Remove(keys[idx]);
+                                        ui.close_menu();
+                                    }
+                                },
+                            );
                         }
                     });
                     row.col(|ui| {
-                        let per = &app.meta.perspectives[keys[idx]];
-                        let reg = &app.meta.regions[per.region];
+                        let per = &app.meta_state.meta.perspectives[keys[idx]];
+                        let reg = &app.meta_state.meta.regions[per.region];
                         if ui
                             .link(&reg.name)
                             .on_hover_text(&reg.desc)
@@ -73,17 +77,20 @@ impl PerspectivesWindow {
                     });
                     row.col(|ui| {
                         ui.add(egui::DragValue::new(
-                            &mut app.meta.perspectives[keys[idx]].cols,
+                            &mut app.meta_state.meta.perspectives[keys[idx]].cols,
                         ));
                     });
                     row.col(|ui| {
-                        ui.checkbox(&mut app.meta.perspectives[keys[idx]].flip_row_order, "");
+                        ui.checkbox(
+                            &mut app.meta_state.meta.perspectives[keys[idx]].flip_row_order,
+                            "",
+                        );
                     });
                 });
                 match action {
                     Action::None => {}
                     Action::Remove(key) => {
-                        app.meta.perspectives.remove(key);
+                        app.meta_state.meta.perspectives.remove(key);
                     }
                     Action::OpenRegion(key) => {
                         app.gui.regions_window.open = true;
@@ -98,9 +105,10 @@ impl PerspectivesWindow {
             });
         ui.separator();
         ui.menu_button("New from region", |ui| {
-            for (key, region) in app.meta.regions.iter() {
+            for (key, region) in app.meta_state.meta.regions.iter() {
                 if ui.button(&region.name).clicked() {
-                    app.meta
+                    app.meta_state
+                        .meta
                         .perspectives
                         .insert(Perspective::from_region(key, region.name.clone()));
                     ui.close_menu();

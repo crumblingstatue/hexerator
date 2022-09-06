@@ -29,8 +29,8 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
         let data_len = app.data.len();
         if data_len != 0 {
             if let Some(view_key) = app.hex_ui.focused_view {
-                let view = &app.meta.views[view_key].view;
-                let per = match app.meta.perspectives.get_mut(view.perspective) {
+                let view = &app.meta_state.meta.views[view_key].view;
+                let per = match app.meta_state.meta.perspectives.get_mut(view.perspective) {
                     Some(per) => per,
                     None => {
                         ui.label("Invalid perspective key");
@@ -38,10 +38,10 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
                     }
                 };
                 ui.label("offset");
-                ui.add(DragValue::new(&mut app.meta.regions[per.region].region.begin));
+                ui.add(DragValue::new(&mut app.meta_state.meta.regions[per.region].region.begin));
                 ui.label("columns");
                 ui.add(DragValue::new(&mut per.cols));
-                let offsets = view.offsets(&app.meta.perspectives, &app.meta.regions);
+                let offsets = view.offsets(&app.meta_state.meta.perspectives, &app.meta_state.meta.regions);
                 #[expect(
                     clippy::cast_precision_loss,
                     reason = "Precision is good until 52 bits (more than reasonable)"

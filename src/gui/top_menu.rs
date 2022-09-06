@@ -208,9 +208,9 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("View", |ui| {
             ui.menu_button("Layout", |ui| {
-                for (k, v) in &app.meta.layouts {
+                for (k, v) in &app.meta_state.meta.layouts {
                     if ui.selectable_label(app.hex_ui.current_layout == k, &v.name).clicked() {
-                        App::switch_layout(&mut app.hex_ui.current_layout, &mut app.hex_ui.focused_view, &app.meta.layouts, k);
+                        App::switch_layout(&mut app.hex_ui.current_layout, &mut app.hex_ui.focused_view, &app.meta_state.meta.layouts, k);
                         ui.close_menu();
                     }
                 }
@@ -240,9 +240,9 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             let Some(view_key) = app.hex_ui.focused_view else { return };
-            let view = &mut app.meta.views[view_key].view;
+            let view = &mut app.meta_state.meta.views[view_key].view;
             if ui.button("Set offset to cursor").clicked() {
-                app.meta.regions[app.meta.perspectives[view.perspective].region].region.begin = app.edit_state.cursor;
+                app.meta_state.meta.regions[app.meta_state.meta.perspectives[view.perspective].region].region.begin = app.edit_state.cursor;
                 ui.close_menu();
             }
             if ui.button("Fill focused view").on_hover_text("Make the column count as big as the active view can fit").clicked() {
@@ -254,8 +254,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                         let cols = view.cols() as usize;
                         col_change_impl_view_perspective(
                             view,
-                            &mut app.meta.perspectives,
-                            &app.meta.regions,
+                            &mut app.meta_state.meta.perspectives,
+                            &app.meta_state.meta.regions,
                             |c| *c = cols,
                             app.preferences.col_change_lock_col,
                             app.preferences.col_change_lock_row
@@ -263,7 +263,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                     }
             }
             if ui.checkbox(
-                &mut app.meta.perspectives[view.perspective].flip_row_order,
+                &mut app.meta_state.meta.perspectives[view.perspective].flip_row_order,
                 "Flip row order (experimental)",
             ).clicked() {
                 ui.close_menu();
@@ -284,8 +284,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             ui.separator();
-            if ui.add_enabled(!app.current_meta_path.as_os_str().is_empty(), egui::Button::new("Reload")).on_hover_text(format!("Reload from {}", app.current_meta_path.display())).clicked() {
-                msg_if_fail(crate::app::consume_meta_from_file(app.current_meta_path.clone(), app), "Failed to load metafile");
+            if ui.add_enabled(!app.meta_state.current_meta_path.as_os_str().is_empty(), egui::Button::new("Reload")).on_hover_text(format!("Reload from {}", app.meta_state.current_meta_path.display())).clicked() {
+                msg_if_fail(crate::app::consume_meta_from_file(app.meta_state.current_meta_path.clone(), app), "Failed to load metafile");
                 ui.close_menu();
             }
             if ui.button("Load from file...").clicked() {
@@ -299,8 +299,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             ui.separator();
-            if ui.add_enabled(!app.current_meta_path.as_os_str().is_empty(), egui::Button::new("Save")).on_hover_text(format!("Save to {}", app.current_meta_path.display())).clicked() {
-                msg_if_fail(app.save_meta_to_file(app.current_meta_path.clone(), false), "Failed to save metafile");
+            if ui.add_enabled(!app.meta_state.current_meta_path.as_os_str().is_empty(), egui::Button::new("Save")).on_hover_text(format!("Save to {}", app.meta_state.current_meta_path.display())).clicked() {
+                msg_if_fail(app.save_meta_to_file(app.meta_state.current_meta_path.clone(), false), "Failed to save metafile");
                 ui.close_menu();
             }
             if ui.button("Save as...").clicked() {

@@ -24,16 +24,16 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
             ui.label(format!("b: {}", b));
         }
         if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) && let Some(view_key) = app.hex_ui.focused_view {
-            let view = &app.meta.views[view_key].view;
-            let (rows, rem) = app.meta.perspectives[view.perspective].region_row_span(sel);
+            let view = &app.meta_state.meta.views[view_key].view;
+            let (rows, rem) = app.meta_state.meta.perspectives[view.perspective].region_row_span(sel);
             ui.label(format!(
                 "{rows} rows * {} cols + {rem} = {}",
-                app.meta.perspectives[view.perspective].cols,
+                app.meta_state.meta.perspectives[view.perspective].cols,
                 sel.len()
             ));
         }
         if let Some(view_key) = app.hex_ui.focused_view {
-            let presentation = &mut app.meta.views[view_key].view.presentation;
+            let presentation = &mut app.meta_state.meta.views[view_key].view.presentation;
             ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.checkbox(&mut presentation.invert_color, "invert");
                 ComboBox::new("color_combo", "Color")

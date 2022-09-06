@@ -142,8 +142,8 @@ impl FileDiffResultWindow {
                                 .link(entry.offset.to_string())
                                 .context_menu(|ui| {
                                     if ui.button("Add bookmark").clicked() {
-                                        let idx = app.meta.bookmarks.len();
-                                        app.meta.bookmarks.push(Bookmark {
+                                        let idx = app.meta_state.meta.bookmarks.len();
+                                        app.meta_state.meta.bookmarks.push(Bookmark {
                                             offset: entry.offset,
                                             label: "New bookmark".into(),
                                             desc: String::new(),
@@ -160,11 +160,11 @@ impl FileDiffResultWindow {
                         });
                         row.col(|ui| {
                             match find_most_specific_region_for_offset(
-                                &app.meta.regions,
+                                &app.meta_state.meta.regions,
                                 entry.offset,
                             ) {
                                 Some(reg_key) => {
-                                    let reg = &app.meta.regions[reg_key];
+                                    let reg = &app.meta_state.meta.regions[reg_key];
                                     ui.menu_button(&reg.name, |ui| {
                                         if ui.button("Remove region from results").clicked() {
                                             action = Action::RemoveRegion(reg_key);
@@ -181,6 +181,7 @@ impl FileDiffResultWindow {
                         });
                         row.col(|ui| {
                             match app
+                                .meta_state
                                 .meta
                                 .bookmarks
                                 .iter()
@@ -214,7 +215,10 @@ impl FileDiffResultWindow {
             }
             Action::RemoveRegion(key) => {
                 app.gui.file_diff_result_window.diff_entries.retain(|en| {
-                    let reg = find_most_specific_region_for_offset(&app.meta.regions, en.offset);
+                    let reg = find_most_specific_region_for_offset(
+                        &app.meta_state.meta.regions,
+                        en.offset,
+                    );
                     reg != Some(key)
                 })
             }

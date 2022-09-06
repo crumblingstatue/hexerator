@@ -18,8 +18,8 @@ pub struct MetaDiffWindow {
 }
 impl MetaDiffWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
-        let this = &mut app.meta;
-        let clean = &app.clean_meta;
+        let this = &mut app.meta_state.meta;
+        let clean = &app.meta_state.clean_meta;
         ui.heading("Regions");
         diff_slotmap(ui, &mut this.regions, &clean.regions);
         ui.heading("Perspectives");

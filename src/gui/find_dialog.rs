@@ -109,9 +109,9 @@ impl FindDialog {
                                 ui.label(app.data[off].to_string());
                             });
                             row.col(|ui| {
-                                match find_most_specific_region_for_offset(&app.meta.regions, off) {
+                                match find_most_specific_region_for_offset(&app.meta_state.meta.regions, off) {
                                     Some(key) => {
-                                        let reg = &app.meta.regions[key];
+                                        let reg = &app.meta_state.meta.regions[key];
                                         if ui.link(&reg.name).context_menu(region_context_menu!(app, reg, action)).clicked() {
                                             app.gui.regions_window.open = true;
                                             app.gui.regions_window.selected_key = Some(key);
@@ -123,7 +123,7 @@ impl FindDialog {
                                 }
                             });
                             row.col(|ui| {
-                                match Meta::bookmark_for_offset(&app.meta.bookmarks, off) {
+                                match Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, off) {
                                     Some((bm_idx, bm)) => {
                                         if ui.link(&bm.label).on_hover_text(&bm.desc).clicked() {
                                             app.gui.bookmarks_window.open.set(true);
@@ -131,8 +131,8 @@ impl FindDialog {
                                         }
                                     },
                                     None => { if ui.button("✚").on_hover_text("Add new bookmark").clicked() {
-                                        let idx = app.meta.bookmarks.len();
-                                        app.meta.bookmarks.push(Bookmark {
+                                        let idx = app.meta_state.meta.bookmarks.len();
+                                        app.meta_state.meta.bookmarks.push(Bookmark {
                                             offset: off,
                                             label: "New bookmark".into(),
                                             desc: String::new(),

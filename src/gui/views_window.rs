@@ -42,7 +42,7 @@ impl ViewsWindow {
             app.gui.views_window.selected = view_key;
         }
         let mut removed_idx = None;
-        if app.meta.views.is_empty() {
+        if app.meta_state.meta.views.is_empty() {
             ui.label("No views");
             return;
         }
@@ -63,22 +63,22 @@ impl ViewsWindow {
                 });
             })
             .body(|body| {
-                let keys: Vec<ViewKey> = app.meta.views.keys().collect();
+                let keys: Vec<ViewKey> = app.meta_state.meta.views.keys().collect();
                 let mut action = Action::None;
                 body.rows(20.0, keys.len(), |idx, mut row| {
                     let view_key = keys[idx];
-                    let view = &app.meta.views[view_key];
+                    let view = &app.meta_state.meta.views[view_key];
                     row.col(|ui| {
                         let ctx_menu = |ui: &mut egui::Ui| {
                             ui.menu_button("Containing layouts", |ui| {
-                                for (key, layout) in app.meta.layouts.iter() {
+                                for (key, layout) in app.meta_state.meta.layouts.iter() {
                                     if layout.contains_view(view_key)
                                         && ui.button(&layout.name).clicked()
                                     {
                                         App::switch_layout(
                                             &mut app.hex_ui.current_layout,
                                             &mut app.hex_ui.focused_view,
-                                            &app.meta.layouts,
+                                            &app.meta_state.meta.layouts,
                                             key,
                                         );
                                         app.hex_ui.focused_view = Some(view_key);
@@ -100,15 +100,15 @@ impl ViewsWindow {
                     });
                     row.col(|ui| {
                         if ui
-                            .link(&app.meta.perspectives[view.view.perspective].name)
+                            .link(&app.meta_state.meta.perspectives[view.view.perspective].name)
                             .clicked()
                         {
                             app.gui.perspectives_window.open.set(true);
                         }
                     });
                     row.col(|ui| {
-                        let per = &app.meta.perspectives[view.view.perspective];
-                        let reg = &app.meta.regions[per.region];
+                        let per = &app.meta_state.meta.perspectives[view.view.perspective];
+                        let reg = &app.meta_state.meta.regions[per.region];
                         let ctx_menu = region_context_menu!(app, reg, action);
                         if ui
                             .link(&reg.name)
@@ -132,10 +132,10 @@ impl ViewsWindow {
             });
         ui.separator();
         ui.menu_button("New from perspective", |ui| {
-            for (key, perspective) in app.meta.perspectives.iter() {
+            for (key, perspective) in app.meta_state.meta.perspectives.iter() {
                 if ui.button(&perspective.name).clicked() {
                     ui.close_menu();
-                    app.meta.views.insert(NamedView {
+                    app.meta_state.meta.views.insert(NamedView {
                         view: View::new(ViewKind::Hex(HexData::default()), key),
                         name: perspective.name.to_owned(),
                     });
@@ -143,7 +143,12 @@ impl ViewsWindow {
             }
         });
         ui.separator();
-        if let Some(view) = app.meta.views.get_mut(app.gui.views_window.selected) {
+        if let Some(view) = app
+            .meta_state
+            .meta
+            .views
+            .get_mut(app.gui.views_window.selected)
+        {
             ui.horizontal(|ui| {
                 if app.gui.views_window.rename {
                     if ui
@@ -163,13 +168,13 @@ impl ViewsWindow {
                 }
             });
             egui::ComboBox::new("new_perspective_combo", "Perspective")
-                .selected_text(&app.meta.perspectives[view.view.perspective].name)
+                .selected_text(&app.meta_state.meta.perspectives[view.view.perspective].name)
                 .show_ui(ui, |ui| {
-                    for k in app.meta.perspectives.keys() {
+                    for k in app.meta_state.meta.perspectives.keys() {
                         if ui
                             .selectable_label(
                                 k == view.view.perspective,
-                                &app.meta.perspectives[k].name,
+                                &app.meta_state.meta.perspectives[k].name,
                             )
                             .clicked()
                         {
@@ -256,7 +261,7 @@ impl ViewsWindow {
             }
         }
         if let Some(rem_key) = removed_idx {
-            app.meta.views.remove(rem_key);
+            app.meta_state.meta.views.remove(rem_key);
             app.hex_ui.focused_view = None;
         }
         app.gui.views_window.open.post_ui();

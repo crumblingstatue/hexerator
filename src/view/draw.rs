@@ -318,8 +318,8 @@ impl View {
             ViewKind::Hex(hex) => {
                 draw_view(
                     self,
-                    &app.meta.perspectives,
-                    &app.meta.regions,
+                    &app.meta_state.meta.perspectives,
+                    &app.meta_state.meta.regions,
                     &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
@@ -375,8 +375,8 @@ impl View {
             ViewKind::Dec(dec) => {
                 draw_view(
                     self,
-                    &app.meta.perspectives,
-                    &app.meta.regions,
+                    &app.meta_state.meta.perspectives,
+                    &app.meta_state.meta.regions,
                     &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
@@ -432,8 +432,8 @@ impl View {
             ViewKind::Text(text) => {
                 draw_view(
                     self,
-                    &app.meta.perspectives,
-                    &app.meta.regions,
+                    &app.meta_state.meta.perspectives,
+                    &app.meta_state.meta.regions,
                     &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
@@ -488,8 +488,8 @@ impl View {
             ViewKind::Block => {
                 draw_view(
                     self,
-                    &app.meta.perspectives,
-                    &app.meta.regions,
+                    &app.meta_state.meta.perspectives,
+                    &app.meta_state.meta.regions,
                     &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, _byte, idx, mut c| {

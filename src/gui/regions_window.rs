@@ -19,8 +19,10 @@ macro_rules! region_context_menu {
     ($app:expr, $reg:expr, $action:expr) => {
         |ui: &mut egui_sfml::egui::Ui| {
             ui.menu_button("Containing layouts", |ui| {
-                for (key, layout) in $app.meta.layouts.iter() {
-                    if let Some(v) = layout.view_containing_region(&$reg.region, &$app.meta) {
+                for (key, layout) in $app.meta_state.meta.layouts.iter() {
+                    if let Some(v) =
+                        layout.view_containing_region(&$reg.region, &$app.meta_state.meta)
+                    {
                         if ui.button(&layout.name).clicked() {
                             $app.hex_ui.current_layout = key;
                             $app.hex_ui.focused_view = Some(v);
@@ -45,12 +47,12 @@ impl RegionsWindow {
         match App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
             Some(sel) => {
                 if ui.add(button).clicked() {
-                    app.meta.regions.insert(NamedRegion {
+                    app.meta_state.meta.regions.insert(NamedRegion {
                         name: String::from("<Unnamed>"),
                         region: sel,
                         desc: String::new(),
                     });
-                    app.meta_dirty = true;
+                    app.meta_state.meta_dirty = true;
                 }
             }
             None => {
@@ -80,12 +82,12 @@ impl RegionsWindow {
                 });
             })
             .body(|mut body| {
-                let mut keys: Vec<RegionKey> = app.meta.regions.keys().collect();
+                let mut keys: Vec<RegionKey> = app.meta_state.meta.regions.keys().collect();
                 let mut action = Action::None;
-                keys.sort_by_key(|k| app.meta.regions[*k].region.begin);
+                keys.sort_by_key(|k| app.meta_state.meta.regions[*k].region.begin);
                 for k in keys {
                     body.row(20.0, |mut row| {
-                        let reg = &app.meta.regions[k];
+                        let reg = &app.meta_state.meta.regions[k];
                         row.col(|ui| {
                             let ctx_menu = region_context_menu!(app, reg, action);
                             if ui
@@ -126,7 +128,7 @@ impl RegionsWindow {
             });
         ui.separator();
         if let &Some(key) = &app.gui.regions_window.selected_key {
-            let reg = &mut app.meta.regions[key];
+            let reg = &mut app.meta_state.meta.regions[key];
             ui.horizontal(|ui| {
                 if app.gui.regions_window.rename_active {
                     if ui.text_edit_singleline(&mut reg.name).lost_focus() {
@@ -166,7 +168,7 @@ impl RegionsWindow {
             ui.label("Description");
             ui.text_edit_multiline(&mut reg.desc);
             if ui.button("Delete").clicked() {
-                app.meta.regions.remove(key);
+                app.meta_state.meta.regions.remove(key);
                 app.gui.regions_window.selected_key = None;
             }
         }
