@@ -17,8 +17,12 @@ pub struct LayoutsWindow {
     edit_name: bool,
 }
 impl LayoutsWindow {
-    pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
-        let win = &mut app.gui.layouts_window;
+    pub(crate) fn ui(
+        ui: &mut egui_sfml::egui::Ui,
+        gui: &mut crate::gui::Gui,
+        app: &mut crate::app::App,
+    ) {
+        let win = &mut gui.layouts_window;
         if win.open.just_now() {
             win.selected = app.hex_ui.current_layout;
         }
@@ -90,8 +94,8 @@ impl LayoutsWindow {
                                     ui.close_menu();
                                 }
                                 if ui.button("👁 View properties").clicked() {
-                                    app.gui.views_window.open.set(true);
-                                    app.gui.views_window.selected = *view_key;
+                                    gui.views_window.open.set(true);
+                                    gui.views_window.selected = *view_key;
                                     ui.close_menu();
                                 }
                             });

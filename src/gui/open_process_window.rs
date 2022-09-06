@@ -51,10 +51,15 @@ fn sort_button(ui: &mut egui::Ui, label: &str, active: bool, sort: Sort) -> egui
 }
 
 impl OpenProcessWindow {
-    pub(crate) fn ui(ui: &mut egui::Ui, app: &mut crate::app::App, font: &Font) {
+    pub(crate) fn ui(
+        ui: &mut egui::Ui,
+        gui: &mut crate::gui::Gui,
+        app: &mut crate::app::App,
+        font: &Font,
+    ) {
         macro_rules! win {
             () => {
-                app.gui.open_process_window
+                gui.open_process_window
             };
         }
         if win!().open.just_now() {

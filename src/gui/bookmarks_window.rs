@@ -11,7 +11,7 @@ use crate::{
     shell::msg_if_fail,
 };
 
-use super::window_open::WindowOpen;
+use super::{window_open::WindowOpen, Gui};
 
 #[derive(Default)]
 pub struct BookmarksWindow {
@@ -23,8 +23,8 @@ pub struct BookmarksWindow {
 }
 
 impl BookmarksWindow {
-    pub fn ui(ui: &mut Ui, app: &mut App) {
-        let win = &mut app.gui.bookmarks_window;
+    pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App) {
+        let win = &mut gui.bookmarks_window;
         ui.add(egui::TextEdit::singleline(&mut win.name_filter_string).hint_text("Filter by name"));
         let mut action = Action::None;
         TableBuilder::new(ui)
@@ -123,8 +123,8 @@ impl BookmarksWindow {
                                 .context_menu(ctx_menu)
                                 .clicked()
                             {
-                                app.gui.regions_window.open = true;
-                                app.gui.regions_window.selected_key = Some(region_key);
+                                gui.regions_window.open = true;
+                                gui.regions_window.selected_key = Some(region_key);
                             }
                         } else {
                             ui.label("<no region>");

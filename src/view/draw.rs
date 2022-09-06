@@ -307,6 +307,7 @@ impl View {
         &self,
         key: ViewKey,
         app: &App,
+        gui: &Gui,
         window: &mut RenderWindow,
         vertex_buffer: &mut Vec<Vertex>,
         font: &Font,
@@ -326,7 +327,7 @@ impl View {
                         if selected_or_find_result_contains(
                             App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
                             idx,
-                            &app.gui,
+                            gui,
                         ) {
                             draw_rect(
                                 vertex_buffer,
@@ -383,7 +384,7 @@ impl View {
                         if selected_or_find_result_contains(
                             App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
                             idx,
-                            &app.gui,
+                            gui,
                         ) {
                             draw_rect(
                                 vertex_buffer,
@@ -440,7 +441,7 @@ impl View {
                         if selected_or_find_result_contains(
                             App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
                             idx,
-                            &app.gui,
+                            gui,
                         ) {
                             draw_rect(
                                 vertex_buffer,
@@ -496,7 +497,7 @@ impl View {
                         if selected_or_find_result_contains(
                             App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
                             idx,
-                            &app.gui,
+                            gui,
                         ) {
                             c = invert_color(c);
                         }

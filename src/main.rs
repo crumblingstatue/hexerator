@@ -57,7 +57,7 @@ use egui_sfml::sfml::{
 };
 use egui_sfml::SfEgui;
 use gamedebug_core::per_msg;
-use gui::{dialogs::JumpDialog, ContextMenu, ContextMenuData};
+use gui::{dialogs::JumpDialog, ContextMenu, ContextMenuData, Gui};
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use meta::{NamedView, PerspectiveMap, RegionMap};
 use rfd::MessageButtons;
@@ -132,6 +132,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     };
     let mut app = App::new(args, Config::load_or_default()?, &font)?;
     let mut vertex_buffer = Vec::new();
+    let mut gui = Gui::default();
 
     while window.is_open() {
         if let Ok(mut stream) = listener.accept() {
@@ -143,6 +144,7 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
         }
         do_frame(
             &mut app,
+            &mut gui,
             &mut sf_egui,
             &mut window,
             &font,
@@ -179,16 +181,17 @@ fn main() {
 
 fn do_frame(
     app: &mut App,
+    gui: &mut Gui,
     sf_egui: &mut SfEgui,
     window: &mut RenderWindow,
     font: &Font,
     vertex_buffer: &mut Vec<Vertex>,
 ) {
-    handle_events(app, window, sf_egui, font);
+    handle_events(gui, app, window, sf_egui, font);
     update(app, sf_egui.context().wants_keyboard_input());
     app.update();
     let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
-    gui::do_egui(sf_egui, app, mp, font);
+    gui::do_egui(sf_egui, gui, app, mp, font);
     let [r, g, b] = app.preferences.bg_color;
     #[expect(
         clippy::cast_possible_truncation,
@@ -200,7 +203,7 @@ fn do_frame(
         (g * 255.) as u8,
         (b * 255.) as u8,
     ));
-    draw(app, window, font, vertex_buffer);
+    draw(app, gui, window, font, vertex_buffer);
     sf_egui.draw(window, None);
     window.display();
     // Should only be true on the frame right after reloading
@@ -291,7 +294,13 @@ fn update(app: &mut App, egui_wants_kb: bool) {
     }
 }
 
-fn draw(app: &App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
+fn draw(
+    app: &App,
+    gui: &Gui,
+    window: &mut RenderWindow,
+    font: &Font,
+    vertex_buffer: &mut Vec<Vertex>,
+) {
     if app.hex_ui.current_layout.is_null() {
         let mut t = Text::new("No active layout", font, 20);
         t.set_position((
@@ -304,11 +313,17 @@ fn draw(app: &App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut V
     for view_key in app.meta_state.meta.layouts[app.hex_ui.current_layout].iter() {
         let view = &app.meta_state.meta.views[view_key];
         view.view
-            .draw(view_key, app, window, vertex_buffer, font, &view.name);
+            .draw(view_key, app, gui, window, vertex_buffer, font, &view.name);
     }
 }
 
-fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui, font: &Font) {
+fn handle_events(
+    gui: &mut crate::gui::Gui,
+    app: &mut App,
+    window: &mut RenderWindow,
+    sf_egui: &mut SfEgui,
+    font: &Font,
+) {
     while let Some(event) = window.poll_event() {
         app.input.update_from_event(&event);
         let egui_ctx = sf_egui.context();
@@ -333,7 +348,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
                 ctrl,
                 alt,
                 ..
-            } => handle_key_events(code, app, ctrl, shift, alt, font, wants_kb),
+            } => handle_key_events(code, gui, app, ctrl, shift, alt, font, wants_kb),
             Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_panic((x, y));
@@ -341,17 +356,17 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
                     continue;
                 }
                 if button == mouse::Button::Left {
-                    app.gui.context_menu = None;
+                    gui.context_menu = None;
                     if let Some((off, _view_idx)) = app.byte_offset_at_pos(mp.x, mp.y) {
                         app.edit_state.set_cursor(off);
                     }
                     if let Some(view_idx) = app.view_idx_at_pos(mp.x, mp.y) {
                         app.hex_ui.focused_view = Some(view_idx);
-                        app.gui.views_window.selected = view_idx;
+                        gui.views_window.selected = view_idx;
                     }
                 } else if button == mouse::Button::Right {
                     if let Some((off, view_key)) = app.byte_offset_at_pos(mp.x, mp.y) {
-                        app.gui.context_menu = Some(ContextMenu::new(
+                        gui.context_menu = Some(ContextMenu::new(
                             mp.x,
                             mp.y,
                             ContextMenuData::ViewByte {
@@ -428,6 +443,7 @@ fn handle_text_entered(app: &mut App, unicode: char) {
 
 fn handle_key_events(
     code: Key,
+    gui: &mut crate::gui::Gui,
     app: &mut App,
     ctrl: bool,
     shift: bool,
@@ -587,13 +603,13 @@ fn handle_key_events(
         },
         Key::F1 => app.hex_ui.interact_mode = InteractMode::View,
         Key::F2 => app.hex_ui.interact_mode = InteractMode::Edit,
-        Key::F5 => app.gui.layouts_window.open.toggle(),
-        Key::F6 => app.gui.views_window.open.toggle(),
-        Key::F7 => app.gui.perspectives_window.open.toggle(),
-        Key::F8 => app.gui.regions_window.open ^= true,
-        Key::F9 => app.gui.bookmarks_window.open.toggle(),
+        Key::F5 => gui.layouts_window.open.toggle(),
+        Key::F6 => gui.views_window.open.toggle(),
+        Key::F7 => gui.perspectives_window.open.toggle(),
+        Key::F8 => gui.regions_window.open ^= true,
+        Key::F9 => gui.bookmarks_window.open.toggle(),
         Key::Escape => {
-            app.gui.context_menu = None;
+            gui.context_menu = None;
             if let Some(view_key) = app.hex_ui.focused_view {
                 app.meta_state.meta.views[view_key].view.cancel_editing();
             }
@@ -614,7 +630,7 @@ fn handle_key_events(
             app.focused_view_select_all();
         }
         Key::F if ctrl => {
-            app.gui.find_dialog.open.toggle();
+            gui.find_dialog.open.toggle();
         }
         Key::S if ctrl => match &mut app.source {
             Some(source) => {
@@ -643,7 +659,7 @@ fn handle_key_events(
             }
         }
         Key::W if ctrl => app.close_file(),
-        Key::J if ctrl => app.gui.add_dialog(JumpDialog::default()),
+        Key::J if ctrl => gui.add_dialog(JumpDialog::default()),
         Key::Num1 if shift => app.hex_ui.select_a = Some(app.edit_state.cursor),
         Key::Num2 if shift => app.hex_ui.select_b = Some(app.edit_state.cursor),
         Key::Tab if shift => app.focus_prev_view_in_layout(),

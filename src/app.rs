@@ -23,6 +23,7 @@ use crate::{
     args::{Args, SourceArgs},
     config::Config,
     damage_region::DamageRegion,
+    gui::Gui,
     input::Input,
     layout::{default_margin, do_auto_layout, Layout},
     meta::{
@@ -42,7 +43,6 @@ pub struct App {
     pub data: Vec<u8>,
     pub edit_state: EditState,
     pub input: Input,
-    pub gui: crate::gui::Gui,
     pub args: Args,
     pub source: Option<Source>,
     pub just_reloaded: bool,
@@ -166,12 +166,8 @@ impl App {
             data,
             edit_state: EditState::default(),
             input: Input::default(),
-
-            gui: crate::gui::Gui::default(),
-
             args,
             source,
-
             just_reloaded: true,
             stream_read_recv: None,
             cfg,
@@ -621,7 +617,7 @@ impl App {
         self.args.src.file.as_deref()
     }
 
-    pub(crate) fn diff_with_file(&mut self, path: PathBuf) -> anyhow::Result<()> {
+    pub(crate) fn diff_with_file(&mut self, path: PathBuf, gui: &mut Gui) -> anyhow::Result<()> {
         let file_data = read_source_to_buf(&path, &self.args.src)?;
         let mut diff_entries = Vec::new();
         for ((offset, &my_byte), &file_byte) in self.data.iter().enumerate().zip(file_data.iter()) {
@@ -633,9 +629,9 @@ impl App {
                 });
             }
         }
-        self.gui.file_diff_result_window.diff_entries = diff_entries;
-        self.gui.file_diff_result_window.path = path;
-        self.gui.file_diff_result_window.open.set(true);
+        gui.file_diff_result_window.diff_entries = diff_entries;
+        gui.file_diff_result_window.path = path;
+        gui.file_diff_result_window.open.set(true);
         Ok(())
     }
 

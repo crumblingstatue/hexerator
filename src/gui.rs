@@ -91,7 +91,13 @@ use self::{
     views_window::ViewsWindow,
 };
 
-pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font: &Font) {
+pub fn do_egui(
+    sf_egui: &mut SfEgui,
+    gui: &mut crate::gui::Gui,
+    app: &mut App,
+    mouse_pos: ViewportVec,
+    font: &Font,
+) {
     sf_egui.do_frame(|ctx| {
         let mut open = gamedebug_core::enabled();
         let was_open = open;
@@ -101,59 +107,59 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
         if was_open && !open {
             gamedebug_core::toggle();
         }
-        open = app.gui.find_dialog.open.is();
+        open = gui.find_dialog.open.is();
         Window::new("Find")
             .open(&mut open)
-            .show(ctx, |ui| FindDialog::ui(ui, app));
-        app.gui.find_dialog.open.set(open);
-        open = app.gui.regions_window.open;
+            .show(ctx, |ui| FindDialog::ui(ui, gui, app));
+        gui.find_dialog.open.set(open);
+        open = gui.regions_window.open;
         Window::new("Regions")
             .open(&mut open)
-            .show(ctx, |ui| RegionsWindow::ui(ui, app));
-        app.gui.regions_window.open = open;
-        open = app.gui.bookmarks_window.open.is();
+            .show(ctx, |ui| RegionsWindow::ui(ui, gui, app));
+        gui.regions_window.open = open;
+        open = gui.bookmarks_window.open.is();
         Window::new("Bookmarks")
             .open(&mut open)
-            .show(ctx, |ui| BookmarksWindow::ui(ui, app));
-        app.gui.bookmarks_window.open.set(open);
-        open = app.gui.layouts_window.open.is();
+            .show(ctx, |ui| BookmarksWindow::ui(ui, gui, app));
+        gui.bookmarks_window.open.set(open);
+        open = gui.layouts_window.open.is();
         Window::new("Layouts")
             .open(&mut open)
-            .show(ctx, |ui| LayoutsWindow::ui(ui, app));
-        app.gui.layouts_window.open.set(open);
-        open = app.gui.views_window.open.is();
+            .show(ctx, |ui| LayoutsWindow::ui(ui, gui, app));
+        gui.layouts_window.open.set(open);
+        open = gui.views_window.open.is();
         Window::new("Views")
             .open(&mut open)
-            .show(ctx, |ui| ViewsWindow::ui(ui, app, font));
-        app.gui.views_window.open.set(open);
-        open = app.gui.perspectives_window.open.is();
+            .show(ctx, |ui| ViewsWindow::ui(ui, gui, app, font));
+        gui.views_window.open.set(open);
+        open = gui.perspectives_window.open.is();
         Window::new("Perspectives")
             .open(&mut open)
-            .show(ctx, |ui| PerspectivesWindow::ui(ui, app));
-        app.gui.perspectives_window.open.set(open);
-        open = app.gui.help_window.open;
+            .show(ctx, |ui| PerspectivesWindow::ui(ui, gui, app));
+        gui.perspectives_window.open.set(open);
+        open = gui.help_window.open;
         Window::new("Help")
             .default_size(egui::vec2(800., 600.))
             .open(&mut open)
-            .show(ctx, |ui| HelpWindow::ui(ui, app));
-        app.gui.help_window.open = open;
-        open = app.gui.file_diff_result_window.open.is();
+            .show(ctx, |ui| HelpWindow::ui(ui, gui));
+        gui.help_window.open = open;
+        open = gui.file_diff_result_window.open.is();
         Window::new("File diff results")
             .open(&mut open)
-            .show(ctx, |ui| FileDiffResultWindow::ui(ui, app));
-        app.gui.file_diff_result_window.open.set(open);
-        open = app.gui.meta_diff_window.open.is();
+            .show(ctx, |ui| FileDiffResultWindow::ui(ui, gui, app));
+        gui.file_diff_result_window.open.set(open);
+        open = gui.meta_diff_window.open.is();
         Window::new("Diff against clean meta")
             .open(&mut open)
             .show(ctx, |ui| MetaDiffWindow::ui(ui, app));
-        app.gui.meta_diff_window.open.set(open);
-        open = app.gui.open_process_window.open.is();
+        gui.meta_diff_window.open.set(open);
+        open = gui.open_process_window.open.is();
         Window::new("Open process")
             .open(&mut open)
-            .show(ctx, |ui| OpenProcessWindow::ui(ui, app, font));
-        app.gui.open_process_window.open.set(open);
+            .show(ctx, |ui| OpenProcessWindow::ui(ui, gui, app, font));
+        gui.open_process_window.open.set(open);
         // Context menu
-        if let Some(menu) = &app.gui.context_menu {
+        if let Some(menu) = &gui.context_menu {
             let mut close = false;
             egui::Area::new("rootless_ctx_menu")
                 .fixed_pos(menu.pos)
@@ -173,23 +179,24 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
                                 }
                                 ui.separator();
                                 if ui.button("View properties...").clicked() {
-                                    app.gui.views_window.selected = view;
-                                    app.gui.views_window.open.set(true);
+                                    gui.views_window.selected = view;
+                                    gui.views_window.open.set(true);
                                     close = true;
                                 }
                             }
                         });
                 });
             if close {
-                app.gui.context_menu = None;
+                gui.context_menu = None;
             }
         }
         // Panels
-        let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, app, font));
+        let top_re =
+            TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, gui, app, font));
         let bot_re = TopBottomPanel::bottom("bottom_panel")
             .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos));
         let right_re = egui::SidePanel::right("right_panel")
-            .show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos))
+            .show(ctx, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
             .response;
         let padding = 2;
         app.hex_ui.hex_iface_rect.x = padding;
@@ -216,7 +223,7 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
                 - app.hex_ui.hex_iface_rect.y)
                 - padding * 2;
         }
-        let mut dialogs: Vec<_> = std::mem::take(&mut app.gui.dialogs);
+        let mut dialogs: Vec<_> = std::mem::take(&mut gui.dialogs);
         dialogs.retain_mut(|dialog| {
             let mut retain = true;
             Window::new(dialog.title()).show(ctx, |ui| {
@@ -224,6 +231,6 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             });
             retain
         });
-        app.gui.dialogs = dialogs;
+        gui.dialogs = dialogs;
     });
 }

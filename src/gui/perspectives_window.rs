@@ -15,7 +15,7 @@ pub struct PerspectivesWindow {
     pub rename_idx: PerspectiveKey,
 }
 impl PerspectivesWindow {
-    pub(crate) fn ui(ui: &mut egui::Ui, app: &mut crate::app::App) {
+    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut crate::app::App) {
         TableBuilder::new(ui)
             .columns(Size::remainder(), 4)
             .striped(true)
@@ -38,12 +38,12 @@ impl PerspectivesWindow {
                 let mut action = Action::None;
                 body.rows(20.0, keys.len(), |idx, mut row| {
                     row.col(|ui| {
-                        if app.gui.perspectives_window.rename_idx == keys[idx] {
+                        if gui.perspectives_window.rename_idx == keys[idx] {
                             let re = ui.text_edit_singleline(
                                 &mut app.meta_state.meta.perspectives[keys[idx]].name,
                             );
                             if re.lost_focus() {
-                                app.gui.perspectives_window.rename_idx = PerspectiveKey::null();
+                                gui.perspectives_window.rename_idx = PerspectiveKey::null();
                             } else {
                                 re.request_focus();
                             }
@@ -52,7 +52,7 @@ impl PerspectivesWindow {
                                 &app.meta_state.meta.perspectives[keys[idx]].name,
                                 |ui| {
                                     if ui.button("✏ Rename").clicked() {
-                                        app.gui.perspectives_window.rename_idx = keys[idx];
+                                        gui.perspectives_window.rename_idx = keys[idx];
                                         ui.close_menu();
                                     }
                                     if ui.button("🗑 Delete").clicked() {
@@ -93,8 +93,8 @@ impl PerspectivesWindow {
                         app.meta_state.meta.perspectives.remove(key);
                     }
                     Action::OpenRegion(key) => {
-                        app.gui.regions_window.open = true;
-                        app.gui.regions_window.selected_key = Some(key);
+                        gui.regions_window.open = true;
+                        gui.regions_window.selected_key = Some(key);
                     }
                     Action::Goto(off) => {
                         app.center_view_on_offset(off);

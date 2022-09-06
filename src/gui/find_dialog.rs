@@ -46,29 +46,29 @@ pub struct FindDialog {
 }
 
 impl FindDialog {
-    pub fn ui(ui: &mut Ui, app: &mut App) {
+    pub fn ui(ui: &mut Ui, gui: &mut crate::gui::Gui, app: &mut App) {
         egui::ComboBox::new("type_combo", "Data type")
-            .selected_text(app.gui.find_dialog.find_type.label())
+            .selected_text(gui.find_dialog.find_type.label())
             .show_ui(ui, |ui| {
                 ui.selectable_value(
-                    &mut app.gui.find_dialog.find_type,
+                    &mut gui.find_dialog.find_type,
                     FindType::U8,
                     FindType::U8.label(),
                 );
                 ui.selectable_value(
-                    &mut app.gui.find_dialog.find_type,
+                    &mut gui.find_dialog.find_type,
                     FindType::Ascii,
                     FindType::Ascii.label(),
                 );
             });
-        let re = ui.text_edit_singleline(&mut app.gui.find_dialog.input);
-        if app.gui.find_dialog.open.just_now() {
+        let re = ui.text_edit_singleline(&mut gui.find_dialog.input);
+        if gui.find_dialog.open.just_now() {
             re.request_focus();
         }
         if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
-            do_search(app);
+            do_search(app, gui);
         }
-        ui.checkbox(&mut app.gui.find_dialog.filter_results, "Filter results")
+        ui.checkbox(&mut gui.find_dialog.filter_results, "Filter results")
             .on_hover_text("Base search on existing results");
         StripBuilder::new(ui).size(Size::initial(400.0)).size(Size::exact(20.0)).vertical(|mut strip| {
             strip.cell(|ui| {
@@ -93,16 +93,16 @@ impl FindDialog {
                 .body(|body| {
                     body.rows(
                         20.0,
-                        app.gui.find_dialog.results_vec.len(),
+                        gui.find_dialog.results_vec.len(),
                         |i, mut row| {
-                            let off = app.gui.find_dialog.results_vec[i];
+                            let off = gui.find_dialog.results_vec[i];
                             let col1_re = row.col(|ui| {
                                 if ui.selectable_label(
-                                    app.gui.find_dialog.result_cursor == i,
+                                    gui.find_dialog.result_cursor == i,
                                     off.to_string(),
                                 ).clicked() {
                                     app.search_focus(off);
-                                    app.gui.find_dialog.result_cursor = i;
+                                    gui.find_dialog.result_cursor = i;
                                 }
                             });
                             row.col(|ui| {
@@ -113,8 +113,8 @@ impl FindDialog {
                                     Some(key) => {
                                         let reg = &app.meta_state.meta.regions[key];
                                         if ui.link(&reg.name).context_menu(region_context_menu!(app, reg, action)).clicked() {
-                                            app.gui.regions_window.open = true;
-                                            app.gui.regions_window.selected_key = Some(key);
+                                            gui.regions_window.open = true;
+                                            gui.regions_window.selected_key = Some(key);
                                         }
                                     }
                                     None => {
@@ -126,8 +126,8 @@ impl FindDialog {
                                 match Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, off) {
                                     Some((bm_idx, bm)) => {
                                         if ui.link(&bm.label).on_hover_text(&bm.desc).clicked() {
-                                            app.gui.bookmarks_window.open.set(true);
-                                            app.gui.bookmarks_window.selected = Some(bm_idx);
+                                            gui.bookmarks_window.open.set(true);
+                                            gui.bookmarks_window.selected = Some(bm_idx);
                                         }
                                     },
                                     None => { if ui.button("✚").on_hover_text("Add new bookmark").clicked() {
@@ -138,17 +138,17 @@ impl FindDialog {
                                             desc: String::new(),
                                             value_type: ValueType::None,
                                         });
-                                        app.gui.bookmarks_window.open.set(true);
-                                        app.gui.bookmarks_window.selected = Some(idx);
+                                        gui.bookmarks_window.open.set(true);
+                                        gui.bookmarks_window.selected = Some(idx);
                                     } }
                                 }
                             });
-                            if let Some(scroll_off) = app.gui.find_dialog.scroll_to && scroll_off == i {
+                            if let Some(scroll_off) = gui.find_dialog.scroll_to && scroll_off == i {
                                 // We use center align, because it keeps the selected element in
                                 // view at all times, preventing the issue of it becoming out
                                 // of view, and scroll_to_me not being called because of that.
                                 col1_re.scroll_to_me(Some(Align::Center));
-                                app.gui.find_dialog.scroll_to = None;
+                                gui.find_dialog.scroll_to = None;
                             }
                         },
                     );
@@ -164,29 +164,29 @@ impl FindDialog {
             });
             strip.cell(|ui| {
                 ui.horizontal(|ui| {
-                    ui.set_enabled(!app.gui.find_dialog.results_vec.is_empty());
+                    ui.set_enabled(!gui.find_dialog.results_vec.is_empty());
                     if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
-                        && app.gui.find_dialog.result_cursor > 0
+                        && gui.find_dialog.result_cursor > 0
                     {
-                        app.gui.find_dialog.result_cursor -= 1;
-                        let off = app.gui.find_dialog.results_vec[app.gui.find_dialog.result_cursor];
+                        gui.find_dialog.result_cursor -= 1;
+                        let off = gui.find_dialog.results_vec[gui.find_dialog.result_cursor];
                         app.search_focus(off);
-                        app.gui.find_dialog.scroll_to = Some(app.gui.find_dialog.result_cursor);
+                        gui.find_dialog.scroll_to = Some(gui.find_dialog.result_cursor);
                     }
-                    ui.label((app.gui.find_dialog.result_cursor + 1).to_string());
+                    ui.label((gui.find_dialog.result_cursor + 1).to_string());
                     if (ui.button("Next (N)").clicked() || ui.input().key_pressed(egui::Key::N))
-                        && app.gui.find_dialog.result_cursor + 1 < app.gui.find_dialog.results_vec.len()
+                        && gui.find_dialog.result_cursor + 1 < gui.find_dialog.results_vec.len()
                     {
-                        app.gui.find_dialog.result_cursor += 1;
-                        let off = app.gui.find_dialog.results_vec[app.gui.find_dialog.result_cursor];
+                        gui.find_dialog.result_cursor += 1;
+                        let off = gui.find_dialog.results_vec[gui.find_dialog.result_cursor];
                         app.search_focus(off);
-                        app.gui.find_dialog.scroll_to = Some(app.gui.find_dialog.result_cursor);
+                        gui.find_dialog.scroll_to = Some(gui.find_dialog.result_cursor);
                     }
-                    ui.label(format!("{} results", app.gui.find_dialog.results_vec.len()));
+                    ui.label(format!("{} results", gui.find_dialog.results_vec.len()));
                 });
             });
         });
-        app.gui.find_dialog.open.post_ui();
+        gui.find_dialog.open.post_ui();
     }
 }
 
@@ -195,26 +195,26 @@ enum Action {
     None,
 }
 
-fn do_search(app: &mut App) {
-    if !app.gui.find_dialog.filter_results {
-        app.gui.find_dialog.results_vec.clear();
-        app.gui.find_dialog.results_set.clear();
+fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
+    if !gui.find_dialog.filter_results {
+        gui.find_dialog.results_vec.clear();
+        gui.find_dialog.results_set.clear();
     }
-    match app.gui.find_dialog.find_type {
-        FindType::U8 => match parse_guess_radix(&app.gui.find_dialog.input) {
+    match gui.find_dialog.find_type {
+        FindType::U8 => match parse_guess_radix(&gui.find_dialog.input) {
             Ok(needle) => {
-                if app.gui.find_dialog.filter_results {
-                    let results_vec_clone = app.gui.find_dialog.results_vec.clone();
-                    app.gui.find_dialog.results_vec.clear();
-                    app.gui.find_dialog.results_set.clear();
+                if gui.find_dialog.filter_results {
+                    let results_vec_clone = gui.find_dialog.results_vec.clone();
+                    gui.find_dialog.results_vec.clear();
+                    gui.find_dialog.results_set.clear();
                     u8_search(
-                        &mut app.gui.find_dialog,
+                        &mut gui.find_dialog,
                         results_vec_clone.iter().map(|&off| (off, app.data[off])),
                         needle,
                     );
                 } else {
                     u8_search(
-                        &mut app.gui.find_dialog,
+                        &mut gui.find_dialog,
                         app.data.iter().cloned().enumerate(),
                         needle,
                     );
@@ -223,13 +223,13 @@ fn do_search(app: &mut App) {
             Err(e) => msg_warn(&format!("Parse fail: {}", e)),
         },
         FindType::Ascii => {
-            for offset in memchr::memmem::find_iter(&app.data, &app.gui.find_dialog.input) {
-                app.gui.find_dialog.results_vec.push(offset);
-                app.gui.find_dialog.results_set.insert(offset);
+            for offset in memchr::memmem::find_iter(&app.data, &gui.find_dialog.input) {
+                gui.find_dialog.results_vec.push(offset);
+                gui.find_dialog.results_set.insert(offset);
             }
         }
     }
-    if let Some(&off) = app.gui.find_dialog.results_vec.first() {
+    if let Some(&off) = gui.find_dialog.results_vec.first() {
         app.search_focus(off);
     }
 }

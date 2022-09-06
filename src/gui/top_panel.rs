@@ -10,9 +10,10 @@ use crate::{
 };
 
 use super::top_menu::top_menu;
+use super::Gui;
 
-pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
-    top_menu(ui, app, font);
+pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
+    top_menu(ui, gui, app, font);
     ui.horizontal(|ui| {
         if app.hex_ui.select_a.is_some() || app.hex_ui.select_b.is_some() {
             ui.label("Selection");

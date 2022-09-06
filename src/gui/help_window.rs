@@ -28,26 +28,26 @@ const TOPICS: [Topic; 4] = [
 ];
 
 impl HelpWindow {
-    pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
+    pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, gui: &mut crate::gui::Gui) {
         ui.horizontal(|ui| {
             ui.vertical(|ui| {
                 for (i, topic) in TOPICS.iter().enumerate() {
                     if ui
-                        .selectable_label(i == app.gui.help_window.topic_index, topic.name)
+                        .selectable_label(i == gui.help_window.topic_index, topic.name)
                         .clicked()
                     {
-                        app.gui.help_window.topic_index = i;
+                        gui.help_window.topic_index = i;
                     }
                 }
             });
             ui.separator();
             if let Some(url) = egui_easy_mark_standalone::easy_mark(
                 ui,
-                TOPICS[app.gui.help_window.topic_index].contents,
+                TOPICS[gui.help_window.topic_index].contents,
             ) {
                 for (i, topic) in TOPICS.iter().enumerate() {
                     if url == topic.id {
-                        app.gui.help_window.topic_index = i;
+                        gui.help_window.topic_index = i;
                     }
                 }
             }

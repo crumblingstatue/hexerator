@@ -42,7 +42,7 @@ macro_rules! region_context_menu {
 }
 
 impl RegionsWindow {
-    pub fn ui(ui: &mut Ui, app: &mut App) {
+    pub fn ui(ui: &mut Ui, gui: &mut crate::gui::Gui, app: &mut App) {
         let button = egui::Button::new("Add selection as region");
         match App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
             Some(sel) => {
@@ -92,14 +92,14 @@ impl RegionsWindow {
                             let ctx_menu = region_context_menu!(app, reg, action);
                             if ui
                                 .selectable_label(
-                                    app.gui.regions_window.selected_key == Some(k),
+                                    gui.regions_window.selected_key == Some(k),
                                     &reg.name,
                                 )
                                 .on_hover_text(&reg.desc)
                                 .context_menu(ctx_menu)
                                 .clicked()
                             {
-                                app.gui.regions_window.selected_key = Some(k);
+                                gui.regions_window.selected_key = Some(k);
                             }
                         });
                         row.col(|ui| {
@@ -127,18 +127,18 @@ impl RegionsWindow {
                 }
             });
         ui.separator();
-        if let &Some(key) = &app.gui.regions_window.selected_key {
+        if let &Some(key) = &gui.regions_window.selected_key {
             let reg = &mut app.meta_state.meta.regions[key];
             ui.horizontal(|ui| {
-                if app.gui.regions_window.rename_active {
+                if gui.regions_window.rename_active {
                     if ui.text_edit_singleline(&mut reg.name).lost_focus() {
-                        app.gui.regions_window.rename_active = false;
+                        gui.regions_window.rename_active = false;
                     }
                 } else {
                     ui.heading(&reg.name);
                 }
                 if ui.button("✏").on_hover_text("Rename").clicked() {
-                    app.gui.regions_window.rename_active ^= true;
+                    gui.regions_window.rename_active ^= true;
                 }
             });
             ui.horizontal(|ui| {
@@ -147,12 +147,12 @@ impl RegionsWindow {
                 ui.label("Last byte");
                 ui.add(egui::DragValue::new(&mut reg.region.end));
             });
-            if app.gui.regions_window.select_active {
+            if gui.regions_window.select_active {
                 app.hex_ui.select_a = Some(reg.region.begin);
                 app.hex_ui.select_b = Some(reg.region.end);
             }
             if ui
-                .checkbox(&mut app.gui.regions_window.select_active, "Select")
+                .checkbox(&mut gui.regions_window.select_active, "Select")
                 .clicked()
             {
                 app.hex_ui.select_a = None;
@@ -169,7 +169,7 @@ impl RegionsWindow {
             ui.text_edit_multiline(&mut reg.desc);
             if ui.button("Delete").clicked() {
                 app.meta_state.meta.regions.remove(key);
-                app.gui.regions_window.selected_key = None;
+                gui.regions_window.selected_key = None;
             }
         }
     }

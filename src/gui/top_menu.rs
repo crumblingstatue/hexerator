@@ -16,7 +16,7 @@ use super::{
     util::{button_with_shortcut, ButtonWithShortcut},
 };
 
-pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
+pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, font: &Font) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
             if button_with_shortcut(ui, "Open...", "Ctrl+O").clicked() {
@@ -33,7 +33,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             if ui.button("Open process...").clicked() {
-                app.gui.open_process_window.open.toggle();
+                gui.open_process_window.open.toggle();
                 ui.close_menu();
             }
             let mut load = None;
@@ -97,7 +97,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             if ui.button("Auto save/reload...").clicked() {
                 ui.close_menu();
-                app.gui.add_dialog(AutoSaveReloadDialog);
+                gui.add_dialog(AutoSaveReloadDialog);
             }
             ui.separator();
             if ui.button("Create backup").clicked() {
@@ -116,7 +116,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Edit", |ui| {
             if button_with_shortcut(ui, "Find...", "Ctrl+F").clicked() {
-                app.gui.find_dialog.open.toggle();
+                gui.find_dialog.open.toggle();
                 ui.close_menu();
             }
             ui.separator();
@@ -139,11 +139,11 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             ui.separator();
             if ui.button("Pattern fill...").clicked() {
-                app.gui.add_dialog(PatternFillDialog::default());
+                gui.add_dialog(PatternFillDialog::default());
                 ui.close_menu();
             }
             if ui.button("Lua fill...").clicked() {
-                app.gui.add_dialog(LuaFillDialog::default());
+                gui.add_dialog(LuaFillDialog::default());
                 ui.close_menu();
             }
             if ui.button("Random fill").clicked() {
@@ -194,7 +194,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             if button_with_shortcut(ui, "Jump...", "Ctrl+J").clicked() {
                 ui.close_menu();
-                app.gui.add_dialog(JumpDialog::default());
+                gui.add_dialog(JumpDialog::default());
             }
             if ui.button("Flash cursor").clicked() {
                 app.flash_cursor();
@@ -216,7 +216,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 }
             });
             if button_with_shortcut(ui, "Layouts...", "F5").clicked() {
-                app.gui.layouts_window.open.toggle();
+                gui.layouts_window.open.toggle();
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Prev view", "Shift+Tab").clicked() {
@@ -228,7 +228,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Views...", "F6").clicked() {
-                app.gui.views_window.open.toggle();
+                gui.views_window.open.toggle();
                 ui.close_menu();
             }
             ui.checkbox(&mut app.preferences.col_change_lock_col, "Lock col on col change");
@@ -236,7 +236,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Perspective", |ui| {
             if button_with_shortcut(ui, "Perspectives...", "F7").clicked() {
-                app.gui.perspectives_window.open.toggle();
+                gui.perspectives_window.open.toggle();
                 ui.close_menu();
             }
             let Some(view_key) = app.hex_ui.focused_view else { return };
@@ -271,16 +271,16 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Meta", |ui| {
             if button_with_shortcut(ui, "Regions...", "F8").clicked() {
-                app.gui.regions_window.open ^= true;
+                gui.regions_window.open ^= true;
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Bookmarks...", "F9").clicked() {
-                app.gui.bookmarks_window.open.toggle();
+                gui.bookmarks_window.open.toggle();
                 ui.close_menu();
             }
             ui.separator();
             if ui.button("Diff with clean meta").on_hover_text("See and manage changes to metafile").clicked() {
-                app.gui.meta_diff_window.open.toggle();
+                gui.meta_diff_window.open.toggle();
                 ui.close_menu();
             }
             ui.separator();
@@ -319,21 +319,21 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             if ui.button("Diff with file...").clicked() {
                 ui.close_menu();
                 if let Some(path) = rfd::FileDialog::default().pick_file() {
-                    msg_if_fail(app.diff_with_file(path), "Failed to diff");
+                    msg_if_fail(app.diff_with_file(path,gui, ), "Failed to diff");
                 }
             }
             if ui.button("Diff with source file").clicked() {
                 ui.close_menu();
                 if let Some(path) = app.source_file() {
                     let path = path.to_owned();
-                    msg_if_fail(app.diff_with_file(path), "Failed to diff");
+                    msg_if_fail(app.diff_with_file(path,gui,), "Failed to diff");
                 }
             }
             match app.backup_path() {
                 Some(path) if path.exists() => {
                     if ui.button("Diff with backup").clicked() {
                         ui.close_menu();
-                        msg_if_fail(app.diff_with_file(path), "Failed to diff");
+                        msg_if_fail(app.diff_with_file(path,gui,), "Failed to diff");
                     }
                 }
                 _ => { ui.add_enabled(false, egui::Button::new("Diff with backup")); }
@@ -341,7 +341,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Help", |ui| {
             if ui.button("Help...").clicked() {
-                app.gui.help_window.open ^= true;
+                gui.help_window.open ^= true;
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Debug panel...", "F12").clicked() {

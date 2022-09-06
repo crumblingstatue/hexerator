@@ -37,9 +37,14 @@ pub const MIN_FONT_SIZE: u16 = 5;
 pub const MAX_FONT_SIZE: u16 = 256;
 
 impl ViewsWindow {
-    pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App, font: &Font) {
-        if app.gui.views_window.open.just_now() && let Some(view_key) = app.hex_ui.focused_view {
-            app.gui.views_window.selected = view_key;
+    pub(crate) fn ui(
+        ui: &mut egui_sfml::egui::Ui,
+        gui: &mut crate::gui::Gui,
+        app: &mut crate::app::App,
+        font: &Font,
+    ) {
+        if gui.views_window.open.just_now() && let Some(view_key) = app.hex_ui.focused_view {
+            gui.views_window.selected = view_key;
         }
         let mut removed_idx = None;
         if app.meta_state.meta.views.is_empty() {
@@ -88,11 +93,11 @@ impl ViewsWindow {
                             });
                         };
                         if ui
-                            .selectable_label(view_key == app.gui.views_window.selected, &view.name)
+                            .selectable_label(view_key == gui.views_window.selected, &view.name)
                             .context_menu(ctx_menu)
                             .clicked()
                         {
-                            app.gui.views_window.selected = view_key;
+                            gui.views_window.selected = view_key;
                         }
                     });
                     row.col(|ui| {
@@ -103,7 +108,7 @@ impl ViewsWindow {
                             .link(&app.meta_state.meta.perspectives[view.view.perspective].name)
                             .clicked()
                         {
-                            app.gui.perspectives_window.open.set(true);
+                            gui.perspectives_window.open.set(true);
                         }
                     });
                     row.col(|ui| {
@@ -116,8 +121,8 @@ impl ViewsWindow {
                             .context_menu(ctx_menu)
                             .clicked()
                         {
-                            app.gui.regions_window.open = true;
-                            app.gui.regions_window.selected_key = Some(per.region);
+                            gui.regions_window.open = true;
+                            gui.regions_window.selected_key = Some(per.region);
                         }
                     });
                 });
@@ -143,25 +148,20 @@ impl ViewsWindow {
             }
         });
         ui.separator();
-        if let Some(view) = app
-            .meta_state
-            .meta
-            .views
-            .get_mut(app.gui.views_window.selected)
-        {
+        if let Some(view) = app.meta_state.meta.views.get_mut(gui.views_window.selected) {
             ui.horizontal(|ui| {
-                if app.gui.views_window.rename {
+                if gui.views_window.rename {
                     if ui
                         .add(egui::TextEdit::singleline(&mut view.name).desired_width(150.0))
                         .lost_focus()
                     {
-                        app.gui.views_window.rename = false;
+                        gui.views_window.rename = false;
                     }
                 } else {
                     ui.heading(&view.name);
                 }
                 if ui.button("✏").on_hover_text("Rename").clicked() {
-                    app.gui.views_window.rename ^= true;
+                    gui.views_window.rename ^= true;
                 }
                 if view_combo(egui::Id::new("view_combo"), &mut view.view.kind, ui, font) {
                     view.view.adjust_state_to_kind();
@@ -257,14 +257,14 @@ impl ViewsWindow {
                 );
             });
             if ui.button("Delete").clicked() {
-                removed_idx = Some(app.gui.views_window.selected);
+                removed_idx = Some(gui.views_window.selected);
             }
         }
         if let Some(rem_key) = removed_idx {
             app.meta_state.meta.views.remove(rem_key);
             app.hex_ui.focused_view = None;
         }
-        app.gui.views_window.open.post_ui();
+        gui.views_window.open.post_ui();
     }
 }
 
