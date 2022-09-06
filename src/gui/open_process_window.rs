@@ -57,17 +57,13 @@ impl OpenProcessWindow {
         app: &mut crate::app::App,
         font: &Font,
     ) {
-        macro_rules! win {
-            () => {
-                gui.open_process_window
-            };
+        let win = &mut gui.open_process_window;
+        if win.open.just_now() {
+            win.sys.refresh_processes();
         }
-        if win!().open.just_now() {
-            win!().sys.refresh_processes();
-        }
-        if let &Some(pid) = &win!().selected_pid {
+        if let &Some(pid) = &win.selected_pid {
             if ui.link("Back").clicked() {
-                win!().selected_pid = None;
+                win.selected_pid = None;
             }
             TableBuilder::new(ui)
                 .column(Size::initial(140.0))
@@ -79,13 +75,13 @@ impl OpenProcessWindow {
                 .header(20.0, |mut row| {
                     row.col(|ui| {
                         ui.add(
-                            egui::TextEdit::singleline(&mut win!().addr_filter_string)
+                            egui::TextEdit::singleline(&mut win.addr_filter_string)
                                 .hint_text("🔎 Addr"),
                         );
                     });
                     row.col(|ui| {
-                        if sort_button(ui, "size", true, win!().size_sort).clicked() {
-                            win!().size_sort.flip();
+                        if sort_button(ui, "size", true, win.size_sort).clicked() {
+                            win.size_sort.flip();
                         }
                     });
                     row.col(|ui| {
@@ -93,31 +89,30 @@ impl OpenProcessWindow {
                     });
                     row.col(|ui| {
                         ui.add(
-                            egui::TextEdit::singleline(&mut win!().path_filter_string)
+                            egui::TextEdit::singleline(&mut win.path_filter_string)
                                 .hint_text("🔎 Path"),
                         );
                     });
                 })
                 .body(|body| {
-                    let mut filtered = win!().map_ranges.clone();
+                    let mut filtered = win.map_ranges.clone();
                     filtered.retain(|range| {
-                        if let Ok(addr) = usize::from_str_radix(&win!().addr_filter_string, 16) {
+                        if let Ok(addr) = usize::from_str_radix(&win.addr_filter_string, 16) {
                             if !(range.start() <= addr && range.start() + range.size() >= addr) {
                                 return false;
                             }
                         }
-                        if win!().path_filter_string.is_empty() {
+                        if win.path_filter_string.is_empty() {
                             return true;
                         }
                         match range.filename() {
-                            Some(path) => path
-                                .display()
-                                .to_string()
-                                .contains(&win!().path_filter_string),
+                            Some(path) => {
+                                path.display().to_string().contains(&win.path_filter_string)
+                            }
                             None => false,
                         }
                     });
-                    filtered.sort_by(|range1, range2| match win!().size_sort {
+                    filtered.sort_by(|range1, range2| match win.size_sort {
                         Sort::Ascending => range1.size().cmp(&range2.size()),
                         Sort::Descending => range1.size().cmp(&range2.size()).reverse(),
                     });
@@ -172,24 +167,24 @@ impl OpenProcessWindow {
                 .striped(true)
                 .header(20.0, |mut row| {
                     row.col(|ui| {
-                        if sort_button(ui, "pid", true, win!().pid_sort).clicked() {
-                            win!().pid_sort.flip()
+                        if sort_button(ui, "pid", true, win.pid_sort).clicked() {
+                            win.pid_sort.flip()
                         }
                     });
                     row.col(|ui| {
                         ui.add(
-                            egui::TextEdit::singleline(&mut win!().proc_name_filter_string)
+                            egui::TextEdit::singleline(&mut win.proc_name_filter_string)
                                 .hint_text("🔎 Name"),
                         );
                     });
                 })
                 .body(|body| {
-                    let procs = win!().sys.processes();
+                    let procs = win.sys.processes();
                     let mut pids: Vec<&sysinfo::Pid> = procs
                         .keys()
-                        .filter(|&pid| procs[pid].name().contains(&win!().proc_name_filter_string))
+                        .filter(|&pid| procs[pid].name().contains(&win.proc_name_filter_string))
                         .collect();
-                    pids.sort_by(|pid1, pid2| match win!().pid_sort {
+                    pids.sort_by(|pid1, pid2| match win.pid_sort {
                         Sort::Ascending => pid1.cmp(pid2),
                         Sort::Descending => pid1.cmp(pid2).reverse(),
                     });
@@ -197,17 +192,14 @@ impl OpenProcessWindow {
                         let pid = pids[idx];
                         row.col(|ui| {
                             if ui
-                                .selectable_label(
-                                    Some(*pid) == win!().selected_pid,
-                                    pid.to_string(),
-                                )
+                                .selectable_label(Some(*pid) == win.selected_pid, pid.to_string())
                                 .clicked()
                             {
-                                win!().selected_pid = Some(*pid);
+                                win.selected_pid = Some(*pid);
                                 match pid.to_string().parse() {
                                     Ok(pid) => match proc_maps::get_process_maps(pid) {
                                         Ok(ranges) => {
-                                            win!().map_ranges = ranges;
+                                            win.map_ranges = ranges;
                                         }
                                         Err(e) => {
                                             msg_fail(&e, "Failed to get map ranges for process")
@@ -223,6 +215,6 @@ impl OpenProcessWindow {
                     });
                 });
         }
-        win!().open.post_ui();
+        win.open.post_ui();
     }
 }
