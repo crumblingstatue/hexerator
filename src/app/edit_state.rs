@@ -1,9 +1,12 @@
+use crate::meta::region::Region;
+
 #[derive(Default, Debug)]
 pub struct EditState {
     // The editing byte offset
     pub cursor: usize,
     cursor_history: Vec<usize>,
     cursor_history_current: usize,
+    pub dirty_region: Option<Region>,
 }
 
 impl EditState {

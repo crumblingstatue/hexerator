@@ -40,7 +40,6 @@ use self::{edit_state::EditState, interact_mode::InteractMode};
 /// The hexerator application state
 pub struct App {
     pub data: Vec<u8>,
-    pub dirty_region: Option<Region>,
     pub edit_state: EditState,
     pub input: Input,
     pub interact_mode: InteractMode,
@@ -126,7 +125,6 @@ impl App {
         let load_success = load_file_from_src_args(&mut args.src, &mut cfg, &mut source, &mut data);
         let mut this = Self {
             scissor_views: true,
-            dirty_region: None,
             data,
             edit_state: EditState::default(),
             input: Input::default(),
@@ -172,7 +170,7 @@ impl App {
             Some(src) => match &mut src.provider {
                 SourceProvider::File(file) => {
                     self.data = read_contents(&self.args.src, file)?;
-                    self.dirty_region = None;
+                    self.edit_state.dirty_region = None;
                 }
                 SourceProvider::Stdin(_) => {
                     bail!("Can't reload streaming sources like standard input")
@@ -193,7 +191,7 @@ impl App {
         };
         let offset = self.args.src.hard_seek.unwrap_or(0);
         file.seek(SeekFrom::Start(offset as u64))?;
-        let data_to_write = match self.dirty_region {
+        let data_to_write = match self.edit_state.dirty_region {
             Some(region) => {
                 eprintln!(
                     "Writing dirty region {}..{}, size {}",
@@ -211,7 +209,7 @@ impl App {
             None => &self.data,
         };
         file.write_all(data_to_write)?;
-        self.dirty_region = None;
+        self.edit_state.dirty_region = None;
         if let Err(e) = self.save_temp_metafile_backup() {
             per_msg!("Failed to save metafile backup: {}", e);
         }
@@ -253,7 +251,7 @@ impl App {
     }
 
     pub(crate) fn widen_dirty_region(&mut self, damage: DamageRegion) {
-        match &mut self.dirty_region {
+        match &mut self.edit_state.dirty_region {
             Some(dirty_region) => {
                 if damage.begin() < dirty_region.begin {
                     dirty_region.begin = damage.begin();
@@ -272,7 +270,7 @@ impl App {
                 }
             }
             None => {
-                self.dirty_region = Some(Region {
+                self.edit_state.dirty_region = Some(Region {
                     begin: damage.begin(),
                     end: damage.end(),
                 })
@@ -549,7 +547,7 @@ impl App {
                 &self.meta.regions,
             );
         }
-        if self.preferences.auto_save && self.dirty_region.is_some() {
+        if self.preferences.auto_save && self.edit_state.dirty_region.is_some() {
             if let Err(e) = self.save() {
                 per_msg!("Save fail: {}", e);
             }

@@ -181,7 +181,7 @@ impl Dialog for LuaFillDialog {
                             }
                         };
                         msg_if_fail(res, "Failed to execute lua");
-                        app.dirty_region = Some(sel);
+                        app.edit_state.dirty_region = Some(sel);
                     }
                     Err(e) => msg_fail(&e, "Failed to exec lua"),
                 }
@@ -190,7 +190,7 @@ impl Dialog for LuaFillDialog {
             });
         }
         let close = ui.button("Close").clicked();
-        if app.dirty_region.is_some() {
+        if app.edit_state.dirty_region.is_some() {
             ui.label(
                 egui::RichText::new("Unsaved changes")
                     .italics()

@@ -83,7 +83,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             ui.separator();
             if ui
                 .add_enabled(
-                    app.source.is_some_and(|src| src.attr.permissions.write) && app.dirty_region.is_some(),
+                    app.source.is_some_and(|src| src.attr.permissions.write) && app.edit_state.dirty_region.is_some(),
                     ButtonWithShortcut("Save", "Ctrl+S"),
                 )
                 .clicked()
