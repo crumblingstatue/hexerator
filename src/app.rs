@@ -583,6 +583,15 @@ impl App {
         let p = &perspectives[view.perspective];
         regions[p.region].region.begin
     }
+
+    pub(crate) fn end_offset_of_view(
+        view: &mut View,
+        perspectives: &PerspectiveMap,
+        regions: &RegionMap,
+    ) -> usize {
+        let p = &perspectives[view.perspective];
+        regions[p.region].region.end
+    }
 }
 
 #[cfg(target_os = "linux")]

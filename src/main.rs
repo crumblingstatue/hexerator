@@ -598,16 +598,18 @@ fn handle_key_pressed(
                 }
             }
         },
-        Key::End => match app.hex_ui.interact_mode {
-            InteractMode::View => {
-                if let Some(key) = app.hex_ui.focused_view {
+        Key::End => if let Some(key) = app.hex_ui.focused_view {
+            let view = &mut app.meta_state.meta.views[key].view;
+            match app.hex_ui.interact_mode {
+                InteractMode::View => {
                     app.meta_state.meta.views[key].view.scroll_to_end(&app.meta_state.meta.perspectives, &app.meta_state.meta.regions);
                 }
+                InteractMode::Edit => {
+                    app.edit_state.cursor = App::end_offset_of_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions);
+                    app.center_view_on_offset(app.edit_state.cursor);
+                }
             }
-            InteractMode::Edit => {
-                // TODO: Implement
-            }
-        },
+        }
         Key::F1 => app.hex_ui.interact_mode = InteractMode::View,
         Key::F2 => app.hex_ui.interact_mode = InteractMode::Edit,
         Key::F5 => gui.layouts_window.open.toggle(),
