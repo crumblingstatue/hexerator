@@ -88,7 +88,8 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                 ui.color_edit_button_rgb(&mut app.preferences.bg_color);
                 ui.label("Bg color");
                 if let ColorMethod::Custom(arr) = &mut presentation.color_method {
-                    let col = &mut arr.0[app.data[app.edit_state.cursor] as usize];
+                    let Some(&byte) = app.data.get(app.edit_state.cursor) else { return };
+                    let col = &mut arr.0[byte as usize];
                     ui.color_edit_button_srgb(col);
                     ui.label("Byte color");
                     if ui
