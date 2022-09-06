@@ -38,18 +38,18 @@ impl PerspectivesWindow {
                 let mut action = Action::None;
                 body.rows(20.0, keys.len(), |idx, mut row| {
                     row.col(|ui| {
-                        if app.ui.perspectives_window.rename_idx == keys[idx] {
+                        if app.gui.perspectives_window.rename_idx == keys[idx] {
                             let re =
                                 ui.text_edit_singleline(&mut app.meta.perspectives[keys[idx]].name);
                             if re.lost_focus() {
-                                app.ui.perspectives_window.rename_idx = PerspectiveKey::null();
+                                app.gui.perspectives_window.rename_idx = PerspectiveKey::null();
                             } else {
                                 re.request_focus();
                             }
                         } else {
                             ui.menu_button(&app.meta.perspectives[keys[idx]].name, |ui| {
                                 if ui.button("✏ Rename").clicked() {
-                                    app.ui.perspectives_window.rename_idx = keys[idx];
+                                    app.gui.perspectives_window.rename_idx = keys[idx];
                                     ui.close_menu();
                                 }
                                 if ui.button("🗑 Delete").clicked() {
@@ -86,8 +86,8 @@ impl PerspectivesWindow {
                         app.meta.perspectives.remove(key);
                     }
                     Action::OpenRegion(key) => {
-                        app.ui.regions_window.open = true;
-                        app.ui.regions_window.selected_key = Some(key);
+                        app.gui.regions_window.open = true;
+                        app.gui.regions_window.selected_key = Some(key);
                     }
                     Action::Goto(off) => {
                         app.center_view_on_offset(off);

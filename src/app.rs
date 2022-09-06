@@ -48,7 +48,7 @@ pub struct App {
     pub focused_view: Option<ViewKey>,
     /// The rectangle area that's available for the hex interface
     pub hex_iface_rect: ViewportRect,
-    pub ui: crate::ui::Ui,
+    pub gui: crate::ui::Gui,
     /// "a" point of selection. Could be smaller or larger than "b".
     /// The length of selection is absolute difference between a and b
     pub select_a: Option<usize>,
@@ -130,7 +130,7 @@ impl App {
             input: Input::default(),
             interact_mode: InteractMode::View,
             focused_view: None,
-            ui: crate::ui::Ui::default(),
+            gui: crate::ui::Gui::default(),
             select_a: None,
             select_b: None,
             args,
@@ -602,9 +602,9 @@ impl App {
                 });
             }
         }
-        self.ui.file_diff_result_window.diff_entries = diff_entries;
-        self.ui.file_diff_result_window.path = path;
-        self.ui.file_diff_result_window.open.set(true);
+        self.gui.file_diff_result_window.diff_entries = diff_entries;
+        self.gui.file_diff_result_window.path = path;
+        self.gui.file_diff_result_window.open.set(true);
         Ok(())
     }
 

@@ -24,7 +24,7 @@ pub struct BookmarksWindow {
 
 impl BookmarksWindow {
     pub fn ui(ui: &mut Ui, app: &mut App) {
-        let win = &mut app.ui.bookmarks_window;
+        let win = &mut app.gui.bookmarks_window;
         ui.add(egui::TextEdit::singleline(&mut win.name_filter_string).hint_text("Filter by name"));
         let mut action = Action::None;
         TableBuilder::new(ui)
@@ -123,8 +123,8 @@ impl BookmarksWindow {
                                 .context_menu(ctx_menu)
                                 .clicked()
                             {
-                                app.ui.regions_window.open = true;
-                                app.ui.regions_window.selected_key = Some(region_key);
+                                app.gui.regions_window.open = true;
+                                app.gui.regions_window.selected_key = Some(region_key);
                             }
                         } else {
                             ui.label("<no region>");

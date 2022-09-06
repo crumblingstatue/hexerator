@@ -33,21 +33,21 @@ impl HelpWindow {
             ui.vertical(|ui| {
                 for (i, topic) in TOPICS.iter().enumerate() {
                     if ui
-                        .selectable_label(i == app.ui.help_window.topic_index, topic.name)
+                        .selectable_label(i == app.gui.help_window.topic_index, topic.name)
                         .clicked()
                     {
-                        app.ui.help_window.topic_index = i;
+                        app.gui.help_window.topic_index = i;
                     }
                 }
             });
             ui.separator();
             if let Some(url) = egui_easy_mark_standalone::easy_mark(
                 ui,
-                TOPICS[app.ui.help_window.topic_index].contents,
+                TOPICS[app.gui.help_window.topic_index].contents,
             ) {
                 for (i, topic) in TOPICS.iter().enumerate() {
                     if url == topic.id {
-                        app.ui.help_window.topic_index = i;
+                        app.gui.help_window.topic_index = i;
                     }
                 }
             }

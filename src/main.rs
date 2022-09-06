@@ -341,17 +341,17 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
                     continue;
                 }
                 if button == mouse::Button::Left {
-                    app.ui.context_menu = None;
+                    app.gui.context_menu = None;
                     if let Some((off, _view_idx)) = app.byte_offset_at_pos(mp.x, mp.y) {
                         app.edit_state.set_cursor(off);
                     }
                     if let Some(view_idx) = app.view_idx_at_pos(mp.x, mp.y) {
                         app.focused_view = Some(view_idx);
-                        app.ui.views_window.selected = view_idx;
+                        app.gui.views_window.selected = view_idx;
                     }
                 } else if button == mouse::Button::Right {
                     if let Some((off, view_key)) = app.byte_offset_at_pos(mp.x, mp.y) {
-                        app.ui.context_menu = Some(ContextMenu::new(
+                        app.gui.context_menu = Some(ContextMenu::new(
                             mp.x,
                             mp.y,
                             ContextMenuData::ViewByte {
@@ -587,13 +587,13 @@ fn handle_key_events(
         },
         Key::F1 => app.interact_mode = InteractMode::View,
         Key::F2 => app.interact_mode = InteractMode::Edit,
-        Key::F5 => app.ui.layouts_window.open.toggle(),
-        Key::F6 => app.ui.views_window.open.toggle(),
-        Key::F7 => app.ui.perspectives_window.open.toggle(),
-        Key::F8 => app.ui.regions_window.open ^= true,
-        Key::F9 => app.ui.bookmarks_window.open.toggle(),
+        Key::F5 => app.gui.layouts_window.open.toggle(),
+        Key::F6 => app.gui.views_window.open.toggle(),
+        Key::F7 => app.gui.perspectives_window.open.toggle(),
+        Key::F8 => app.gui.regions_window.open ^= true,
+        Key::F9 => app.gui.bookmarks_window.open.toggle(),
         Key::Escape => {
-            app.ui.context_menu = None;
+            app.gui.context_menu = None;
             if let Some(view_key) = app.focused_view {
                 app.meta.views[view_key].view.cancel_editing();
             }
@@ -614,7 +614,7 @@ fn handle_key_events(
             app.focused_view_select_all();
         }
         Key::F if ctrl => {
-            app.ui.find_dialog.open.toggle();
+            app.gui.find_dialog.open.toggle();
         }
         Key::S if ctrl => match &mut app.source {
             Some(source) => {
@@ -643,7 +643,7 @@ fn handle_key_events(
             }
         }
         Key::W if ctrl => app.close_file(),
-        Key::J if ctrl => app.ui.add_dialog(JumpDialog::default()),
+        Key::J if ctrl => app.gui.add_dialog(JumpDialog::default()),
         Key::Num1 if shift => app.select_a = Some(app.edit_state.cursor),
         Key::Num2 if shift => app.select_b = Some(app.edit_state.cursor),
         Key::Tab if shift => app.focus_prev_view_in_layout(),

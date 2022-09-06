@@ -416,7 +416,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
         InteractMode::View => {
             if let Some((off, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
                 let mut add = 0;
-                if app.ui.inspect_panel.offset_relative {
+                if app.gui.inspect_panel.offset_relative {
                     add = app.args.src.hard_seek.unwrap_or(0);
                 }
                 ui.label(format!("offset: {} (0x{:x})", off + add, off + add));
@@ -427,27 +427,30 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
         }
         InteractMode::Edit => edit_offset(app, ui),
     };
-    ui.checkbox(&mut app.ui.inspect_panel.offset_relative, "Relative offset")
-        .on_hover_text("Offset relative to --hard-seek");
+    ui.checkbox(
+        &mut app.gui.inspect_panel.offset_relative,
+        "Relative offset",
+    )
+    .on_hover_text("Offset relative to --hard-seek");
     if app.data.is_empty() {
         return;
     }
-    if offset != app.ui.inspect_panel.prev_frame_inspect_offset
+    if offset != app.gui.inspect_panel.prev_frame_inspect_offset
         || app.just_reloaded
-        || app.ui.inspect_panel.changed_one
+        || app.gui.inspect_panel.changed_one
     {
-        for thingy in &mut app.ui.inspect_panel.input_thingies {
+        for thingy in &mut app.gui.inspect_panel.input_thingies {
             thingy.update(
                 &app.data[..],
                 offset,
-                app.ui.inspect_panel.big_endian,
-                app.ui.inspect_panel.format,
+                app.gui.inspect_panel.big_endian,
+                app.gui.inspect_panel.format,
             );
         }
     }
-    app.ui.inspect_panel.changed_one = false;
+    app.gui.inspect_panel.changed_one = false;
     let mut actions = Vec::new();
-    for thingy in &mut app.ui.inspect_panel.input_thingies {
+    for thingy in &mut app.gui.inspect_panel.input_thingies {
         ui.horizontal(|ui| {
             ui.label(thingy.label());
             if ui.button("📋").on_hover_text("copy to clipboard").clicked() {
@@ -455,7 +458,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             }
             if ui.button("⬇").on_hover_text("go to offset").clicked() {
                 let result: anyhow::Result<()> = try {
-                    let offset = match app.ui.inspect_panel.format {
+                    let offset = match app.gui.inspect_panel.format {
                         Format::Decimal => thingy.buf_mut().parse()?,
                         Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16)?,
                         Format::Bin => todo!(),
@@ -466,7 +469,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             }
             if ui.button("➡").on_hover_text("jump forward").clicked() {
                 let result: anyhow::Result<()> = try {
-                    let offset = match app.ui.inspect_panel.format {
+                    let offset = match app.gui.inspect_panel.format {
                         Format::Decimal => thingy.buf_mut().parse()?,
                         Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16)?,
                         Format::Bin => todo!(),
@@ -482,53 +485,53 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             if let Some(range) = thingy.write_data(
                 &mut app.data,
                 offset,
-                app.ui.inspect_panel.big_endian,
-                app.ui.inspect_panel.format,
+                app.gui.inspect_panel.big_endian,
+                app.gui.inspect_panel.format,
             ) {
-                app.ui.inspect_panel.changed_one = true;
+                app.gui.inspect_panel.changed_one = true;
                 actions.push(Action::AddDirty(range));
             }
         }
     }
     ui.horizontal(|ui| {
         if ui
-            .checkbox(&mut app.ui.inspect_panel.big_endian, "Big endian")
+            .checkbox(&mut app.gui.inspect_panel.big_endian, "Big endian")
             .clicked()
         {
             // Changing this should refresh everything
-            app.ui.inspect_panel.changed_one = true;
+            app.gui.inspect_panel.changed_one = true;
         }
-        let prev_fmt = app.ui.inspect_panel.format;
+        let prev_fmt = app.gui.inspect_panel.format;
         egui::ComboBox::new("format_combo", "format")
-            .selected_text(app.ui.inspect_panel.format.label())
+            .selected_text(app.gui.inspect_panel.format.label())
             .show_ui(ui, |ui| {
                 ui.selectable_value(
-                    &mut app.ui.inspect_panel.format,
+                    &mut app.gui.inspect_panel.format,
                     Format::Decimal,
                     Format::Decimal.label(),
                 );
                 ui.selectable_value(
-                    &mut app.ui.inspect_panel.format,
+                    &mut app.gui.inspect_panel.format,
                     Format::Hex,
                     Format::Hex.label(),
                 );
                 ui.selectable_value(
-                    &mut app.ui.inspect_panel.format,
+                    &mut app.gui.inspect_panel.format,
                     Format::Bin,
                     Format::Bin.label(),
                 );
             });
 
-        if app.ui.inspect_panel.format != prev_fmt {
+        if app.gui.inspect_panel.format != prev_fmt {
             // Changing the format should refresh everything
-            app.ui.inspect_panel.changed_one = true;
+            app.gui.inspect_panel.changed_one = true;
         }
     });
 
     for action in actions {
         match action {
             Action::GoToOffset(offset) => {
-                if app.ui.inspect_panel.offset_relative {
+                if app.gui.inspect_panel.offset_relative {
                     app.edit_state
                         .set_cursor(offset - app.args.src.hard_seek.unwrap_or(0));
                 } else {
@@ -545,12 +548,12 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             }
         }
     }
-    app.ui.inspect_panel.prev_frame_inspect_offset = offset;
+    app.gui.inspect_panel.prev_frame_inspect_offset = offset;
 }
 
 fn edit_offset(app: &mut App, ui: &mut Ui) -> usize {
     let mut off = app.edit_state.cursor;
-    if app.ui.inspect_panel.offset_relative {
+    if app.gui.inspect_panel.offset_relative {
         off += app.args.src.hard_seek.unwrap_or(0);
     }
     ui.label(format!("offset: {} ({:x}h)", off, off));

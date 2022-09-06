@@ -33,7 +33,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             if ui.button("Open process...").clicked() {
-                app.ui.open_process_window.open.toggle();
+                app.gui.open_process_window.open.toggle();
                 ui.close_menu();
             }
             let mut load = None;
@@ -97,7 +97,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             if ui.button("Auto save/reload...").clicked() {
                 ui.close_menu();
-                app.ui.add_dialog(AutoSaveReloadDialog);
+                app.gui.add_dialog(AutoSaveReloadDialog);
             }
             ui.separator();
             if ui.button("Create backup").clicked() {
@@ -116,7 +116,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Edit", |ui| {
             if button_with_shortcut(ui, "Find...", "Ctrl+F").clicked() {
-                app.ui.find_dialog.open.toggle();
+                app.gui.find_dialog.open.toggle();
                 ui.close_menu();
             }
             ui.separator();
@@ -139,11 +139,11 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             ui.separator();
             if ui.button("Pattern fill...").clicked() {
-                app.ui.add_dialog(PatternFillDialog::default());
+                app.gui.add_dialog(PatternFillDialog::default());
                 ui.close_menu();
             }
             if ui.button("Lua fill...").clicked() {
-                app.ui.add_dialog(LuaFillDialog::default());
+                app.gui.add_dialog(LuaFillDialog::default());
                 ui.close_menu();
             }
             if ui.button("Random fill").clicked() {
@@ -194,7 +194,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             if button_with_shortcut(ui, "Jump...", "Ctrl+J").clicked() {
                 ui.close_menu();
-                app.ui.add_dialog(JumpDialog::default());
+                app.gui.add_dialog(JumpDialog::default());
             }
             if ui.button("Flash cursor").clicked() {
                 app.flash_cursor();
@@ -216,7 +216,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 }
             });
             if button_with_shortcut(ui, "Layouts...", "F5").clicked() {
-                app.ui.layouts_window.open.toggle();
+                app.gui.layouts_window.open.toggle();
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Prev view", "Shift+Tab").clicked() {
@@ -228,7 +228,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Views...", "F6").clicked() {
-                app.ui.views_window.open.toggle();
+                app.gui.views_window.open.toggle();
                 ui.close_menu();
             }
             ui.checkbox(&mut app.preferences.col_change_lock_col, "Lock col on col change");
@@ -236,7 +236,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Perspective", |ui| {
             if button_with_shortcut(ui, "Perspectives...", "F7").clicked() {
-                app.ui.perspectives_window.open.toggle();
+                app.gui.perspectives_window.open.toggle();
                 ui.close_menu();
             }
             let Some(view_key) = app.focused_view else { return };
@@ -271,16 +271,16 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Meta", |ui| {
             if button_with_shortcut(ui, "Regions...", "F8").clicked() {
-                app.ui.regions_window.open ^= true;
+                app.gui.regions_window.open ^= true;
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Bookmarks...", "F9").clicked() {
-                app.ui.bookmarks_window.open.toggle();
+                app.gui.bookmarks_window.open.toggle();
                 ui.close_menu();
             }
             ui.separator();
             if ui.button("Diff with clean meta").on_hover_text("See and manage changes to metafile").clicked() {
-                app.ui.meta_diff_window.open.toggle();
+                app.gui.meta_diff_window.open.toggle();
                 ui.close_menu();
             }
             ui.separator();
@@ -341,7 +341,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         });
         ui.menu_button("Help", |ui| {
             if ui.button("Help...").clicked() {
-                app.ui.help_window.open ^= true;
+                app.gui.help_window.open ^= true;
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Debug panel...", "F12").clicked() {

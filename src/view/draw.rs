@@ -14,7 +14,7 @@ use crate::{
     color::invert_color,
     dec_conv, hex_conv,
     meta::{region::Region, PerspectiveMap, RegionMap, ViewKey},
-    ui::Ui,
+    ui::Gui,
     view::ViewKind,
 };
 
@@ -325,7 +325,7 @@ impl View {
                         if selected_or_find_result_contains(
                             App::selection(&app.select_a, &app.select_b),
                             idx,
-                            &app.ui,
+                            &app.gui,
                         ) {
                             draw_rect(
                                 vertex_buffer,
@@ -382,7 +382,7 @@ impl View {
                         if selected_or_find_result_contains(
                             App::selection(&app.select_a, &app.select_b),
                             idx,
-                            &app.ui,
+                            &app.gui,
                         ) {
                             draw_rect(
                                 vertex_buffer,
@@ -439,7 +439,7 @@ impl View {
                         if selected_or_find_result_contains(
                             App::selection(&app.select_a, &app.select_b),
                             idx,
-                            &app.ui,
+                            &app.gui,
                         ) {
                             draw_rect(
                                 vertex_buffer,
@@ -495,7 +495,7 @@ impl View {
                         if selected_or_find_result_contains(
                             App::selection(&app.select_a, &app.select_b),
                             idx,
-                            &app.ui,
+                            &app.gui,
                         ) {
                             c = invert_color(c);
                         }
@@ -605,12 +605,12 @@ fn test_rect_to_gl() {
 fn selected_or_find_result_contains(
     app_selection: Option<Region>,
     idx: usize,
-    app_ui: &Ui,
+    app_ui: &Gui,
 ) -> bool {
     selected(app_selection, idx) || find_result_contains(app_ui, idx)
 }
 
-fn find_result_contains(app_ui: &Ui, idx: usize) -> bool {
+fn find_result_contains(app_ui: &Gui, idx: usize) -> bool {
     app_ui.find_dialog.open.is() && app_ui.find_dialog.results_set.contains(&idx)
 }
 

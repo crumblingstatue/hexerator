@@ -54,7 +54,7 @@ impl OpenProcessWindow {
     pub(crate) fn ui(ui: &mut egui::Ui, app: &mut crate::app::App, font: &Font) {
         macro_rules! win {
             () => {
-                app.ui.open_process_window
+                app.gui.open_process_window
             };
         }
         if win!().open.just_now() {

@@ -38,8 +38,8 @@ pub const MAX_FONT_SIZE: u16 = 256;
 
 impl ViewsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App, font: &Font) {
-        if app.ui.views_window.open.just_now() && let Some(view_key) = app.focused_view {
-            app.ui.views_window.selected = view_key;
+        if app.gui.views_window.open.just_now() && let Some(view_key) = app.focused_view {
+            app.gui.views_window.selected = view_key;
         }
         let mut removed_idx = None;
         if app.meta.views.is_empty() {
@@ -88,11 +88,11 @@ impl ViewsWindow {
                             });
                         };
                         if ui
-                            .selectable_label(view_key == app.ui.views_window.selected, &view.name)
+                            .selectable_label(view_key == app.gui.views_window.selected, &view.name)
                             .context_menu(ctx_menu)
                             .clicked()
                         {
-                            app.ui.views_window.selected = view_key;
+                            app.gui.views_window.selected = view_key;
                         }
                     });
                     row.col(|ui| {
@@ -103,7 +103,7 @@ impl ViewsWindow {
                             .link(&app.meta.perspectives[view.view.perspective].name)
                             .clicked()
                         {
-                            app.ui.perspectives_window.open.set(true);
+                            app.gui.perspectives_window.open.set(true);
                         }
                     });
                     row.col(|ui| {
@@ -116,8 +116,8 @@ impl ViewsWindow {
                             .context_menu(ctx_menu)
                             .clicked()
                         {
-                            app.ui.regions_window.open = true;
-                            app.ui.regions_window.selected_key = Some(per.region);
+                            app.gui.regions_window.open = true;
+                            app.gui.regions_window.selected_key = Some(per.region);
                         }
                     });
                 });
@@ -143,20 +143,20 @@ impl ViewsWindow {
             }
         });
         ui.separator();
-        if let Some(view) = app.meta.views.get_mut(app.ui.views_window.selected) {
+        if let Some(view) = app.meta.views.get_mut(app.gui.views_window.selected) {
             ui.horizontal(|ui| {
-                if app.ui.views_window.rename {
+                if app.gui.views_window.rename {
                     if ui
                         .add(egui::TextEdit::singleline(&mut view.name).desired_width(150.0))
                         .lost_focus()
                     {
-                        app.ui.views_window.rename = false;
+                        app.gui.views_window.rename = false;
                     }
                 } else {
                     ui.heading(&view.name);
                 }
                 if ui.button("✏").on_hover_text("Rename").clicked() {
-                    app.ui.views_window.rename ^= true;
+                    app.gui.views_window.rename ^= true;
                 }
                 if view_combo(egui::Id::new("view_combo"), &mut view.view.kind, ui, font) {
                     view.view.adjust_state_to_kind();
@@ -252,14 +252,14 @@ impl ViewsWindow {
                 );
             });
             if ui.button("Delete").clicked() {
-                removed_idx = Some(app.ui.views_window.selected);
+                removed_idx = Some(app.gui.views_window.selected);
             }
         }
         if let Some(rem_key) = removed_idx {
             app.meta.views.remove(rem_key);
             app.focused_view = None;
         }
-        app.ui.views_window.open.post_ui();
+        app.gui.views_window.open.post_ui();
     }
 }
 
