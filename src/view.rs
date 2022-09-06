@@ -402,8 +402,10 @@ impl View {
     pub fn finish_editing(&mut self, app: &mut App) {
         match &mut self.kind {
             ViewKind::Hex(hex) => {
-                app.data[app.edit_state.cursor] =
-                    merge_hex_halves(hex.edit_buf.buf[0], hex.edit_buf.buf[1]);
+                match merge_hex_halves(hex.edit_buf.buf[0], hex.edit_buf.buf[1]) {
+                    Some(merged) => app.data[app.edit_state.cursor] = merged,
+                    None => per_msg!("finish_editing: Failed to merge hex halves"),
+                }
                 app.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
             }
             ViewKind::Dec(dec) => {

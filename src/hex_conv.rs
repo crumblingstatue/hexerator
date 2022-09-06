@@ -30,8 +30,8 @@ fn test_byte_to_hex_digits() {
     }
 }
 
-fn digit_to_byte(digit: u8) -> u8 {
-    match digit {
+fn digit_to_byte(digit: u8) -> Option<u8> {
+    Some(match digit {
         b'0' => 0,
         b'1' => 1,
         b'2' => 2,
@@ -48,19 +48,19 @@ fn digit_to_byte(digit: u8) -> u8 {
         b'd' | b'D' => 13,
         b'e' | b'E' => 14,
         b'f' | b'F' => 15,
-        _ => panic!("Invalid hex digit: {}", digit),
-    }
+        _ => return None,
+    })
 }
 
-pub fn merge_hex_halves(first: u8, second: u8) -> u8 {
-    digit_to_byte(first) * 16 + digit_to_byte(second)
+pub fn merge_hex_halves(first: u8, second: u8) -> Option<u8> {
+    Some(digit_to_byte(first)? * 16 + digit_to_byte(second)?)
 }
 
 #[test]
 fn test_merge_halves() {
-    assert_eq!(merge_hex_halves(b'0', b'0'), 0);
-    assert_eq!(merge_hex_halves(b'0', b'f'), 15);
-    assert_eq!(merge_hex_halves(b'3', b'2'), 50);
-    assert_eq!(merge_hex_halves(b'f', b'0'), 240);
-    assert_eq!(merge_hex_halves(b'f', b'f'), 255);
+    assert_eq!(merge_hex_halves(b'0', b'0'), Some(0));
+    assert_eq!(merge_hex_halves(b'0', b'f'), Some(15));
+    assert_eq!(merge_hex_halves(b'3', b'2'), Some(50));
+    assert_eq!(merge_hex_halves(b'f', b'0'), Some(240));
+    assert_eq!(merge_hex_halves(b'f', b'f'), Some(255));
 }
