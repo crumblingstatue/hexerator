@@ -57,8 +57,6 @@ pub struct App {
     pub select_b: Option<usize>,
     pub args: Args,
     pub source: Option<Source>,
-    pub col_change_lock_x: bool,
-    pub col_change_lock_y: bool,
     pub flash_cursor_timer: Timer,
     pub just_reloaded: bool,
     /// Whether metafile needs saving
@@ -83,7 +81,7 @@ pub struct App {
     pub last_meta_backup: Cell<Instant>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Preferences {
     /// Move the edit cursor with the cursor keys, instead of block cursor
     pub move_edit_cursor: bool,
@@ -96,6 +94,24 @@ pub struct Preferences {
     pub auto_save: bool,
     /// Keep metadata when loading.
     pub keep_meta: bool,
+    /// Try to stay on current column when changing column count
+    pub col_change_lock_col: bool,
+    /// Try to stay on current row when changing column count
+    pub col_change_lock_row: bool,
+}
+
+impl Default for Preferences {
+    fn default() -> Self {
+        Self {
+            move_edit_cursor: false,
+            quick_edit: false,
+            sticky_edit: false,
+            auto_save: false,
+            keep_meta: false,
+            col_change_lock_col: false,
+            col_change_lock_row: true,
+        }
+    }
 }
 
 impl App {
@@ -119,8 +135,6 @@ impl App {
             select_b: None,
             args,
             source,
-            col_change_lock_x: false,
-            col_change_lock_y: true,
             flash_cursor_timer: Timer::default(),
             just_reloaded: true,
             meta_dirty: false,
@@ -276,8 +290,8 @@ impl App {
                 &mut self.meta.perspectives,
                 &self.meta.regions,
                 f,
-                self.col_change_lock_x,
-                self.col_change_lock_y,
+                self.preferences.col_change_lock_col,
+                self.preferences.col_change_lock_row,
             );
         }
     }

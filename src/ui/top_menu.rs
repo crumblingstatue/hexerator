@@ -231,8 +231,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 app.ui.views_window.open.toggle();
                 ui.close_menu();
             }
-            ui.checkbox(&mut app.col_change_lock_x, "Lock x on column change");
-            ui.checkbox(&mut app.col_change_lock_y, "Lock y on column change");
+            ui.checkbox(&mut app.preferences.col_change_lock_col, "Lock col on col change");
+            ui.checkbox(&mut app.preferences.col_change_lock_row, "Lock row on col change");
         });
         ui.menu_button("Perspective", |ui| {
             if button_with_shortcut(ui, "Perspectives...", "F7").clicked() {
@@ -257,8 +257,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                             &mut app.meta.perspectives,
                             &app.meta.regions,
                             |c| *c = cols,
-                            app.col_change_lock_x,
-                            app.col_change_lock_y
+                            app.preferences.col_change_lock_col,
+                            app.preferences.col_change_lock_row
                         );
                     }
             }
