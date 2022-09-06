@@ -534,6 +534,11 @@ impl App {
                 &self.meta.regions,
             );
         }
+        if self.preferences.auto_save && self.dirty_region.is_some() {
+            if let Err(e) = self.save() {
+                per_msg!("Save fail: {}", e);
+            }
+        }
         if self.auto_reload
             && self.last_reload.elapsed().as_millis() >= u128::from(self.auto_reload_interval_ms)
         {
