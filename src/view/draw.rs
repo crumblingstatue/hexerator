@@ -12,9 +12,10 @@ use slotmap::Key;
 use crate::{
     app::{presentation::Presentation, App},
     color::invert_color,
-    dec_conv, hex_conv,
+    dec_conv,
+    gui::Gui,
+    hex_conv,
     meta::{region::Region, PerspectiveMap, RegionMap, ViewKey},
-    ui::Gui,
     view::ViewKind,
 };
 

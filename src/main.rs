@@ -24,6 +24,7 @@ mod config;
 mod damage_region;
 mod dec_conv;
 pub mod edit_buffer;
+mod gui;
 mod hex_conv;
 mod input;
 mod layout;
@@ -33,7 +34,6 @@ mod shell;
 mod slice_ext;
 mod source;
 mod timer;
-mod ui;
 mod view;
 
 use std::{
@@ -57,13 +57,13 @@ use egui_sfml::sfml::{
 };
 use egui_sfml::SfEgui;
 use gamedebug_core::per_msg;
+use gui::{dialogs::JumpDialog, ContextMenu, ContextMenuData};
 use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use meta::{NamedView, PerspectiveMap, RegionMap};
 use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use shell::{msg_if_fail, msg_warn};
 use slotmap::Key as _;
-use ui::{dialogs::JumpDialog, ContextMenu, ContextMenuData};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct InstanceRequest {
@@ -188,7 +188,7 @@ fn do_frame(
     update(app, sf_egui.context().wants_keyboard_input());
     app.update();
     let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
-    ui::do_egui(sf_egui, app, mp, font);
+    gui::do_egui(sf_egui, app, mp, font);
     let [r, g, b] = app.bg_color;
     #[expect(
         clippy::cast_possible_truncation,

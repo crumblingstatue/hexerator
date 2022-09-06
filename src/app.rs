@@ -48,7 +48,7 @@ pub struct App {
     pub focused_view: Option<ViewKey>,
     /// The rectangle area that's available for the hex interface
     pub hex_iface_rect: ViewportRect,
-    pub gui: crate::ui::Gui,
+    pub gui: crate::gui::Gui,
     /// "a" point of selection. Could be smaller or larger than "b".
     /// The length of selection is absolute difference between a and b
     pub select_a: Option<usize>,
@@ -130,7 +130,7 @@ impl App {
             input: Input::default(),
             interact_mode: InteractMode::View,
             focused_view: None,
-            gui: crate::ui::Gui::default(),
+            gui: crate::gui::Gui::default(),
             select_a: None,
             select_b: None,
             args,
