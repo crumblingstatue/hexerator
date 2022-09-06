@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use slotmap::Key;
 
 use crate::{
-    app::{presentation::Presentation, App},
+    app::{edit_state::EditState, presentation::Presentation, App, Preferences},
     damage_region::DamageRegion,
     edit_buffer::EditBuffer,
     hex_conv::merge_hex_halves,
@@ -348,7 +348,7 @@ impl View {
                     if hex.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
                         || app.preferences.quick_edit
                     {
-                        self.finish_editing(app);
+                        self.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences);
                     }
                 }
                 ViewKind::Dec(dec) => {
@@ -359,12 +359,12 @@ impl View {
                     if dec.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
                         || app.preferences.quick_edit
                     {
-                        self.finish_editing(app);
+                        self.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences);
                     }
                 }
                 ViewKind::Text(text) => {
                     if text.edit_buf.enter_byte(unicode as u8) || app.preferences.quick_edit {
-                        self.finish_editing(app);
+                        self.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences);
                     }
                 }
                 // Block doesn't do any text input
@@ -399,37 +399,39 @@ impl View {
         }
     }
 
-    pub fn finish_editing(&mut self, app: &mut App) {
+    pub fn finish_editing(
+        &mut self,
+        edit_state: &mut EditState,
+        data: &mut [u8],
+        preferences: &Preferences,
+    ) {
         match &mut self.kind {
             ViewKind::Hex(hex) => {
                 match merge_hex_halves(hex.edit_buf.buf[0], hex.edit_buf.buf[1]) {
-                    Some(merged) => app.data[app.edit_state.cursor] = merged,
+                    Some(merged) => data[edit_state.cursor] = merged,
                     None => per_msg!("finish_editing: Failed to merge hex halves"),
                 }
-                app.edit_state
-                    .widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                edit_state.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
             }
             ViewKind::Dec(dec) => {
                 let s =
                     std::str::from_utf8(&dec.edit_buf.buf).expect("Invalid utf-8 in edit buffer");
                 match s.parse() {
                     Ok(num) => {
-                        app.data[app.edit_state.cursor] = num;
-                        app.edit_state
-                            .widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                        data[edit_state.cursor] = num;
+                        edit_state.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
                     }
                     Err(e) => msg_warn(&format!("Invalid value: {}", e)),
                 }
             }
             ViewKind::Text(text) => {
-                app.data[app.edit_state.cursor] = text.edit_buf.buf[0];
-                app.edit_state
-                    .widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
+                data[edit_state.cursor] = text.edit_buf.buf[0];
+                edit_state.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
             }
             ViewKind::Block => {}
         }
-        if app.edit_state.cursor + 1 < app.data.len() && !app.preferences.sticky_edit {
-            app.edit_state.step_cursor_forward()
+        if edit_state.cursor + 1 < data.len() && !preferences.sticky_edit {
+            edit_state.step_cursor_forward()
         }
         self.reset_edit_buf();
     }

@@ -620,12 +620,7 @@ fn handle_key_pressed(
         }
         Key::Enter => {
             if let Some(view_key) = app.hex_ui.focused_view {
-                let mut view = std::mem::replace(
-                    &mut app.meta_state.meta.views[view_key].view,
-                    crate::view::View::zeroed(),
-                );
-                view.finish_editing(app);
-                app.meta_state.meta.views[view_key].view = view;
+                app.meta_state.meta.views[view_key].view.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences);
             }
         }
         Key::A if key_mod.ctrl => {
