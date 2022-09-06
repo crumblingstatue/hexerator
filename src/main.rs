@@ -26,6 +26,7 @@ mod dec_conv;
 pub mod edit_buffer;
 mod gui;
 mod hex_conv;
+mod hex_ui;
 mod input;
 mod layout;
 mod meta;
