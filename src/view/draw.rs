@@ -324,7 +324,7 @@ impl View {
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
                         if selected_or_find_result_contains(
-                            App::selection(&app.select_a, &app.select_b),
+                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
                             idx,
                             &app.gui,
                         ) {
@@ -362,8 +362,8 @@ impl View {
                                 x + f32::from(extra_x),
                                 y,
                                 vertex_buffer,
-                                app.focused_view == Some(key),
-                                App::cursor_flash_timer(&app.flash_cursor_timer),
+                                app.hex_ui.focused_view == Some(key),
+                                App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
                                 &self.presentation,
                                 hex.font_size,
                             );
@@ -381,7 +381,7 @@ impl View {
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
                         if selected_or_find_result_contains(
-                            App::selection(&app.select_a, &app.select_b),
+                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
                             idx,
                             &app.gui,
                         ) {
@@ -419,8 +419,8 @@ impl View {
                                 x + f32::from(extra_x),
                                 y,
                                 vertex_buffer,
-                                app.focused_view == Some(key),
-                                App::cursor_flash_timer(&app.flash_cursor_timer),
+                                app.hex_ui.focused_view == Some(key),
+                                App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
                                 &self.presentation,
                                 dec.font_size,
                             );
@@ -438,7 +438,7 @@ impl View {
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
                         if selected_or_find_result_contains(
-                            App::selection(&app.select_a, &app.select_b),
+                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
                             idx,
                             &app.gui,
                         ) {
@@ -475,8 +475,8 @@ impl View {
                                 x,
                                 y,
                                 vertex_buffer,
-                                app.focused_view == Some(key),
-                                App::cursor_flash_timer(&app.flash_cursor_timer),
+                                app.hex_ui.focused_view == Some(key),
+                                App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
                                 &self.presentation,
                                 text.font_size,
                             );
@@ -494,7 +494,7 @@ impl View {
                     vertex_buffer,
                     |vertex_buffer, x, y, _byte, idx, mut c| {
                         if selected_or_find_result_contains(
-                            App::selection(&app.select_a, &app.select_b),
+                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
                             idx,
                             &app.gui,
                         ) {
@@ -513,8 +513,8 @@ impl View {
                                 x,
                                 y,
                                 vertex_buffer,
-                                app.focused_view == Some(key),
-                                App::cursor_flash_timer(&app.flash_cursor_timer),
+                                app.hex_ui.focused_view == Some(key),
+                                App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
                                 &self.presentation,
                                 self,
                             );
@@ -529,14 +529,14 @@ impl View {
             self.viewport_rect.y.into(),
             self.viewport_rect.w.into(),
             self.viewport_rect.h.into(),
-            if Some(key) == app.focused_view {
+            if Some(key) == app.hex_ui.focused_view {
                 Color::rgb(255, 255, 150)
             } else {
                 Color::rgb(120, 120, 150)
             },
             1.0,
         );
-        if app.scissor_views {
+        if app.hex_ui.scissor_views {
             unsafe {
                 glu_sys::glEnable(glu_sys::GL_SCISSOR_TEST);
                 #[expect(
@@ -555,7 +555,7 @@ impl View {
             }
         }
         let mut overlay_text = None;
-        if app.show_alt_overlay {
+        if app.hex_ui.show_alt_overlay {
             let mut text = Text::new(name, font, 16);
             text.set_position((
                 f32::from(self.viewport_rect.x),
@@ -573,7 +573,7 @@ impl View {
             overlay_text = Some(text);
         }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
-        if app.scissor_views {
+        if app.hex_ui.scissor_views {
             unsafe {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
             }

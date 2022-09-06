@@ -42,41 +42,62 @@ pub struct App {
     pub data: Vec<u8>,
     pub edit_state: EditState,
     pub input: Input,
-    pub interact_mode: InteractMode,
-    pub current_layout: LayoutKey,
-    pub focused_view: Option<ViewKey>,
-    /// The rectangle area that's available for the hex interface
-    pub hex_iface_rect: ViewportRect,
     pub gui: crate::gui::Gui,
-    /// "a" point of selection. Could be smaller or larger than "b".
-    /// The length of selection is absolute difference between a and b
-    pub select_a: Option<usize>,
-    /// "b" point of selection. Could be smaller or larger than "a".
-    /// The length of selection is absolute difference between a and b
-    pub select_b: Option<usize>,
     pub args: Args,
     pub source: Option<Source>,
-    pub flash_cursor_timer: Timer,
     pub just_reloaded: bool,
     /// Whether metafile needs saving
     pub meta_dirty: bool,
     pub stream_read_recv: Option<Receiver<Vec<u8>>>,
     pub cfg: Config,
-    /// Whether to scissor views when drawing them. Useful to disable when debugging rendering.
-    pub scissor_views: bool,
     /// If true, auto-reload the current file at specified interval
     pub auto_reload: bool,
     /// Auto-reload interval in milliseconds
     pub auto_reload_interval_ms: u32,
     last_reload: Instant,
     pub preferences: Preferences,
-    /// When alt is being held, it shows things like names of views as overlays
-    pub show_alt_overlay: bool,
     pub meta: Meta,
     /// Clean copy of the metadata from last load/save
     pub clean_meta: Meta,
     pub current_meta_path: PathBuf,
     pub last_meta_backup: Cell<Instant>,
+    pub hex_ui: HexUi,
+}
+
+/// State related to the hex view ui, different from the egui gui overlay
+pub struct HexUi {
+    /// "a" point of selection. Could be smaller or larger than "b".
+    /// The length of selection is absolute difference between a and b
+    pub select_a: Option<usize>,
+    /// "b" point of selection. Could be smaller or larger than "a".
+    /// The length of selection is absolute difference between a and b
+    pub select_b: Option<usize>,
+    pub interact_mode: InteractMode,
+    pub current_layout: LayoutKey,
+    pub focused_view: Option<ViewKey>,
+    /// The rectangle area that's available for the hex interface
+    pub hex_iface_rect: ViewportRect,
+    pub flash_cursor_timer: Timer,
+    /// Whether to scissor views when drawing them. Useful to disable when debugging rendering.
+    pub scissor_views: bool,
+    /// When alt is being held, it shows things like names of views as overlays
+    pub show_alt_overlay: bool,
+}
+
+impl Default for HexUi {
+    fn default() -> Self {
+        Self {
+            scissor_views: true,
+            interact_mode: InteractMode::View,
+            focused_view: None,
+            select_a: None,
+            select_b: None,
+            flash_cursor_timer: Timer::default(),
+            hex_iface_rect: ViewportRect::default(),
+            show_alt_overlay: false,
+            current_layout: LayoutKey::null(),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -124,18 +145,15 @@ impl App {
         }
         let load_success = load_file_from_src_args(&mut args.src, &mut cfg, &mut source, &mut data);
         let mut this = Self {
-            scissor_views: true,
             data,
             edit_state: EditState::default(),
             input: Input::default(),
-            interact_mode: InteractMode::View,
-            focused_view: None,
+
             gui: crate::gui::Gui::default(),
-            select_a: None,
-            select_b: None,
+
             args,
             source,
-            flash_cursor_timer: Timer::default(),
+
             just_reloaded: true,
             meta_dirty: false,
             stream_read_recv: None,
@@ -144,13 +162,12 @@ impl App {
             auto_reload_interval_ms: 250,
             last_reload: Instant::now(),
             preferences: Preferences::default(),
-            hex_iface_rect: ViewportRect::default(),
-            show_alt_overlay: false,
-            current_layout: LayoutKey::null(),
+
             meta: Meta::default(),
             clean_meta: Meta::default(),
             last_meta_backup: Cell::new(Instant::now()),
             current_meta_path: PathBuf::new(),
+            hex_ui: HexUi::default(),
         };
         if load_success {
             this.new_file_readjust(font);
@@ -233,7 +250,7 @@ impl App {
     }
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
-        if let Some(key) = self.focused_view {
+        if let Some(key) = self.hex_ui.focused_view {
             self.meta.views[key].view.center_on_offset(
                 offset,
                 &self.meta.perspectives,
@@ -282,7 +299,7 @@ impl App {
         self.col_change_impl(|col| *col -= 1);
     }
     fn col_change_impl(&mut self, f: impl FnOnce(&mut usize)) {
-        if let Some(key) = self.focused_view {
+        if let Some(key) = self.hex_ui.focused_view {
             let view = &mut self.meta.views[key].view;
             col_change_impl_view_perspective(
                 view,
@@ -369,8 +386,8 @@ impl App {
         }
         let layout_key = self.meta.layouts.insert(layout);
         App::switch_layout(
-            &mut self.current_layout,
-            &mut self.focused_view,
+            &mut self.hex_ui.current_layout,
+            &mut self.hex_ui.focused_view,
             &self.meta.layouts,
             layout_key,
         );
@@ -405,7 +422,7 @@ impl App {
         self.flash_cursor();
     }
     pub fn flash_cursor(&mut self) {
-        self.flash_cursor_timer = Timer::set(Duration::from_millis(1500));
+        self.hex_ui.flash_cursor_timer = Timer::set(Duration::from_millis(1500));
     }
     /// If the cursor should be flashing, returns a timer value that can be used to color cursor
     pub fn cursor_flash_timer(app_flash_cursor_timer: &Timer) -> Option<u32> {
@@ -428,7 +445,7 @@ impl App {
         if !src.attr.stream {
             return;
         };
-        let Some(view_key) = self.focused_view else { return };
+        let Some(view_key) = self.hex_ui.focused_view else { return };
         let view = &self.meta.views[view_key].view;
         let view_byte_offset = view
             .offsets(&self.meta.perspectives, &self.meta.regions)
@@ -481,7 +498,7 @@ impl App {
     //
     // Also returns the index of the view the position is from
     pub fn byte_offset_at_pos(&mut self, x: i16, y: i16) -> Option<(usize, ViewKey)> {
-        let layout = &self.meta.layouts[self.current_layout];
+        let layout = &self.meta.layouts[self.hex_ui.current_layout];
         for view_key in layout.iter() {
             let view = &self.meta.views[view_key];
             if let Some((row, col)) =
@@ -501,7 +518,7 @@ impl App {
         None
     }
     pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<ViewKey> {
-        let layout = &self.meta.layouts[self.current_layout];
+        let layout = &self.meta.layouts[self.hex_ui.current_layout];
         for view_key in layout.iter() {
             let view = &self.meta.views[view_key];
             if view.view.viewport_rect.contains_pos(x, y) {
@@ -537,12 +554,12 @@ impl App {
     }
     /// Called every frame
     pub(crate) fn update(&mut self) {
-        if !self.current_layout.is_null() {
-            let layout = &self.meta.layouts[self.current_layout];
+        if !self.hex_ui.current_layout.is_null() {
+            let layout = &self.meta.layouts[self.hex_ui.current_layout];
             do_auto_layout(
                 layout,
                 &mut self.meta.views,
-                &self.hex_iface_rect,
+                &self.hex_ui.hex_iface_rect,
                 &self.meta.perspectives,
                 &self.meta.regions,
             );
@@ -576,12 +593,12 @@ impl App {
         }
     }
     pub(crate) fn focused_view_select_all(&mut self) {
-        if let Some(view) = self.focused_view {
+        if let Some(view) = self.hex_ui.focused_view {
             let p_key = self.meta.views[view].view.perspective;
             let p = &self.meta.perspectives[p_key];
             let r = &self.meta.regions[p.region];
-            self.select_a = Some(r.region.begin);
-            self.select_b = Some(r.region.end);
+            self.hex_ui.select_a = Some(r.region.begin);
+            self.hex_ui.select_b = Some(r.region.end);
         }
     }
 
@@ -625,13 +642,13 @@ impl App {
     }
     /// Clear existing meta references, in anticipation for loading new metafile
     fn clear_meta_refs(&mut self) {
-        self.current_layout = LayoutKey::null();
-        self.focused_view = None;
+        self.hex_ui.current_layout = LayoutKey::null();
+        self.hex_ui.focused_view = None;
     }
 
     pub(crate) fn focus_prev_view_in_layout(&mut self) {
-        if let Some(focused_view_key) = self.focused_view {
-            let layout = &self.meta.layouts[self.current_layout];
+        if let Some(focused_view_key) = self.hex_ui.focused_view {
+            let layout = &self.meta.layouts[self.hex_ui.current_layout];
             if let Some(focused_idx) = layout.iter().position(|k| k == focused_view_key) {
                 let new_idx = if focused_idx == 0 {
                     layout.iter().count() - 1
@@ -639,15 +656,15 @@ impl App {
                     focused_idx - 1
                 };
                 if let Some(new_key) = layout.iter().nth(new_idx) {
-                    self.focused_view = Some(new_key);
+                    self.hex_ui.focused_view = Some(new_key);
                 }
             }
         }
     }
 
     pub(crate) fn focus_next_view_in_layout(&mut self) {
-        if let Some(focused_view_key) = self.focused_view {
-            let layout = &self.meta.layouts[self.current_layout];
+        if let Some(focused_view_key) = self.hex_ui.focused_view {
+            let layout = &self.meta.layouts[self.hex_ui.current_layout];
             if let Some(focused_idx) = layout.iter().position(|k| k == focused_view_key) {
                 let new_idx = if focused_idx == layout.iter().count() - 1 {
                     0
@@ -655,7 +672,7 @@ impl App {
                     focused_idx + 1
                 };
                 if let Some(new_key) = layout.iter().nth(new_idx) {
-                    self.focused_view = Some(new_key);
+                    self.hex_ui.focused_view = Some(new_key);
                 }
             }
         }
@@ -738,8 +755,8 @@ pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyho
     // Switch to first layout, if there is one
     if let Some(layout_key) = this.meta.layouts.keys().next() {
         App::switch_layout(
-            &mut this.current_layout,
-            &mut this.focused_view,
+            &mut this.hex_ui.current_layout,
+            &mut this.hex_ui.focused_view,
             &this.meta.layouts,
             layout_key,
         );

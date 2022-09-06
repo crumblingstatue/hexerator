@@ -22,8 +22,8 @@ macro_rules! region_context_menu {
                 for (key, layout) in $app.meta.layouts.iter() {
                     if let Some(v) = layout.view_containing_region(&$reg.region, &$app.meta) {
                         if ui.button(&layout.name).clicked() {
-                            $app.current_layout = key;
-                            $app.focused_view = Some(v);
+                            $app.hex_ui.current_layout = key;
+                            $app.hex_ui.focused_view = Some(v);
                             $action = Action::Goto($reg.region.begin);
                             ui.close_menu();
                         }
@@ -31,8 +31,8 @@ macro_rules! region_context_menu {
                 }
             });
             if ui.button("Select").clicked() {
-                $app.select_a = Some($reg.region.begin);
-                $app.select_b = Some($reg.region.end);
+                $app.hex_ui.select_a = Some($reg.region.begin);
+                $app.hex_ui.select_b = Some($reg.region.end);
                 ui.close_menu();
             }
         }
@@ -42,7 +42,7 @@ macro_rules! region_context_menu {
 impl RegionsWindow {
     pub fn ui(ui: &mut Ui, app: &mut App) {
         let button = egui::Button::new("Add selection as region");
-        match App::selection(&app.select_a, &app.select_b) {
+        match App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
             Some(sel) => {
                 if ui.add(button).clicked() {
                     app.meta.regions.insert(NamedRegion {
@@ -146,17 +146,17 @@ impl RegionsWindow {
                 ui.add(egui::DragValue::new(&mut reg.region.end));
             });
             if app.gui.regions_window.select_active {
-                app.select_a = Some(reg.region.begin);
-                app.select_b = Some(reg.region.end);
+                app.hex_ui.select_a = Some(reg.region.begin);
+                app.hex_ui.select_b = Some(reg.region.end);
             }
             if ui
                 .checkbox(&mut app.gui.regions_window.select_active, "Select")
                 .clicked()
             {
-                app.select_a = None;
-                app.select_b = None;
+                app.hex_ui.select_a = None;
+                app.hex_ui.select_b = None;
             }
-            if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
+            if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
                 if ui.button("Set to selection").clicked() {
                     reg.region = sel;
                 }

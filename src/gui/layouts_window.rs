@@ -20,14 +20,14 @@ impl LayoutsWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
         let win = &mut app.gui.layouts_window;
         if win.open.just_now() {
-            win.selected = app.current_layout;
+            win.selected = app.hex_ui.current_layout;
         }
         for (k, v) in &app.meta.layouts {
             if ui.selectable_label(win.selected == k, &v.name).clicked() {
                 win.selected = k;
                 App::switch_layout(
-                    &mut app.current_layout,
-                    &mut app.focused_view,
+                    &mut app.hex_ui.current_layout,
+                    &mut app.hex_ui.focused_view,
                     &app.meta.layouts,
                     k,
                 );
@@ -160,8 +160,8 @@ impl LayoutsWindow {
             });
             win.selected = key;
             App::switch_layout(
-                &mut app.current_layout,
-                &mut app.focused_view,
+                &mut app.hex_ui.current_layout,
+                &mut app.hex_ui.focused_view,
                 &app.meta.layouts,
                 key,
             );

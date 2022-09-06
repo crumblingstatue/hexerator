@@ -192,28 +192,29 @@ pub fn do_egui(sf_egui: &mut SfEgui, app: &mut App, mouse_pos: ViewportVec, font
             .show(ctx, |ui| inspect_panel::ui(ui, app, mouse_pos))
             .response;
         let padding = 2;
-        app.hex_iface_rect.x = padding;
+        app.hex_ui.hex_iface_rect.x = padding;
         #[expect(
             clippy::cast_possible_truncation,
             reason = "Window size can't exceed i16"
         )]
         {
-            app.hex_iface_rect.y = top_re.response.rect.bottom() as ViewportScalar + padding;
+            app.hex_ui.hex_iface_rect.y = top_re.response.rect.bottom() as ViewportScalar + padding;
         }
         #[expect(
             clippy::cast_possible_truncation,
             reason = "Window size can't exceed i16"
         )]
         {
-            app.hex_iface_rect.w = right_re.rect.left() as ViewportScalar - padding * 2;
+            app.hex_ui.hex_iface_rect.w = right_re.rect.left() as ViewportScalar - padding * 2;
         }
         #[expect(
             clippy::cast_possible_truncation,
             reason = "Window size can't exceed i16"
         )]
         {
-            app.hex_iface_rect.h =
-                (bot_re.response.rect.top() as ViewportScalar - app.hex_iface_rect.y) - padding * 2;
+            app.hex_ui.hex_iface_rect.h = (bot_re.response.rect.top() as ViewportScalar
+                - app.hex_ui.hex_iface_rect.y)
+                - padding * 2;
         }
         let mut dialogs: Vec<_> = std::mem::take(&mut app.gui.dialogs);
         dialogs.retain_mut(|dialog| {

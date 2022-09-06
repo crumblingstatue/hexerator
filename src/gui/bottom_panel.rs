@@ -12,23 +12,23 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
     ui.horizontal(|ui| {
         let job = key_label(ui, "F1", "View");
         if ui
-            .selectable_label(app.interact_mode == InteractMode::View, job)
+            .selectable_label(app.hex_ui.interact_mode == InteractMode::View, job)
             .clicked()
         {
-            app.interact_mode = InteractMode::View;
+            app.hex_ui.interact_mode = InteractMode::View;
         }
         ui.style_mut().visuals.selection.bg_fill = Color32::from_rgb(168, 150, 32);
         let job = key_label(ui, "F2", "Edit");
         if ui
-            .selectable_label(app.interact_mode == InteractMode::Edit, job)
+            .selectable_label(app.hex_ui.interact_mode == InteractMode::Edit, job)
             .clicked()
         {
-            app.interact_mode = InteractMode::Edit;
+            app.hex_ui.interact_mode = InteractMode::Edit;
         }
         ui.separator();
         let data_len = app.data.len();
         if data_len != 0 {
-            if let Some(view_key) = app.focused_view {
+            if let Some(view_key) = app.hex_ui.focused_view {
                 let view = &app.meta.views[view_key].view;
                 let per = match app.meta.perspectives.get_mut(view.perspective) {
                     Some(per) => per,
@@ -60,7 +60,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             "cursor: {} ({:x})",
             app.edit_state.cursor, app.edit_state.cursor
         ));
-        if !app.current_layout.is_null() && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
+        if !app.hex_ui.current_layout.is_null() && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
             ui.label(format!("mouse: {} ({:x})", offset, offset));
         }
     });

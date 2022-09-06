@@ -14,16 +14,16 @@ use super::top_menu::top_menu;
 pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
     top_menu(ui, app, font);
     ui.horizontal(|ui| {
-        if app.select_a.is_some() || app.select_b.is_some() {
+        if app.hex_ui.select_a.is_some() || app.hex_ui.select_b.is_some() {
             ui.label("Selection");
         }
-        if let Some(a) = app.select_a {
+        if let Some(a) = app.hex_ui.select_a {
             ui.label(format!("a: {}", a));
         }
-        if let Some(b) = app.select_b {
+        if let Some(b) = app.hex_ui.select_b {
             ui.label(format!("b: {}", b));
         }
-        if let Some(sel) = App::selection(&app.select_a, &app.select_b) && let Some(view_key) = app.focused_view {
+        if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) && let Some(view_key) = app.hex_ui.focused_view {
             let view = &app.meta.views[view_key].view;
             let (rows, rem) = app.meta.perspectives[view.perspective].region_row_span(sel);
             ui.label(format!(
@@ -32,7 +32,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
                 sel.len()
             ));
         }
-        if let Some(view_key) = app.focused_view {
+        if let Some(view_key) = app.hex_ui.focused_view {
             let presentation = &mut app.meta.views[view_key].view.presentation;
             ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.checkbox(&mut presentation.invert_color, "invert");
@@ -120,7 +120,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
                     ";
                     if ui
                         .add_enabled(
-                            App::selection(&app.select_a, &app.select_b).is_some(),
+                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b).is_some(),
                             egui::Button::new("img"),
                         )
                         .on_hover_text(tooltip)
@@ -135,7 +135,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, font: &Font) {
                             )
                             .context("Failed to load image")?;
                             let size = img.size();
-                            let sel = App::selection(&app.select_a, &app.select_b)
+                            let sel = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b)
                                 .context("Missing app selection")?;
                             let mut i = 0;
                             for y in 0..size.y {

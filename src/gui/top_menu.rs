@@ -121,11 +121,11 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
             }
             ui.separator();
             if button_with_shortcut(ui, "Set select a", "shift+1").clicked() {
-                app.select_a = Some(app.edit_state.cursor);
+                app.hex_ui.select_a = Some(app.edit_state.cursor);
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Set select b", "shift+2").clicked() {
-                app.select_b = Some(app.edit_state.cursor);
+                app.hex_ui.select_b = Some(app.edit_state.cursor);
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Select all in view", "Ctrl+A").clicked() {
@@ -133,8 +133,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Unselect all", "Esc").clicked() {
-                app.select_a = None;
-                app.select_b = None;
+                app.hex_ui.select_a = None;
+                app.hex_ui.select_b = None;
                 ui.close_menu();
             }
             ui.separator();
@@ -147,7 +147,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             if ui.button("Random fill").clicked() {
-                if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
+                if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
                     let range = sel.begin..=sel.end;
                     thread_rng().fill_bytes(&mut app.data[range.clone()]);
                     app.widen_dirty_region(DamageRegion::RangeInclusive(range));
@@ -155,7 +155,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             if ui.button("Copy selection as hex").clicked() {
-                if let Some(sel) = App::selection(&app.select_a, &app.select_b) {
+                if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
                     use std::fmt::Write;
                     let mut s = String::new();
                     for &byte in &app.data[sel.begin..=sel.end] {
@@ -166,7 +166,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 ui.close_menu();
             }
             if ui.button("Save selection to file").clicked() {
-                if let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = App::selection(&app.select_a, &app.select_b) {
+                if let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
                     let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
                     msg_if_fail(result, "Failed to save selection to file");
                 }
@@ -209,8 +209,8 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
         ui.menu_button("View", |ui| {
             ui.menu_button("Layout", |ui| {
                 for (k, v) in &app.meta.layouts {
-                    if ui.selectable_label(app.current_layout == k, &v.name).clicked() {
-                        App::switch_layout(&mut app.current_layout, &mut app.focused_view, &app.meta.layouts, k);
+                    if ui.selectable_label(app.hex_ui.current_layout == k, &v.name).clicked() {
+                        App::switch_layout(&mut app.hex_ui.current_layout, &mut app.hex_ui.focused_view, &app.meta.layouts, k);
                         ui.close_menu();
                     }
                 }
@@ -239,7 +239,7 @@ pub fn top_menu(ui: &mut egui::Ui, app: &mut App, font: &Font) {
                 app.gui.perspectives_window.open.toggle();
                 ui.close_menu();
             }
-            let Some(view_key) = app.focused_view else { return };
+            let Some(view_key) = app.hex_ui.focused_view else { return };
             let view = &mut app.meta.views[view_key].view;
             if ui.button("Set offset to cursor").clicked() {
                 app.meta.regions[app.meta.perspectives[view.perspective].region].region.begin = app.edit_state.cursor;

@@ -229,12 +229,12 @@ fn update(app: &mut App, egui_wants_kb: bool) {
     if app.data.is_empty() {
         return;
     }
-    app.show_alt_overlay = app.input.key_down(Key::LAlt);
+    app.hex_ui.show_alt_overlay = app.input.key_down(Key::LAlt);
     if !egui_wants_kb
-        && app.interact_mode == InteractMode::View
+        && app.hex_ui.interact_mode == InteractMode::View
         && !app.input.key_down(Key::LControl)
     {
-        let Some(key) = app.focused_view else { return };
+        let Some(key) = app.hex_ui.focused_view else { return };
         let spd = if app.input.key_down(Key::LShift) {
             10
         } else {
@@ -252,7 +252,7 @@ fn update(app: &mut App, egui_wants_kb: bool) {
         }
     }
     // Sync all other views to active view
-    if let Some(key) = app.focused_view {
+    if let Some(key) = app.hex_ui.focused_view {
         let src = &app.meta.views[key].view;
         let src_perspective = src.perspective;
         let (src_row, src_col) = (src.scroll_offset.row(), src.scroll_offset.col());
@@ -292,16 +292,16 @@ fn update(app: &mut App, egui_wants_kb: bool) {
 }
 
 fn draw(app: &App, window: &mut RenderWindow, font: &Font, vertex_buffer: &mut Vec<Vertex>) {
-    if app.current_layout.is_null() {
+    if app.hex_ui.current_layout.is_null() {
         let mut t = Text::new("No active layout", font, 20);
         t.set_position((
-            f32::from(app.hex_iface_rect.x),
-            f32::from(app.hex_iface_rect.y),
+            f32::from(app.hex_ui.hex_iface_rect.x),
+            f32::from(app.hex_ui.hex_iface_rect.y),
         ));
         window.draw(&t);
         return;
     }
-    for view_key in app.meta.layouts[app.current_layout].iter() {
+    for view_key in app.meta.layouts[app.hex_ui.current_layout].iter() {
         let view = &app.meta.views[view_key];
         view.view
             .draw(view_key, app, window, vertex_buffer, font, &view.name);
@@ -337,7 +337,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
             Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_panic((x, y));
-                if app.current_layout.is_null() {
+                if app.hex_ui.current_layout.is_null() {
                     continue;
                 }
                 if button == mouse::Button::Left {
@@ -346,7 +346,7 @@ fn handle_events(app: &mut App, window: &mut RenderWindow, sf_egui: &mut SfEgui,
                         app.edit_state.set_cursor(off);
                     }
                     if let Some(view_idx) = app.view_idx_at_pos(mp.x, mp.y) {
-                        app.focused_view = Some(view_idx);
+                        app.hex_ui.focused_view = Some(view_idx);
                         app.gui.views_window.selected = view_idx;
                     }
                 } else if button == mouse::Button::Right {
@@ -404,9 +404,9 @@ fn handle_text_entered(app: &mut App, unicode: char) {
     if Key::LControl.is_pressed() || Key::LAlt.is_pressed() {
         return;
     }
-    match app.interact_mode {
+    match app.hex_ui.interact_mode {
         InteractMode::Edit => {
-            let Some(focused) = app.focused_view else {
+            let Some(focused) = app.hex_ui.focused_view else {
                 return
             };
             let mut view = std::mem::replace(
@@ -442,16 +442,16 @@ fn handle_key_events(
         return;
     }
     match code {
-        Key::Up => match app.interact_mode {
+        Key::Up => match app.hex_ui.interact_mode {
             InteractMode::View => {
-                if ctrl && let Some(view_key) = app.focused_view {
+                if ctrl && let Some(view_key) = app.hex_ui.focused_view {
                     let key = app.meta.views[view_key].view.perspective;
                     let reg = &mut app.meta.regions[app.meta.perspectives[key].region].region;
                     reg.begin = reg.begin.saturating_sub(1);
                 }
             }
             InteractMode::Edit => {
-                if let Some(view_key) = app.focused_view {
+                if let Some(view_key) = app.hex_ui.focused_view {
                     let view = &mut app.meta.views[view_key].view;
                     view.undirty_edit_buffer();
                     app.edit_state.set_cursor_no_history(
@@ -461,15 +461,15 @@ fn handle_key_events(
                 }
             }
         },
-        Key::Down => match app.interact_mode {
+        Key::Down => match app.hex_ui.interact_mode {
             InteractMode::View => {
-                if ctrl && let Some(view_key) = app.focused_view {
+                if ctrl && let Some(view_key) = app.hex_ui.focused_view {
                     let key = app.meta.views[view_key].view.perspective;
                     app.meta.regions[app.meta.perspectives[key].region].region.begin += 1;
                 }
             }
             InteractMode::Edit => {
-                if let Some(view_key) = app.focused_view {
+                if let Some(view_key) = app.hex_ui.focused_view {
                     let view = &mut app.meta.views[view_key].view;
                     view.undirty_edit_buffer();
                     if app.edit_state.cursor + app.meta.perspectives[view.perspective].cols < app.data.len() {
@@ -484,10 +484,10 @@ fn handle_key_events(
                 app.cursor_history_back();
                 break 'block;
             }
-            if app.interact_mode == InteractMode::Edit {
+            if app.hex_ui.interact_mode == InteractMode::Edit {
                 let move_edit = (app.preferences.move_edit_cursor && !ctrl)
                     || (!app.preferences.move_edit_cursor && ctrl);
-                    if let Some(view_key) = app.focused_view {
+                    if let Some(view_key) = app.hex_ui.focused_view {
                         let view = &mut app.meta.views[view_key];
                 if move_edit {
                         if let Some(edit_buf) = view.view.edit_buffer_mut() {
@@ -515,11 +515,11 @@ fn handle_key_events(
                 app.cursor_history_forward();
                 break 'block;
             }
-            if app.interact_mode == InteractMode::Edit && app.edit_state.cursor + 1 < app.data.len()
+            if app.hex_ui.interact_mode == InteractMode::Edit && app.edit_state.cursor + 1 < app.data.len()
             {
                 let move_edit = (app.preferences.move_edit_cursor && !ctrl)
                     || (!app.preferences.move_edit_cursor && ctrl);
-                    if let Some(view_key) = app.focused_view {
+                    if let Some(view_key) = app.hex_ui.focused_view {
                         let view = &mut app.meta.views[view_key];
                 if move_edit {
                         if let Some(edit_buf) = &mut view.view.edit_buffer_mut() {
@@ -542,9 +542,9 @@ fn handle_key_events(
                 }
             }
         }
-        Key::PageUp => match app.interact_mode {
+        Key::PageUp => match app.hex_ui.interact_mode {
             InteractMode::View => {
-                if let Some(key) = app.focused_view {
+                if let Some(key) = app.hex_ui.focused_view {
                     app.meta.views[key].view.scroll_page_up();
                 }
             }
@@ -552,9 +552,9 @@ fn handle_key_events(
                 // TODO: Implement
             }
         },
-        Key::PageDown => match app.interact_mode {
+        Key::PageDown => match app.hex_ui.interact_mode {
             InteractMode::View => {
-                if let Some(key) = app.focused_view {
+                if let Some(key) = app.hex_ui.focused_view {
                     app.meta.views[key].view.scroll_page_down();
                 }
             }
@@ -563,9 +563,9 @@ fn handle_key_events(
             }
         },
         Key::Home => {
-            if let Some(key) = app.focused_view {
+            if let Some(key) = app.hex_ui.focused_view {
                 let view = &mut app.meta.views[key].view;
-                match app.interact_mode {
+                match app.hex_ui.interact_mode {
                     InteractMode::View => {
                         view.go_home();
                     }
@@ -575,9 +575,9 @@ fn handle_key_events(
                 }
             }
         },
-        Key::End => match app.interact_mode {
+        Key::End => match app.hex_ui.interact_mode {
             InteractMode::View => {
-                if let Some(key) = app.focused_view {
+                if let Some(key) = app.hex_ui.focused_view {
                     app.meta.views[key].view.scroll_to_end(&app.meta.perspectives, &app.meta.regions);
                 }
             }
@@ -585,8 +585,8 @@ fn handle_key_events(
                 // TODO: Implement
             }
         },
-        Key::F1 => app.interact_mode = InteractMode::View,
-        Key::F2 => app.interact_mode = InteractMode::Edit,
+        Key::F1 => app.hex_ui.interact_mode = InteractMode::View,
+        Key::F2 => app.hex_ui.interact_mode = InteractMode::Edit,
         Key::F5 => app.gui.layouts_window.open.toggle(),
         Key::F6 => app.gui.views_window.open.toggle(),
         Key::F7 => app.gui.perspectives_window.open.toggle(),
@@ -594,14 +594,14 @@ fn handle_key_events(
         Key::F9 => app.gui.bookmarks_window.open.toggle(),
         Key::Escape => {
             app.gui.context_menu = None;
-            if let Some(view_key) = app.focused_view {
+            if let Some(view_key) = app.hex_ui.focused_view {
                 app.meta.views[view_key].view.cancel_editing();
             }
-            app.select_a = None;
-            app.select_b = None;
+            app.hex_ui.select_a = None;
+            app.hex_ui.select_b = None;
         }
         Key::Enter => {
-            if let Some(view_key) = app.focused_view {
+            if let Some(view_key) = app.hex_ui.focused_view {
                 let mut view = std::mem::replace(
                     &mut app.meta.views[view_key].view,
                     crate::view::View::zeroed(),
@@ -644,8 +644,8 @@ fn handle_key_events(
         }
         Key::W if ctrl => app.close_file(),
         Key::J if ctrl => app.gui.add_dialog(JumpDialog::default()),
-        Key::Num1 if shift => app.select_a = Some(app.edit_state.cursor),
-        Key::Num2 if shift => app.select_b = Some(app.edit_state.cursor),
+        Key::Num1 if shift => app.hex_ui.select_a = Some(app.edit_state.cursor),
+        Key::Num2 if shift => app.hex_ui.select_b = Some(app.edit_state.cursor),
         Key::Tab if shift => app.focus_prev_view_in_layout(),
         Key::Tab => app.focus_next_view_in_layout(),
         _ => {}

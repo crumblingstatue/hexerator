@@ -103,7 +103,7 @@ impl Dialog for PatternFillDialog {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
-        let Some(sel) = App::selection(&app.select_a, &app.select_b) else {
+        let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) else {
             ui.heading("No active selection");
             return true;
         };
@@ -144,7 +144,7 @@ impl Dialog for LuaFillDialog {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
-        let Some(sel) = App::selection(&app.select_a, &app.select_b) else {
+        let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) else {
             ui.heading("No active selection");
             return true;
         };

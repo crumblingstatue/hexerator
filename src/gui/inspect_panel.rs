@@ -408,11 +408,11 @@ enum Action {
 }
 
 pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
-    if app.current_layout.is_null() {
+    if app.hex_ui.current_layout.is_null() {
         ui.label("No active layout");
         return;
     }
-    let offset = match app.interact_mode {
+    let offset = match app.hex_ui.interact_mode {
         InteractMode::View => {
             if let Some((off, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
                 let mut add = 0;
