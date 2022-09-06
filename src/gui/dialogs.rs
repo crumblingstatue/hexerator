@@ -77,10 +77,12 @@ impl Dialog for AutoSaveReloadDialog {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
-        ui.checkbox(&mut app.auto_reload, "Auto reload");
+        ui.checkbox(&mut app.preferences.auto_reload, "Auto reload");
         ui.horizontal(|ui| {
             ui.label("Interval (ms)");
-            ui.add(egui::DragValue::new(&mut app.auto_reload_interval_ms));
+            ui.add(egui::DragValue::new(
+                &mut app.preferences.auto_reload_interval_ms,
+            ));
         });
         ui.separator();
         ui.checkbox(&mut app.preferences.auto_save, "Auto save")

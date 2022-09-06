@@ -50,10 +50,6 @@ pub struct App {
     pub meta_dirty: bool,
     pub stream_read_recv: Option<Receiver<Vec<u8>>>,
     pub cfg: Config,
-    /// If true, auto-reload the current file at specified interval
-    pub auto_reload: bool,
-    /// Auto-reload interval in milliseconds
-    pub auto_reload_interval_ms: u32,
     last_reload: Instant,
     pub preferences: Preferences,
     pub meta: Meta,
@@ -119,6 +115,10 @@ pub struct Preferences {
     pub col_change_lock_row: bool,
     /// Background color (mostly for fun)
     pub bg_color: [f32; 3],
+    /// If true, auto-reload the current file at specified interval
+    pub auto_reload: bool,
+    /// Auto-reload interval in milliseconds
+    pub auto_reload_interval_ms: u32,
 }
 
 impl Default for Preferences {
@@ -132,6 +132,8 @@ impl Default for Preferences {
             col_change_lock_col: false,
             col_change_lock_row: true,
             bg_color: [0.0; 3],
+            auto_reload: false,
+            auto_reload_interval_ms: 250,
         }
     }
 }
@@ -158,8 +160,6 @@ impl App {
             meta_dirty: false,
             stream_read_recv: None,
             cfg,
-            auto_reload: false,
-            auto_reload_interval_ms: 250,
             last_reload: Instant::now(),
             preferences: Preferences::default(),
 
@@ -569,11 +569,12 @@ impl App {
                 per_msg!("Save fail: {}", e);
             }
         }
-        if self.auto_reload
-            && self.last_reload.elapsed().as_millis() >= u128::from(self.auto_reload_interval_ms)
+        if self.preferences.auto_reload
+            && self.last_reload.elapsed().as_millis()
+                >= u128::from(self.preferences.auto_reload_interval_ms)
         {
             if msg_if_fail(self.reload(), "Auto-reload fail").is_some() {
-                self.auto_reload = false;
+                self.preferences.auto_reload = false;
             }
             self.last_reload = Instant::now();
         }
