@@ -420,7 +420,13 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                 if gui.inspect_panel.offset_relative {
                     add = app.args.src.hard_seek.unwrap_or(0);
                 }
-                ui.label(format!("offset: {} (0x{:x})", off + add, off + add));
+                ui.link(format!("offset: {} (0x{:x})", off + add, off + add))
+                    .context_menu(|ui| {
+                        if ui.button("Copy to clipboard").clicked() {
+                            clipboard::set_string(&format!("{:x}", off + add));
+                            ui.close_menu();
+                        }
+                    });
                 off
             } else {
                 edit_offset(app, gui, ui)
@@ -554,7 +560,13 @@ fn edit_offset(app: &mut App, gui: &mut crate::gui::Gui, ui: &mut Ui) -> usize {
     if gui.inspect_panel.offset_relative {
         off += app.args.src.hard_seek.unwrap_or(0);
     }
-    ui.label(format!("offset: {} ({:x}h)", off, off));
+    ui.link(format!("offset: {} ({:x}h)", off, off))
+        .context_menu(|ui| {
+            if ui.button("Copy to clipboard").clicked() {
+                clipboard::set_string(&format!("{:x}", off));
+                ui.close_menu();
+            }
+        });
     app.edit_state.cursor
 }
 
