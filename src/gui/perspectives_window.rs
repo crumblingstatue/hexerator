@@ -93,7 +93,7 @@ impl PerspectivesWindow {
                         app.meta_state.meta.perspectives.remove(key);
                     }
                     Action::OpenRegion(key) => {
-                        gui.regions_window.open = true;
+                        gui.regions_window.open.set(true);
                         gui.regions_window.selected_key = Some(key);
                     }
                     Action::Goto(off) => {

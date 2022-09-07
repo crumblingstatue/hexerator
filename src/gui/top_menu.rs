@@ -271,7 +271,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
         });
         ui.menu_button("Meta", |ui| {
             if button_with_shortcut(ui, "Regions...", "F8").clicked() {
-                gui.regions_window.open ^= true;
+                gui.regions_window.open.toggle();
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Bookmarks...", "F9").clicked() {
@@ -341,7 +341,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
         });
         ui.menu_button("Help", |ui| {
             if ui.button("Help...").clicked() {
-                gui.help_window.open ^= true;
+                gui.help_window.open.toggle();
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Debug panel...", "F12").clicked() {

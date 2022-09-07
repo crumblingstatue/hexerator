@@ -627,7 +627,7 @@ fn handle_key_pressed(
         Key::F5 => gui.layouts_window.open.toggle(),
         Key::F6 => gui.views_window.open.toggle(),
         Key::F7 => gui.perspectives_window.open.toggle(),
-        Key::F8 => gui.regions_window.open ^= true,
+        Key::F8 => gui.regions_window.open.toggle(),
         Key::F9 => gui.bookmarks_window.open.toggle(),
         Key::Escape => {
             gui.context_menu = None;

@@ -113,7 +113,7 @@ impl FindDialog {
                                     Some(key) => {
                                         let reg = &app.meta_state.meta.regions[key];
                                         if ui.link(&reg.name).context_menu(region_context_menu!(app, reg, action)).clicked() {
-                                            gui.regions_window.open = true;
+                                            gui.regions_window.open.set(true);
                                             gui.regions_window.selected_key = Some(key);
                                         }
                                     }

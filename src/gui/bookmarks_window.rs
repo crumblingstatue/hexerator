@@ -123,7 +123,7 @@ impl BookmarksWindow {
                                 .context_menu(ctx_menu)
                                 .clicked()
                             {
-                                gui.regions_window.open = true;
+                                gui.regions_window.open.set(true);
                                 gui.regions_window.selected_key = Some(region_key);
                             }
                         } else {

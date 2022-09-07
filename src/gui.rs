@@ -107,57 +107,27 @@ pub fn do_egui(
         if was_open && !open {
             gamedebug_core::toggle();
         }
-        open = gui.find_dialog.open.is();
-        Window::new("Find")
-            .open(&mut open)
-            .show(ctx, |ui| FindDialog::ui(ui, gui, app));
-        gui.find_dialog.open.set(open);
-        open = gui.regions_window.open;
-        Window::new("Regions")
-            .open(&mut open)
-            .show(ctx, |ui| RegionsWindow::ui(ui, gui, app));
-        gui.regions_window.open = open;
-        open = gui.bookmarks_window.open.is();
-        Window::new("Bookmarks")
-            .open(&mut open)
-            .show(ctx, |ui| BookmarksWindow::ui(ui, gui, app));
-        gui.bookmarks_window.open.set(open);
-        open = gui.layouts_window.open.is();
-        Window::new("Layouts")
-            .open(&mut open)
-            .show(ctx, |ui| LayoutsWindow::ui(ui, gui, app));
-        gui.layouts_window.open.set(open);
-        open = gui.views_window.open.is();
-        Window::new("Views")
-            .open(&mut open)
-            .show(ctx, |ui| ViewsWindow::ui(ui, gui, app, font));
-        gui.views_window.open.set(open);
-        open = gui.perspectives_window.open.is();
-        Window::new("Perspectives")
-            .open(&mut open)
-            .show(ctx, |ui| PerspectivesWindow::ui(ui, gui, app));
-        gui.perspectives_window.open.set(open);
-        open = gui.help_window.open;
-        Window::new("Help")
-            .default_size(egui::vec2(800., 600.))
-            .open(&mut open)
-            .show(ctx, |ui| HelpWindow::ui(ui, gui));
-        gui.help_window.open = open;
-        open = gui.file_diff_result_window.open.is();
-        Window::new("File diff results")
-            .open(&mut open)
-            .show(ctx, |ui| FileDiffResultWindow::ui(ui, gui, app));
-        gui.file_diff_result_window.open.set(open);
-        open = gui.meta_diff_window.open.is();
-        Window::new("Diff against clean meta")
-            .open(&mut open)
-            .show(ctx, |ui| MetaDiffWindow::ui(ui, app));
-        gui.meta_diff_window.open.set(open);
-        open = gui.open_process_window.open.is();
-        Window::new("Open process")
-            .open(&mut open)
-            .show(ctx, |ui| OpenProcessWindow::ui(ui, gui, app, font));
-        gui.open_process_window.open.set(open);
+        macro_rules! windows {
+            ($($title:expr, $field:ident, $ty:ty: $($arg:ident)+;)*) => {
+                $(
+                    open = gui.$field.open.is();
+                    Window::new($title).open(&mut open).show(ctx, |ui| <$ty>::ui(ui, $($arg,)+));
+                    gui.$field.open.set(open);
+                )*
+            };
+        }
+        windows! {
+            "Find",                    find_dialog,             FindDialog: gui app;
+            "Regions",                 regions_window,          RegionsWindow: gui app;
+            "Bookmarks",               bookmarks_window,        BookmarksWindow: gui app;
+            "Layouts",                 layouts_window,          LayoutsWindow: gui app;
+            "Views",                   views_window,            ViewsWindow: gui app font;
+            "Perspectives",            perspectives_window,     PerspectivesWindow: gui app;
+            "Help",                    help_window,             HelpWindow: gui;
+            "File Diff results",       file_diff_result_window, FileDiffResultWindow: gui app;
+            "Diff against clean meta", meta_diff_window,        MetaDiffWindow: app;
+            "Open process",            open_process_window,     OpenProcessWindow: gui app font;
+        }
         // Context menu
         if let Some(menu) = &gui.context_menu {
             let mut close = false;

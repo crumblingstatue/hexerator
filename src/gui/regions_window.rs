@@ -6,9 +6,11 @@ use crate::{
     meta::{NamedRegion, RegionKey},
 };
 
-#[derive(Debug, Default)]
+use super::window_open::WindowOpen;
+
+#[derive(Default)]
 pub struct RegionsWindow {
-    pub open: bool,
+    pub open: WindowOpen,
     pub selected_key: Option<RegionKey>,
     select_active: bool,
     rename_active: bool,

@@ -1,6 +1,8 @@
+use super::window_open::WindowOpen;
+
 #[derive(Default)]
 pub struct HelpWindow {
-    pub open: bool,
+    pub open: WindowOpen,
     pub topic_index: usize,
 }
 
