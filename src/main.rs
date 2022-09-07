@@ -4,7 +4,8 @@
     try_blocks,
     array_chunks,
     is_some_with,
-    let_chains
+    let_chains,
+    array_windows
 )]
 #![warn(
     trivial_casts,

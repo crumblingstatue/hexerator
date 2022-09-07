@@ -316,6 +316,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 msg_info(format);
                 ui.close_menu();
             }
+            ui.separator();
             if ui.button("Diff with file...").clicked() {
                 ui.close_menu();
                 if let Some(path) = rfd::FileDialog::default().pick_file() {
@@ -337,6 +338,11 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                     }
                 }
                 _ => { ui.add_enabled(false, egui::Button::new("Diff with backup")); }
+            }
+            ui.separator();
+            if ui.add_enabled(gui.open_process_window.selected_pid.is_some(), egui::Button::new("Find memory pointers...")).clicked() {
+                gui.find_memory_pointers_window.open.toggle();
+                ui.close_menu()
             }
         });
         ui.menu_button("Help", |ui| {

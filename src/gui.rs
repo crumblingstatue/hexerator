@@ -4,6 +4,7 @@ mod debug_window;
 pub mod dialogs;
 mod file_diff_result_window;
 mod find_dialog;
+mod find_memory_pointers_window;
 mod help_window;
 pub mod inspect_panel;
 mod layouts_window;
@@ -48,6 +49,7 @@ pub struct Gui {
     pub context_menu: Option<ContextMenu>,
     pub meta_diff_window: MetaDiffWindow,
     pub open_process_window: OpenProcessWindow,
+    pub find_memory_pointers_window: FindMemoryPointersWindow,
 }
 
 pub struct ContextMenu {
@@ -82,6 +84,7 @@ impl Gui {
 
 use self::bookmarks_window::BookmarksWindow;
 use self::file_diff_result_window::FileDiffResultWindow;
+use self::find_memory_pointers_window::FindMemoryPointersWindow;
 use self::layouts_window::LayoutsWindow;
 use self::meta_diff_window::MetaDiffWindow;
 use self::open_process_window::OpenProcessWindow;
@@ -117,16 +120,17 @@ pub fn do_egui(
             };
         }
         windows! {
-            "Find",                    find_dialog,             FindDialog: gui app;
-            "Regions",                 regions_window,          RegionsWindow: gui app;
-            "Bookmarks",               bookmarks_window,        BookmarksWindow: gui app;
-            "Layouts",                 layouts_window,          LayoutsWindow: gui app;
-            "Views",                   views_window,            ViewsWindow: gui app font;
-            "Perspectives",            perspectives_window,     PerspectivesWindow: gui app;
-            "Help",                    help_window,             HelpWindow: gui;
-            "File Diff results",       file_diff_result_window, FileDiffResultWindow: gui app;
-            "Diff against clean meta", meta_diff_window,        MetaDiffWindow: app;
-            "Open process",            open_process_window,     OpenProcessWindow: gui app font;
+            "Find",                    find_dialog,                 FindDialog: gui app;
+            "Regions",                 regions_window,              RegionsWindow: gui app;
+            "Bookmarks",               bookmarks_window,            BookmarksWindow: gui app;
+            "Layouts",                 layouts_window,              LayoutsWindow: gui app;
+            "Views",                   views_window,                ViewsWindow: gui app font;
+            "Perspectives",            perspectives_window,         PerspectivesWindow: gui app;
+            "Help",                    help_window,                 HelpWindow: gui;
+            "File Diff results",       file_diff_result_window,     FileDiffResultWindow: gui app;
+            "Diff against clean meta", meta_diff_window,            MetaDiffWindow: app;
+            "Open process",            open_process_window,         OpenProcessWindow: gui app font;
+            "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font;
         }
         // Context menu
         if let Some(menu) = &gui.context_menu {
