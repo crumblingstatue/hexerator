@@ -26,7 +26,7 @@ use egui_sfml::{
     SfEgui,
 };
 
-use crate::meta::ViewKey;
+use crate::meta::{Bookmark, ValueType, ViewKey};
 use crate::{
     app::App,
     view::{ViewportScalar, ViewportVec},
@@ -144,11 +144,19 @@ pub fn do_egui(
                         .show(ui, |ui| match &menu.data {
                             &ContextMenuData::ViewByte { view, byte_off } => {
                                 if ui
-                                    .button("Increase byte")
-                                    .on_hover_text("Context menu test")
+                                    .button("Add bookmark")
                                     .clicked()
                                 {
-                                    app.data[byte_off] += 1;
+                                    let bms = &mut app.meta_state.meta.bookmarks;
+                                    let idx = bms.len();
+                                    bms.push(Bookmark {
+                                        offset: byte_off,
+                                        label: format!("New @ offset {}", byte_off),
+                                        desc: String::new(),
+                                        value_type: ValueType::None,
+                                    });
+                                    gui.bookmarks_window.open.set(true);
+                                    gui.bookmarks_window.selected = Some(idx);
                                     close = true;
                                 }
                                 ui.separator();
