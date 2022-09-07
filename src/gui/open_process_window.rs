@@ -16,7 +16,9 @@ pub struct OpenProcessWindow {
     path_filter_string: String,
     addr_filter_string: String,
     pid_sort: Sort,
+    addr_sort: Sort,
     size_sort: Sort,
+    maps_sort_col: u8,
 }
 
 #[derive(Default, Clone, Copy)]
@@ -42,7 +44,7 @@ fn sort_button(ui: &mut egui::Ui, label: &str, active: bool, sort: Sort) -> egui
             Sort::Descending => "⏷",
         }
     } else {
-        ""
+        "="
     };
     if active {
         ui.style_mut().visuals.faint_bg_color = egui::Color32::RED;
@@ -74,13 +76,22 @@ impl OpenProcessWindow {
                 .resizable(true)
                 .header(20.0, |mut row| {
                     row.col(|ui| {
-                        ui.add(
-                            egui::TextEdit::singleline(&mut win.addr_filter_string)
-                                .hint_text("🔎 Addr"),
-                        );
+                        ui.horizontal(|ui| {
+                            if sort_button(ui, "", win.maps_sort_col == 0, win.addr_sort).clicked()
+                            {
+                                win.maps_sort_col = 0;
+                                win.addr_sort.flip();
+                            }
+                            ui.add(
+                                egui::TextEdit::singleline(&mut win.addr_filter_string)
+                                    .hint_text("🔎 Addr"),
+                            );
+                        });
                     });
                     row.col(|ui| {
-                        if sort_button(ui, "size", true, win.size_sort).clicked() {
+                        if sort_button(ui, "size", win.maps_sort_col == 1, win.size_sort).clicked()
+                        {
+                            win.maps_sort_col = 1;
                             win.size_sort.flip();
                         }
                     });
@@ -112,9 +123,20 @@ impl OpenProcessWindow {
                             None => false,
                         }
                     });
-                    filtered.sort_by(|range1, range2| match win.size_sort {
-                        Sort::Ascending => range1.size().cmp(&range2.size()),
-                        Sort::Descending => range1.size().cmp(&range2.size()).reverse(),
+                    filtered.sort_by(|range1, range2| {
+                        if win.maps_sort_col == 1 {
+                            match win.size_sort {
+                                Sort::Ascending => range1.size().cmp(&range2.size()),
+                                Sort::Descending => range1.size().cmp(&range2.size()).reverse(),
+                            }
+                        } else if win.maps_sort_col == 0 {
+                            match win.addr_sort {
+                                Sort::Ascending => range1.start().cmp(&range2.start()),
+                                Sort::Descending => range1.start().cmp(&range2.start()).reverse(),
+                            }
+                        } else {
+                            panic!("Invalid sort column");
+                        }
                     });
                     body.rows(20.0, filtered.len(), |idx, mut row| {
                         let map_range = filtered[idx].clone();
