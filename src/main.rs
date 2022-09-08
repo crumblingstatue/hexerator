@@ -125,7 +125,7 @@ fn do_frame(
     handle_events(gui, app, window, sf_egui, font);
     update(app, sf_egui.context().wants_keyboard_input());
     app.update();
-    let mp: ViewportVec = try_conv_mp_panic(window.mouse_position());
+    let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
     gui::do_egui(sf_egui, gui, app, mp, font);
     let [r, g, b] = app.preferences.bg_color;
     #[expect(
@@ -146,18 +146,18 @@ fn do_frame(
     gamedebug_core::inc_frame();
 }
 
-/// Try to convert mouse position to ViewportVec, show error message and panic if it fails.
+/// Try to convert mouse position to ViewportVec.
 ///
-/// Extremly high (>32700) mouse positions are unsupported.
-fn try_conv_mp_panic<T: TryInto<ViewportVec>>(src: T) -> ViewportVec
+/// Log error and return zeroed vec on conversion error.
+fn try_conv_mp_zero<T: TryInto<ViewportVec>>(src: T) -> ViewportVec
 where
     T::Error: Display,
 {
     match src.try_into() {
         Ok(mp) => mp,
         Err(e) => {
-            msg_warn(&format!("Mouse position conversion error: {}\nHexerator doesn't support extremely high (>32700) mouse positions.", e));
-            panic!("Mouse position conversion error.");
+            per_msg!("Mouse position conversion error: {}\nHexerator doesn't support extremely high (>32700) mouse positions.", e);
+            ViewportVec { x: 0, y: 0 }
         }
     }
 }
@@ -284,7 +284,7 @@ fn handle_events(
             } => handle_key_pressed(code, gui, app, KeyMod { ctrl, shift, alt }, font, wants_kb),
             Event::TextEntered { unicode } => handle_text_entered(app, unicode),
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
-                let mp = try_conv_mp_panic((x, y));
+                let mp = try_conv_mp_zero((x, y));
                 if app.hex_ui.current_layout.is_null() {
                     continue;
                 }
