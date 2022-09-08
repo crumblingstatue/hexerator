@@ -17,6 +17,7 @@
     clippy::cast_sign_loss,
     clippy::cast_possible_wrap
 )]
+#![windows_subsystem = "windows"]
 
 mod app;
 mod args;
@@ -72,7 +73,7 @@ fn try_main() -> anyhow::Result<()> {
     let mut window = RenderWindow::new(
         desktop_mode,
         "Hexerator",
-        Style::RESIZE,
+        Style::RESIZE | Style::CLOSE,
         &ContextSettings::default(),
     );
     window.set_vertical_sync_enabled(true);
