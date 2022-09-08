@@ -80,26 +80,33 @@ impl BookmarksWindow {
                         let bm = &app.meta_state.meta.bookmarks[idx];
                         match &bm.value_type {
                             ValueType::None => {}
-                            ValueType::U8 => {
-                                if ui
-                                    .add(egui::DragValue::new(&mut app.data[bm.offset]))
-                                    .changed()
-                                {
-                                    app.edit_state
-                                        .widen_dirty_region(DamageRegion::Single(bm.offset));
+                            ValueType::U8 => match app.data.get_mut(bm.offset) {
+                                Some(byte) => {
+                                    if ui.add(egui::DragValue::new(byte)).changed() {
+                                        app.edit_state
+                                            .widen_dirty_region(DamageRegion::Single(bm.offset));
+                                    }
                                 }
-                            }
+                                None => {
+                                    ui.label("??");
+                                }
+                            },
                             ValueType::U16Le => {
                                 let result: anyhow::Result<()> = try {
-                                    let mut val = u16::from_le_bytes(
-                                        app.data[bm.offset..bm.offset + 2].try_into()?,
-                                    );
-                                    if ui.add(egui::DragValue::new(&mut val)).changed() {
-                                        app.data[bm.offset..bm.offset + 2]
-                                            .copy_from_slice(&val.to_le_bytes());
-                                        app.edit_state.widen_dirty_region(DamageRegion::Range(
-                                            bm.offset..bm.offset + 2,
-                                        ));
+                                    match app.data.get(bm.offset..bm.offset + 2) {
+                                        Some(slice) => {
+                                            let mut val = u16::from_le_bytes(slice.try_into()?);
+                                            if ui.add(egui::DragValue::new(&mut val)).changed() {
+                                                app.data[bm.offset..bm.offset + 2]
+                                                    .copy_from_slice(&val.to_le_bytes());
+                                                app.edit_state.widen_dirty_region(
+                                                    DamageRegion::Range(bm.offset..bm.offset + 2),
+                                                );
+                                            }
+                                        }
+                                        None => {
+                                            ui.label("??");
+                                        }
                                     }
                                 };
                                 msg_if_fail(result, "Failed u16-le conversion");
