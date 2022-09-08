@@ -43,6 +43,8 @@ pub struct FindDialog {
     pub scroll_to: Option<usize>,
     pub find_type: FindType,
     pub filter_results: bool,
+    /// Used for increased/decreased unknown value search
+    pub data_snapshot: Vec<u8>,
 }
 
 impl FindDialog {
@@ -216,22 +218,78 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
 }
 
 fn find_u8(dia: &mut FindDialog, app: &mut App) {
-    match parse_guess_radix(&dia.input) {
-        Ok(needle) => {
-            if dia.filter_results {
-                let results_vec_clone = dia.results_vec.clone();
-                dia.results_vec.clear();
-                dia.results_set.clear();
-                u8_search(
-                    dia,
-                    results_vec_clone.iter().map(|&off| (off, app.data[off])),
-                    needle,
-                );
-            } else {
-                u8_search(dia, app.data.iter().cloned().enumerate(), needle);
+    match dia.input.as_str() {
+        "?" => {
+            dia.data_snapshot = app.data.clone();
+            dia.results_vec.clear();
+            dia.results_set.clear();
+            for i in 0..app.data.len() {
+                dia.results_vec.push(i);
+                dia.results_set.insert(i);
             }
         }
-        Err(e) => msg_warn(&format!("Parse fail: {}", e)),
+        ">" => {
+            if dia.filter_results {
+                dia.results_vec
+                    .retain(|&offset| app.data[offset] > dia.data_snapshot[offset]);
+                dia.results_set
+                    .retain(|&offset| app.data[offset] > dia.data_snapshot[offset]);
+            } else {
+                for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
+                    if new > old {
+                        dia.results_vec.push(i);
+                    }
+                }
+            }
+            dia.data_snapshot = app.data.clone();
+        }
+        "=" => {
+            if dia.filter_results {
+                dia.results_vec
+                    .retain(|&offset| app.data[offset] == dia.data_snapshot[offset]);
+                dia.results_set
+                    .retain(|&offset| app.data[offset] == dia.data_snapshot[offset]);
+            } else {
+                for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
+                    if new == old {
+                        dia.results_vec.push(i);
+                    }
+                }
+            }
+            dia.data_snapshot = app.data.clone();
+        }
+        "<" => {
+            if dia.filter_results {
+                dia.results_vec
+                    .retain(|&offset| app.data[offset] < dia.data_snapshot[offset]);
+                dia.results_set
+                    .retain(|&offset| app.data[offset] < dia.data_snapshot[offset]);
+            } else {
+                for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
+                    if new < old {
+                        dia.results_vec.push(i);
+                    }
+                }
+            }
+            dia.data_snapshot = app.data.clone();
+        }
+        _ => match parse_guess_radix(&dia.input) {
+            Ok(needle) => {
+                if dia.filter_results {
+                    let results_vec_clone = dia.results_vec.clone();
+                    dia.results_vec.clear();
+                    dia.results_set.clear();
+                    u8_search(
+                        dia,
+                        results_vec_clone.iter().map(|&off| (off, app.data[off])),
+                        needle,
+                    );
+                } else {
+                    u8_search(dia, app.data.iter().cloned().enumerate(), needle);
+                }
+            }
+            Err(e) => msg_warn(&format!("Parse fail: {}", e)),
+        },
     }
 }
 
