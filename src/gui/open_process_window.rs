@@ -1,6 +1,6 @@
 use egui_extras::{Size, TableBuilder};
 use egui_sfml::{egui, sfml::graphics::Font};
-use sysinfo::{ProcessExt, SystemExt};
+use sysinfo::{ProcessExt, Signal, SystemExt};
 
 use crate::shell::{msg_fail, msg_if_fail};
 
@@ -60,12 +60,25 @@ impl OpenProcessWindow {
         font: &Font,
     ) {
         let win = &mut gui.open_process_window;
-        if win.open.just_now() {
+        if win.open.just_now() || ui.button("Refresh").clicked() {
             win.sys.refresh_processes();
         }
         if let &Some(pid) = &win.selected_pid {
             if ui.link("Back").clicked() {
                 win.selected_pid = None;
+            }
+            if let Some(proc) = win.sys.process(pid) {
+                ui.horizontal(|ui| {
+                    if ui.button("Stop").clicked() {
+                        proc.kill_with(Signal::Stop);
+                    }
+                    if ui.button("Continue").clicked() {
+                        proc.kill_with(Signal::Continue);
+                    }
+                    if ui.button("Kill").clicked() {
+                        proc.kill();
+                    }
+                });
             }
             TableBuilder::new(ui)
                 .column(Size::initial(140.0))
