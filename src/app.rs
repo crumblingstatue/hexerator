@@ -640,8 +640,9 @@ pub fn temp_metafile_backup_path() -> PathBuf {
 
 pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
     let data = std::fs::read(&path)?;
+    let meta = rmp_serde::from_slice(&data)?;
     this.clear_meta_refs();
-    this.meta_state.meta = rmp_serde::from_slice(&data)?;
+    this.meta_state.meta = meta;
     this.meta_state.clean_meta = this.meta_state.meta.clone();
     this.meta_state.current_meta_path = path;
     this.meta_state.meta.post_load_init();
