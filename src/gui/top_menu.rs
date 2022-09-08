@@ -23,13 +23,8 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 crate::shell::open_file(app, font);
                 ui.close_menu();
             }
-            if ui.button("Open (read only)...").clicked() {
-                if let Some(file) = rfd::FileDialog::new().pick_file() {
-                    msg_if_fail(
-                        app.load_file(file, true,  font),
-                        "Failed to load file (read-only)",
-                    );
-                }
+            if ui.button("Advanced open...").clicked() {
+                gui.advanced_open_window.open.toggle();
                 ui.close_menu();
             }
             if ui.button("Open process...").clicked() {

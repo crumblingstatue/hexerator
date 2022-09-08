@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::parse_radix::parse_guess_radix;
 
-#[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Default)]
 pub struct Args {
     /// Arguments relating to the source to open
     #[clap(flatten)]
@@ -18,7 +18,7 @@ pub struct Args {
     pub meta: Option<PathBuf>,
 }
 
-#[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Default)]
 pub struct SourceArgs {
     /// The file to read
     pub file: Option<PathBuf>,

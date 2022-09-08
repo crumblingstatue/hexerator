@@ -1,3 +1,4 @@
+mod advanced_open_window;
 mod bookmarks_window;
 mod bottom_panel;
 mod debug_window;
@@ -50,6 +51,7 @@ pub struct Gui {
     pub meta_diff_window: MetaDiffWindow,
     pub open_process_window: OpenProcessWindow,
     pub find_memory_pointers_window: FindMemoryPointersWindow,
+    pub advanced_open_window: AdvancedOpenWindow,
 }
 
 pub struct ContextMenu {
@@ -82,6 +84,7 @@ impl Gui {
     }
 }
 
+use self::advanced_open_window::AdvancedOpenWindow;
 use self::bookmarks_window::BookmarksWindow;
 use self::file_diff_result_window::FileDiffResultWindow;
 use self::find_memory_pointers_window::FindMemoryPointersWindow;
@@ -131,6 +134,7 @@ pub fn do_egui(
             "Diff against clean meta", meta_diff_window,            MetaDiffWindow: app;
             "Open process",            open_process_window,         OpenProcessWindow: gui app font;
             "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font;
+            "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
         }
         // Context menu
         if let Some(menu) = &gui.context_menu {
