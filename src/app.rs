@@ -414,7 +414,7 @@ impl App {
         ) {
             if !self.preferences.keep_meta {
                 self.new_file_readjust(font);
-                if let Some(meta_path) = dbg!(&args.meta) {
+                if let Some(meta_path) = &args.meta {
                     consume_meta_from_file(meta_path.clone(), self)?;
                 }
             }
