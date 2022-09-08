@@ -1,11 +1,14 @@
+use std::fs::OpenOptions;
+
 use egui_sfml::sfml::graphics::Font;
 
 use crate::app::App;
 
 pub fn open_file(app: &mut App, font: &Font) {
-    if let Some(file) = rfd::FileDialog::new().pick_file() {
+    if let Some(path) = rfd::FileDialog::new().pick_file() {
+        let write = OpenOptions::new().write(true).open(&path).is_ok();
         msg_if_fail(
-            app.load_file(file, false, font),
+            app.load_file(path, !write, font),
             "Failed to load file (read-write)",
         );
     }
