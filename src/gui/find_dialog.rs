@@ -196,40 +196,37 @@ enum Action {
 }
 
 fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
-    if !gui.find_dialog.filter_results {
-        gui.find_dialog.results_vec.clear();
-        gui.find_dialog.results_set.clear();
+    let dia = &mut gui.find_dialog;
+    if !dia.filter_results {
+        dia.results_vec.clear();
+        dia.results_set.clear();
     }
-    match gui.find_dialog.find_type {
-        FindType::U8 => match parse_guess_radix(&gui.find_dialog.input) {
+    match dia.find_type {
+        FindType::U8 => match parse_guess_radix(&dia.input) {
             Ok(needle) => {
-                if gui.find_dialog.filter_results {
-                    let results_vec_clone = gui.find_dialog.results_vec.clone();
-                    gui.find_dialog.results_vec.clear();
-                    gui.find_dialog.results_set.clear();
+                if dia.filter_results {
+                    let results_vec_clone = dia.results_vec.clone();
+                    dia.results_vec.clear();
+                    dia.results_set.clear();
                     u8_search(
-                        &mut gui.find_dialog,
+                        dia,
                         results_vec_clone.iter().map(|&off| (off, app.data[off])),
                         needle,
                     );
                 } else {
-                    u8_search(
-                        &mut gui.find_dialog,
-                        app.data.iter().cloned().enumerate(),
-                        needle,
-                    );
+                    u8_search(dia, app.data.iter().cloned().enumerate(), needle);
                 }
             }
             Err(e) => msg_warn(&format!("Parse fail: {}", e)),
         },
         FindType::Ascii => {
-            for offset in memchr::memmem::find_iter(&app.data, &gui.find_dialog.input) {
-                gui.find_dialog.results_vec.push(offset);
-                gui.find_dialog.results_set.insert(offset);
+            for offset in memchr::memmem::find_iter(&app.data, &dia.input) {
+                dia.results_vec.push(offset);
+                dia.results_set.insert(offset);
             }
         }
     }
-    if let Some(&off) = gui.find_dialog.results_vec.first() {
+    if let Some(&off) = dia.results_vec.first() {
         app.search_focus(off);
     }
 }
