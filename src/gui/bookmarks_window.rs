@@ -6,6 +6,7 @@ use egui_sfml::egui::{self, Ui};
 
 use crate::{
     app::App,
+    damage_region::DamageRegion,
     meta::{find_most_specific_region_for_offset, Bookmark, ValueType},
     region_context_menu,
     shell::msg_if_fail,
@@ -80,16 +81,26 @@ impl BookmarksWindow {
                         match &bm.value_type {
                             ValueType::None => {}
                             ValueType::U8 => {
-                                ui.add(egui::DragValue::new(&mut app.data[bm.offset]));
+                                if ui
+                                    .add(egui::DragValue::new(&mut app.data[bm.offset]))
+                                    .changed()
+                                {
+                                    app.edit_state
+                                        .widen_dirty_region(DamageRegion::Single(bm.offset));
+                                }
                             }
                             ValueType::U16Le => {
                                 let result: anyhow::Result<()> = try {
                                     let mut val = u16::from_le_bytes(
                                         app.data[bm.offset..bm.offset + 2].try_into()?,
                                     );
-                                    ui.add(egui::DragValue::new(&mut val));
-                                    app.data[bm.offset..bm.offset + 2]
-                                        .copy_from_slice(&val.to_le_bytes());
+                                    if ui.add(egui::DragValue::new(&mut val)).changed() {
+                                        app.data[bm.offset..bm.offset + 2]
+                                            .copy_from_slice(&val.to_le_bytes());
+                                        app.edit_state.widen_dirty_region(DamageRegion::Range(
+                                            bm.offset..bm.offset + 2,
+                                        ));
+                                    }
                                 };
                                 msg_if_fail(result, "Failed u16-le conversion");
                             }
