@@ -74,7 +74,6 @@ impl App {
             cfg,
             last_reload: Instant::now(),
             preferences: Preferences::default(),
-
             hex_ui: HexUi::default(),
             meta_state: MetaState::default(),
         };
