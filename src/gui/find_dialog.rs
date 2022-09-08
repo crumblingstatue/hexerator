@@ -202,23 +202,7 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
         dia.results_set.clear();
     }
     match dia.find_type {
-        FindType::U8 => match parse_guess_radix(&dia.input) {
-            Ok(needle) => {
-                if dia.filter_results {
-                    let results_vec_clone = dia.results_vec.clone();
-                    dia.results_vec.clear();
-                    dia.results_set.clear();
-                    u8_search(
-                        dia,
-                        results_vec_clone.iter().map(|&off| (off, app.data[off])),
-                        needle,
-                    );
-                } else {
-                    u8_search(dia, app.data.iter().cloned().enumerate(), needle);
-                }
-            }
-            Err(e) => msg_warn(&format!("Parse fail: {}", e)),
-        },
+        FindType::U8 => find_u8(dia, app),
         FindType::Ascii => {
             for offset in memchr::memmem::find_iter(&app.data, &dia.input) {
                 dia.results_vec.push(offset);
@@ -228,6 +212,26 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
     }
     if let Some(&off) = dia.results_vec.first() {
         app.search_focus(off);
+    }
+}
+
+fn find_u8(dia: &mut FindDialog, app: &mut App) {
+    match parse_guess_radix(&dia.input) {
+        Ok(needle) => {
+            if dia.filter_results {
+                let results_vec_clone = dia.results_vec.clone();
+                dia.results_vec.clear();
+                dia.results_set.clear();
+                u8_search(
+                    dia,
+                    results_vec_clone.iter().map(|&off| (off, app.data[off])),
+                    needle,
+                );
+            } else {
+                u8_search(dia, app.data.iter().cloned().enumerate(), needle);
+            }
+        }
+        Err(e) => msg_warn(&format!("Parse fail: {}", e)),
     }
 }
 
