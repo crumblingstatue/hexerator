@@ -56,19 +56,16 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(mut args: Args, mut cfg: Config, font: &Font) -> anyhow::Result<Self> {
-        let mut data = Vec::new();
-        let mut source = None;
+    pub fn new(mut args: Args, cfg: Config, font: &Font) -> anyhow::Result<Self> {
         if args.recent && let Some(recent) = cfg.recent.most_recent() {
             args.src = recent.clone();
         }
-        let load_success = load_file_from_src_args(&mut args.src, &mut cfg, &mut source, &mut data);
         let mut this = Self {
-            data,
+            data: Vec::new(),
             edit_state: EditState::default(),
             input: Input::default(),
-            args,
-            source,
+            args: Args::default(),
+            source: None,
             just_reloaded: true,
             stream_read_recv: None,
             cfg,
@@ -77,17 +74,7 @@ impl App {
             hex_ui: HexUi::default(),
             meta_state: MetaState::default(),
         };
-        if load_success {
-            this.new_file_readjust(font);
-            if let Some(meta_path) = &this.args.meta {
-                consume_meta_from_file(meta_path.clone(), &mut this)?;
-            }
-        }
-        if let Some(offset) = this.args.src.jump {
-            this.center_view_on_offset(offset);
-            this.edit_state.cursor = offset;
-            this.flash_cursor();
-        }
+        msg_if_fail(this.load_file_args(args, font), "Failed to load file");
         Ok(this)
     }
     pub fn reload(&mut self) -> anyhow::Result<()> {
@@ -425,10 +412,18 @@ impl App {
             &mut self.source,
             &mut self.data,
         ) {
+            if !self.preferences.keep_meta {
+                self.new_file_readjust(font);
+                if let Some(meta_path) = dbg!(&args.meta) {
+                    consume_meta_from_file(meta_path.clone(), self)?;
+                }
+            }
             self.args = args;
-        }
-        if !self.preferences.keep_meta {
-            self.new_file_readjust(font);
+            if let Some(offset) = self.args.src.jump {
+                self.center_view_on_offset(offset);
+                self.edit_state.cursor = offset;
+                self.flash_cursor();
+            }
         }
         Ok(())
     }
