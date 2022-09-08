@@ -118,7 +118,9 @@ pub fn do_egui(
                 $(
                     open = gui.$field.open.is();
                     Window::new($title).open(&mut open).show(ctx, |ui| <$ty>::ui(ui, $($arg,)+));
-                    gui.$field.open.set(open);
+                    if !open {
+                        gui.$field.open.set(false);
+                    }
                 )*
             };
         }

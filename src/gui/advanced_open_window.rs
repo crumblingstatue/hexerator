@@ -109,6 +109,7 @@ impl AdvancedOpenWindow {
                 app.load_file_args(args.clone(), font),
                 "Failed to load file",
             );
+            win.open.set(false);
         }
     }
 }
