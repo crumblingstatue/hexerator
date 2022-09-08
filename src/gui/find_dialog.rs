@@ -106,7 +106,7 @@ impl FindDialog {
                                 }
                             });
                             row.col(|ui| {
-                                ui.label(app.data[off].to_string());
+                                ui.label(app.data.get(off).map(|off| off.to_string()).as_deref().unwrap_or("??"));
                             });
                             row.col(|ui| {
                                 match find_most_specific_region_for_offset(&app.meta_state.meta.regions, off) {
