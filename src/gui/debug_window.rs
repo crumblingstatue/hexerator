@@ -22,11 +22,16 @@ pub fn ui(ui: &mut Ui) {
     ui.separator();
     match PERSISTENT.lock() {
         Ok(per) => {
-            for PerEntry { frame, info } in per.iter() {
-                if let Info::Msg(msg) = info {
-                    ui.label(format!("{}: {}", frame, msg));
-                }
-            }
+            egui::ScrollArea::vertical()
+                .id_source("per_scroll")
+                .max_height(500.0)
+                .show(ui, |ui| {
+                    for PerEntry { frame, info } in per.iter() {
+                        if let Info::Msg(msg) = info {
+                            ui.label(format!("{}: {}", frame, msg));
+                        }
+                    }
+                });
         }
         Err(e) => {
             ui.label(&format!("PERSISTENT lock fail: {}", e));
