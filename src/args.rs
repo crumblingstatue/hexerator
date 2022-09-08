@@ -10,9 +10,6 @@ pub struct Args {
     /// Arguments relating to the source to open
     #[clap(flatten)]
     pub src: SourceArgs,
-    /// Open content in existing instance
-    #[clap(long)]
-    pub instance: bool,
     /// Open most recently used file
     #[clap(long)]
     pub recent: bool,

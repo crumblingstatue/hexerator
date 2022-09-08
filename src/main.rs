@@ -40,13 +40,7 @@ mod source;
 mod timer;
 mod view;
 
-use std::{
-    ffi::OsStr,
-    fmt::Display,
-    io::{Read, Write},
-    path::Path,
-    time::Duration,
-};
+use std::{fmt::Display, time::Duration};
 
 use crate::{app::App, view::ViewportVec};
 use anyhow::Context;
@@ -62,9 +56,7 @@ use egui_sfml::sfml::{
 use egui_sfml::SfEgui;
 use gamedebug_core::per_msg;
 use gui::{dialogs::JumpDialog, ContextMenu, ContextMenuData, Gui};
-use interprocess::local_socket::{LocalSocketListener, LocalSocketStream};
 use meta::{NamedView, PerspectiveMap, RegionMap};
-use rfd::MessageButtons;
 use serde::{Deserialize, Serialize};
 use shell::{msg_if_fail, msg_warn};
 use slotmap::Key as _;
@@ -74,50 +66,8 @@ struct InstanceRequest {
     args: Args,
 }
 
-fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
+fn try_main() -> anyhow::Result<()> {
     let args = Args::parse();
-    if args.instance {
-        match LocalSocketStream::connect(sock_path) {
-            Ok(mut stream) => {
-                let result: anyhow::Result<()> = try {
-                    let vec = rmp_serde::to_vec(&InstanceRequest { args: args.clone() })?;
-                    stream.write_all(&vec)?;
-                };
-                match result {
-                    Ok(()) => return Ok(()),
-                    Err(e) => {
-                        let ans = rfd::MessageDialog::new()
-                            .set_level(rfd::MessageLevel::Error)
-                            .set_buttons(MessageButtons::YesNo)
-                            .set_title("Hexerator")
-                            .set_description(&format!(
-                                "Failed to connect to instance: {}\nOpen a new instance?",
-                                e
-                            ))
-                            .show();
-                        if !ans {
-                            anyhow::bail!("Failed to connect to instance");
-                        }
-                    }
-                }
-            }
-            Err(e) => {
-                eprintln!("Failed to connect to instance: {}", e);
-            }
-        }
-    }
-    let listener = match LocalSocketListener::bind(sock_path) {
-        Ok(listener) => listener,
-        Err(e) => {
-            msg_warn(&format!(
-                "Failed to bind IPC listener: {}\nGoing to try again.",
-                e
-            ));
-            let _ = std::fs::remove_file(sock_path);
-            LocalSocketListener::bind(sock_path)?
-        }
-    };
-    listener.set_nonblocking(true)?;
     let desktop_mode = VideoMode::desktop_mode();
     let mut window = RenderWindow::new(
         desktop_mode,
@@ -139,13 +89,6 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     let mut gui = Gui::default();
 
     while window.is_open() {
-        if let Ok(mut stream) = listener.accept() {
-            let mut buf = Vec::new();
-            stream.read_to_end(&mut buf)?;
-            let req: InstanceRequest = rmp_serde::from_slice(&buf)?;
-            app = App::new(req.args, app.cfg, &font)?;
-            window.request_focus();
-        }
         do_frame(
             &mut app,
             &mut gui,
@@ -166,21 +109,8 @@ fn try_main(sock_path: &OsStr) -> anyhow::Result<()> {
     Ok(())
 }
 
-struct SocketRemoveGuard<'a> {
-    sock_path: &'a Path,
-}
-impl<'a> Drop for SocketRemoveGuard<'a> {
-    fn drop(&mut self) {
-        let _ = std::fs::remove_file(self.sock_path);
-    }
-}
-
 fn main() {
-    let sock_path = std::env::temp_dir().join("hexerator.sock");
-    let _guard = SocketRemoveGuard {
-        sock_path: &sock_path,
-    };
-    msg_if_fail(try_main(sock_path.as_os_str()), "Fatal error");
+    msg_if_fail(try_main(), "Fatal error");
 }
 
 fn do_frame(
@@ -670,7 +600,7 @@ fn handle_key_pressed(
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(Args{ src: args, instance: false, recent: false, meta: None },font),
+                    app.load_file_args(Args{ src: args, recent: false, meta: None },font),
                     "Failed to load file",
                 );
             }

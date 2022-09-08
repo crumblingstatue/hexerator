@@ -76,7 +76,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
             });
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(Args{ src: args, instance: false, recent: false, meta: None },font),
+                    app.load_file_args(Args{ src: args, recent: false, meta: None },font),
                     "Failed to load file",
                 );
             }
