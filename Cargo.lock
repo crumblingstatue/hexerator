@@ -645,6 +645,7 @@ dependencies = [
  "sysinfo",
  "thiserror",
  "tree_magic_mini",
+ "windows-sys",
 ]
 
 [[package]]

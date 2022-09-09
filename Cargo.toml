@@ -33,6 +33,10 @@ itertools = "0.10.3"
 sysinfo = { version = "0.26.2", default-features = false }
 proc-maps = "0.2.1"
 
+[target."cfg(windows)".dependencies.windows-sys]
+ version = "0.36.1"
+ features = ["Win32_System_Diagnostics_Debug", "Win32_Foundation", "Win32_System_Threading"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 # Compile deps with optimizations in dev mode

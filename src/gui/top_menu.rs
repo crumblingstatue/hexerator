@@ -363,6 +363,10 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                         SourceProvider::Stdin(_) => {
                             ui.label("Standard input");
                         }
+                        #[cfg(windows)]
+                        SourceProvider::WinProc{handle, ..} => {
+                            ui.label(format!("Windows process: {}", handle));
+                        }
                     }
                     if src.attr.stream {
                         if src.state.stream_end {

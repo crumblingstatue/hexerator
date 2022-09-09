@@ -7,6 +7,12 @@ use std::{
 pub enum SourceProvider {
     File(File),
     Stdin(Stdin),
+    #[cfg(windows)]
+    WinProc {
+        handle: windows_sys::Win32::Foundation::HANDLE,
+        start: usize,
+        size: usize,
+    },
 }
 
 #[derive(Debug)]
@@ -46,6 +52,16 @@ impl Clone for SourceProvider {
         match self {
             Self::File(file) => Self::File(file.try_clone().unwrap()),
             Self::Stdin(_) => Self::Stdin(std::io::stdin()),
+            #[cfg(windows)]
+            Self::WinProc {
+                handle,
+                start,
+                size,
+            } => Self::WinProc {
+                handle: *handle,
+                start: *start,
+                size: *size,
+            },
         }
     }
 }
@@ -55,6 +71,11 @@ impl Read for SourceProvider {
         match self {
             SourceProvider::File(f) => f.read(buf),
             SourceProvider::Stdin(stdin) => stdin.read(buf),
+            #[cfg(windows)]
+            SourceProvider::WinProc { .. } => {
+                gamedebug_core::per_msg!("Todo: Read unimplemented");
+                Ok(0)
+            }
         }
     }
 }
