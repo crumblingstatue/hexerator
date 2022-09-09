@@ -6,7 +6,7 @@ Legend:
 - [x] [Colorized values](#colorized-values)
   - [x] [Custom color palettes](#custom-color-palettes)
 - [x] [Easy data alignment](#easy-data-alignment)
-- [x] Suitable for [process memory editing](#process-memory-editing)
+- [x] [Built-in process memory editing](#process-memory-editing)
 - [x] [Multiple source types](#multiple-source-types) (file/streamed sources)
 - [x] [Rich command line options](commandline.md)
 - [x] [Bookmarks](#bookmarks)
@@ -26,7 +26,9 @@ Colorizing values helps a lot with human pattern recognition.
 ![Colorized values](screenshots/color.png)
 
 ### Custom color palettes
+
 Custom color palettes can be saved and loaded, and generated through various means.
+
 ![Custom palettes](screenshots/custom-palette.png)
 
 ## Easy data alignment
@@ -38,15 +40,13 @@ You can see a YouTube video of it in action here:
 [![Video](https://img.youtube.com/vi/GhPh_y1PjTU/0.jpg)](https://www.youtube.com/watch?v=GhPh_y1PjTU)
 
 ## Process Memory editing
-Hexerator is able to be used for viewing and editing process memory.
-It also only saves regions that have been edited, to prevent
-old memory from being saved over new updated memory.
+Built-in support for opening memory of a process and viewing/editing it.
+Can be used to cheat in games, or discover how different applications store data in memory.
 
 You can see a YouTube video of it in action here:
 
-[![Video](https://img.youtube.com/vi/W8ab3-Hp-f0/0.jpg)](https://www.youtube.com/watch?v=W8ab3-Hp-f0)
+[![Video](https://img.youtube.com/vi/OPHMIEW_vh4/0.jpg)](https://www.youtube.com/watch?v=OPHMIEW_vh4)
 
-Built-in support for opening process memory only works on Linux right now.
 You need to run hexerator with root/admin privileges to open memory of other processes.
 
 ## Multiple source types
