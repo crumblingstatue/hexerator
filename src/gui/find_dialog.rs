@@ -114,7 +114,14 @@ impl FindDialog {
                                 match find_most_specific_region_for_offset(&app.meta_state.meta.regions, off) {
                                     Some(key) => {
                                         let reg = &app.meta_state.meta.regions[key];
-                                        let ctx_menu = |ui: &mut egui::Ui| { region_context_menu!(ui, app, reg, action) };
+                                        let ctx_menu = |ui: &mut egui::Ui| {
+                                            region_context_menu!(ui, app, reg, action);
+                                            ui.separator();
+                                            if ui.button("Remove region from results").clicked() {
+                                                action = Action::RemoveRegionFromResults(key);
+                                                ui.close_menu();
+                                            }
+                                        };
                                         if ui.link(&reg.name).context_menu(ctx_menu).clicked() {
                                             gui.regions_window.open.set(true);
                                             gui.regions_window.selected_key = Some(key);
@@ -163,6 +170,11 @@ impl FindDialog {
                         app.hex_ui.flash_cursor();
                     }
                     Action::None => {},
+                    Action::RemoveRegionFromResults(key) => {
+                        let reg = &app.meta_state.meta.regions[key];
+                        gui.find_dialog.results_vec.retain(|&idx| !reg.region.contains(idx));
+                        gui.find_dialog.results_set.retain(|&idx| !reg.region.contains(idx));
+                    },
                 }
             });
             strip.cell(|ui| {
@@ -196,6 +208,7 @@ impl FindDialog {
 enum Action {
     Goto(usize),
     None,
+    RemoveRegionFromResults(crate::meta::RegionKey),
 }
 
 fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
