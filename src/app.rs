@@ -163,9 +163,6 @@ impl App {
         per_msg!("Saved temp metafile backup");
         Ok(())
     }
-    pub fn toggle_debug(&mut self) {
-        gamedebug_core::toggle();
-    }
     pub fn search_focus(&mut self, offset: usize) {
         self.edit_state.cursor = offset;
         self.center_view_on_offset(offset);

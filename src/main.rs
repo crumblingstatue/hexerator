@@ -390,7 +390,7 @@ fn handle_key_pressed(
     egui_wants_kb: bool,
 ) {
     if code == Key::F12 && !key_mod.shift && !key_mod.ctrl && !key_mod.alt {
-        app.toggle_debug()
+        gamedebug_core::toggle();
     }
     if app.data.is_empty() || egui_wants_kb {
         return;
