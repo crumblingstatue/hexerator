@@ -46,7 +46,7 @@ macro_rules! region_context_menu {
 impl RegionsWindow {
     pub fn ui(ui: &mut Ui, gui: &mut crate::gui::Gui, app: &mut App) {
         let button = egui::Button::new("Add selection as region");
-        match App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
+        match app.hex_ui.selection() {
             Some(sel) => {
                 if ui.add(button).clicked() {
                     app.meta_state.meta.regions.insert(NamedRegion {
@@ -160,7 +160,7 @@ impl RegionsWindow {
                 app.hex_ui.select_a = None;
                 app.hex_ui.select_b = None;
             }
-            if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
+            if let Some(sel) = app.hex_ui.selection() {
                 if ui.button("Set to selection").clicked() {
                     reg.region = sel;
                 }

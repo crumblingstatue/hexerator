@@ -323,11 +323,7 @@ impl View {
                     &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
-                        if selected_or_find_result_contains(
-                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
-                            idx,
-                            gui,
-                        ) {
+                        if selected_or_find_result_contains(app.hex_ui.selection(), idx, gui) {
                             draw_rect(
                                 vertex_buffer,
                                 x,
@@ -380,11 +376,7 @@ impl View {
                     &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
-                        if selected_or_find_result_contains(
-                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
-                            idx,
-                            gui,
-                        ) {
+                        if selected_or_find_result_contains(app.hex_ui.selection(), idx, gui) {
                             draw_rect(
                                 vertex_buffer,
                                 x,
@@ -437,11 +429,7 @@ impl View {
                     &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, data, idx, c| {
-                        if selected_or_find_result_contains(
-                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
-                            idx,
-                            gui,
-                        ) {
+                        if selected_or_find_result_contains(app.hex_ui.selection(), idx, gui) {
                             draw_rect(
                                 vertex_buffer,
                                 x,
@@ -493,11 +481,7 @@ impl View {
                     &app.data,
                     vertex_buffer,
                     |vertex_buffer, x, y, _byte, idx, mut c| {
-                        if selected_or_find_result_contains(
-                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b),
-                            idx,
-                            gui,
-                        ) {
+                        if selected_or_find_result_contains(app.hex_ui.selection(), idx, gui) {
                             c = invert_color(c);
                         }
                         draw_rect(

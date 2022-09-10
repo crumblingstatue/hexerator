@@ -24,7 +24,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         if let Some(b) = app.hex_ui.select_b {
             ui.label(format!("b: {}", b));
         }
-        if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) && let Some(view_key) = app.hex_ui.focused_view {
+        if let Some(sel) = app.hex_ui.selection() && let Some(view_key) = app.hex_ui.focused_view {
             let view = &app.meta_state.meta.views[view_key].view;
             let (rows, rem) = app.meta_state.meta.perspectives[view.perspective].region_row_span(sel);
             ui.label(format!(
@@ -122,7 +122,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                     ";
                     if ui
                         .add_enabled(
-                            App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b).is_some(),
+                            app.hex_ui.selection().is_some(),
                             egui::Button::new("img"),
                         )
                         .on_hover_text(tooltip)
@@ -137,7 +137,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                             )
                             .context("Failed to load image")?;
                             let size = img.size();
-                            let sel = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b)
+                            let sel = app.hex_ui.selection()
                                 .context("Missing app selection")?;
                             let mut i = 0;
                             for y in 0..size.y {

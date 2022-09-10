@@ -2,7 +2,7 @@ use slotmap::Key;
 
 use crate::{
     app::interact_mode::InteractMode,
-    meta::{LayoutKey, ViewKey},
+    meta::{region::Region, LayoutKey, ViewKey},
     timer::Timer,
     view::ViewportRect,
 };
@@ -25,6 +25,19 @@ pub struct HexUi {
     pub scissor_views: bool,
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
+}
+
+impl HexUi {
+    pub fn selection(&self) -> Option<Region> {
+        if let Some(a) = self.select_a && let Some(b) = self.select_b {
+            Some(Region {
+                begin: a.min(b),
+                end: a.max(b),
+            })
+        } else {
+            None
+        }
+    }
 }
 
 impl Default for HexUi {

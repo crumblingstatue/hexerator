@@ -482,20 +482,6 @@ impl App {
             self.last_reload = Instant::now();
         }
     }
-    /// Returns the selection marked by select_a and select_b
-    pub(crate) fn selection(
-        app_select_a: &Option<usize>,
-        app_select_b: &Option<usize>,
-    ) -> Option<Region> {
-        if let Some(a) = app_select_a && let Some(b) = app_select_b {
-            Some(Region {
-                begin: *a.min(b),
-                end: *a.max(b),
-            })
-        } else {
-            None
-        }
-    }
     pub(crate) fn focused_view_select_all(&mut self) {
         if let Some(view) = self.hex_ui.focused_view {
             let p_key = self.meta_state.meta.views[view].view.perspective;

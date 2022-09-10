@@ -142,7 +142,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 ui.close_menu();
             }
             if ui.button("Random fill").clicked() {
-                if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
+                if let Some(sel) = app.hex_ui.selection() {
                     let range = sel.begin..=sel.end;
                     thread_rng().fill_bytes(&mut app.data[range.clone()]);
                     app.edit_state.widen_dirty_region(DamageRegion::RangeInclusive(range));
@@ -150,7 +150,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 ui.close_menu();
             }
             if ui.button("Copy selection as hex").clicked() {
-                if let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
+                if let Some(sel) = app.hex_ui.selection() {
                     use std::fmt::Write;
                     let mut s = String::new();
                     for &byte in &app.data[sel.begin..=sel.end] {
@@ -161,7 +161,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 ui.close_menu();
             }
             if ui.button("Save selection to file").clicked() {
-                if let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = App::selection(&app.hex_ui.select_a, &app.hex_ui.select_b) {
+                if let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = app.hex_ui.selection() {
                     let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
                     msg_if_fail(result, "Failed to save selection to file");
                 }
