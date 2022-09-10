@@ -113,7 +113,8 @@ impl ViewsWindow {
                     row.col(|ui| {
                         let per = &app.meta_state.meta.perspectives[view.view.perspective];
                         let reg = &app.meta_state.meta.regions[per.region];
-                        let ctx_menu = region_context_menu!(app, reg, action);
+                        let ctx_menu =
+                            |ui: &mut egui::Ui| region_context_menu!(ui, app, reg, action);
                         if ui
                             .link(&reg.name)
                             .on_hover_text(&reg.desc)

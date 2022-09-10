@@ -114,7 +114,8 @@ impl FindDialog {
                                 match find_most_specific_region_for_offset(&app.meta_state.meta.regions, off) {
                                     Some(key) => {
                                         let reg = &app.meta_state.meta.regions[key];
-                                        if ui.link(&reg.name).context_menu(region_context_menu!(app, reg, action)).clicked() {
+                                        let ctx_menu = |ui: &mut egui::Ui| { region_context_menu!(ui, app, reg, action) };
+                                        if ui.link(&reg.name).context_menu(ctx_menu).clicked() {
                                             gui.regions_window.open.set(true);
                                             gui.regions_window.selected_key = Some(key);
                                         }

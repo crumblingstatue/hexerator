@@ -69,7 +69,7 @@ impl PerspectivesWindow {
                         if ui
                             .link(&reg.name)
                             .on_hover_text(&reg.desc)
-                            .context_menu(region_context_menu!(app, reg, action))
+                            .context_menu(|ui| region_context_menu!(ui, app, reg, action))
                             .clicked()
                         {
                             action = Action::OpenRegion(per.region);

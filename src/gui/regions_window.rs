@@ -15,29 +15,26 @@ pub struct RegionsWindow {
 
 #[macro_export]
 macro_rules! region_context_menu {
-    ($app:expr, $reg:expr, $action:expr) => {
-        |ui: &mut egui_sfml::egui::Ui| {
-            ui.menu_button("Containing layouts", |ui| {
-                for (key, layout) in $app.meta_state.meta.layouts.iter() {
-                    if let Some(v) =
-                        layout.view_containing_region(&$reg.region, &$app.meta_state.meta)
-                    {
-                        if ui.button(&layout.name).clicked() {
-                            $app.hex_ui.current_layout = key;
-                            $app.hex_ui.focused_view = Some(v);
-                            $action = Action::Goto($reg.region.begin);
-                            ui.close_menu();
-                        }
+    ($ui:expr, $app:expr, $reg:expr, $action:expr) => {{
+        $ui.menu_button("Containing layouts", |ui| {
+            for (key, layout) in $app.meta_state.meta.layouts.iter() {
+                if let Some(v) = layout.view_containing_region(&$reg.region, &$app.meta_state.meta)
+                {
+                    if ui.button(&layout.name).clicked() {
+                        $app.hex_ui.current_layout = key;
+                        $app.hex_ui.focused_view = Some(v);
+                        $action = Action::Goto($reg.region.begin);
+                        ui.close_menu();
                     }
                 }
-            });
-            if ui.button("Select").clicked() {
-                $app.hex_ui.select_a = Some($reg.region.begin);
-                $app.hex_ui.select_b = Some($reg.region.end);
-                ui.close_menu();
             }
+        });
+        if $ui.button("Select").clicked() {
+            $app.hex_ui.select_a = Some($reg.region.begin);
+            $app.hex_ui.select_b = Some($reg.region.end);
+            $ui.close_menu();
         }
-    };
+    }};
 }
 
 impl RegionsWindow {
@@ -87,7 +84,8 @@ impl RegionsWindow {
                     body.row(20.0, |mut row| {
                         let reg = &app.meta_state.meta.regions[k];
                         row.col(|ui| {
-                            let ctx_menu = region_context_menu!(app, reg, action);
+                            let ctx_menu =
+                                |ui: &mut egui::Ui| region_context_menu!(ui, app, reg, action);
                             if ui
                                 .selectable_label(
                                     gui.regions_window.selected_key == Some(k),

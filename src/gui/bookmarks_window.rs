@@ -134,7 +134,8 @@ impl BookmarksWindow {
                             find_most_specific_region_for_offset(&app.meta_state.meta.regions, off)
                         {
                             let region = &app.meta_state.meta.regions[region_key];
-                            let ctx_menu = region_context_menu!(app, region, action);
+                            let ctx_menu =
+                                |ui: &mut egui::Ui| region_context_menu!(ui, app, region, action);
                             if ui
                                 .link(&region.name)
                                 .on_hover_text(&region.desc)
