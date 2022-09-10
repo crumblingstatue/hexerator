@@ -81,9 +81,8 @@ impl ViewsWindow {
                                         && ui.button(&layout.name).clicked()
                                     {
                                         App::switch_layout(
-                                            &mut app.hex_ui.current_layout,
-                                            &mut app.hex_ui.focused_view,
-                                            &app.meta_state.meta.layouts,
+                                            &mut app.hex_ui,
+                                            &app.meta_state.meta,
                                             key,
                                         );
                                         app.hex_ui.focused_view = Some(view_key);

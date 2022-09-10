@@ -29,12 +29,7 @@ impl LayoutsWindow {
         for (k, v) in &app.meta_state.meta.layouts {
             if ui.selectable_label(win.selected == k, &v.name).clicked() {
                 win.selected = k;
-                App::switch_layout(
-                    &mut app.hex_ui.current_layout,
-                    &mut app.hex_ui.focused_view,
-                    &app.meta_state.meta.layouts,
-                    k,
-                );
+                App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, k);
             }
         }
         if !win.selected.is_null() {
@@ -164,12 +159,7 @@ impl LayoutsWindow {
                 margin: default_margin(),
             });
             win.selected = key;
-            App::switch_layout(
-                &mut app.hex_ui.current_layout,
-                &mut app.hex_ui.focused_view,
-                &app.meta_state.meta.layouts,
-                key,
-            );
+            App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, key);
         }
         win.open.post_ui();
     }

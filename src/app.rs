@@ -26,8 +26,8 @@ use crate::{
     input::Input,
     layout::{default_margin, do_auto_layout, Layout},
     meta::{
-        perspective::Perspective, region::Region, LayoutKey, LayoutMap, Meta, NamedRegion,
-        NamedView, PerspectiveKey, PerspectiveMap, RegionMap, ViewKey,
+        perspective::Perspective, region::Region, LayoutKey, Meta, NamedRegion, NamedView,
+        PerspectiveKey, PerspectiveMap, RegionMap, ViewKey,
     },
     meta_state::MetaState,
     preferences::Preferences,
@@ -278,12 +278,7 @@ impl App {
             layout.view_grid[0].push(k);
         }
         let layout_key = self.meta_state.meta.layouts.insert(layout);
-        App::switch_layout(
-            &mut self.hex_ui.current_layout,
-            &mut self.hex_ui.focused_view,
-            &self.meta_state.meta.layouts,
-            layout_key,
-        );
+        App::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
     }
 
     pub fn close_file(&mut self) {
@@ -514,20 +509,15 @@ impl App {
         Ok(())
     }
 
-    pub(crate) fn switch_layout(
-        app_current_layout: &mut LayoutKey,
-        app_focused_view: &mut Option<ViewKey>,
-        app_meta_layouts: &LayoutMap,
-        k: LayoutKey,
-    ) {
-        *app_current_layout = k;
+    pub(crate) fn switch_layout(app_hex_ui: &mut HexUi, app_meta: &Meta, k: LayoutKey) {
+        app_hex_ui.current_layout = k;
         // Set focused view to the first available view in the layout
-        if let Some(view_key) = app_meta_layouts[k]
+        if let Some(view_key) = app_meta.layouts[k]
             .view_grid
             .get(0)
             .and_then(|row| row.get(0))
         {
-            *app_focused_view = Some(*view_key);
+            app_hex_ui.focused_view = Some(*view_key);
         }
     }
     /// Clear existing meta references, in anticipation for loading new metafile
@@ -741,12 +731,7 @@ pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyho
     this.meta_state.meta.post_load_init();
     // Switch to first layout, if there is one
     if let Some(layout_key) = this.meta_state.meta.layouts.keys().next() {
-        App::switch_layout(
-            &mut this.hex_ui.current_layout,
-            &mut this.hex_ui.focused_view,
-            &this.meta_state.meta.layouts,
-            layout_key,
-        );
+        App::switch_layout(&mut this.hex_ui, &this.meta_state.meta, layout_key);
     }
     Ok(())
 }
