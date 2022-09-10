@@ -438,7 +438,7 @@ impl App {
             if !self.preferences.keep_meta {
                 self.new_file_readjust(font);
                 if let Some(meta_path) = &args.meta {
-                    consume_meta_from_file(meta_path.clone(), self)?;
+                    self.consume_meta_from_file(meta_path.clone())?;
                 }
             }
             self.args = args;
@@ -584,6 +584,21 @@ impl App {
         let p = &perspectives[view.perspective];
         regions[p.region].region.end
     }
+
+    pub fn consume_meta_from_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
+        let data = std::fs::read(&path)?;
+        let meta = rmp_serde::from_slice(&data)?;
+        self.hex_ui.clear_meta_refs();
+        self.meta_state.meta = meta;
+        self.meta_state.clean_meta = self.meta_state.meta.clone();
+        self.meta_state.current_meta_path = path;
+        self.meta_state.meta.post_load_init();
+        // Switch to first layout, if there is one
+        if let Some(layout_key) = self.meta_state.meta.layouts.keys().next() {
+            App::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
+        }
+        Ok(())
+    }
 }
 
 #[cfg(target_os = "linux")]
@@ -714,21 +729,6 @@ pub struct FileDiffEntry {
 
 pub fn temp_metafile_backup_path() -> PathBuf {
     std::env::temp_dir().join("hexerator_meta_backup.meta")
-}
-
-pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
-    let data = std::fs::read(&path)?;
-    let meta = rmp_serde::from_slice(&data)?;
-    this.hex_ui.clear_meta_refs();
-    this.meta_state.meta = meta;
-    this.meta_state.clean_meta = this.meta_state.meta.clone();
-    this.meta_state.current_meta_path = path;
-    this.meta_state.meta.post_load_init();
-    // Switch to first layout, if there is one
-    if let Some(layout_key) = this.meta_state.meta.layouts.keys().next() {
-        App::switch_layout(&mut this.hex_ui, &this.meta_state.meta, layout_key);
-    }
-    Ok(())
 }
 
 pub fn col_change_impl_view_perspective(
