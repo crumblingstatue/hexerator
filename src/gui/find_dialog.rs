@@ -258,6 +258,21 @@ fn find_u8(dia: &mut FindDialog, app: &mut App) {
             }
             dia.data_snapshot = app.data.clone();
         }
+        "!=" => {
+            if dia.filter_results {
+                dia.results_vec
+                    .retain(|&offset| app.data[offset] != dia.data_snapshot[offset]);
+                dia.results_set
+                    .retain(|&offset| app.data[offset] != dia.data_snapshot[offset]);
+            } else {
+                for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
+                    if new == old {
+                        dia.results_vec.push(i);
+                    }
+                }
+            }
+            dia.data_snapshot = app.data.clone();
+        }
         "<" => {
             if dia.filter_results {
                 dia.results_vec
