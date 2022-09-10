@@ -119,6 +119,10 @@ impl Meta {
             .enumerate()
             .find(|(_i, b)| b.offset == off)
     }
+
+    pub(crate) fn add_region_from_selection(&mut self, sel: Region) -> RegionKey {
+        self.regions.insert(NamedRegion::new_from_selection(sel))
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
@@ -133,4 +137,13 @@ pub struct NamedRegion {
 pub struct NamedView {
     pub name: String,
     pub view: View,
+}
+impl NamedRegion {
+    pub fn new_from_selection(sel: Region) -> Self {
+        Self {
+            name: format!("New ({}..={})", sel.begin, sel.end),
+            region: sel,
+            desc: String::new(),
+        }
+    }
 }

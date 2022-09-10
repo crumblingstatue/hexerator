@@ -11,6 +11,7 @@ pub mod inspect_panel;
 mod layouts_window;
 mod meta_diff_window;
 mod open_process_window;
+mod ops;
 mod perspectives_window;
 mod regions_window;
 mod top_menu;
@@ -149,6 +150,12 @@ pub fn do_egui(
                         .inner_margin(2.0)
                         .show(ui, |ui| match &menu.data {
                             &ContextMenuData::ViewByte { view, byte_off } => {
+                                if let Some(sel) = app.hex_ui.selection() {
+                                    if ui.button("Add selection as region").clicked() {
+                                        ops::add_region_from_selection(sel, &mut app.meta_state, &mut gui.regions_window)
+                                    }
+                                    ui.separator();
+                                }
                                 if ui
                                     .button("Add bookmark")
                                     .clicked()
