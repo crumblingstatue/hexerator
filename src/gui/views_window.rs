@@ -130,7 +130,7 @@ impl ViewsWindow {
                     Action::Goto(off) => {
                         app.edit_state.cursor = off;
                         app.center_view_on_offset(off);
-                        app.flash_cursor();
+                        app.hex_ui.flash_cursor();
                     }
                 }
             });

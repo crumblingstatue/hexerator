@@ -54,7 +54,7 @@ impl Dialog for JumpDialog {
                     };
                     app.edit_state.cursor = offset;
                     app.center_view_on_offset(offset);
-                    app.flash_cursor();
+                    app.hex_ui.flash_cursor();
                     false
                 }
                 Err(e) => {

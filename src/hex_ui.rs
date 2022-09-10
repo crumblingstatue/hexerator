@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use slotmap::Key;
 
 use crate::{
@@ -42,6 +44,10 @@ impl HexUi {
     pub fn clear_meta_refs(&mut self) {
         self.current_layout = LayoutKey::null();
         self.focused_view = None;
+    }
+
+    pub fn flash_cursor(&mut self) {
+        self.flash_cursor_timer = Timer::set(Duration::from_millis(1500));
     }
 }
 

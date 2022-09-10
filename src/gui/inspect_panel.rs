@@ -542,13 +542,13 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                     app.edit_state.set_cursor(offset);
                 }
                 app.center_view_on_offset(app.edit_state.cursor);
-                app.flash_cursor();
+                app.hex_ui.flash_cursor();
             }
             Action::AddDirty(damage) => app.edit_state.widen_dirty_region(damage),
             Action::JumpForward(amount) => {
                 app.edit_state.set_cursor(app.edit_state.cursor + amount);
                 app.center_view_on_offset(app.edit_state.cursor);
-                app.flash_cursor();
+                app.hex_ui.flash_cursor();
             }
         }
     }

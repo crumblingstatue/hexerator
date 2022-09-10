@@ -208,7 +208,7 @@ impl FileDiffResultWindow {
             Action::Goto(off) => {
                 app.center_view_on_offset(off);
                 app.edit_state.set_cursor(off);
-                app.flash_cursor();
+                app.hex_ui.flash_cursor();
             }
             Action::RemoveRegion(key) => gui.file_diff_result_window.diff_entries.retain(|en| {
                 let reg =

@@ -9,7 +9,7 @@ use std::{
     path::{Path, PathBuf},
     sync::mpsc::Receiver,
     thread,
-    time::{Duration, Instant},
+    time::Instant,
 };
 
 use anyhow::{bail, Context};
@@ -169,7 +169,7 @@ impl App {
     pub fn search_focus(&mut self, offset: usize) {
         self.edit_state.cursor = offset;
         self.center_view_on_offset(offset);
-        self.flash_cursor();
+        self.hex_ui.flash_cursor();
     }
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
@@ -217,13 +217,13 @@ impl App {
     pub fn cursor_history_back(&mut self) {
         if self.edit_state.cursor_history_back() {
             self.center_view_on_offset(self.edit_state.cursor);
-            self.flash_cursor();
+            self.hex_ui.flash_cursor();
         }
     }
     pub fn cursor_history_forward(&mut self) {
         if self.edit_state.cursor_history_forward() {
             self.center_view_on_offset(self.edit_state.cursor);
-            self.flash_cursor();
+            self.hex_ui.flash_cursor();
         }
     }
 
@@ -307,10 +307,7 @@ impl App {
     pub(crate) fn set_cursor_init(&mut self) {
         self.edit_state.cursor = self.args.src.jump.unwrap_or(0);
         self.center_view_on_offset(self.edit_state.cursor);
-        self.flash_cursor();
-    }
-    pub fn flash_cursor(&mut self) {
-        self.hex_ui.flash_cursor_timer = Timer::set(Duration::from_millis(1500));
+        self.hex_ui.flash_cursor();
     }
     /// If the cursor should be flashing, returns a timer value that can be used to color cursor
     pub fn cursor_flash_timer(app_flash_cursor_timer: &Timer) -> Option<u32> {
@@ -445,7 +442,7 @@ impl App {
             if let Some(offset) = self.args.src.jump {
                 self.center_view_on_offset(offset);
                 self.edit_state.cursor = offset;
-                self.flash_cursor();
+                self.hex_ui.flash_cursor();
             }
         }
         Ok(())

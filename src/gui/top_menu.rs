@@ -192,12 +192,12 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 gui.add_dialog(JumpDialog::default());
             }
             if ui.button("Flash cursor").clicked() {
-                app.flash_cursor();
+                app.hex_ui.flash_cursor();
                 ui.close_menu();
             }
             if ui.button("Center view on cursor").clicked() {
                 app.center_view_on_offset(app.edit_state.cursor);
-                app.flash_cursor();
+                app.hex_ui.flash_cursor();
                 ui.close_menu();
             }
         });
