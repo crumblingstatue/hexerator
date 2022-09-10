@@ -92,7 +92,7 @@ impl App {
                     start,
                     size,
                 } => unsafe {
-                    read_proc_memory_windows(*handle, &mut self.data, *start, *size)?;
+                    crate::windows::read_proc_memory(*handle, &mut self.data, *start, *size)?;
                 },
             },
             None => bail!("No file to reload"),
@@ -247,7 +247,7 @@ impl App {
     }
 
     /// Readjust to a new file
-    fn new_file_readjust(&mut self, font: &Font) {
+    pub fn new_file_readjust(&mut self, font: &Font) {
         self.meta_state.meta = Meta::default();
         self.meta_state.current_meta_path.clear();
         let def_region = self.meta_state.meta.regions.insert(NamedRegion {
@@ -542,7 +542,7 @@ impl App {
         #[cfg(target_os = "linux")]
         return load_proc_memory_linux(self, pid, start, size, is_write, font);
         #[cfg(windows)]
-        return load_proc_memory_windows(self, pid, start, size, is_write, font);
+        return crate::windows::load_proc_memory(self, pid, start, size, is_write, font);
     }
 
     pub(crate) fn start_offset_of_view(
@@ -603,85 +603,6 @@ fn load_proc_memory_linux(
         },
         font,
     )
-}
-
-#[cfg(windows)]
-fn load_proc_memory_windows(
-    app: &mut App,
-    pid: sysinfo::Pid,
-    start: usize,
-    size: usize,
-    _is_write: bool,
-    font: &Font,
-) -> anyhow::Result<()> {
-    use sysinfo::PidExt;
-    use windows_sys::Win32::System::Threading::*;
-    let handle;
-    unsafe {
-        let access =
-            PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION;
-        handle = windows_sys::Win32::System::Threading::OpenProcess(access, 0, pid.as_u32());
-        if handle == 0 {
-            bail!("Failed to open process.");
-        }
-        load_proc_memory_windows_inner(app, handle, start, size, font)
-    }
-}
-
-#[cfg(windows)]
-unsafe fn load_proc_memory_windows_inner(
-    app: &mut App,
-    handle: windows_sys::Win32::Foundation::HANDLE,
-    start: usize,
-    size: usize,
-    font: &Font,
-) -> anyhow::Result<()> {
-    read_proc_memory_windows(handle, &mut app.data, start, size)?;
-    app.source = Some(Source {
-        attr: SourceAttributes {
-            permissions: SourcePermissions {
-                read: true,
-                write: true,
-            },
-            seekable: false,
-            stream: false,
-        },
-        provider: SourceProvider::WinProc {
-            handle,
-            start,
-            size,
-        },
-        state: SourceState::default(),
-    });
-    if !app.preferences.keep_meta {
-        app.new_file_readjust(font);
-    }
-    Ok(())
-}
-
-#[cfg(windows)]
-unsafe fn read_proc_memory_windows(
-    handle: windows_sys::Win32::Foundation::HANDLE,
-    data: &mut Vec<u8>,
-    start: usize,
-    size: usize,
-) -> anyhow::Result<()> {
-    let mut n_read: usize = 0;
-    data.resize(size, 0);
-    if windows_sys::Win32::System::Diagnostics::Debug::ReadProcessMemory(
-        handle,
-        start as _,
-        data.as_mut_ptr() as *mut std::ffi::c_void,
-        size,
-        &mut n_read,
-    ) == 0
-    {
-        bail!(
-            "Failed to load process memory. Code: {}",
-            windows_sys::Win32::Foundation::GetLastError()
-        );
-    }
-    Ok(())
 }
 
 pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, anyhow::Error> {

@@ -40,6 +40,8 @@ mod slice_ext;
 mod source;
 mod timer;
 mod view;
+#[cfg(windows)]
+mod windows;
 
 use std::{fmt::Display, time::Duration};
 
