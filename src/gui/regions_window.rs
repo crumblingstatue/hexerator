@@ -1,10 +1,7 @@
 use egui_extras::{Size, TableBuilder};
 use egui_sfml::egui::{self, Ui};
 
-use crate::{
-    app::App,
-    meta::{NamedRegion, RegionKey},
-};
+use crate::{app::App, meta::RegionKey};
 
 use super::window_open::WindowOpen;
 
@@ -49,12 +46,11 @@ impl RegionsWindow {
         match app.hex_ui.selection() {
             Some(sel) => {
                 if ui.add(button).clicked() {
-                    app.meta_state.meta.regions.insert(NamedRegion {
-                        name: String::from("<Unnamed>"),
-                        region: sel,
-                        desc: String::new(),
-                    });
-                    app.meta_state.meta_dirty = true;
+                    super::ops::add_region_from_selection(
+                        sel,
+                        &mut app.meta_state,
+                        &mut gui.regions_window,
+                    );
                 }
             }
             None => {
