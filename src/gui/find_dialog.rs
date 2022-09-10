@@ -102,7 +102,12 @@ impl FindDialog {
                                 if ui.selectable_label(
                                     gui.find_dialog.result_cursor == i,
                                     off.to_string(),
-                                ).clicked() {
+                                ).context_menu(|ui| {
+                                    if ui.button("Remove from results").clicked() {
+                                        action = Action::RemoveIdxFromResults(i);
+                                        ui.close_menu();
+                                    }
+                                }).clicked() {
                                     app.search_focus(off);
                                     gui.find_dialog.result_cursor = i;
                                 }
@@ -175,6 +180,10 @@ impl FindDialog {
                         gui.find_dialog.results_vec.retain(|&idx| !reg.region.contains(idx));
                         gui.find_dialog.results_set.retain(|&idx| !reg.region.contains(idx));
                     },
+                    Action::RemoveIdxFromResults(idx) => {
+                        gui.find_dialog.results_vec.remove(idx);
+                        gui.find_dialog.results_set.remove(&idx);
+                    },
                 }
             });
             strip.cell(|ui| {
@@ -209,6 +218,7 @@ enum Action {
     Goto(usize),
     None,
     RemoveRegionFromResults(crate::meta::RegionKey),
+    RemoveIdxFromResults(usize),
 }
 
 fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
