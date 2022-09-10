@@ -38,6 +38,11 @@ impl HexUi {
             None
         }
     }
+    /// Clear existing meta references
+    pub fn clear_meta_refs(&mut self) {
+        self.current_layout = LayoutKey::null();
+        self.focused_view = None;
+    }
 }
 
 impl Default for HexUi {

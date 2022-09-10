@@ -520,11 +520,6 @@ impl App {
             app_hex_ui.focused_view = Some(*view_key);
         }
     }
-    /// Clear existing meta references, in anticipation for loading new metafile
-    fn clear_meta_refs(&mut self) {
-        self.hex_ui.current_layout = LayoutKey::null();
-        self.hex_ui.focused_view = None;
-    }
 
     pub(crate) fn focus_prev_view_in_layout(&mut self) {
         if let Some(focused_view_key) = self.hex_ui.focused_view {
@@ -724,7 +719,7 @@ pub fn temp_metafile_backup_path() -> PathBuf {
 pub fn consume_meta_from_file(path: PathBuf, this: &mut App) -> Result<(), anyhow::Error> {
     let data = std::fs::read(&path)?;
     let meta = rmp_serde::from_slice(&data)?;
-    this.clear_meta_refs();
+    this.hex_ui.clear_meta_refs();
     this.meta_state.meta = meta;
     this.meta_state.clean_meta = this.meta_state.meta.clone();
     this.meta_state.current_meta_path = path;
