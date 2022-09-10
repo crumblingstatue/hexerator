@@ -33,7 +33,6 @@ use crate::{
     preferences::Preferences,
     shell::{msg_if_fail, msg_warn},
     source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
-    timer::Timer,
     view::{HexData, TextData, View, ViewKind},
 };
 
@@ -305,21 +304,6 @@ impl App {
         self.edit_state.cursor = self.args.src.jump.unwrap_or(0);
         self.center_view_on_offset(self.edit_state.cursor);
         self.hex_ui.flash_cursor();
-    }
-    /// If the cursor should be flashing, returns a timer value that can be used to color cursor
-    pub fn cursor_flash_timer(app_flash_cursor_timer: &Timer) -> Option<u32> {
-        #[expect(
-            clippy::cast_possible_truncation,
-            reason = "
-        The duration will never be higher than u32 limit.
-
-        It doesn't make sense to set the cursor timer to extremely high values,
-        only a few seconds at most.
-        "
-        )]
-        app_flash_cursor_timer
-            .overtime()
-            .map(|dur| dur.as_millis() as u32)
     }
 
     pub(crate) fn try_read_stream(&mut self) {

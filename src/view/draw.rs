@@ -359,7 +359,7 @@ impl View {
                                 y,
                                 vertex_buffer,
                                 app.hex_ui.focused_view == Some(key),
-                                App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
+                                app.hex_ui.cursor_flash_timer(),
                                 &this.view.presentation,
                                 hex.font_size,
                             );
@@ -412,7 +412,7 @@ impl View {
                                 y,
                                 vertex_buffer,
                                 app.hex_ui.focused_view == Some(key),
-                                App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
+                                app.hex_ui.cursor_flash_timer(),
                                 &this.view.presentation,
                                 dec.font_size,
                             );
@@ -464,7 +464,7 @@ impl View {
                                 y,
                                 vertex_buffer,
                                 app.hex_ui.focused_view == Some(key),
-                                App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
+                                app.hex_ui.cursor_flash_timer(),
                                 &this.view.presentation,
                                 text.font_size,
                             );
@@ -498,7 +498,7 @@ impl View {
                                 y,
                                 vertex_buffer,
                                 app.hex_ui.focused_view == Some(key),
-                                App::cursor_flash_timer(&app.hex_ui.flash_cursor_timer),
+                                app.hex_ui.cursor_flash_timer(),
                                 &this.view.presentation,
                                 &this.view,
                             );

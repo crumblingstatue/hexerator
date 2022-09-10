@@ -49,6 +49,22 @@ impl HexUi {
     pub fn flash_cursor(&mut self) {
         self.flash_cursor_timer = Timer::set(Duration::from_millis(1500));
     }
+
+    /// If the cursor should be flashing, returns a timer value that can be used to color cursor
+    pub fn cursor_flash_timer(&self) -> Option<u32> {
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "
+        The duration will never be higher than u32 limit.
+
+        It doesn't make sense to set the cursor timer to extremely high values,
+        only a few seconds at most.
+        "
+        )]
+        self.flash_cursor_timer
+            .overtime()
+            .map(|dur| dur.as_millis() as u32)
+    }
 }
 
 impl Default for HexUi {
