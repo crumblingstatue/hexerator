@@ -1,16 +1,18 @@
-use std::{array::TryFromSliceError, marker::PhantomData};
-
-use anyhow::bail;
-use egui_sfml::egui::{self, Ui};
-use egui_sfml::sfml::window::clipboard;
-use slotmap::Key;
-use thiserror::Error;
-
-use crate::{
-    app::{interact_mode::InteractMode, App},
-    damage_region::DamageRegion,
-    shell::{msg_if_fail, msg_warn},
-    view::ViewportVec,
+use {
+    crate::{
+        app::{interact_mode::InteractMode, App},
+        damage_region::DamageRegion,
+        shell::{msg_if_fail, msg_warn},
+        view::ViewportVec,
+    },
+    anyhow::bail,
+    egui_sfml::{
+        egui::{self, Ui},
+        sfml::window::clipboard,
+    },
+    slotmap::Key,
+    std::{array::TryFromSliceError, marker::PhantomData},
+    thiserror::Error,
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

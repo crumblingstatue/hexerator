@@ -1,16 +1,16 @@
-use std::{path::PathBuf, time::Instant};
-
-use egui_extras::Size;
-use egui_sfml::egui;
-
-use crate::{
-    app::{read_source_to_buf, FileDiffEntry},
-    meta::{find_most_specific_region_for_offset, Bookmark, RegionKey, ValueType},
-    region_context_menu,
-    shell::msg_if_fail,
+use {
+    crate::{
+        app::{read_source_to_buf, FileDiffEntry},
+        gui::window_open::WindowOpen,
+        meta::{find_most_specific_region_for_offset, Bookmark, RegionKey, ValueType},
+        region_context_menu,
+        shell::msg_if_fail,
+        Gui,
+    },
+    egui_extras::Size,
+    egui_sfml::egui,
+    std::{path::PathBuf, time::Instant},
 };
-
-use super::{window_open::WindowOpen, Gui};
 
 pub struct FileDiffResultWindow {
     pub diff_entries: Vec<FileDiffEntry>,

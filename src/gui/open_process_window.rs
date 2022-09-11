@@ -1,10 +1,10 @@
-use egui_extras::{Size, TableBuilder};
-use egui_sfml::{egui, sfml::graphics::Font};
-use sysinfo::{ProcessExt, Signal, SystemExt};
-
-use crate::shell::{msg_fail, msg_if_fail};
-
-use super::window_open::WindowOpen;
+use {
+    super::window_open::WindowOpen,
+    crate::shell::{msg_fail, msg_if_fail},
+    egui_extras::{Size, TableBuilder},
+    egui_sfml::{egui, sfml::graphics::Font},
+    sysinfo::{ProcessExt, Signal, SystemExt},
+};
 
 #[derive(Default)]
 pub struct OpenProcessWindow {

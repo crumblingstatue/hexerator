@@ -20,18 +20,27 @@ mod util;
 mod views_window;
 mod window_open;
 
-use std::fmt::Debug;
-
-use egui_sfml::sfml::graphics::Font;
-use egui_sfml::{
-    egui::{self, TopBottomPanel, Window},
-    SfEgui,
-};
-
-use crate::meta::{Bookmark, ValueType, ViewKey};
-use crate::{
-    app::App,
-    view::{ViewportScalar, ViewportVec},
+use {
+    self::{
+        advanced_open_window::AdvancedOpenWindow, bookmarks_window::BookmarksWindow,
+        file_diff_result_window::FileDiffResultWindow, find_dialog::FindDialog,
+        find_memory_pointers_window::FindMemoryPointersWindow, help_window::HelpWindow,
+        inspect_panel::InspectPanel, layouts_window::LayoutsWindow,
+        meta_diff_window::MetaDiffWindow, open_process_window::OpenProcessWindow,
+        perspectives_window::PerspectivesWindow, regions_window::RegionsWindow,
+        views_window::ViewsWindow,
+    },
+    crate::{
+        app::App,
+        meta::{Bookmark, ValueType, ViewKey},
+        view::{ViewportScalar, ViewportVec},
+    },
+    egui_sfml::{
+        egui::{self, TopBottomPanel, Window},
+        sfml::graphics::Font,
+        SfEgui,
+    },
+    std::fmt::Debug,
 };
 
 #[derive(Default)]
@@ -84,19 +93,6 @@ impl Gui {
         self.dialogs.push(Box::new(dialog));
     }
 }
-
-use self::advanced_open_window::AdvancedOpenWindow;
-use self::bookmarks_window::BookmarksWindow;
-use self::file_diff_result_window::FileDiffResultWindow;
-use self::find_memory_pointers_window::FindMemoryPointersWindow;
-use self::layouts_window::LayoutsWindow;
-use self::meta_diff_window::MetaDiffWindow;
-use self::open_process_window::OpenProcessWindow;
-use self::{
-    find_dialog::FindDialog, help_window::HelpWindow, inspect_panel::InspectPanel,
-    perspectives_window::PerspectivesWindow, regions_window::RegionsWindow,
-    views_window::ViewsWindow,
-};
 
 pub fn do_egui(
     sf_egui: &mut SfEgui,

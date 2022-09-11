@@ -1,25 +1,25 @@
-use egui_sfml::sfml::{
-    graphics::{
-        Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Text, Transformable,
-        Vertex,
+use {
+    super::View,
+    crate::{
+        app::{presentation::Presentation, App},
+        color::invert_color,
+        dec_conv,
+        gui::Gui,
+        hex_conv,
+        meta::{region::Region, PerspectiveMap, RegionMap, ViewKey},
+        view::ViewKind,
     },
-    system::Vector2,
+    egui_sfml::sfml::{
+        graphics::{
+            Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Text,
+            Transformable, Vertex,
+        },
+        system::Vector2,
+    },
+    either::Either,
+    glu_sys::GLint,
+    slotmap::Key,
 };
-use either::Either;
-use glu_sys::GLint;
-use slotmap::Key;
-
-use crate::{
-    app::{presentation::Presentation, App},
-    color::invert_color,
-    dec_conv,
-    gui::Gui,
-    hex_conv,
-    meta::{region::Region, PerspectiveMap, RegionMap, ViewKey},
-    view::ViewKind,
-};
-
-use super::View;
 
 pub fn draw_view(
     view: &View,

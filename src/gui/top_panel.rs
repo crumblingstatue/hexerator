@@ -1,16 +1,16 @@
-use anyhow::Context;
-use egui_sfml::egui::{self, ComboBox, Layout, Ui};
-use egui_sfml::sfml::graphics::{Font, Image};
-
-use crate::color::Palette;
-use crate::{
-    app::App,
-    color::{self, ColorMethod},
-    shell::{msg_fail, msg_if_fail, msg_warn},
+use {
+    super::{top_menu::top_menu, Gui},
+    crate::{
+        app::App,
+        color::{self, ColorMethod, Palette},
+        shell::{msg_fail, msg_if_fail, msg_warn},
+    },
+    anyhow::Context,
+    egui_sfml::{
+        egui::{self, ComboBox, Layout, Ui},
+        sfml::graphics::{Font, Image},
+    },
 };
-
-use super::top_menu::top_menu;
-use super::Gui;
 
 pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     top_menu(ui, gui, app, font);

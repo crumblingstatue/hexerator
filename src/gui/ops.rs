@@ -1,8 +1,9 @@
 //! Various common operations that are triggered by gui interactions
 
-use crate::{meta::region::Region, meta_state::MetaState};
-
-use super::regions_window::RegionsWindow;
+use {
+    super::regions_window::RegionsWindow,
+    crate::{meta::region::Region, meta_state::MetaState},
+};
 
 pub fn add_region_from_selection(
     selection: Region,

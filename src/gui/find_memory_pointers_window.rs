@@ -1,9 +1,9 @@
-use egui_extras::{Size, TableBuilder};
-use egui_sfml::{egui, sfml::graphics::Font};
-
-use crate::{app::App, shell::msg_fail};
-
-use super::{window_open::WindowOpen, Gui};
+use {
+    super::{window_open::WindowOpen, Gui},
+    crate::{app::App, shell::msg_fail},
+    egui_extras::{Size, TableBuilder},
+    egui_sfml::{egui, sfml::graphics::Font},
+};
 
 #[derive(Default)]
 pub struct FindMemoryPointersWindow {

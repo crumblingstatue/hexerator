@@ -1,17 +1,16 @@
-use std::collections::HashSet;
-
-use egui_extras::{Size, StripBuilder, TableBuilder};
-use egui_sfml::egui::{self, Align, Ui};
-
-use crate::{
-    app::App,
-    meta::{find_most_specific_region_for_offset, Bookmark, Meta, ValueType},
-    parse_radix::parse_guess_radix,
-    region_context_menu,
-    shell::msg_warn,
+use {
+    super::window_open::WindowOpen,
+    crate::{
+        app::App,
+        meta::{find_most_specific_region_for_offset, Bookmark, Meta, ValueType},
+        parse_radix::parse_guess_radix,
+        region_context_menu,
+        shell::msg_warn,
+    },
+    egui_extras::{Size, StripBuilder, TableBuilder},
+    egui_sfml::egui::{self, Align, Ui},
+    std::collections::HashSet,
 };
-
-use super::window_open::WindowOpen;
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub enum FindType {

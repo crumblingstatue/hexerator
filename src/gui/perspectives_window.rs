@@ -1,13 +1,13 @@
-use egui_extras::{Size, TableBuilder};
-use egui_sfml::egui;
-use slotmap::Key;
-
-use crate::{
-    meta::{perspective::Perspective, PerspectiveKey, RegionKey},
-    region_context_menu,
+use {
+    super::window_open::WindowOpen,
+    crate::{
+        meta::{perspective::Perspective, PerspectiveKey, RegionKey},
+        region_context_menu,
+    },
+    egui_extras::{Size, TableBuilder},
+    egui_sfml::egui,
+    slotmap::Key,
 };
-
-use super::window_open::WindowOpen;
 
 #[derive(Default)]
 pub struct PerspectivesWindow {

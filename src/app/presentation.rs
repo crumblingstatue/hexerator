@@ -1,8 +1,9 @@
-use egui_sfml::sfml::graphics::Color;
-use serde::{Deserialize, Serialize};
-use serde_with::{serde_as, FromInto};
-
-use crate::color::ColorMethod;
+use {
+    crate::color::ColorMethod,
+    egui_sfml::sfml::graphics::Color,
+    serde::{Deserialize, Serialize},
+    serde_with::{serde_as, FromInto},
+};
 
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

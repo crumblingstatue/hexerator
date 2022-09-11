@@ -2,41 +2,39 @@ pub mod edit_state;
 pub mod interact_mode;
 pub mod presentation;
 
-use std::{
-    ffi::OsString,
-    fs::{File, OpenOptions},
-    io::{Read, Seek, SeekFrom, Write},
-    path::{Path, PathBuf},
-    sync::mpsc::Receiver,
-    thread,
-    time::Instant,
-};
-
-use anyhow::{bail, Context};
-
-use egui_sfml::sfml::graphics::Font;
-use gamedebug_core::per_msg;
-use slotmap::Key;
-
-use crate::{
-    args::{Args, SourceArgs},
-    config::Config,
-    gui::Gui,
-    hex_ui::HexUi,
-    input::Input,
-    layout::{default_margin, do_auto_layout, Layout},
-    meta::{
-        perspective::Perspective, region::Region, LayoutKey, Meta, NamedRegion, NamedView,
-        PerspectiveKey, PerspectiveMap, RegionMap, ViewKey,
+use {
+    self::edit_state::EditState,
+    crate::{
+        args::{Args, SourceArgs},
+        config::Config,
+        gui::Gui,
+        hex_ui::HexUi,
+        input::Input,
+        layout::{default_margin, do_auto_layout, Layout},
+        meta::{
+            perspective::Perspective, region::Region, LayoutKey, Meta, NamedRegion, NamedView,
+            PerspectiveKey, PerspectiveMap, RegionMap, ViewKey,
+        },
+        meta_state::MetaState,
+        preferences::Preferences,
+        shell::{msg_if_fail, msg_warn},
+        source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
+        view::{HexData, TextData, View, ViewKind},
     },
-    meta_state::MetaState,
-    preferences::Preferences,
-    shell::{msg_if_fail, msg_warn},
-    source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
-    view::{HexData, TextData, View, ViewKind},
+    anyhow::{bail, Context},
+    egui_sfml::sfml::graphics::Font,
+    gamedebug_core::per_msg,
+    slotmap::Key,
+    std::{
+        ffi::OsString,
+        fs::{File, OpenOptions},
+        io::{Read, Seek, SeekFrom, Write},
+        path::{Path, PathBuf},
+        sync::mpsc::Receiver,
+        thread,
+        time::Instant,
+    },
 };
-
-use self::edit_state::EditState;
 
 /// The hexerator application state
 pub struct App {

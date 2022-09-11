@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
-
-use crate::meta::{RegionKey, RegionMap};
-
-use super::region::Region;
+use {
+    super::region::Region,
+    crate::meta::{RegionKey, RegionMap},
+    serde::{Deserialize, Serialize},
+};
 
 /// A "perspectived" (column count) view of a region
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

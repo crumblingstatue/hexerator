@@ -1,15 +1,19 @@
 use std::{hash::Hash, ops::RangeInclusive};
 
-use egui_extras::{Size, TableBuilder};
-use egui_sfml::egui::{self, emath::Numeric};
-use egui_sfml::sfml::graphics::Font;
-
-use crate::app::App;
-use crate::meta::{NamedView, ViewKey};
-use crate::region_context_menu;
-use crate::view::{HexData, TextData, TextKind, View, ViewKind};
-
-use super::window_open::WindowOpen;
+use {
+    super::window_open::WindowOpen,
+    crate::{
+        app::App,
+        meta::{NamedView, ViewKey},
+        region_context_menu,
+        view::{HexData, TextData, TextKind, View, ViewKind},
+    },
+    egui_extras::{Size, TableBuilder},
+    egui_sfml::{
+        egui::{self, emath::Numeric},
+        sfml::graphics::Font,
+    },
+};
 
 #[derive(Default)]
 pub struct ViewsWindow {

@@ -1,9 +1,10 @@
-use anyhow::Context;
-use directories::ProjectDirs;
-use recently_used_list::RecentlyUsedList;
-use serde::{Deserialize, Serialize};
-
-use crate::args::SourceArgs;
+use {
+    crate::args::SourceArgs,
+    anyhow::Context,
+    directories::ProjectDirs,
+    recently_used_list::RecentlyUsedList,
+    serde::{Deserialize, Serialize},
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {

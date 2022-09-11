@@ -1,8 +1,4 @@
-use std::fs::OpenOptions;
-
-use egui_sfml::sfml::graphics::Font;
-
-use crate::app::App;
+use {crate::app::App, egui_sfml::sfml::graphics::Font, std::fs::OpenOptions};
 
 pub fn open_file(app: &mut App, font: &Font) {
     if let Some(path) = rfd::FileDialog::new().pick_file() {

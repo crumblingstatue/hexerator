@@ -1,6 +1,7 @@
-use std::{cell::Cell, path::PathBuf, time::Instant};
-
-use crate::meta::Meta;
+use {
+    crate::meta::Meta,
+    std::{cell::Cell, path::PathBuf, time::Instant},
+};
 
 pub struct MetaState {
     pub last_meta_backup: Cell<Instant>,

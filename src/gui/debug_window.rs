@@ -1,5 +1,7 @@
-use egui_sfml::egui::{self, Ui};
-use gamedebug_core::{Info, PerEntry, IMMEDIATE, PERSISTENT};
+use {
+    egui_sfml::egui::{self, Ui},
+    gamedebug_core::{Info, PerEntry, IMMEDIATE, PERSISTENT},
+};
 
 pub fn ui(ui: &mut Ui) {
     match IMMEDIATE.lock() {

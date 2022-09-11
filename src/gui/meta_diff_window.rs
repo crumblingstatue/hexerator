@@ -1,16 +1,16 @@
-use std::fmt::Debug;
-
-use crate::{
-    layout::Layout,
-    meta::{
-        perspective::Perspective, LayoutKey, NamedRegion, NamedView, PerspectiveKey, RegionKey,
-        ViewKey,
+use {
+    super::window_open::WindowOpen,
+    crate::{
+        layout::Layout,
+        meta::{
+            perspective::Perspective, LayoutKey, NamedRegion, NamedView, PerspectiveKey, RegionKey,
+            ViewKey,
+        },
     },
+    itertools::{EitherOrBoth, Itertools},
+    slotmap::SlotMap,
+    std::fmt::Debug,
 };
-use itertools::{EitherOrBoth, Itertools};
-use slotmap::SlotMap;
-
-use super::window_open::WindowOpen;
 
 #[derive(Default)]
 pub struct MetaDiffWindow {

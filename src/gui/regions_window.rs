@@ -1,9 +1,9 @@
-use egui_extras::{Size, TableBuilder};
-use egui_sfml::egui::{self, Ui};
-
-use crate::{app::App, meta::RegionKey};
-
-use super::window_open::WindowOpen;
+use {
+    super::window_open::WindowOpen,
+    crate::{app::App, meta::RegionKey},
+    egui_extras::{Size, TableBuilder},
+    egui_sfml::egui::{self, Ui},
+};
 
 #[derive(Default)]
 pub struct RegionsWindow {

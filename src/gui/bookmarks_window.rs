@@ -1,18 +1,17 @@
-use std::mem::discriminant;
-
-use anyhow::Context;
-use egui_extras::{Size, TableBuilder};
-use egui_sfml::egui::{self, Ui};
-
-use crate::{
-    app::App,
-    damage_region::DamageRegion,
-    meta::{find_most_specific_region_for_offset, Bookmark, ValueType},
-    region_context_menu,
-    shell::msg_if_fail,
+use {
+    super::{window_open::WindowOpen, Gui},
+    crate::{
+        app::App,
+        damage_region::DamageRegion,
+        meta::{find_most_specific_region_for_offset, Bookmark, ValueType},
+        region_context_menu,
+        shell::msg_if_fail,
+    },
+    anyhow::Context,
+    egui_extras::{Size, TableBuilder},
+    egui_sfml::egui::{self, Ui},
+    std::mem::discriminant,
 };
-
-use super::{window_open::WindowOpen, Gui};
 
 #[derive(Default)]
 pub struct BookmarksWindow {

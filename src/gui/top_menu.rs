@@ -1,19 +1,21 @@
-use egui_sfml::egui::{self, Layout};
-use egui_sfml::sfml::{graphics::Font, window::clipboard};
-use rand::{thread_rng, RngCore};
-
-use crate::args::Args;
-use crate::{
-    app::{col_change_impl_view_perspective, App},
-    damage_region::DamageRegion,
-    shell::{msg_if_fail, msg_info},
-    source::SourceProvider,
-};
-
-use super::dialogs::LuaFillDialog;
-use super::{
-    dialogs::{AutoSaveReloadDialog, JumpDialog, PatternFillDialog},
-    util::{button_with_shortcut, ButtonWithShortcut},
+use {
+    super::{
+        dialogs::{AutoSaveReloadDialog, JumpDialog, LuaFillDialog, PatternFillDialog},
+        util::{button_with_shortcut, ButtonWithShortcut},
+    },
+    crate::{
+        app::{col_change_impl_view_perspective, App},
+        args::Args,
+        damage_region::DamageRegion,
+        shell::{msg_if_fail, msg_info},
+        source::SourceProvider,
+    },
+    egui_sfml::{
+        egui::{self, Layout},
+        sfml::{graphics::Font, window::clipboard},
+    },
+    rand::{thread_rng, RngCore},
+    std::fmt::Write,
 };
 
 pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, font: &Font) {
@@ -151,7 +153,6 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
             }
             if ui.button("Copy selection as hex").clicked() {
                 if let Some(sel) = app.hex_ui.selection() {
-                    use std::fmt::Write;
                     let mut s = String::new();
                     for &byte in &app.data[sel.begin..=sel.end] {
                         write!(&mut s, "{:02x} ", byte).unwrap();

@@ -1,11 +1,12 @@
-use egui_sfml::egui::{
-    text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui,
-};
-use slotmap::Key;
-
-use crate::{
-    app::{interact_mode::InteractMode, App},
-    view::ViewportVec,
+use {
+    crate::{
+        app::{interact_mode::InteractMode, App},
+        view::ViewportVec,
+    },
+    egui_sfml::egui::{
+        text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui,
+    },
+    slotmap::Key,
 };
 
 pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {

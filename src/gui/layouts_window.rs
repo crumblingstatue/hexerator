@@ -1,13 +1,13 @@
-use egui_sfml::egui;
-use slotmap::Key;
-
-use crate::{
-    app::App,
-    layout::{default_margin, Layout},
-    meta::{LayoutKey, ViewKey},
+use {
+    super::window_open::WindowOpen,
+    crate::{
+        app::App,
+        layout::{default_margin, Layout},
+        meta::{LayoutKey, ViewKey},
+    },
+    egui_sfml::egui,
+    slotmap::Key,
 };
-
-use super::window_open::WindowOpen;
 
 #[derive(Default)]
 pub struct LayoutsWindow {

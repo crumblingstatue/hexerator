@@ -1,12 +1,12 @@
-use std::time::Duration;
-
-use slotmap::Key;
-
-use crate::{
-    app::interact_mode::InteractMode,
-    meta::{region::Region, LayoutKey, ViewKey},
-    timer::Timer,
-    view::ViewportRect,
+use {
+    crate::{
+        app::interact_mode::InteractMode,
+        meta::{region::Region, LayoutKey, ViewKey},
+        timer::Timer,
+        view::ViewportRect,
+    },
+    slotmap::Key,
+    std::time::Duration,
 };
 
 /// State related to the hex view ui, different from the egui gui overlay

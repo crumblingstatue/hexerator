@@ -1,18 +1,17 @@
-use std::time::Instant;
-
-use egui_easy_mark_standalone::easy_mark;
-use egui_sfml::egui;
-use rlua::{Function, Lua};
-
-use crate::{
-    app::App,
-    damage_region::DamageRegion,
-    parse_radix::{parse_offset_maybe_relative, Relativity},
-    shell::{msg_fail, msg_if_fail, msg_warn},
-    slice_ext::SliceExt,
+use {
+    super::Dialog,
+    crate::{
+        app::App,
+        damage_region::DamageRegion,
+        parse_radix::{parse_offset_maybe_relative, Relativity},
+        shell::{msg_fail, msg_if_fail, msg_warn},
+        slice_ext::SliceExt,
+    },
+    egui_easy_mark_standalone::easy_mark,
+    egui_sfml::egui,
+    rlua::{Function, Lua},
+    std::time::Instant,
 };
-
-use super::Dialog;
 
 #[derive(Debug, Default)]
 pub struct JumpDialog {

@@ -1,13 +1,13 @@
 pub mod perspective;
 pub mod region;
 
-use egui_sfml::egui::epaint::ahash::HashMap;
-use serde::{Deserialize, Serialize};
-use slotmap::{new_key_type, SlotMap};
-
-use crate::{layout::Layout, view::View};
-
-use self::{perspective::Perspective, region::Region};
+use {
+    self::{perspective::Perspective, region::Region},
+    crate::{layout::Layout, view::View},
+    egui_sfml::egui::epaint::ahash::HashMap,
+    serde::{Deserialize, Serialize},
+    slotmap::{new_key_type, SlotMap},
+};
 
 new_key_type! {
     pub struct PerspectiveKey;

@@ -1,8 +1,8 @@
-use egui_sfml::{egui, sfml::graphics::Font};
-
-use crate::{app::App, args::Args, shell::msg_if_fail};
-
-use super::{window_open::WindowOpen, Gui};
+use {
+    super::{window_open::WindowOpen, Gui},
+    crate::{app::App, args::Args, shell::msg_if_fail},
+    egui_sfml::{egui, sfml::graphics::Font},
+};
 
 #[derive(Default)]
 pub struct AdvancedOpenWindow {

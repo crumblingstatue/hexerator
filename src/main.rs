@@ -43,26 +43,31 @@ mod view;
 #[cfg(windows)]
 mod windows;
 
-use std::{fmt::Display, time::Duration};
-
-use crate::{app::App, view::ViewportVec};
-use anyhow::Context;
-use app::interact_mode::InteractMode;
-use args::Args;
-use clap::Parser;
-use config::Config;
-use egui_sfml::sfml::{
-    graphics::{Color, Font, Rect, RenderTarget, RenderWindow, Text, Transformable, Vertex, View},
-    system::Vector2,
-    window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
+use {
+    crate::{app::App, view::ViewportVec},
+    anyhow::Context,
+    app::interact_mode::InteractMode,
+    args::Args,
+    clap::Parser,
+    config::Config,
+    egui_sfml::{
+        sfml::{
+            graphics::{
+                Color, Font, Rect, RenderTarget, RenderWindow, Text, Transformable, Vertex, View,
+            },
+            system::Vector2,
+            window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
+        },
+        SfEgui,
+    },
+    gamedebug_core::per_msg,
+    gui::{dialogs::JumpDialog, ContextMenu, ContextMenuData, Gui},
+    meta::{NamedView, PerspectiveMap, RegionMap},
+    serde::{Deserialize, Serialize},
+    shell::{msg_if_fail, msg_warn},
+    slotmap::Key as _,
+    std::{fmt::Display, time::Duration},
 };
-use egui_sfml::SfEgui;
-use gamedebug_core::per_msg;
-use gui::{dialogs::JumpDialog, ContextMenu, ContextMenuData, Gui};
-use meta::{NamedView, PerspectiveMap, RegionMap};
-use serde::{Deserialize, Serialize};
-use shell::{msg_if_fail, msg_warn};
-use slotmap::Key as _;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct InstanceRequest {

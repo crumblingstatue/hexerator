@@ -1,9 +1,9 @@
-use std::path::PathBuf;
-
-use clap::Parser;
-use serde::{Deserialize, Serialize};
-
-use crate::parse_radix::parse_guess_radix;
+use {
+    crate::parse_radix::parse_guess_radix,
+    clap::Parser,
+    serde::{Deserialize, Serialize},
+    std::path::PathBuf,
+};
 
 #[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Default)]
 pub struct Args {

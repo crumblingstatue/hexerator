@@ -1,9 +1,13 @@
-use crate::{
-    source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
-    App,
+use {
+    crate::{
+        source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
+        App,
+    },
+    anyhow::bail,
+    egui_sfml::sfml::graphics::Font,
+    sysinfo::PidExt,
+    windows_sys::Win32::System::Threading::*,
 };
-use anyhow::bail;
-use egui_sfml::sfml::graphics::Font;
 
 pub fn load_proc_memory(
     app: &mut App,
@@ -13,8 +17,6 @@ pub fn load_proc_memory(
     _is_write: bool,
     font: &Font,
 ) -> anyhow::Result<()> {
-    use sysinfo::PidExt;
-    use windows_sys::Win32::System::Threading::*;
     let handle;
     unsafe {
         let access =

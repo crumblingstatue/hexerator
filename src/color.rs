@@ -1,8 +1,9 @@
-use std::path::Path;
-
-use egui_sfml::sfml::graphics::Color;
-use serde::{Deserialize, Serialize};
-use serde_big_array::BigArray;
+use {
+    egui_sfml::sfml::graphics::Color,
+    serde::{Deserialize, Serialize},
+    serde_big_array::BigArray,
+    std::path::Path,
+};
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub enum ColorMethod {

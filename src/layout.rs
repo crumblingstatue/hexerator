@@ -1,10 +1,10 @@
-use std::cmp::{max, min};
-
-use serde::{Deserialize, Serialize};
-
-use crate::{
-    meta::{region::Region, PerspectiveMap, RegionMap, ViewKey, ViewMap},
-    view::{ViewportRect, ViewportScalar},
+use {
+    crate::{
+        meta::{region::Region, PerspectiveMap, RegionMap, ViewKey, ViewMap},
+        view::{ViewportRect, ViewportScalar},
+    },
+    serde::{Deserialize, Serialize},
+    std::cmp::{max, min},
 };
 
 /// A view layout grid for laying out views.
