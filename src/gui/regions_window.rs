@@ -77,12 +77,12 @@ impl RegionsWindow {
                 });
             })
             .body(|mut body| {
-                let mut keys: Vec<RegionKey> = app.meta_state.meta.regions.keys().collect();
+                let mut keys: Vec<RegionKey> = app.meta_state.meta.low.regions.keys().collect();
                 let mut action = Action::None;
-                keys.sort_by_key(|k| app.meta_state.meta.regions[*k].region.begin);
+                keys.sort_by_key(|k| app.meta_state.meta.low.regions[*k].region.begin);
                 for k in keys {
                     body.row(20.0, |mut row| {
-                        let reg = &app.meta_state.meta.regions[k];
+                        let reg = &app.meta_state.meta.low.regions[k];
                         row.col(|ui| {
                             let ctx_menu =
                                 |ui: &mut egui::Ui| region_context_menu!(ui, app, reg, action);
@@ -124,7 +124,7 @@ impl RegionsWindow {
             });
         ui.separator();
         if let &Some(key) = &gui.regions_window.selected_key {
-            let reg = &mut app.meta_state.meta.regions[key];
+            let reg = &mut app.meta_state.meta.low.regions[key];
             ui.horizontal(|ui| {
                 if gui.regions_window.rename_active {
                     if ui.text_edit_singleline(&mut reg.name).lost_focus() {
@@ -164,7 +164,7 @@ impl RegionsWindow {
             ui.label("Description");
             ui.text_edit_multiline(&mut reg.desc);
             if ui.button("Delete").clicked() {
-                app.meta_state.meta.regions.remove(key);
+                app.meta_state.meta.low.regions.remove(key);
                 gui.regions_window.selected_key = None;
             }
         }

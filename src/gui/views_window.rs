@@ -108,15 +108,15 @@ impl ViewsWindow {
                     });
                     row.col(|ui| {
                         if ui
-                            .link(&app.meta_state.meta.perspectives[view.view.perspective].name)
+                            .link(&app.meta_state.meta.low.perspectives[view.view.perspective].name)
                             .clicked()
                         {
                             gui.perspectives_window.open.set(true);
                         }
                     });
                     row.col(|ui| {
-                        let per = &app.meta_state.meta.perspectives[view.view.perspective];
-                        let reg = &app.meta_state.meta.regions[per.region];
+                        let per = &app.meta_state.meta.low.perspectives[view.view.perspective];
+                        let reg = &app.meta_state.meta.low.regions[per.region];
                         let ctx_menu =
                             |ui: &mut egui::Ui| region_context_menu!(ui, app, reg, action);
                         if ui
@@ -141,7 +141,7 @@ impl ViewsWindow {
             });
         ui.separator();
         ui.menu_button("New from perspective", |ui| {
-            for (key, perspective) in app.meta_state.meta.perspectives.iter() {
+            for (key, perspective) in app.meta_state.meta.low.perspectives.iter() {
                 if ui.button(&perspective.name).clicked() {
                     ui.close_menu();
                     app.meta_state.meta.views.insert(NamedView {
@@ -172,13 +172,13 @@ impl ViewsWindow {
                 }
             });
             egui::ComboBox::new("new_perspective_combo", "Perspective")
-                .selected_text(&app.meta_state.meta.perspectives[view.view.perspective].name)
+                .selected_text(&app.meta_state.meta.low.perspectives[view.view.perspective].name)
                 .show_ui(ui, |ui| {
-                    for k in app.meta_state.meta.perspectives.keys() {
+                    for k in app.meta_state.meta.low.perspectives.keys() {
                         if ui
                             .selectable_label(
                                 k == view.view.perspective,
-                                &app.meta_state.meta.perspectives[k].name,
+                                &app.meta_state.meta.low.perspectives[k].name,
                             )
                             .clicked()
                         {

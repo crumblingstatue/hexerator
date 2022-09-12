@@ -216,7 +216,7 @@ fn update(app: &mut App, egui_wants_kb: bool) {
             if view.scroll_offset.col == 0 && view.scroll_offset.pix_xoff < 0 {
                 view.scroll_offset.pix_xoff = 0;
             }
-            let Some(per) = &app.meta_state.meta.perspectives.get(view.perspective) else {
+            let Some(per) = &app.meta_state.meta.low.perspectives.get(view.perspective) else {
                 per_msg!("View doesn't have a perspective. Probably a bug.");
                 continue;
             };
@@ -228,8 +228,8 @@ fn update(app: &mut App, egui_wants_kb: bool) {
                 view.scroll_offset.col = per.cols - 1;
                 view.scroll_offset.pix_xoff = 0;
             }
-            if view.scroll_offset.row + 1 > per.n_rows(&app.meta_state.meta.regions) {
-                view.scroll_offset.row = per.n_rows(&app.meta_state.meta.regions) - 1;
+            if view.scroll_offset.row + 1 > per.n_rows(&app.meta_state.meta.low.regions) {
+                view.scroll_offset.row = per.n_rows(&app.meta_state.meta.low.regions) - 1;
                 view.scroll_offset.pix_yoff = 0;
             }
         }
@@ -373,8 +373,8 @@ fn handle_text_entered(app: &mut App, unicode: char) {
             );
             keep_cursor_in_view(
                 view,
-                &app.meta_state.meta.perspectives,
-                &app.meta_state.meta.regions,
+                &app.meta_state.meta.low.perspectives,
+                &app.meta_state.meta.low.regions,
                 app.edit_state.cursor,
             );
         }
@@ -407,7 +407,7 @@ fn handle_key_pressed(
             InteractMode::View => {
                 if key_mod.ctrl && let Some(view_key) = app.hex_ui.focused_view {
                     let key = app.meta_state.meta.views[view_key].view.perspective;
-                    let reg = &mut app.meta_state.meta.regions[app.meta_state.meta.perspectives[key].region].region;
+                    let reg = &mut app.meta_state.meta.low.regions[app.meta_state.meta.low.perspectives[key].region].region;
                     reg.begin = reg.begin.saturating_sub(1);
                 }
             }
@@ -416,9 +416,9 @@ fn handle_key_pressed(
                     let view = &mut app.meta_state.meta.views[view_key].view;
                     view.undirty_edit_buffer();
                     app.edit_state.set_cursor_no_history(
-                        app.edit_state.cursor.saturating_sub(app.meta_state.meta.perspectives[view.perspective].cols),
+                        app.edit_state.cursor.saturating_sub(app.meta_state.meta.low.perspectives[view.perspective].cols),
                     );
-                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
+                    keep_cursor_in_view(view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
                 }
             }
         },
@@ -426,17 +426,17 @@ fn handle_key_pressed(
             InteractMode::View => {
                 if key_mod.ctrl && let Some(view_key) = app.hex_ui.focused_view {
                     let key = app.meta_state.meta.views[view_key].view.perspective;
-                    app.meta_state.meta.regions[app.meta_state.meta.perspectives[key].region].region.begin += 1;
+                    app.meta_state.meta.low.regions[app.meta_state.meta.low.perspectives[key].region].region.begin += 1;
                 }
             }
             InteractMode::Edit => {
                 if let Some(view_key) = app.hex_ui.focused_view {
                     let view = &mut app.meta_state.meta.views[view_key].view;
                     view.undirty_edit_buffer();
-                    if app.edit_state.cursor + app.meta_state.meta.perspectives[view.perspective].cols < app.data.len() {
-                        app.edit_state.offset_cursor(app.meta_state.meta.perspectives[view.perspective].cols);
+                    if app.edit_state.cursor + app.meta_state.meta.low.perspectives[view.perspective].cols < app.data.len() {
+                        app.edit_state.offset_cursor(app.meta_state.meta.low.perspectives[view.perspective].cols);
                     }
-                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
+                    keep_cursor_in_view(view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
                 }
             }
         },
@@ -460,7 +460,7 @@ fn handle_key_pressed(
                         }
                 } else {
                     app.edit_state.step_cursor_back();
-                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
+                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
                 }
             }
             } else if key_mod.ctrl {
@@ -492,7 +492,7 @@ fn handle_key_pressed(
                         }
                 } else {
                     app.edit_state.step_cursor_forward();
-                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
+                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
                 }
             }
             } else if key_mod.ctrl {
@@ -505,7 +505,7 @@ fn handle_key_pressed(
         }
         Key::PageUp => if let Some(key) = app.hex_ui.focused_view {
             let view = &mut app.meta_state.meta.views[key].view;
-            let per = &app.meta_state.meta.perspectives[view.perspective];
+            let per = &app.meta_state.meta.low.perspectives[view.perspective];
             match app.hex_ui.interact_mode {
                 InteractMode::View => {
                     view.scroll_page_up();
@@ -515,13 +515,13 @@ fn handle_key_pressed(
                     {
                         app.edit_state.cursor = app.edit_state.cursor.saturating_sub(view.rows() as usize * per.cols);
                     }
-                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
+                    keep_cursor_in_view(view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
                 }
             }
         },
         Key::PageDown => if let Some(key) = app.hex_ui.focused_view {
             let view = &mut app.meta_state.meta.views[key].view;
-            let per = &app.meta_state.meta.perspectives[view.perspective];
+            let per = &app.meta_state.meta.low.perspectives[view.perspective];
             match app.hex_ui.interact_mode {
                 InteractMode::View => {
                     app.meta_state.meta.views[key].view.scroll_page_down();
@@ -531,7 +531,7 @@ fn handle_key_pressed(
                     {
                         app.edit_state.cursor = app.edit_state.cursor.saturating_add(view.rows() as usize * per.cols);
                     }
-                    keep_cursor_in_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions, app.edit_state.cursor);
+                    keep_cursor_in_view(view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
                 }
             }
         },
@@ -544,7 +544,7 @@ fn handle_key_pressed(
                     }
                     InteractMode::Edit => {
                         view.go_home();
-                        app.edit_state.cursor = App::start_offset_of_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions);
+                        app.edit_state.cursor = app.meta_state.meta.low.start_offset_of_view(view);
                     }
                 }
             }
@@ -553,10 +553,10 @@ fn handle_key_pressed(
             let view = &mut app.meta_state.meta.views[key].view;
             match app.hex_ui.interact_mode {
                 InteractMode::View => {
-                    app.meta_state.meta.views[key].view.scroll_to_end(&app.meta_state.meta.perspectives, &app.meta_state.meta.regions);
+                    app.meta_state.meta.views[key].view.scroll_to_end(&app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions);
                 }
                 InteractMode::Edit => {
-                    app.edit_state.cursor = App::end_offset_of_view(view, &app.meta_state.meta.perspectives, &app.meta_state.meta.regions);
+                    app.edit_state.cursor = app.meta_state.meta.low.end_offset_of_view(view);
                     app.center_view_on_offset(app.edit_state.cursor);
                 }
             }

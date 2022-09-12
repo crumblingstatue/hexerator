@@ -450,7 +450,7 @@ impl View {
     }
 
     pub(crate) fn contains_region(&self, reg: &Region, meta: &crate::meta::Meta) -> bool {
-        meta.regions[meta.perspectives[self.perspective].region]
+        meta.low.regions[meta.low.perspectives[self.perspective].region]
             .region
             .contains_region(reg)
     }

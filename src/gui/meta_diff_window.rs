@@ -21,9 +21,9 @@ impl MetaDiffWindow {
         let this = &mut app.meta_state.meta;
         let clean = &app.meta_state.clean_meta;
         ui.heading("Regions");
-        diff_slotmap(ui, &mut this.regions, &clean.regions);
+        diff_slotmap(ui, &mut this.low.regions, &clean.low.regions);
         ui.heading("Perspectives");
-        diff_slotmap(ui, &mut this.perspectives, &clean.perspectives);
+        diff_slotmap(ui, &mut this.low.perspectives, &clean.low.perspectives);
         ui.heading("Views");
         diff_slotmap(ui, &mut this.views, &clean.views);
         ui.heading("Layouts");

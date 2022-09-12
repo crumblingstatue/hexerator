@@ -129,10 +129,11 @@ impl BookmarksWindow {
                     });
                     row.col(|ui| {
                         let off = app.meta_state.meta.bookmarks[idx].offset;
-                        if let Some(region_key) =
-                            find_most_specific_region_for_offset(&app.meta_state.meta.regions, off)
-                        {
-                            let region = &app.meta_state.meta.regions[region_key];
+                        if let Some(region_key) = find_most_specific_region_for_offset(
+                            &app.meta_state.meta.low.regions,
+                            off,
+                        ) {
+                            let region = &app.meta_state.meta.low.regions[region_key];
                             let ctx_menu =
                                 |ui: &mut egui::Ui| region_context_menu!(ui, app, region, action);
                             if ui

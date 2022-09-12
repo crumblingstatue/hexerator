@@ -45,11 +45,29 @@ pub enum ValueType {
     StringMap(HashMap<u8, String>),
 }
 
+/// "Low" region of the meta, containing the least dependent data, like regions and perspectives
+#[derive(Default, Serialize, Deserialize, Clone)]
+pub struct MetaLow {
+    pub regions: RegionMap,
+    pub perspectives: PerspectiveMap,
+}
+
+impl MetaLow {
+    pub(crate) fn start_offset_of_view(&self, view: &View) -> usize {
+        let p = &self.perspectives[view.perspective];
+        self.regions[p.region].region.begin
+    }
+
+    pub(crate) fn end_offset_of_view(&self, view: &mut View) -> usize {
+        let p = &self.perspectives[view.perspective];
+        self.regions[p.region].region.end
+    }
+}
+
 /// Meta-information about a file that the user collects.
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Meta {
-    pub regions: RegionMap,
-    pub perspectives: PerspectiveMap,
+    pub low: MetaLow,
     pub views: ViewMap,
     pub layouts: LayoutMap,
     pub bookmarks: Bookmarks,
@@ -121,7 +139,9 @@ impl Meta {
     }
 
     pub(crate) fn add_region_from_selection(&mut self, sel: Region) -> RegionKey {
-        self.regions.insert(NamedRegion::new_from_selection(sel))
+        self.low
+            .regions
+            .insert(NamedRegion::new_from_selection(sel))
     }
 }
 

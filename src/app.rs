@@ -170,8 +170,8 @@ impl App {
         if let Some(key) = self.hex_ui.focused_view {
             self.meta_state.meta.views[key].view.center_on_offset(
                 offset,
-                &self.meta_state.meta.perspectives,
-                &self.meta_state.meta.regions,
+                &self.meta_state.meta.low.perspectives,
+                &self.meta_state.meta.low.regions,
             );
         }
     }
@@ -191,8 +191,8 @@ impl App {
             let view = &mut self.meta_state.meta.views[key].view;
             col_change_impl_view_perspective(
                 view,
-                &mut self.meta_state.meta.perspectives,
-                &self.meta_state.meta.regions,
+                &mut self.meta_state.meta.low.perspectives,
+                &self.meta_state.meta.low.regions,
                 f,
                 self.preferences.col_change_lock_col,
                 self.preferences.col_change_lock_row,
@@ -248,7 +248,7 @@ impl App {
     pub fn new_file_readjust(&mut self, font: &Font) {
         self.meta_state.meta = Meta::default();
         self.meta_state.current_meta_path.clear();
-        let def_region = self.meta_state.meta.regions.insert(NamedRegion {
+        let def_region = self.meta_state.meta.low.regions.insert(NamedRegion {
             name: "default".into(),
             region: Region {
                 begin: 0,
@@ -256,7 +256,7 @@ impl App {
             },
             desc: String::new(),
         });
-        let default_perspective = self.meta_state.meta.perspectives.insert(Perspective {
+        let default_perspective = self.meta_state.meta.low.perspectives.insert(Perspective {
             region: def_region,
             cols: 48,
             flip_row_order: false,
@@ -313,11 +313,11 @@ impl App {
         let view = &self.meta_state.meta.views[view_key].view;
         let view_byte_offset = view
             .offsets(
-                &self.meta_state.meta.perspectives,
-                &self.meta_state.meta.regions,
+                &self.meta_state.meta.low.perspectives,
+                &self.meta_state.meta.low.regions,
             )
             .byte;
-        let bytes_per_page = view.bytes_per_page(&self.meta_state.meta.perspectives);
+        let bytes_per_page = view.bytes_per_page(&self.meta_state.meta.low.perspectives);
         // Don't read past what we need for our current view offset
         if view_byte_offset + bytes_per_page < self.data.len() {
             return;
@@ -332,8 +332,9 @@ impl App {
                         src.state.stream_end = true;
                     } else {
                         self.data.extend_from_slice(&buf[..]);
-                        let perspective = &self.meta_state.meta.perspectives[view.perspective];
-                        let region = &mut self.meta_state.meta.regions[perspective.region].region;
+                        let perspective = &self.meta_state.meta.low.perspectives[view.perspective];
+                        let region =
+                            &mut self.meta_state.meta.low.regions[perspective.region].region;
                         region.end = self.data.len() - 1;
                     }
                 }
@@ -371,12 +372,12 @@ impl App {
             if let Some((row, col)) = view.view.row_col_offset_of_pos(
                 x,
                 y,
-                &self.meta_state.meta.perspectives,
-                &self.meta_state.meta.regions,
+                &self.meta_state.meta.low.perspectives,
+                &self.meta_state.meta.low.regions,
             ) {
                 return Some((
-                    self.meta_state.meta.perspectives[view.view.perspective]
-                        .byte_offset_of_row_col(row, col, &self.meta_state.meta.regions),
+                    self.meta_state.meta.low.perspectives[view.view.perspective]
+                        .byte_offset_of_row_col(row, col, &self.meta_state.meta.low.regions),
                     view_key,
                 ));
             }
@@ -434,8 +435,8 @@ impl App {
                 layout,
                 &mut self.meta_state.meta.views,
                 &self.hex_ui.hex_iface_rect,
-                &self.meta_state.meta.perspectives,
-                &self.meta_state.meta.regions,
+                &self.meta_state.meta.low.perspectives,
+                &self.meta_state.meta.low.regions,
             );
         }
         if self.preferences.auto_save && self.edit_state.dirty_region.is_some() {
@@ -456,8 +457,8 @@ impl App {
     pub(crate) fn focused_view_select_all(&mut self) {
         if let Some(view) = self.hex_ui.focused_view {
             let p_key = self.meta_state.meta.views[view].view.perspective;
-            let p = &self.meta_state.meta.perspectives[p_key];
-            let r = &self.meta_state.meta.regions[p.region];
+            let p = &self.meta_state.meta.low.perspectives[p_key];
+            let r = &self.meta_state.meta.low.regions[p.region];
             self.hex_ui.select_a = Some(r.region.begin);
             self.hex_ui.select_b = Some(r.region.end);
         }
@@ -541,24 +542,6 @@ impl App {
         return load_proc_memory_linux(self, pid, start, size, is_write, font);
         #[cfg(windows)]
         return crate::windows::load_proc_memory(self, pid, start, size, is_write, font);
-    }
-
-    pub(crate) fn start_offset_of_view(
-        view: &mut View,
-        perspectives: &PerspectiveMap,
-        regions: &RegionMap,
-    ) -> usize {
-        let p = &perspectives[view.perspective];
-        regions[p.region].region.begin
-    }
-
-    pub(crate) fn end_offset_of_view(
-        view: &mut View,
-        perspectives: &PerspectiveMap,
-        regions: &RegionMap,
-    ) -> usize {
-        let p = &perspectives[view.perspective];
-        regions[p.region].region.end
     }
 
     pub fn consume_meta_from_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {

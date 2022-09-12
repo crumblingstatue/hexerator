@@ -238,7 +238,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
             let Some(view_key) = app.hex_ui.focused_view else { return };
             let view = &mut app.meta_state.meta.views[view_key].view;
             if ui.button("Set offset to cursor").clicked() {
-                app.meta_state.meta.regions[app.meta_state.meta.perspectives[view.perspective].region].region.begin = app.edit_state.cursor;
+                app.meta_state.meta.low.regions[app.meta_state.meta.low.perspectives[view.perspective].region].region.begin = app.edit_state.cursor;
                 ui.close_menu();
             }
             if ui.button("Fill focused view").on_hover_text("Make the column count as big as the active view can fit").clicked() {
@@ -250,8 +250,8 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                         let cols = view.cols() as usize;
                         col_change_impl_view_perspective(
                             view,
-                            &mut app.meta_state.meta.perspectives,
-                            &app.meta_state.meta.regions,
+                            &mut app.meta_state.meta.low.perspectives,
+                            &app.meta_state.meta.low.regions,
                             |c| *c = cols,
                             app.preferences.col_change_lock_col,
                             app.preferences.col_change_lock_row
@@ -259,7 +259,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                     }
             }
             if ui.checkbox(
-                &mut app.meta_state.meta.perspectives[view.perspective].flip_row_order,
+                &mut app.meta_state.meta.low.perspectives[view.perspective].flip_row_order,
                 "Flip row order (experimental)",
             ).clicked() {
                 ui.close_menu();

@@ -26,10 +26,10 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         }
         if let Some(sel) = app.hex_ui.selection() && let Some(view_key) = app.hex_ui.focused_view {
             let view = &app.meta_state.meta.views[view_key].view;
-            let (rows, rem) = app.meta_state.meta.perspectives[view.perspective].region_row_span(sel);
+            let (rows, rem) = app.meta_state.meta.low.perspectives[view.perspective].region_row_span(sel);
             ui.label(format!(
                 "{rows} rows * {} cols + {rem} = {}",
-                app.meta_state.meta.perspectives[view.perspective].cols,
+                app.meta_state.meta.low.perspectives[view.perspective].cols,
                 sel.len()
             ));
         }

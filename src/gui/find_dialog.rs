@@ -115,9 +115,9 @@ impl FindDialog {
                                 ui.label(app.data.get(off).map(|off| off.to_string()).as_deref().unwrap_or("??"));
                             });
                             row.col(|ui| {
-                                match find_most_specific_region_for_offset(&app.meta_state.meta.regions, off) {
+                                match find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, off) {
                                     Some(key) => {
-                                        let reg = &app.meta_state.meta.regions[key];
+                                        let reg = &app.meta_state.meta.low.regions[key];
                                         let ctx_menu = |ui: &mut egui::Ui| {
                                             region_context_menu!(ui, app, reg, action);
                                             ui.separator();
@@ -175,7 +175,7 @@ impl FindDialog {
                     }
                     Action::None => {},
                     Action::RemoveRegionFromResults(key) => {
-                        let reg = &app.meta_state.meta.regions[key];
+                        let reg = &app.meta_state.meta.low.regions[key];
                         gui.find_dialog.results_vec.retain(|&idx| !reg.region.contains(idx));
                         gui.find_dialog.results_set.retain(|&idx| !reg.region.contains(idx));
                     },
