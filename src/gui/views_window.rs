@@ -1,5 +1,3 @@
-use std::{hash::Hash, ops::RangeInclusive};
-
 use {
     super::window_open::WindowOpen,
     crate::{
@@ -13,6 +11,7 @@ use {
         egui::{self, emath::Numeric},
         sfml::graphics::Font,
     },
+    std::{hash::Hash, ops::RangeInclusive},
 };
 
 #[derive(Default)]
