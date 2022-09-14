@@ -114,10 +114,7 @@ impl Default for Misc {
     }
 }
 
-const DEFAULT_CODE: &str = r#"-- Return a byte based on offset `off` and the current byte value `b`
-function(off, b)
-   return off % 256
-end"#;
+const DEFAULT_CODE: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/lua/fill.lua"));
 
 impl Meta {
     /// Init required after deserializing
