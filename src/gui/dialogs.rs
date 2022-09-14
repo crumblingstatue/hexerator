@@ -138,7 +138,8 @@ impl Dialog for PatternFillDialog {
 
 #[derive(Debug, Default)]
 pub struct LuaFillDialog {
-    exec_time_string: String,
+    result_info_string: String,
+    err: bool,
 }
 
 impl Dialog for LuaFillDialog {
@@ -175,20 +176,21 @@ impl Dialog for LuaFillDialog {
             let start_time = Instant::now();
             app.lua.context(|ctx| {
                 let chunk = ctx.load(&app.meta_state.meta.misc.fill_lua_script);
-                match chunk.eval::<Function>() {
-                    Ok(f) => {
-                        let res: rlua::Result<()> = try {
-                            for (i, b) in app.data[sel.begin..=sel.end].iter_mut().enumerate() {
-                                *b = f.call((i, *b))?;
-                            }
-                        };
-                        msg_if_fail(res, "Failed to execute lua");
-                        app.edit_state.dirty_region = Some(sel);
+                let res: rlua::Result<()> = try {
+                    let f = chunk.eval::<Function>()?;
+                    for (i, b) in app.data[sel.begin..=sel.end].iter_mut().enumerate() {
+                        *b = f.call((i, *b))?;
                     }
-                    Err(e) => msg_fail(&e, "Failed to exec lua"),
+                    app.edit_state.dirty_region = Some(sel);
+                };
+                if let Err(e) = res {
+                    self.result_info_string = e.to_string();
+                    self.err = true;
+                } else {
+                    self.result_info_string =
+                        format!("Script took {} ms", start_time.elapsed().as_millis());
+                    self.err = false;
                 }
-                self.exec_time_string =
-                    format!("Script took {} ms", start_time.elapsed().as_millis());
             });
         }
         let close = ui.button("Close").clicked();
@@ -207,8 +209,12 @@ impl Dialog for LuaFillDialog {
             );
         }
         easy_mark(ui, "`ctrl+enter` to execute, `ctrl+s` to save file");
-        if !self.exec_time_string.is_empty() {
-            ui.label(&self.exec_time_string);
+        if !self.result_info_string.is_empty() {
+            if self.err {
+                ui.label(egui::RichText::new(&self.result_info_string).color(egui::Color32::RED));
+            } else {
+                ui.label(&self.result_info_string);
+            }
         }
         !close
     }
