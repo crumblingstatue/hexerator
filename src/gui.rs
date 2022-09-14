@@ -1,8 +1,11 @@
+use self::external_command_window::ExternalCommandWindow;
+
 mod advanced_open_window;
 mod bookmarks_window;
 mod bottom_panel;
 mod debug_window;
 pub mod dialogs;
+mod external_command_window;
 mod file_diff_result_window;
 mod find_dialog;
 mod find_memory_pointers_window;
@@ -61,6 +64,7 @@ pub struct Gui {
     pub open_process_window: OpenProcessWindow,
     pub find_memory_pointers_window: FindMemoryPointersWindow,
     pub advanced_open_window: AdvancedOpenWindow,
+    pub external_command_window: ExternalCommandWindow,
 }
 
 pub struct ContextMenu {
@@ -133,6 +137,7 @@ pub fn do_egui(
             "Open process",            open_process_window,         OpenProcessWindow: gui app font;
             "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font;
             "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
+            "External command",        external_command_window,     ExternalCommandWindow: gui app;
         }
         // Context menu
         if let Some(menu) = &gui.context_menu {
@@ -147,7 +152,8 @@ pub fn do_egui(
                             &ContextMenuData::ViewByte { view, byte_off } => {
                                 if let Some(sel) = app.hex_ui.selection() {
                                     if ui.button("Add selection as region").clicked() {
-                                        ops::add_region_from_selection(sel, &mut app.meta_state, &mut gui.regions_window)
+                                        ops::add_region_from_selection(sel, &mut app.meta_state, &mut gui.regions_window);
+                                        close = true;
                                     }
                                     ui.separator();
                                 }

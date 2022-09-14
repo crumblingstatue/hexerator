@@ -135,6 +135,11 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 ui.close_menu();
             }
             ui.separator();
+            if ui.button("External command...").clicked() {
+                gui.external_command_window.open.toggle();
+                ui.close_menu();
+            }
+            ui.separator();
             if ui.button("Pattern fill...").clicked() {
                 gui.add_dialog(PatternFillDialog::default());
                 ui.close_menu();
