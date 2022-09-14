@@ -216,6 +216,7 @@ impl Dialog for LuaFillDialog {
 
 pub struct LuaColorDialog {
     script: String,
+    err_string: String,
     auto_exec: bool,
 }
 
@@ -225,6 +226,7 @@ impl Default for LuaColorDialog {
             include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/lua/color.lua"));
         Self {
             script: DEFAULT_SCRIPT.into(),
+            err_string: String::new(),
             auto_exec: Default::default(),
         }
     }
@@ -267,12 +269,16 @@ impl Dialog for LuaColorDialog {
                     }
                 };
                 if let Err(e) = res {
-                    msg_fail(&e, "Lua script error");
-                    self.auto_exec = false;
+                    self.err_string = e.to_string();
+                } else {
+                    self.err_string.clear();
                 }
             });
         }
         ui.checkbox(&mut self.auto_exec, "Auto execute");
+        if !self.err_string.is_empty() {
+            ui.label(egui::RichText::new(&self.err_string).color(egui::Color32::RED));
+        }
         true
     }
 }
