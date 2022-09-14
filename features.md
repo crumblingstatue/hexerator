@@ -12,6 +12,7 @@ Legend:
 - [x] [Bookmarks](#bookmarks)
 - [x] [Multiple configurable views](#multiple-configurable-views)
 - [x] Lua scripting support for various operations, like fill.
+- [x] External command support
 - [x] Diffing functionality
 - [ ] [Huge file support through memory mapped files](#huge-file-support-through-memory-mapped-files)
 
@@ -65,6 +66,15 @@ associated with it.
 
 You can have different views into different regions of the same file, with
 different column counts and other configurable properties.
+
+## External command support
+
+Support for executing a custom external command on selected data.
+
+You can see a YouTube video of it in action here:
+
+[![Video](https://img.youtube.com/vi/xnw4cdD9r-w/0.jpg)](https://www.youtube.com/watch?v=xnw4cdD9r-w)
+
 
 ## Huge file support through memory mapped files
 
