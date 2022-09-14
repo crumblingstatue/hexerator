@@ -19,6 +19,7 @@ pub struct ExternalCommandWindow {
     err_msg: String,
     stdout: String,
     stderr: String,
+    auto_exec: bool,
 }
 
 enum Arg<'src> {
@@ -38,7 +39,9 @@ impl ExternalCommandWindow {
         if ui
             .add_enabled(exec_enabled, egui::Button::new("Execute (ctrl+E)"))
             .clicked()
-            || (exec_enabled && ui.input().key_pressed(egui::Key::E) && ui.input().modifiers.ctrl)
+            || (exec_enabled
+                && ((ui.input().key_pressed(egui::Key::E) && ui.input().modifiers.ctrl)
+                    || win.auto_exec))
         {
             let res: anyhow::Result<()> = try {
                 // Parse args
@@ -61,6 +64,8 @@ impl ExternalCommandWindow {
             };
             msg_if_fail(res, "Failed to spawn command");
         }
+        ui.checkbox(&mut win.auto_exec, "Auto execute")
+            .on_hover_text("Execute again after process finishes");
         if let Some(child) = &mut win.child {
             ui.horizontal(|ui| {
                 ui.label(format!("{} running", child.id()));
