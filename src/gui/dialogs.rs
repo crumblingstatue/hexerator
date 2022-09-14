@@ -10,7 +10,7 @@ use {
     },
     egui_easy_mark_standalone::easy_mark,
     egui_sfml::egui,
-    rlua::{Function, Lua},
+    rlua::Function,
     std::time::Instant,
 };
 
@@ -173,8 +173,7 @@ impl Dialog for LuaFillDialog {
             });
         if ui.button("Execute").clicked() || ctrl_enter {
             let start_time = Instant::now();
-            let lua = Lua::default();
-            lua.context(|ctx| {
+            app.lua.context(|ctx| {
                 let chunk = ctx.load(&app.meta_state.meta.misc.fill_lua_script);
                 match chunk.eval::<Function>() {
                     Ok(f) => {
@@ -218,6 +217,7 @@ impl Dialog for LuaFillDialog {
 #[derive(Default)]
 pub struct LuaColorDialog {
     script: String,
+    auto_exec: bool,
 }
 
 impl Dialog for LuaColorDialog {
@@ -246,9 +246,8 @@ impl Dialog for LuaColorDialog {
             .code_editor()
             .desired_width(f32::INFINITY)
             .show(ui);
-        if ui.button("Execute").clicked() {
-            let lua = Lua::default();
-            lua.context(|ctx| {
+        if ui.button("Execute").clicked() || self.auto_exec {
+            app.lua.context(|ctx| {
                 let chunk = ctx.load(&self.script);
                 match chunk.eval::<Function>() {
                     Ok(fun) => {
@@ -260,10 +259,14 @@ impl Dialog for LuaColorDialog {
                         };
                         msg_if_fail(res, "Failed to execute lua");
                     }
-                    Err(e) => msg_fail(&e, "Failed to eval lua script"),
+                    Err(e) => {
+                        msg_fail(&e, "Failed to eval lua script");
+                        self.auto_exec = false;
+                    }
                 }
             });
         }
+        ui.checkbox(&mut self.auto_exec, "Auto execute");
         true
     }
 }
