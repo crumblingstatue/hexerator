@@ -214,10 +214,20 @@ impl Dialog for LuaFillDialog {
     }
 }
 
-#[derive(Default)]
 pub struct LuaColorDialog {
     script: String,
     auto_exec: bool,
+}
+
+impl Default for LuaColorDialog {
+    fn default() -> Self {
+        const DEFAULT_SCRIPT: &str =
+            include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/lua/color.lua"));
+        Self {
+            script: DEFAULT_SCRIPT.into(),
+            auto_exec: Default::default(),
+        }
+    }
 }
 
 impl Dialog for LuaColorDialog {
@@ -249,20 +259,16 @@ impl Dialog for LuaColorDialog {
         if ui.button("Execute").clicked() || self.auto_exec {
             app.lua.context(|ctx| {
                 let chunk = ctx.load(&self.script);
-                match chunk.eval::<Function>() {
-                    Ok(fun) => {
-                        let res: rlua::Result<()> = try {
-                            for (i, c) in color_data.iter_mut().enumerate() {
-                                let rgb: [u8; 3] = fun.call((i,))?;
-                                *c = rgb;
-                            }
-                        };
-                        msg_if_fail(res, "Failed to execute lua");
+                let res: rlua::Result<()> = try {
+                    let fun = chunk.eval::<Function>()?;
+                    for (i, c) in color_data.iter_mut().enumerate() {
+                        let rgb: [u8; 3] = fun.call((i,))?;
+                        *c = rgb;
                     }
-                    Err(e) => {
-                        msg_fail(&e, "Failed to eval lua script");
-                        self.auto_exec = false;
-                    }
+                };
+                if let Err(e) = res {
+                    msg_fail(&e, "Lua script error");
+                    self.auto_exec = false;
                 }
             });
         }
