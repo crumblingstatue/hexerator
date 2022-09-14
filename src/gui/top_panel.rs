@@ -1,5 +1,5 @@
 use {
-    super::{top_menu::top_menu, Gui},
+    super::{dialogs::LuaColorDialog, top_menu::top_menu, Gui},
     crate::{
         app::App,
         color::{self, ColorMethod, Palette},
@@ -101,6 +101,9 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                             Ok(new) => *col = new,
                             Err(e) => msg_warn(&format!("Color parse error: {}", e)),
                         }
+                    }
+                    if ui.button("Lua").on_hover_text("From lua script").clicked() {
+                        gui.add_dialog(LuaColorDialog::default());
                     }
                     if ui.button("Save").clicked() {
                         if let Some(path) = rfd::FileDialog::new().save_file() {

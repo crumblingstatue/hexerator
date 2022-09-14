@@ -2,6 +2,7 @@ use {
     super::Dialog,
     crate::{
         app::App,
+        color::ColorMethod,
         damage_region::DamageRegion,
         parse_radix::{parse_offset_maybe_relative, Relativity},
         shell::{msg_fail, msg_if_fail, msg_warn},
@@ -211,5 +212,58 @@ impl Dialog for LuaFillDialog {
             ui.label(&self.exec_time_string);
         }
         !close
+    }
+}
+
+#[derive(Default)]
+pub struct LuaColorDialog {
+    script: String,
+}
+
+impl Dialog for LuaColorDialog {
+    fn title(&self) -> &str {
+        "Lua color"
+    }
+
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+        let color_data = match app.hex_ui.focused_view {
+            Some(view_key) => {
+                let view = &mut app.meta_state.meta.views[view_key].view;
+                match &mut view.presentation.color_method {
+                    ColorMethod::Custom(color_data) => &mut color_data.0,
+                    _ => {
+                        ui.label("Please select \"Custom\" as color scheme for the current view");
+                        return !ui.button("Close").clicked();
+                    }
+                }
+            }
+            None => {
+                ui.label("No active view");
+                return !ui.button("Close").clicked();
+            }
+        };
+        egui::TextEdit::multiline(&mut self.script)
+            .code_editor()
+            .desired_width(f32::INFINITY)
+            .show(ui);
+        if ui.button("Execute").clicked() {
+            let lua = Lua::default();
+            lua.context(|ctx| {
+                let chunk = ctx.load(&self.script);
+                match chunk.eval::<Function>() {
+                    Ok(fun) => {
+                        let res: rlua::Result<()> = try {
+                            for (i, c) in color_data.iter_mut().enumerate() {
+                                let rgb: [u8; 3] = fun.call((i,))?;
+                                *c = rgb;
+                            }
+                        };
+                        msg_if_fail(res, "Failed to execute lua");
+                    }
+                    Err(e) => msg_fail(&e, "Failed to eval lua script"),
+                }
+            });
+        }
+        true
     }
 }
