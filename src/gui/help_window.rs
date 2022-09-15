@@ -31,6 +31,7 @@ const TOPICS: [Topic; 4] = [
 
 impl HelpWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, gui: &mut crate::gui::Gui) {
+        ui.set_min_width(768.0);
         ui.horizontal(|ui| {
             ui.vertical(|ui| {
                 for (i, topic) in TOPICS.iter().enumerate() {
