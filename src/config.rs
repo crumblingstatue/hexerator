@@ -29,11 +29,11 @@ pub struct FontSizes {
 impl Default for FontSizes {
     fn default() -> Self {
         Self {
-            heading: 26,
-            body: 16,
-            monospace: 16,
-            button: 16,
-            small: 12,
+            small: 10,
+            body: 14,
+            button: 14,
+            heading: 20,
+            monospace: 14,
         }
     }
 }
