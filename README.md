@@ -22,6 +22,11 @@ Looking for an Mac OS developer/maintainer!
 
 - A C++ compiler for building some native dependencies
 
+## Rust version
+Hexerator only supports latest nightly Rust. You need an up-to-date nightly to build Hexerator.
+As Hexerator matures, it will slowly transition to stable Rust.
+The plan is for Hexerator 1.0 to be buildable with a stable Rust version.
+
 ## Hardware requirements
 
 - A 32 bit or 64 bit CPU.
