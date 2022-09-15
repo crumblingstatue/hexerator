@@ -11,9 +11,9 @@ Legend:
 - [x] [Rich command line options](commandline.md)
 - [x] [Bookmarks](#bookmarks)
 - [x] [Multiple configurable views](#multiple-configurable-views)
-- [x] Lua scripting support for various operations, like fill.
+- [x] [Lua scripting support](#lua-scripting-support) for various operations, like fill.
 - [x] [External command support](#external-command-support)
-- [x] Diffing functionality
+- [x] [Diffing functionality](#diffing)
 - [ ] [Huge file support through memory mapped files](#huge-file-support-through-memory-mapped-files)
 
 # Non-features
@@ -67,6 +67,13 @@ associated with it.
 You can have different views into different regions of the same file, with
 different column counts and other configurable properties.
 
+## Lua scripting support
+
+You can write Lua scripts to:
+- Fill a selection
+- Generate a custom color palette
+- More coming in the future
+
 ## External command support
 
 Support for executing a custom external command on selected data.
@@ -75,6 +82,16 @@ You can see a YouTube video of it in action here:
 
 [![Video](https://img.youtube.com/vi/xnw4cdD9r-w/0.jpg)](https://www.youtube.com/watch?v=xnw4cdD9r-w)
 
+## Diffing
+
+There is basic support for showing differences between
+- The current buffer and its source file
+- The current buffer and an arbitrary file
+- The current metadata and the clean metadata
+- Support for more coming in the future
+
+For now diffing is pretty barebones, shown as a list of offsets.
+It will be better fleshed out in the future
 
 ## Huge file support through memory mapped files
 
