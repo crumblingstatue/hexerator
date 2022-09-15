@@ -1,4 +1,8 @@
-use self::external_command_window::ExternalCommandWindow;
+use {
+    self::{external_command_window::ExternalCommandWindow, preferences_window::PreferencesWindow},
+    crate::config::Style,
+    egui_sfml::egui::{FontFamily, FontId},
+};
 
 mod advanced_open_window;
 mod bookmarks_window;
@@ -16,6 +20,7 @@ mod meta_diff_window;
 mod open_process_window;
 mod ops;
 mod perspectives_window;
+mod preferences_window;
 mod regions_window;
 mod top_menu;
 mod top_panel;
@@ -39,7 +44,12 @@ use {
         view::{ViewportScalar, ViewportVec},
     },
     egui_sfml::{
-        egui::{self, TopBottomPanel, Window},
+        egui,
+        egui::{
+            FontFamily::Proportional,
+            TextStyle::{Body, Button, Heading, Monospace, Small},
+            TopBottomPanel, Window,
+        },
         sfml::graphics::Font,
         SfEgui,
     },
@@ -65,6 +75,7 @@ pub struct Gui {
     pub find_memory_pointers_window: FindMemoryPointersWindow,
     pub advanced_open_window: AdvancedOpenWindow,
     pub external_command_window: ExternalCommandWindow,
+    pub preferences_window: PreferencesWindow,
 }
 
 pub struct ContextMenu {
@@ -138,6 +149,7 @@ pub fn do_egui(
             "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font;
             "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
             "External command",        external_command_window,     ExternalCommandWindow: gui app;
+            "Preferences",             preferences_window,          PreferencesWindow: gui app;
         }
         // Context menu
         if let Some(menu) = &gui.context_menu {
@@ -229,4 +241,36 @@ pub fn do_egui(
         });
         gui.dialogs = dialogs;
     });
+}
+
+pub fn set_font_sizes_ctx(ctx: &egui::Context, style: &Style) {
+    let mut egui_style = (*ctx.style()).clone();
+    set_font_sizes_style(&mut egui_style, style);
+    ctx.set_style(egui_style);
+}
+
+pub fn set_font_sizes_style(egui_style: &mut egui::Style, style: &Style) {
+    egui_style.text_styles = [
+        (
+            Heading,
+            FontId::new(style.font_sizes.heading.into(), Proportional),
+        ),
+        (
+            Body,
+            FontId::new(style.font_sizes.body.into(), Proportional),
+        ),
+        (
+            Monospace,
+            FontId::new(style.font_sizes.monospace.into(), FontFamily::Monospace),
+        ),
+        (
+            Button,
+            FontId::new(style.font_sizes.button.into(), Proportional),
+        ),
+        (
+            Small,
+            FontId::new(style.font_sizes.small.into(), Proportional),
+        ),
+    ]
+    .into();
 }

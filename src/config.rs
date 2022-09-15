@@ -6,9 +6,36 @@ use {
     serde::{Deserialize, Serialize},
 };
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct Config {
     pub recent: RecentlyUsedList<SourceArgs>,
+    pub style: Style,
+}
+
+#[derive(Serialize, Deserialize, Default)]
+pub struct Style {
+    pub font_sizes: FontSizes,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct FontSizes {
+    pub heading: u8,
+    pub body: u8,
+    pub monospace: u8,
+    pub button: u8,
+    pub small: u8,
+}
+
+impl Default for FontSizes {
+    fn default() -> Self {
+        Self {
+            heading: 26,
+            body: 16,
+            monospace: 16,
+            button: 16,
+            small: 12,
+        }
+    }
 }
 
 const DEFAULT_RECENT_CAPACITY: usize = 16;
@@ -17,7 +44,10 @@ impl Default for Config {
     fn default() -> Self {
         let mut recent = RecentlyUsedList::default();
         recent.set_capacity(DEFAULT_RECENT_CAPACITY);
-        Self { recent }
+        Self {
+            recent,
+            style: Style::default(),
+        }
     }
 }
 

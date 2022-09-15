@@ -106,6 +106,11 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 ui.close_menu();
             }
             ui.separator();
+            if ui.button("Preferences").clicked() {
+                gui.preferences_window.open.toggle();
+                ui.close_menu();
+            }
+            ui.separator();
             if button_with_shortcut(ui, "Close", "Ctrl+W").clicked() {
                 app.close_file();
                 ui.close_menu();
