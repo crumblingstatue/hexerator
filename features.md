@@ -12,7 +12,7 @@ Legend:
 - [x] [Bookmarks](#bookmarks)
 - [x] [Multiple configurable views](#multiple-configurable-views)
 - [x] Lua scripting support for various operations, like fill.
-- [x] External command support
+- [x] [External command support](#external-command-support)
 - [x] Diffing functionality
 - [ ] [Huge file support through memory mapped files](#huge-file-support-through-memory-mapped-files)
 
