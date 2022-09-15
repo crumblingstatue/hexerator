@@ -45,3 +45,4 @@ opt-level = 2
 
 [profile.release]
 panic = "abort"
+lto = "thin"
