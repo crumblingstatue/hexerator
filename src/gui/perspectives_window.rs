@@ -1,6 +1,7 @@
 use {
     super::window_open::WindowOpen,
     crate::{
+        app::App,
         meta::{perspective::Perspective, PerspectiveKey, RegionKey},
         region_context_menu,
     },
@@ -107,11 +108,13 @@ impl PerspectivesWindow {
         ui.menu_button("New from region", |ui| {
             for (key, region) in app.meta_state.meta.low.regions.iter() {
                 if ui.button(&region.name).clicked() {
-                    app.meta_state
-                        .meta
-                        .low
-                        .perspectives
-                        .insert(Perspective::from_region(key, region.name.clone()));
+                    let mut per = Perspective::from_region(key, region.name.clone());
+                    if let Some(focused_per) =
+                        App::focused_perspective(&app.hex_ui, &app.meta_state.meta)
+                    {
+                        per.cols = focused_per.cols;
+                    }
+                    app.meta_state.meta.low.perspectives.insert(per);
                     ui.close_menu();
                     return;
                 }

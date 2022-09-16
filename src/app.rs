@@ -562,6 +562,13 @@ impl App {
         }
         Ok(())
     }
+
+    pub fn focused_perspective<'a>(hex_ui: &HexUi, meta: &'a Meta) -> Option<&'a Perspective> {
+        hex_ui.focused_view.map(|view_key| {
+            let per_key = meta.views[view_key].view.perspective;
+            &meta.low.perspectives[per_key]
+        })
+    }
 }
 
 #[cfg(target_os = "linux")]
