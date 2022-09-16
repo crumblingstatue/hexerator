@@ -11,6 +11,7 @@ use {
         egui::{self, emath::Numeric},
         sfml::graphics::Font,
     },
+    slotmap::Key,
     std::{hash::Hash, ops::RangeInclusive},
 };
 
@@ -46,8 +47,12 @@ impl ViewsWindow {
         app: &mut crate::app::App,
         font: &Font,
     ) {
-        if gui.views_window.open.just_now() && let Some(view_key) = app.hex_ui.focused_view {
-            gui.views_window.selected = view_key;
+        if gui.views_window.open.just_now() &&
+           // Don't override selected key if there already is one
+           // For example, it could be set by the context menu "view properties".
+           gui.views_window.selected.is_null() &&
+           let Some(view_key) = app.hex_ui.focused_view {
+           gui.views_window.selected = view_key;
         }
         let mut removed_idx = None;
         if app.meta_state.meta.views.is_empty() {
