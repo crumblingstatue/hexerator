@@ -352,8 +352,8 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
             }
         });
         ui.menu_button("Help", |ui| {
-            if ui.button("Help...").clicked() {
-                gui.help_window.open.toggle();
+            if ui.button("Hexerator book").clicked() {
+                msg_if_fail(open::that("https://crumblingstatue.github.io/hexerator-book/"), "Failed to open help");
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Debug panel...", "F12").clicked() {

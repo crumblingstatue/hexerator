@@ -13,7 +13,6 @@ mod external_command_window;
 mod file_diff_result_window;
 mod find_dialog;
 mod find_memory_pointers_window;
-mod help_window;
 pub mod inspect_panel;
 mod layouts_window;
 mod meta_diff_window;
@@ -32,11 +31,10 @@ use {
     self::{
         advanced_open_window::AdvancedOpenWindow, bookmarks_window::BookmarksWindow,
         file_diff_result_window::FileDiffResultWindow, find_dialog::FindDialog,
-        find_memory_pointers_window::FindMemoryPointersWindow, help_window::HelpWindow,
-        inspect_panel::InspectPanel, layouts_window::LayoutsWindow,
-        meta_diff_window::MetaDiffWindow, open_process_window::OpenProcessWindow,
-        perspectives_window::PerspectivesWindow, regions_window::RegionsWindow,
-        views_window::ViewsWindow,
+        find_memory_pointers_window::FindMemoryPointersWindow, inspect_panel::InspectPanel,
+        layouts_window::LayoutsWindow, meta_diff_window::MetaDiffWindow,
+        open_process_window::OpenProcessWindow, perspectives_window::PerspectivesWindow,
+        regions_window::RegionsWindow, views_window::ViewsWindow,
     },
     crate::{
         app::App,
@@ -67,7 +65,6 @@ pub struct Gui {
     pub layouts_window: LayoutsWindow,
     pub views_window: ViewsWindow,
     pub perspectives_window: PerspectivesWindow,
-    pub help_window: HelpWindow,
     pub file_diff_result_window: FileDiffResultWindow,
     pub context_menu: Option<ContextMenu>,
     pub meta_diff_window: MetaDiffWindow,
@@ -142,7 +139,6 @@ pub fn do_egui(
             "Layouts",                 layouts_window,              LayoutsWindow: gui app;
             "Views",                   views_window,                ViewsWindow: gui app font;
             "Perspectives",            perspectives_window,         PerspectivesWindow: gui app;
-            "Help",                    help_window,                 HelpWindow: gui;
             "File Diff results",       file_diff_result_window,     FileDiffResultWindow: gui app;
             "Diff against clean meta", meta_diff_window,            MetaDiffWindow: app;
             "Open process",            open_process_window,         OpenProcessWindow: gui app font;

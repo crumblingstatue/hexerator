@@ -32,6 +32,7 @@ rlua = "0.19.4"
 itertools = "0.10.3"
 sysinfo = { version = "0.26.2", default-features = false }
 proc-maps = "0.2.1"
+open = "3.0.3"
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.36.1"
