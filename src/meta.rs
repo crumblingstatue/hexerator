@@ -140,6 +140,14 @@ impl Meta {
             .regions
             .insert(NamedRegion::new_from_selection(sel))
     }
+
+    pub(crate) fn remove_view(&mut self, rem_key: ViewKey) {
+        self.views.remove(rem_key);
+
+        for layout in self.layouts.values_mut() {
+            layout.remove_view(rem_key);
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

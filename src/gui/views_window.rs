@@ -264,7 +264,7 @@ impl ViewsWindow {
             }
         }
         if let Some(rem_key) = removed_idx {
-            app.meta_state.meta.views.remove(rem_key);
+            app.meta_state.meta.remove_view(rem_key);
             app.hex_ui.focused_view = None;
         }
         gui.views_window.open.post_ui();

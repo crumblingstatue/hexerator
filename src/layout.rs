@@ -49,6 +49,13 @@ impl Layout {
     pub(crate) fn contains_view(&self, key: ViewKey) -> bool {
         self.iter().any(|k| k == key)
     }
+
+    pub(crate) fn remove_view(&mut self, rem_key: ViewKey) {
+        self.view_grid.retain_mut(|row| {
+            row.retain(|view_key| *view_key != rem_key);
+            !row.is_empty()
+        });
+    }
 }
 
 pub fn do_auto_layout(
