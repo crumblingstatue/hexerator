@@ -3,9 +3,6 @@ Versatile GUI hex editor focused on binary file exploration and aiding pattern r
 
 Check out [the Hexerator book](https://crumblingstatue.github.io/hexerator-book/) for a detailed list of features, and more!
 
-## Screenshot
-![Screenshot](screenshots/screenshot.png)
-
 ## Supported platforms
 
 - Windows 7 or newer
