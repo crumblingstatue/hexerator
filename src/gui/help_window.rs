@@ -22,12 +22,20 @@ macro_rules! topic {
     };
 }
 
-const TOPICS: [Topic; 4] = [
-    topic!("index", "Hexerator"),
-    topic!("keys", "Keys"),
-    topic!("modal-editing", "Modal editing"),
-    topic!("perspective", "Perspective"),
-];
+macro_rules! topics {
+    ($($id: literal: $name: literal)+) => {
+        const TOPICS: [Topic; ${count(id)}] = [
+            $(topic!($id, $name),)+
+        ];
+    }
+}
+
+topics! {
+    "index": "Hexerator"
+    "keys": "Keys"
+    "modal-editing": "Modal editing"
+    "perspective": "Perspective"
+}
 
 impl HelpWindow {
     pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, gui: &mut crate::gui::Gui) {
