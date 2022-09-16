@@ -3,7 +3,8 @@ use {
     crate::{
         app::App,
         layout::{default_margin, Layout},
-        meta::{LayoutKey, ViewKey},
+        meta::{LayoutKey, MetaLow, NamedView, ViewKey, ViewMap},
+        view::{HexData, View, ViewKind},
     },
     egui_sfml::egui,
     slotmap::Key,
@@ -106,6 +107,14 @@ impl LayoutsWindow {
                                     ui.close_menu();
                                 }
                             }
+                            if let Some(k) = add_new_view_menu(
+                                ui,
+                                &app.meta_state.meta.low,
+                                &mut app.meta_state.meta.views,
+                            ) {
+                                row.push(k);
+                                ui.close_menu();
+                            }
                         })
                         .response
                         .on_hover_text("Add view")
@@ -140,6 +149,14 @@ impl LayoutsWindow {
                                 ui.close_menu();
                             }
                         }
+                        if let Some(k) = add_new_view_menu(
+                            ui,
+                            &app.meta_state.meta.low,
+                            &mut app.meta_state.meta.views,
+                        ) {
+                            layout.view_grid.push(vec![k]);
+                            ui.close_menu();
+                        }
                     })
                     .response
                     .on_hover_text("Add view")
@@ -163,4 +180,21 @@ impl LayoutsWindow {
         }
         win.open.post_ui();
     }
+}
+
+fn add_new_view_menu(ui: &mut egui::Ui, low: &MetaLow, views: &mut ViewMap) -> Option<ViewKey> {
+    let mut ret_key = None;
+    ui.separator();
+    ui.menu_button("New from perspective", |ui| {
+        for (k, per) in &low.perspectives {
+            if ui.button(&per.name).clicked() {
+                let key = views.insert(NamedView {
+                    view: View::new(ViewKind::Hex(HexData::default()), k),
+                    name: per.name.to_owned(),
+                });
+                ret_key = Some(key);
+            }
+        }
+    });
+    ret_key
 }
