@@ -5,7 +5,7 @@ use {
         egui::{FontFamily, FontId},
         TextureCreateError,
     },
-    rfd::{MessageButtons, MessageLevel},
+    rfd::MessageLevel,
 };
 
 mod advanced_open_window;
@@ -245,28 +245,23 @@ pub fn do_egui(
     if let Err(e) = result {
         match e {
             egui_sfml::DoFrameError::TextureCreateError(TextureCreateError { width, height }) => {
-                if !rfd::MessageDialog::new()
+                rfd::MessageDialog::new()
                     .set_level(MessageLevel::Error)
-                    .set_buttons(MessageButtons::YesNo)
                     .set_description(&format!(
-                        "Failed to create texture of {width}x{height}.\nContinue?"
+                        "Failed to create texture of {width}x{height}. Application has to close."
                     ))
-                    .show()
-                {
-                    return false;
-                }
+                    .show();
             }
             _ => {
-                if !rfd::MessageDialog::new()
+                rfd::MessageDialog::new()
                     .set_level(MessageLevel::Error)
-                    .set_buttons(MessageButtons::YesNo)
-                    .set_description("Unknown error happened while doing egui frame.\nContinue?")
-                    .show()
-                {
-                    return false;
-                }
+                    .set_description(
+                        "Unknown error happened while doing egui frame. Application has to close.",
+                    )
+                    .show();
             }
         }
+        return false;
     }
     true
 }
