@@ -98,14 +98,16 @@ fn try_main() -> anyhow::Result<()> {
     let mut gui = Gui::default();
 
     while window.is_open() {
-        do_frame(
+        if !do_frame(
             &mut app,
             &mut gui,
             &mut sf_egui,
             &mut window,
             &font,
             &mut vertex_buffer,
-        );
+        ) {
+            return Ok(());
+        }
         // Save a metafile backup every so often
         if app.meta_state.last_meta_backup.get().elapsed() >= Duration::from_secs(60) {
             if let Err(e) = app.save_temp_metafile_backup() {
@@ -122,6 +124,7 @@ fn main() {
     msg_if_fail(try_main(), "Fatal error");
 }
 
+#[must_use = "Returns false if application should quit"]
 fn do_frame(
     app: &mut App,
     gui: &mut Gui,
@@ -129,12 +132,14 @@ fn do_frame(
     window: &mut RenderWindow,
     font: &Font,
     vertex_buffer: &mut Vec<Vertex>,
-) {
+) -> bool {
     handle_events(gui, app, window, sf_egui, font);
     update(app, sf_egui.context().wants_keyboard_input());
     app.update();
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
-    gui::do_egui(sf_egui, gui, app, mp, font);
+    if !gui::do_egui(sf_egui, gui, app, mp, font) {
+        return false;
+    }
     let [r, g, b] = app.preferences.bg_color;
     #[expect(
         clippy::cast_possible_truncation,
@@ -152,6 +157,7 @@ fn do_frame(
     // Should only be true on the frame right after reloading
     app.just_reloaded = false;
     gamedebug_core::inc_frame();
+    true
 }
 
 /// Try to convert mouse position to ViewportVec.

@@ -377,8 +377,7 @@ dependencies = [
 [[package]]
 name = "egui-sfml"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "898debd0065408c11bd9b4dd7ba9b1e10600eec7dd8a4e0f967d1d2a016009ce"
+source = "git+https://github.com/crumblingstatue/egui-sfml.git#cc0f00635bf46e7c84040b8600271c4dccfcb403"
 dependencies = [
  "egui",
  "glu-sys",

@@ -1,7 +1,11 @@
 use {
     self::{external_command_window::ExternalCommandWindow, preferences_window::PreferencesWindow},
     crate::config::Style,
-    egui_sfml::egui::{FontFamily, FontId},
+    egui_sfml::{
+        egui::{FontFamily, FontId},
+        TextureCreateError,
+    },
+    rfd::{MessageButtons, MessageLevel},
 };
 
 mod advanced_open_window;
@@ -105,14 +109,15 @@ impl Gui {
     }
 }
 
+#[must_use = "Returns false if application should quit"]
 pub fn do_egui(
     sf_egui: &mut SfEgui,
     gui: &mut crate::gui::Gui,
     app: &mut App,
     mouse_pos: ViewportVec,
     font: &Font,
-) {
-    sf_egui.do_frame(|ctx| {
+) -> bool {
+    let result = sf_egui.do_frame(|ctx| {
         let mut open = gamedebug_core::enabled();
         let was_open = open;
         Window::new("Debug")
@@ -237,6 +242,33 @@ pub fn do_egui(
         });
         gui.dialogs = dialogs;
     });
+    if let Err(e) = result {
+        match e {
+            egui_sfml::DoFrameError::TextureCreateError(TextureCreateError { width, height }) => {
+                if !rfd::MessageDialog::new()
+                    .set_level(MessageLevel::Error)
+                    .set_buttons(MessageButtons::YesNo)
+                    .set_description(&format!(
+                        "Failed to create texture of {width}x{height}.\nContinue?"
+                    ))
+                    .show()
+                {
+                    return false;
+                }
+            }
+            _ => {
+                if !rfd::MessageDialog::new()
+                    .set_level(MessageLevel::Error)
+                    .set_buttons(MessageButtons::YesNo)
+                    .set_description("Unknown error happened while doing egui frame.\nContinue?")
+                    .show()
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    true
 }
 
 pub fn set_font_sizes_ctx(ctx: &egui::Context, style: &Style) {
