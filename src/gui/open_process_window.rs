@@ -18,7 +18,7 @@ pub struct OpenProcessWindow {
     pid_sort: Sort,
     addr_sort: Sort,
     size_sort: Sort,
-    maps_sort_col: u8,
+    maps_sort_col: MapsSortColumn,
 }
 
 #[derive(Default, Clone, Copy)]
@@ -50,6 +50,13 @@ fn sort_button(ui: &mut egui::Ui, label: &str, active: bool, sort: Sort) -> egui
         ui.style_mut().visuals.faint_bg_color = egui::Color32::RED;
     }
     ui.button(format!("{} {}", label, arrow_str))
+}
+
+#[derive(Default, PartialEq, Eq)]
+enum MapsSortColumn {
+    #[default]
+    StartOffset,
+    Size,
 }
 
 impl OpenProcessWindow {
@@ -90,9 +97,15 @@ impl OpenProcessWindow {
                 .header(20.0, |mut row| {
                     row.col(|ui| {
                         ui.horizontal(|ui| {
-                            if sort_button(ui, "", win.maps_sort_col == 0, win.addr_sort).clicked()
+                            if sort_button(
+                                ui,
+                                "",
+                                win.maps_sort_col == MapsSortColumn::StartOffset,
+                                win.addr_sort,
+                            )
+                            .clicked()
                             {
-                                win.maps_sort_col = 0;
+                                win.maps_sort_col = MapsSortColumn::StartOffset;
                                 win.addr_sort.flip();
                             }
                             ui.add(
@@ -102,9 +115,15 @@ impl OpenProcessWindow {
                         });
                     });
                     row.col(|ui| {
-                        if sort_button(ui, "size", win.maps_sort_col == 1, win.size_sort).clicked()
+                        if sort_button(
+                            ui,
+                            "size",
+                            win.maps_sort_col == MapsSortColumn::Size,
+                            win.size_sort,
+                        )
+                        .clicked()
                         {
-                            win.maps_sort_col = 1;
+                            win.maps_sort_col = MapsSortColumn::Size;
                             win.size_sort.flip();
                         }
                     });
@@ -136,20 +155,15 @@ impl OpenProcessWindow {
                             None => false,
                         }
                     });
-                    filtered.sort_by(|range1, range2| {
-                        if win.maps_sort_col == 1 {
-                            match win.size_sort {
-                                Sort::Ascending => range1.size().cmp(&range2.size()),
-                                Sort::Descending => range1.size().cmp(&range2.size()).reverse(),
-                            }
-                        } else if win.maps_sort_col == 0 {
-                            match win.addr_sort {
-                                Sort::Ascending => range1.start().cmp(&range2.start()),
-                                Sort::Descending => range1.start().cmp(&range2.start()).reverse(),
-                            }
-                        } else {
-                            panic!("Invalid sort column");
-                        }
+                    filtered.sort_by(|range1, range2| match win.maps_sort_col {
+                        MapsSortColumn::Size => match win.size_sort {
+                            Sort::Ascending => range1.size().cmp(&range2.size()),
+                            Sort::Descending => range1.size().cmp(&range2.size()).reverse(),
+                        },
+                        MapsSortColumn::StartOffset => match win.addr_sort {
+                            Sort::Ascending => range1.start().cmp(&range2.start()),
+                            Sort::Descending => range1.start().cmp(&range2.start()).reverse(),
+                        },
                     });
                     body.rows(20.0, filtered.len(), |idx, mut row| {
                         let map_range = filtered[idx].clone();
