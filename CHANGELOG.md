@@ -6,8 +6,6 @@
 
 - Show error message box instead of panic when failing to allocate textures
 
-Nothing yet.
-
 ## [0.1.0] - 2022-09-16
 
 Initial release.
