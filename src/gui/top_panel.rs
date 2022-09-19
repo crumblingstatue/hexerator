@@ -2,8 +2,8 @@ use {
     super::{dialogs::LuaColorDialog, top_menu::top_menu, Gui},
     crate::{
         app::App,
-        color::{self, ColorMethod, Palette},
         shell::{msg_fail, msg_if_fail, msg_warn},
+        value_color::{self, ColorMethod, Palette},
     },
     anyhow::Context,
     egui_sfml::{
@@ -107,12 +107,12 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                     }
                     if ui.button("Save").clicked() {
                         if let Some(path) = rfd::FileDialog::new().save_file() {
-                            msg_if_fail(color::save_palette(arr, &path), "Failed to save pal");
+                            msg_if_fail(value_color::save_palette(arr, &path), "Failed to save pal");
                         }
                     }
                     if ui.button("Load").clicked() {
                         if let Some(path) = rfd::FileDialog::new().pick_file() {
-                            match color::load_palette(&path) {
+                            match value_color::load_palette(&path) {
                                 Ok(pal) => *arr = Box::new(pal),
                                 Err(e) => msg_fail(&e, "Failed to load pal"),
                             }

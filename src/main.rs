@@ -21,7 +21,6 @@
 
 mod app;
 mod args;
-mod color;
 mod config;
 mod damage_region;
 mod dec_conv;
@@ -39,6 +38,7 @@ mod shell;
 mod slice_ext;
 mod source;
 mod timer;
+mod value_color;
 mod view;
 #[cfg(windows)]
 mod windows;

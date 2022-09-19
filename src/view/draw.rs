@@ -2,11 +2,11 @@ use {
     super::View,
     crate::{
         app::{presentation::Presentation, App},
-        color::invert_color,
         dec_conv,
         gui::Gui,
         hex_conv,
         meta::{region::Region, PerspectiveMap, RegionMap, ViewKey},
+        value_color::invert_color,
         view::ViewKind,
     },
     egui_sfml::sfml::{

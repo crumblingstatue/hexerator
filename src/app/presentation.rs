@@ -1,5 +1,5 @@
 use {
-    crate::color::ColorMethod,
+    crate::value_color::ColorMethod,
     egui_sfml::sfml::graphics::Color,
     serde::{Deserialize, Serialize},
     serde_with::{serde_as, FromInto},

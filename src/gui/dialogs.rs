@@ -2,11 +2,11 @@ use {
     super::Dialog,
     crate::{
         app::App,
-        color::ColorMethod,
         damage_region::DamageRegion,
         parse_radix::{parse_offset_maybe_relative, Relativity},
         shell::{msg_fail, msg_if_fail, msg_warn},
         slice_ext::SliceExt,
+        value_color::ColorMethod,
     },
     egui_easy_mark_standalone::easy_mark,
     egui_sfml::egui,
