@@ -21,6 +21,7 @@
 
 mod app;
 mod args;
+mod color;
 mod config;
 mod damage_region;
 mod dec_conv;
