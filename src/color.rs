@@ -1,7 +1,4 @@
-use {
-    egui_sfml::sfml::graphics::Color,
-    serde::{Deserialize, Serialize},
-};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RgbaColor {
@@ -13,18 +10,6 @@ pub struct RgbaColor {
 
 pub const fn rgba(r: u8, g: u8, b: u8, a: u8) -> RgbaColor {
     RgbaColor { r, g, b, a }
-}
-
-impl From<Color> for RgbaColor {
-    fn from(Color { r, g, b, a }: Color) -> Self {
-        Self { r, g, b, a }
-    }
-}
-
-impl From<RgbaColor> for Color {
-    fn from(RgbaColor { r, g, b, a }: RgbaColor) -> Self {
-        Self { r, g, b, a }
-    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
@@ -44,15 +29,4 @@ impl RgbColor {
 
 pub const fn rgb(r: u8, g: u8, b: u8) -> RgbColor {
     RgbColor { r, g, b }
-}
-
-impl From<RgbColor> for Color {
-    fn from(src: RgbColor) -> Self {
-        Self {
-            r: src.r,
-            g: src.g,
-            b: src.b,
-            a: 255,
-        }
-    }
 }

@@ -21,6 +21,7 @@
 
 mod app;
 mod args;
+mod backend;
 mod color;
 mod config;
 mod damage_region;
