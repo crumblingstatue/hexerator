@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 
+[features]
+backend-sfml = ["egui-sfml"]
+default = ["backend-sfml"]
+
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
 clap = { version = "3.2.17", features = ["derive"] }
@@ -23,7 +27,7 @@ bytemuck = "1.12.1"
 egui_easy_mark_standalone = { git = "https://github.com/crumblingstatue/egui-easymark-standalone.git", version = "0.1.0" }
 index_many = "0.6.1"
 slotmap = { version = "1.0.6", features = ["serde"] }
-egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git" }
+egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
 num-traits = "0.2.15"
 serde-big-array = "0.4.1"
 egui_extras = { version = "0.19.0", default-features = false }
