@@ -1,5 +1,5 @@
 use {
-    crate::{color::MyColor, value_color::ColorMethod},
+    crate::{color::RgbaColor, value_color::ColorMethod},
     egui_sfml::sfml::graphics::Color,
     serde::{Deserialize, Serialize},
     serde_with::{serde_as, FromInto},
@@ -10,11 +10,11 @@ use {
 pub struct Presentation {
     pub color_method: ColorMethod,
     pub invert_color: bool,
-    #[serde_as(as = "FromInto<MyColor>")]
+    #[serde_as(as = "FromInto<RgbaColor>")]
     pub sel_color: Color,
-    #[serde_as(as = "FromInto<MyColor>")]
+    #[serde_as(as = "FromInto<RgbaColor>")]
     pub cursor_color: Color,
-    #[serde_as(as = "FromInto<MyColor>")]
+    #[serde_as(as = "FromInto<RgbaColor>")]
     pub cursor_active_color: Color,
 }
 
