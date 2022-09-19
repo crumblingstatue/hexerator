@@ -168,12 +168,12 @@ fn cursor_color(active: bool, flash_timer: Option<u32>, presentation: &Presentat
     if active {
         match flash_timer {
             Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
-            None => presentation.cursor_active_color,
+            None => presentation.cursor_active_color.into(),
         }
     } else {
         match flash_timer {
             Some(timer) => Color::rgb(timer as u8, timer as u8, timer as u8),
-            None => presentation.cursor_color,
+            None => presentation.cursor_color.into(),
         }
     }
 }
@@ -330,7 +330,7 @@ impl View {
                                 y,
                                 f32::from(this.view.col_w),
                                 f32::from(this.view.row_h),
-                                this.view.presentation.sel_color,
+                                this.view.presentation.sel_color.into(),
                             )
                         }
                         let mut gx = x;
@@ -383,7 +383,7 @@ impl View {
                                 y,
                                 f32::from(this.view.col_w),
                                 f32::from(this.view.row_h),
-                                this.view.presentation.sel_color,
+                                this.view.presentation.sel_color.into(),
                             )
                         }
                         let mut gx = x;
@@ -436,7 +436,7 @@ impl View {
                                 y,
                                 f32::from(this.view.col_w),
                                 f32::from(this.view.row_h),
-                                this.view.presentation.sel_color,
+                                this.view.presentation.sel_color.into(),
                             )
                         }
                         let raw_data = match text.text_kind {
