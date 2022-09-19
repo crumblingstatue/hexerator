@@ -2,11 +2,11 @@ use {
     super::View,
     crate::{
         app::{presentation::Presentation, App},
+        color::RgbColor,
         dec_conv,
         gui::Gui,
         hex_conv,
         meta::{region::Region, PerspectiveMap, RegionMap, ViewKey},
-        value_color::invert_color,
         view::ViewKind,
     },
     egui_sfml::sfml::{
@@ -27,7 +27,7 @@ pub fn draw_view(
     app_regions: &RegionMap,
     app_data: &[u8],
     vertex_buffer: &mut Vec<Vertex>,
-    mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, &[u8], usize, Color),
+    mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, &[u8], usize, RgbColor),
 ) {
     // Protect against infinite loop lock up when scrolling horizontally out of view
     if view.scroll_offset.pix_xoff <= -view.viewport_rect.w || view.perspective.is_null() {
@@ -348,7 +348,7 @@ impl View {
                                 gx,
                                 y,
                                 d.into(),
-                                c,
+                                c.into(),
                             );
                             gx += f32::from(hex.font_size - 4);
                         }
@@ -401,7 +401,7 @@ impl View {
                                 gx,
                                 y,
                                 d.into(),
-                                c,
+                                c.into(),
                             );
                             gx += f32::from(dec.font_size - 4);
                         }
@@ -457,7 +457,15 @@ impl View {
                             0xFF => '■' as u32,
                             _ => raw_data,
                         };
-                        draw_glyph(font, text.font_size.into(), vertex_buffer, x, y, glyph, c);
+                        draw_glyph(
+                            font,
+                            text.font_size.into(),
+                            vertex_buffer,
+                            x,
+                            y,
+                            glyph,
+                            c.into(),
+                        );
                         if idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x,
@@ -482,7 +490,7 @@ impl View {
                     vertex_buffer,
                     |vertex_buffer, x, y, _byte, idx, mut c| {
                         if selected_or_find_result_contains(app.hex_ui.selection(), idx, gui) {
-                            c = invert_color(c);
+                            c = c.invert();
                         }
                         draw_rect(
                             vertex_buffer,
@@ -490,7 +498,7 @@ impl View {
                             y,
                             f32::from(this.view.col_w),
                             f32::from(this.view.row_h),
-                            c,
+                            c.into(),
                         );
                         if idx == app.edit_state.cursor {
                             draw_block_cursor(
