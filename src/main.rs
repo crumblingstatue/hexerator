@@ -19,6 +19,11 @@
 )]
 #![windows_subsystem = "windows"]
 
+use {
+    gui::message_dialog::{Icon, MessageDialog},
+    rfd::MessageLevel,
+};
+
 mod app;
 mod args;
 mod backend;
@@ -66,7 +71,7 @@ use {
     gui::{dialogs::JumpDialog, ContextMenu, ContextMenuData, Gui},
     meta::{NamedView, PerspectiveMap, RegionMap},
     serde::{Deserialize, Serialize},
-    shell::{msg_if_fail, msg_warn},
+    shell::msg_if_fail,
     slotmap::Key as _,
     std::{fmt::Display, time::Duration},
 };
@@ -93,11 +98,11 @@ fn try_main() -> anyhow::Result<()> {
     let font = unsafe {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
-    let mut app = App::new(args, Config::load_or_default()?, &font)?;
+    let mut gui = Gui::default();
+    let mut app = App::new(args, Config::load_or_default()?, &font, &mut gui.msg_dialog)?;
     crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);
     let mut vertex_buffer = Vec::new();
-    let mut gui = Gui::default();
 
     while window.is_open() {
         if !do_frame(
@@ -123,7 +128,13 @@ fn try_main() -> anyhow::Result<()> {
 }
 
 fn main() {
-    msg_if_fail(try_main(), "Fatal error");
+    if let Err(e) = try_main() {
+        rfd::MessageDialog::new()
+            .set_title("Fatal error")
+            .set_description(&e.to_string())
+            .set_level(MessageLevel::Error)
+            .show();
+    }
 }
 
 #[must_use = "Returns false if application should quit"]
@@ -137,7 +148,7 @@ fn do_frame(
 ) -> bool {
     handle_events(gui, app, window, sf_egui, font);
     update(app, sf_egui.context().wants_keyboard_input());
-    app.update();
+    app.update(&mut gui.msg_dialog);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
     if !gui::do_egui(sf_egui, gui, app, mp, font) {
         return false;
@@ -298,7 +309,9 @@ fn handle_events(
                 alt,
                 ..
             } => handle_key_pressed(code, gui, app, KeyMod { ctrl, shift, alt }, font, wants_kb),
-            Event::TextEntered { unicode } => handle_text_entered(app, unicode),
+            Event::TextEntered { unicode } => {
+                handle_text_entered(app, unicode, &mut gui.msg_dialog)
+            }
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_zero((x, y));
                 if app.hex_ui.current_layout.is_null() {
@@ -364,7 +377,7 @@ fn handle_events(
     }
 }
 
-fn handle_text_entered(app: &mut App, unicode: char) {
+fn handle_text_entered(app: &mut App, unicode: char, msg: &mut MessageDialog) {
     if Key::LControl.is_pressed() || Key::LAlt.is_pressed() {
         return;
     }
@@ -379,6 +392,7 @@ fn handle_text_entered(app: &mut App, unicode: char) {
                 &mut app.edit_state,
                 &app.preferences,
                 &mut app.data,
+                msg,
             );
             keep_cursor_in_view(
                 view,
@@ -587,7 +601,7 @@ fn handle_key_pressed(
         }
         Key::Enter => {
             if let Some(view_key) = app.hex_ui.focused_view {
-                app.meta_state.meta.views[view_key].view.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences);
+                app.meta_state.meta.views[view_key].view.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences, &mut gui.msg_dialog);
             }
         }
         Key::A if key_mod.ctrl => {
@@ -599,26 +613,27 @@ fn handle_key_pressed(
         Key::S if key_mod.ctrl => match &mut app.source {
             Some(source) => {
                 if !source.attr.permissions.write {
-                    msg_warn("This source cannot be written to.");
+                    gui.msg_dialog.open(Icon::Warn, "Cannot save", "This source cannot be written to.");
                 } else {
-                    msg_if_fail(app.save(), "Failed to save");
+                    msg_if_fail(app.save(), "Failed to save", &mut gui.msg_dialog);
                 }
             }
-            None => msg_warn("No source opened"),
+            None => gui.msg_dialog.open(Icon::Warn, "Cannot save", "No source opened"),
         },
         Key::R if key_mod.ctrl => {
-            msg_if_fail(app.reload(), "Failed to reload");
+            msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
         }
         Key::O if key_mod.ctrl => {
-            shell::open_file(app, font);
+            shell::open_file(app, font, &mut gui.msg_dialog);
         }
         Key::P if key_mod.ctrl => {
             let mut load = None;
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(Args{ src: args, recent: false, meta: None },font),
+                    app.load_file_args(Args{ src: args, recent: false, meta: None },font, &mut gui.msg_dialog),
                     "Failed to load file",
+                    &mut gui.msg_dialog
                 );
             }
         }

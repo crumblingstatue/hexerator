@@ -182,8 +182,10 @@ impl OpenProcessWindow {
                                         map_range.size(),
                                         map_range.is_write(),
                                         font,
+                                        &mut gui.msg_dialog,
                                     ),
                                     "Failed to load process memory",
+                                    &mut gui.msg_dialog,
                                 );
                                 if let Ok(off) = usize::from_str_radix(&win.addr_filter_string, 16)
                                 {
@@ -257,11 +259,17 @@ impl OpenProcessWindow {
                                         Ok(ranges) => {
                                             win.map_ranges = ranges;
                                         }
-                                        Err(e) => {
-                                            msg_fail(&e, "Failed to get map ranges for process")
-                                        }
+                                        Err(e) => msg_fail(
+                                            &e,
+                                            "Failed to get map ranges for process",
+                                            &mut gui.msg_dialog,
+                                        ),
                                     },
-                                    Err(e) => msg_fail(&e, "Failed to parse pid of process"),
+                                    Err(e) => msg_fail(
+                                        &e,
+                                        "Failed to parse pid of process",
+                                        &mut gui.msg_dialog,
+                                    ),
                                 }
                             }
                         });

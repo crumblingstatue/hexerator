@@ -53,7 +53,7 @@ impl FileDiffResultWindow {
                         .diff_entries
                         .retain(|en| en.file_val == file_data[en.offset]);
                 };
-                msg_if_fail(result, "Filter unchanged failed");
+                msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
             if ui
                 .button("Filter changed")
@@ -67,7 +67,7 @@ impl FileDiffResultWindow {
                         .diff_entries
                         .retain(|en| en.file_val != file_data[en.offset]);
                 };
-                msg_if_fail(result, "Filter unchanged failed");
+                msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
         });
         ui.horizontal(|ui| {
@@ -88,7 +88,7 @@ impl FileDiffResultWindow {
                         en.file_val = file_data[en.offset];
                     }
                 };
-                msg_if_fail(result, "Refresh failed");
+                msg_if_fail(result, "Refresh failed", &mut gui.msg_dialog);
             }
             ui.checkbox(
                 &mut gui.file_diff_result_window.auto_refresh,

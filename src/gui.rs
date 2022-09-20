@@ -22,7 +22,7 @@ mod find_dialog;
 mod find_memory_pointers_window;
 pub mod inspect_panel;
 mod layouts_window;
-mod message_dialog;
+pub mod message_dialog;
 mod meta_diff_window;
 mod open_process_window;
 mod ops;
@@ -81,7 +81,7 @@ pub struct Gui {
     pub advanced_open_window: AdvancedOpenWindow,
     pub external_command_window: ExternalCommandWindow,
     pub preferences_window: PreferencesWindow,
-    msg_dialog: MessageDialog,
+    pub msg_dialog: MessageDialog,
 }
 
 pub struct ContextMenu {
@@ -105,7 +105,7 @@ pub enum ContextMenuData {
 pub trait Dialog {
     fn title(&self) -> &str;
     /// Do the ui for this dialog. Returns whether to keep this dialog open.
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool;
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool;
 }
 
 impl Gui {
@@ -131,7 +131,7 @@ pub fn do_egui(
         if was_open && !open {
             gamedebug_core::toggle();
         }
-        gui.msg_dialog.show();
+        gui.msg_dialog.show(ctx);
         macro_rules! windows {
             ($($title:expr, $field:ident, $ty:ty: $($arg:ident)+;)*) => {
                 $(
@@ -242,7 +242,7 @@ pub fn do_egui(
         dialogs.retain_mut(|dialog| {
             let mut retain = true;
             Window::new(dialog.title()).show(ctx, |ui| {
-                retain = dialog.ui(ui, app);
+                retain = dialog.ui(ui, app, &mut gui.msg_dialog);
             });
             retain
         });

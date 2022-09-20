@@ -1,6 +1,7 @@
 use {
     super::{
         dialogs::{AutoSaveReloadDialog, JumpDialog, LuaFillDialog, PatternFillDialog},
+        message_dialog::Icon,
         util::{button_with_shortcut, ButtonWithShortcut},
     },
     crate::{
@@ -22,7 +23,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| {
             if button_with_shortcut(ui, "Open...", "Ctrl+O").clicked() {
-                crate::shell::open_file(app, font);
+                crate::shell::open_file(app, font, &mut gui.msg_dialog);
                 ui.close_menu();
             }
             if ui.button("Advanced open...").clicked() {
@@ -73,8 +74,9 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
             });
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(Args{ src: args, recent: false, meta: None },font),
+                    app.load_file_args(Args{ src: args, recent: false, meta: None },font, &mut gui.msg_dialog),
                     "Failed to load file",
+                    &mut gui.msg_dialog
                 );
             }
             ui.separator();
@@ -85,11 +87,11 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                 )
                 .clicked()
             {
-                msg_if_fail(app.save(), "Failed to save");
+                msg_if_fail(app.save(), "Failed to save", &mut gui.msg_dialog);
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Reload", "Ctrl+R").clicked() {
-                msg_if_fail(app.reload(), "Failed to reload");
+                msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
                 ui.close_menu();
             }
             if ui.button("Auto save/reload...").clicked() {
@@ -98,11 +100,11 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
             }
             ui.separator();
             if ui.button("Create backup").clicked() {
-                msg_if_fail(app.create_backup(), "Failed to create backup");
+                msg_if_fail(app.create_backup(), "Failed to create backup", &mut gui.msg_dialog);
                 ui.close_menu();
             }
             if ui.button("Restore backup").clicked() {
-                msg_if_fail(app.restore_backup(), "Failed to restore backup");
+                msg_if_fail(app.restore_backup(), "Failed to restore backup",&mut gui.msg_dialog);
                 ui.close_menu();
             }
             ui.separator();
@@ -174,7 +176,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
             if ui.button("Save selection to file").clicked() {
                 if let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = app.hex_ui.selection() {
                     let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
-                    msg_if_fail(result, "Failed to save selection to file");
+                    msg_if_fail(result, "Failed to save selection to file", &mut gui.msg_dialog);
                 }
                 ui.close_menu();
             }
@@ -291,55 +293,55 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
             }
             ui.separator();
             if ui.add_enabled(!app.meta_state.current_meta_path.as_os_str().is_empty(), egui::Button::new("Reload")).on_hover_text(format!("Reload from {}", app.meta_state.current_meta_path.display())).clicked() {
-                msg_if_fail(app.consume_meta_from_file(app.meta_state.current_meta_path.clone()), "Failed to load metafile");
+                msg_if_fail(app.consume_meta_from_file(app.meta_state.current_meta_path.clone()), "Failed to load metafile", &mut gui.msg_dialog);
                 ui.close_menu();
             }
             if ui.button("Load from file...").clicked() {
                 if let Some(path) = rfd::FileDialog::default().pick_file() {
-                    msg_if_fail(app.consume_meta_from_file(path), "Failed to load metafile");
+                    msg_if_fail(app.consume_meta_from_file(path), "Failed to load metafile", &mut gui.msg_dialog);
                 }
                 ui.close_menu();
             }
             if ui.button("Load from temp backup").on_hover_text("Load from temporary backup (auto generated on save/exit)").clicked() {
-                msg_if_fail(app.consume_meta_from_file(crate::app::temp_metafile_backup_path()), "Failed to load temp metafile");
+                msg_if_fail(app.consume_meta_from_file(crate::app::temp_metafile_backup_path()), "Failed to load temp metafile", &mut gui.msg_dialog);
                 ui.close_menu();
             }
             ui.separator();
             if ui.add_enabled(!app.meta_state.current_meta_path.as_os_str().is_empty(), egui::Button::new("Save")).on_hover_text(format!("Save to {}", app.meta_state.current_meta_path.display())).clicked() {
-                msg_if_fail(app.save_meta_to_file(app.meta_state.current_meta_path.clone(), false), "Failed to save metafile");
+                msg_if_fail(app.save_meta_to_file(app.meta_state.current_meta_path.clone(), false), "Failed to save metafile", &mut gui.msg_dialog);
                 ui.close_menu();
             }
             if ui.button("Save as...").clicked() {
                 if let Some(path) = rfd::FileDialog::default().save_file() {
-                    msg_if_fail(app.save_meta_to_file(path, false), "Failed to save metafile");
+                    msg_if_fail(app.save_meta_to_file(path, false), "Failed to save metafile", &mut gui.msg_dialog);
                 }
                 ui.close_menu();
             }
         });
         ui.menu_button("Analysis", |ui| {
             if ui.button("Determine data mime type under cursor").clicked() {
-                gui.msg_dialog.info(ui, "Data mime type under cursor", tree_magic_mini::from_u8(&app.data[app.edit_state.cursor..]).to_string());
+                gui.msg_dialog.open(Icon::Info, "Data mime type under cursor", tree_magic_mini::from_u8(&app.data[app.edit_state.cursor..]).to_string());
                 ui.close_menu();
             }
             ui.separator();
             if ui.button("Diff with file...").clicked() {
                 ui.close_menu();
                 if let Some(path) = rfd::FileDialog::default().pick_file() {
-                    msg_if_fail(app.diff_with_file(path,gui, ), "Failed to diff");
+                    msg_if_fail(app.diff_with_file(path,gui, ), "Failed to diff", &mut gui.msg_dialog);
                 }
             }
             if ui.button("Diff with source file").clicked() {
                 ui.close_menu();
                 if let Some(path) = app.source_file() {
                     let path = path.to_owned();
-                    msg_if_fail(app.diff_with_file(path,gui,), "Failed to diff");
+                    msg_if_fail(app.diff_with_file(path,gui,), "Failed to diff", &mut gui.msg_dialog);
                 }
             }
             match app.backup_path() {
                 Some(path) if path.exists() => {
                     if ui.button("Diff with backup").clicked() {
                         ui.close_menu();
-                        msg_if_fail(app.diff_with_file(path,gui,), "Failed to diff");
+                        msg_if_fail(app.diff_with_file(path,gui,), "Failed to diff", &mut gui.msg_dialog);
                     }
                 }
                 _ => { ui.add_enabled(false, egui::Button::new("Diff with backup")); }
@@ -352,7 +354,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
         });
         ui.menu_button("Help", |ui| {
             if ui.button("Hexerator book").clicked() {
-                msg_if_fail(open::that("https://crumblingstatue.github.io/hexerator-book/"), "Failed to open help");
+                msg_if_fail(open::that("https://crumblingstatue.github.io/hexerator-book/"), "Failed to open help", &mut gui.msg_dialog);
                 ui.close_menu();
             }
             if button_with_shortcut(ui, "Debug panel...", "F12").clicked() {

@@ -1,11 +1,13 @@
 use {
-    super::window_open::WindowOpen,
+    super::{
+        message_dialog::{Icon, MessageDialog},
+        window_open::WindowOpen,
+    },
     crate::{
         app::App,
         meta::{find_most_specific_region_for_offset, Bookmark, Meta, ValueType},
         parse_radix::parse_guess_radix,
         region_context_menu,
-        shell::msg_warn,
     },
     egui_extras::{Size, StripBuilder, TableBuilder},
     egui_sfml::egui::{self, Align, Ui},
@@ -227,7 +229,7 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
         dia.results_set.clear();
     }
     match dia.find_type {
-        FindType::U8 => find_u8(dia, app),
+        FindType::U8 => find_u8(dia, app, &mut gui.msg_dialog),
         FindType::Ascii => {
             for offset in memchr::memmem::find_iter(&app.data, &dia.input) {
                 dia.results_vec.push(offset);
@@ -240,7 +242,7 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
     }
 }
 
-fn find_u8(dia: &mut FindDialog, app: &mut App) {
+fn find_u8(dia: &mut FindDialog, app: &mut App, msg: &mut MessageDialog) {
     match dia.input.as_str() {
         "?" => {
             dia.data_snapshot = app.data.clone();
@@ -326,7 +328,7 @@ fn find_u8(dia: &mut FindDialog, app: &mut App) {
                     u8_search(dia, app.data.iter().cloned().enumerate(), needle);
                 }
             }
-            Err(e) => msg_warn(&format!("Parse fail: {}", e)),
+            Err(e) => msg.open(Icon::Error, "Parse error", e.to_string()),
         },
     }
 }

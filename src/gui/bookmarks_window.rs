@@ -108,7 +108,11 @@ impl BookmarksWindow {
                                         }
                                     }
                                 };
-                                msg_if_fail(result, "Failed u16-le conversion");
+                                msg_if_fail(
+                                    result,
+                                    "Failed u16-le conversion",
+                                    &mut gui.msg_dialog,
+                                );
                             }
                             ValueType::StringMap(list) => {
                                 let val = &mut app.data[bm.offset];
@@ -213,7 +217,11 @@ impl BookmarksWindow {
                             let v = v.trim().to_owned();
                             list.insert(k, v);
                         };
-                        msg_if_fail(result, "Failed to set value list kvpair");
+                        msg_if_fail(
+                            result,
+                            "Failed to set value list kvpair",
+                            &mut gui.msg_dialog,
+                        );
                     }
                 }
                 _ => {}

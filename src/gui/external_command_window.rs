@@ -62,7 +62,7 @@ impl ExternalCommandWindow {
                     .spawn()?;
                 win.child = Some(handle);
             };
-            msg_if_fail(res, "Failed to spawn command");
+            msg_if_fail(res, "Failed to spawn command", &mut gui.msg_dialog);
         }
         ui.checkbox(&mut win.auto_exec, "Auto execute")
             .on_hover_text("Execute again after process finishes");
@@ -70,7 +70,7 @@ impl ExternalCommandWindow {
             ui.horizontal(|ui| {
                 ui.label(format!("{} running", child.id()));
                 if ui.button("Kill").clicked() {
-                    msg_if_fail(child.kill(), "Failed to kill child");
+                    msg_if_fail(child.kill(), "Failed to kill child", &mut gui.msg_dialog);
                 }
             });
             match child.try_wait() {

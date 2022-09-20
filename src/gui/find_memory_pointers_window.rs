@@ -85,9 +85,12 @@ impl FindMemoryPointersWindow {
                                 range.size(),
                                 range.is_write(),
                                 font,
+                                &mut gui.msg_dialog,
                             ) {
                                 Ok(()) => action = Action::Goto(en.ptr - range.start()),
-                                Err(e) => msg_fail(&e, "failed to load proc memory"),
+                                Err(e) => {
+                                    msg_fail(&e, "failed to load proc memory", &mut gui.msg_dialog)
+                                }
                             }
                         }
                     });

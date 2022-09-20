@@ -106,8 +106,9 @@ impl AdvancedOpenWindow {
             .clicked()
         {
             msg_if_fail(
-                app.load_file_args(args.clone(), font),
+                app.load_file_args(args.clone(), font, &mut gui.msg_dialog),
                 "Failed to load file",
+                &mut gui.msg_dialog,
             );
             win.open.set(false);
         }

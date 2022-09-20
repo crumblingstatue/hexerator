@@ -1,8 +1,9 @@
 use {
+    super::message_dialog::{Icon, MessageDialog},
     crate::{
         app::{interact_mode::InteractMode, App},
         damage_region::DamageRegion,
-        shell::{msg_if_fail, msg_warn},
+        shell::msg_if_fail,
         view::ViewportVec,
     },
     anyhow::bail,
@@ -85,6 +86,7 @@ trait InputThingyTrait {
         offset: usize,
         be: bool,
         format: Format,
+        msg: &mut MessageDialog,
     ) -> Option<DamageRegion>;
 }
 
@@ -106,8 +108,9 @@ impl<T: BytesManip> InputThingyTrait for InputThingy<T> {
         offset: usize,
         be: bool,
         format: Format,
+        msg: &mut MessageDialog,
     ) -> Option<DamageRegion> {
-        T::convert_and_write(&self.string, data, offset, be, format)
+        T::convert_and_write(&self.string, data, offset, be, format, msg)
     }
 }
 
@@ -314,6 +317,7 @@ impl<T: NumBytesManip> BytesManip for T {
         offset: usize,
         be: bool,
         format: Format,
+        msg: &mut MessageDialog,
     ) -> Option<DamageRegion> {
         match Self::from_str(buf, format) {
             Ok(this) => {
@@ -332,7 +336,7 @@ impl<T: NumBytesManip> BytesManip for T {
                 }
             }
             Err(e) => {
-                msg_warn(&format!("Convert error: {:?}", e));
+                msg.open(Icon::Error, "Convert error", e.to_string());
                 None
             }
         }
@@ -360,6 +364,7 @@ impl BytesManip for Ascii {
         offset: usize,
         _be: bool,
         _format: Format,
+        msg: &mut MessageDialog,
     ) -> Option<DamageRegion> {
         let len = buf.len();
         let range = offset..offset + len;
@@ -369,7 +374,11 @@ impl BytesManip for Ascii {
                 Some(DamageRegion::Range(range))
             }
             None => {
-                msg_warn("Failed to write data: Out of bounds");
+                msg.open(
+                    Icon::Error,
+                    "Convert and write error",
+                    "Failed to write data: Out of bounds",
+                );
                 None
             }
         }
@@ -399,6 +408,7 @@ trait BytesManip {
         offset: usize,
         be: bool,
         format: Format,
+        msg: &mut MessageDialog,
     ) -> Option<DamageRegion>;
 }
 
@@ -471,7 +481,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                     };
                     actions.push(Action::GoToOffset(offset));
                 };
-                msg_if_fail(result, "Failed to go to offset");
+                msg_if_fail(result, "Failed to go to offset", &mut gui.msg_dialog);
             }
             if ui.button("➡").on_hover_text("jump forward").clicked() {
                 let result: anyhow::Result<()> = try {
@@ -482,7 +492,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                     };
                     actions.push(Action::JumpForward(offset));
                 };
-                msg_if_fail(result, "Failed to jump forward");
+                msg_if_fail(result, "Failed to jump forward", &mut gui.msg_dialog);
             }
         });
         if ui.text_edit_singleline(thingy.buf_mut()).lost_focus()
@@ -493,6 +503,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                 offset,
                 gui.inspect_panel.big_endian,
                 gui.inspect_panel.format,
+                &mut gui.msg_dialog,
             ) {
                 gui.inspect_panel.changed_one = true;
                 actions.push(Action::AddDirty(range));

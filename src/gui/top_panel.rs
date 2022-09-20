@@ -1,8 +1,8 @@
 use {
-    super::{dialogs::LuaColorDialog, top_menu::top_menu, Gui},
+    super::{dialogs::LuaColorDialog, message_dialog::Icon, top_menu::top_menu, Gui},
     crate::{
         app::App,
-        shell::{msg_fail, msg_if_fail, msg_warn},
+        shell::{msg_fail, msg_if_fail},
         value_color::{self, ColorMethod, Palette},
     },
     anyhow::Context,
@@ -99,7 +99,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                     {
                         match color_from_hexcode(&egui_sfml::sfml::window::clipboard::get_string()) {
                             Ok(new) => *col = new,
-                            Err(e) => msg_warn(&format!("Color parse error: {}", e)),
+                            Err(e) => gui.msg_dialog.open(Icon::Error, "Color parse error", e.to_string()),
                         }
                     }
                     if ui.button("Lua").on_hover_text("From lua script").clicked() {
@@ -107,14 +107,14 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                     }
                     if ui.button("Save").clicked() {
                         if let Some(path) = rfd::FileDialog::new().save_file() {
-                            msg_if_fail(value_color::save_palette(arr, &path), "Failed to save pal");
+                            msg_if_fail(value_color::save_palette(arr, &path), "Failed to save pal", &mut gui.msg_dialog);
                         }
                     }
                     if ui.button("Load").clicked() {
                         if let Some(path) = rfd::FileDialog::new().pick_file() {
                             match value_color::load_palette(&path) {
                                 Ok(pal) => *arr = Box::new(pal),
-                                Err(e) => msg_fail(&e, "Failed to load pal"),
+                                Err(e) => msg_fail(&e, "Failed to load pal", &mut gui.msg_dialog),
                             }
                         }
                     }
@@ -152,7 +152,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                                 }
                             }
                         };
-                        msg_if_fail(result, "Failed to load palette from reference image");
+                        msg_if_fail(result, "Failed to load palette from reference image", &mut gui.msg_dialog);
                     }
                 }
             });

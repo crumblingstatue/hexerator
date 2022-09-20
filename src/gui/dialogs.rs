@@ -1,10 +1,13 @@
 use {
-    super::Dialog,
+    super::{
+        message_dialog::{Icon, MessageDialog},
+        Dialog,
+    },
     crate::{
         app::App,
         damage_region::DamageRegion,
         parse_radix::{parse_offset_maybe_relative, Relativity},
-        shell::{msg_fail, msg_if_fail, msg_warn},
+        shell::{msg_fail, msg_if_fail},
         slice_ext::SliceExt,
         value_color::ColorMethod,
     },
@@ -25,7 +28,7 @@ impl Dialog for JumpDialog {
         "Jump"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
         ui.horizontal(|ui| {
             ui.label("Offset");
             ui.text_edit_singleline(&mut self.string_buf)
@@ -58,7 +61,7 @@ impl Dialog for JumpDialog {
                     false
                 }
                 Err(e) => {
-                    msg_fail(&e, "Failed to parse offset");
+                    msg_fail(&e, "Failed to parse offset", msg);
                     true
                 }
             }
@@ -76,7 +79,7 @@ impl Dialog for AutoSaveReloadDialog {
         "Auto save/reload"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, _msg: &mut MessageDialog) -> bool {
         ui.checkbox(&mut app.preferences.auto_reload, "Auto reload");
         ui.horizontal(|ui| {
             ui.label("Interval (ms)");
@@ -104,7 +107,7 @@ impl Dialog for PatternFillDialog {
         "Selection pattern fill"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
             return true;
@@ -126,7 +129,7 @@ impl Dialog for PatternFillDialog {
                     false
                 }
                 Err(e) => {
-                    msg_warn(&format!("Fill parse error: {}", e));
+                    msg.open(Icon::Error, "Fill parse error", e.to_string());
                     true
                 }
             }
@@ -147,7 +150,7 @@ impl Dialog for LuaFillDialog {
         "Lua fill"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
             return true;
@@ -159,7 +162,7 @@ impl Dialog for LuaFillDialog {
             .input_mut()
             .consume_key(egui::Modifiers::CTRL, egui::Key::S);
         if ctrl_s {
-            msg_if_fail(app.save(), "Failed to save");
+            msg_if_fail(app.save(), "Failed to save", msg);
         }
         egui::ScrollArea::vertical()
             // 100.0 is an estimation of ui size below.
@@ -243,7 +246,7 @@ impl Dialog for LuaColorDialog {
         "Lua color"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App) -> bool {
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, _msg: &mut MessageDialog) -> bool {
         let color_data = match app.hex_ui.focused_view {
             Some(view_key) => {
                 let view = &mut app.meta_state.meta.views[view_key].view;

@@ -1,4 +1,7 @@
-use rlua::Lua;
+use {
+    crate::gui::message_dialog::{Icon, MessageDialog},
+    rlua::Lua,
+};
 
 pub mod edit_state;
 pub mod interact_mode;
@@ -19,7 +22,7 @@ use {
         },
         meta_state::MetaState,
         preferences::Preferences,
-        shell::{msg_if_fail, msg_warn},
+        shell::msg_if_fail,
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
         view::{HexData, TextData, View, ViewKind},
     },
@@ -56,7 +59,12 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(mut args: Args, cfg: Config, font: &Font) -> anyhow::Result<Self> {
+    pub fn new(
+        mut args: Args,
+        cfg: Config,
+        font: &Font,
+        msg: &mut MessageDialog,
+    ) -> anyhow::Result<Self> {
         if args.recent && let Some(recent) = cfg.recent.most_recent() {
             args.src = recent.clone();
         }
@@ -75,7 +83,11 @@ impl App {
             meta_state: MetaState::default(),
             lua: Lua::default(),
         };
-        msg_if_fail(this.load_file_args(args, font), "Failed to load file");
+        msg_if_fail(
+            this.load_file_args(args, font, msg),
+            "Failed to load file",
+            msg,
+        );
         Ok(this)
     }
     pub fn reload(&mut self) -> anyhow::Result<()> {
@@ -230,6 +242,7 @@ impl App {
         path: PathBuf,
         read_only: bool,
         font: &Font,
+        msg: &mut MessageDialog,
     ) -> Result<(), anyhow::Error> {
         self.load_file_args(
             Args {
@@ -245,6 +258,7 @@ impl App {
                 meta: None,
             },
             font,
+            msg,
         )
     }
 
@@ -360,7 +374,7 @@ impl App {
                         tx.send(buf)?;
                     };
                     if let Err(e) = result {
-                        msg_warn(&format!("Stream error: {}", e));
+                        per_msg!("Stream error: {}", e);
                     }
                 });
             }
@@ -409,12 +423,18 @@ impl App {
         Ok(())
     }
 
-    pub(crate) fn load_file_args(&mut self, mut args: Args, font: &Font) -> anyhow::Result<()> {
+    pub(crate) fn load_file_args(
+        &mut self,
+        mut args: Args,
+        font: &Font,
+        msg: &mut MessageDialog,
+    ) -> anyhow::Result<()> {
         if load_file_from_src_args(
             &mut args.src,
             &mut self.cfg,
             &mut self.source,
             &mut self.data,
+            msg,
         ) {
             if !self.preferences.keep_meta {
                 self.new_file_readjust(font);
@@ -432,7 +452,7 @@ impl App {
         Ok(())
     }
     /// Called every frame
-    pub(crate) fn update(&mut self) {
+    pub(crate) fn update(&mut self, msg: &mut MessageDialog) {
         if !self.hex_ui.current_layout.is_null() {
             let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
             do_auto_layout(
@@ -452,7 +472,7 @@ impl App {
             && self.last_reload.elapsed().as_millis()
                 >= u128::from(self.preferences.auto_reload_interval_ms)
         {
-            if msg_if_fail(self.reload(), "Auto-reload fail").is_some() {
+            if msg_if_fail(self.reload(), "Auto-reload fail", msg).is_some() {
                 self.preferences.auto_reload = false;
             }
             self.last_reload = Instant::now();
@@ -541,9 +561,10 @@ impl App {
         size: usize,
         is_write: bool,
         font: &Font,
+        msg: &mut MessageDialog,
     ) -> anyhow::Result<()> {
         #[cfg(target_os = "linux")]
-        return load_proc_memory_linux(self, pid, start, size, is_write, font);
+        return load_proc_memory_linux(self, pid, start, size, is_write, font, msg);
         #[cfg(windows)]
         return crate::windows::load_proc_memory(self, pid, start, size, is_write, font);
     }
@@ -579,6 +600,7 @@ fn load_proc_memory_linux(
     size: usize,
     is_write: bool,
     font: &Font,
+    msg: &mut MessageDialog,
 ) -> anyhow::Result<()> {
     app.load_file_args(
         Args {
@@ -594,6 +616,7 @@ fn load_proc_memory_linux(
             meta: None,
         },
         font,
+        msg,
     )
 }
 
@@ -662,6 +685,7 @@ fn load_file_from_src_args(
     cfg: &mut Config,
     source: &mut Option<Source>,
     data: &mut Vec<u8>,
+    msg: &mut MessageDialog,
 ) -> bool {
     if let Some(file_arg) = &src_args.file {
         if file_arg.as_os_str() == "-" {
@@ -685,12 +709,16 @@ fn load_file_from_src_args(
                 if let Some(path) = &mut src_args.file {
                     match path.canonicalize() {
                         Ok(canon) => *path = canon,
-                        Err(e) => msg_warn(&format!(
-                            "Failed to canonicalize path {}: {}\n\
+                        Err(e) => msg.open(
+                            Icon::Warn,
+                            "Warning",
+                            format!(
+                                "Failed to canonicalize path {}: {}\n\
                              Recent use list might not be able to load it back.",
-                            path.display(),
-                            e
-                        )),
+                                path.display(),
+                                e
+                            ),
+                        ),
                     }
                 }
                 cfg.recent.use_(src_args.clone());
@@ -713,7 +741,7 @@ fn load_file_from_src_args(
             match result {
                 Ok(()) => true,
                 Err(e) => {
-                    msg_warn(&format!("Failed to open file: {}", e));
+                    msg.open(Icon::Error, "Failed to open file", e.to_string());
                     false
                 }
             }

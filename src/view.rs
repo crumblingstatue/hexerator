@@ -3,10 +3,10 @@ use {
         app::{edit_state::EditState, presentation::Presentation},
         damage_region::DamageRegion,
         edit_buffer::EditBuffer,
+        gui::message_dialog::{Icon, MessageDialog},
         hex_conv::merge_hex_halves,
         meta::{region::Region, PerspectiveKey, PerspectiveMap, RegionMap},
         preferences::Preferences,
-        shell::msg_warn,
     },
     egui_sfml::sfml::graphics::Font,
     gamedebug_core::per_msg,
@@ -326,6 +326,7 @@ impl View {
         edit_state: &mut EditState,
         preferences: &Preferences,
         data: &mut [u8],
+        msg: &mut MessageDialog,
     ) {
         if self.char_valid(unicode) {
             match &mut self.kind {
@@ -337,7 +338,7 @@ impl View {
                     if hex.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
                         || preferences.quick_edit
                     {
-                        self.finish_editing(edit_state, data, preferences);
+                        self.finish_editing(edit_state, data, preferences, msg);
                     }
                 }
                 ViewKind::Dec(dec) => {
@@ -348,12 +349,12 @@ impl View {
                     if dec.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
                         || preferences.quick_edit
                     {
-                        self.finish_editing(edit_state, data, preferences);
+                        self.finish_editing(edit_state, data, preferences, msg);
                     }
                 }
                 ViewKind::Text(text) => {
                     if text.edit_buf.enter_byte(unicode as u8) || preferences.quick_edit {
-                        self.finish_editing(edit_state, data, preferences);
+                        self.finish_editing(edit_state, data, preferences, msg);
                     }
                 }
                 // Block doesn't do any text input
@@ -393,6 +394,7 @@ impl View {
         edit_state: &mut EditState,
         data: &mut [u8],
         preferences: &Preferences,
+        msg: &mut MessageDialog,
     ) {
         match &mut self.kind {
             ViewKind::Hex(hex) => {
@@ -410,7 +412,7 @@ impl View {
                         data[edit_state.cursor] = num;
                         edit_state.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
                     }
-                    Err(e) => msg_warn(&format!("Invalid value: {}", e)),
+                    Err(e) => msg.open(Icon::Error, "Invalid value", e.to_string()),
                 }
             }
             ViewKind::Text(text) => {
