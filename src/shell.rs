@@ -40,11 +40,3 @@ pub fn msg_warn(msg: &str) {
         .set_description(msg)
         .show();
 }
-
-pub fn msg_info(msg: &str) {
-    rfd::MessageDialog::new()
-        .set_level(rfd::MessageLevel::Info)
-        .set_title("Info")
-        .set_description(msg)
-        .show();
-}

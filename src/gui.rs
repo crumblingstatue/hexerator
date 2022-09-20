@@ -1,5 +1,8 @@
 use {
-    self::{external_command_window::ExternalCommandWindow, preferences_window::PreferencesWindow},
+    self::{
+        external_command_window::ExternalCommandWindow, message_dialog::MessageDialog,
+        preferences_window::PreferencesWindow,
+    },
     crate::config::Style,
     egui_sfml::{
         egui::{FontFamily, FontId},
@@ -19,6 +22,7 @@ mod find_dialog;
 mod find_memory_pointers_window;
 pub mod inspect_panel;
 mod layouts_window;
+mod message_dialog;
 mod meta_diff_window;
 mod open_process_window;
 mod ops;
@@ -77,6 +81,7 @@ pub struct Gui {
     pub advanced_open_window: AdvancedOpenWindow,
     pub external_command_window: ExternalCommandWindow,
     pub preferences_window: PreferencesWindow,
+    msg_dialog: MessageDialog,
 }
 
 pub struct ContextMenu {
@@ -126,6 +131,7 @@ pub fn do_egui(
         if was_open && !open {
             gamedebug_core::toggle();
         }
+        gui.msg_dialog.show();
         macro_rules! windows {
             ($($title:expr, $field:ident, $ty:ty: $($arg:ident)+;)*) => {
                 $(

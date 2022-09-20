@@ -312,6 +312,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui-modal"
+version = "0.1.2"
+source = "git+https://github.com/crumblingstatue/egui-modal.git#ad4b07a23d677cc4bccceb9457605be09fce4c2b"
+dependencies = [
+ "egui",
+]
+
+[[package]]
 name = "egui-sfml"
 version = "0.1.1"
 source = "git+https://github.com/crumblingstatue/egui-sfml.git#cc0f00635bf46e7c84040b8600271c4dccfcb403"
@@ -552,6 +560,7 @@ dependencies = [
  "bytemuck",
  "clap 3.2.21",
  "directories",
+ "egui-modal",
  "egui-sfml",
  "egui_easy_mark_standalone",
  "egui_extras",

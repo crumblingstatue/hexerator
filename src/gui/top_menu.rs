@@ -7,7 +7,7 @@ use {
         app::{col_change_impl_view_perspective, App},
         args::Args,
         damage_region::DamageRegion,
-        shell::{msg_if_fail, msg_info},
+        shell::msg_if_fail,
         source::SourceProvider,
     },
     egui_sfml::{
@@ -318,8 +318,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
         });
         ui.menu_button("Analysis", |ui| {
             if ui.button("Determine data mime type under cursor").clicked() {
-                let format = tree_magic_mini::from_u8(&app.data[app.edit_state.cursor..]);
-                msg_info(format);
+                gui.msg_dialog.info(ui, "Data mime type under cursor", tree_magic_mini::from_u8(&app.data[app.edit_state.cursor..]).to_string());
                 ui.close_menu();
             }
             ui.separator();

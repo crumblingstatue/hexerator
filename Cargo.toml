@@ -36,6 +36,7 @@ itertools = "0.10.3"
 sysinfo = { version = "0.26.2", default-features = false }
 proc-maps = "0.2.1"
 open = "3.0.3"
+egui-modal = { git = "https://github.com/crumblingstatue/egui-modal.git" }
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.36.1"
