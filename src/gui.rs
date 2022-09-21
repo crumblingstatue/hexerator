@@ -9,6 +9,7 @@ use {
         TextureCreateError,
     },
     rfd::MessageLevel,
+    std::{any::TypeId, collections::HashMap},
 };
 
 mod advanced_open_window;
@@ -69,7 +70,7 @@ pub struct Gui {
     pub seek_byte_offset_input: String,
     pub regions_window: RegionsWindow,
     pub bookmarks_window: BookmarksWindow,
-    pub dialogs: Vec<Box<dyn Dialog>>,
+    pub dialogs: HashMap<TypeId, Box<dyn Dialog>>,
     pub layouts_window: LayoutsWindow,
     pub views_window: ViewsWindow,
     pub perspectives_window: PerspectivesWindow,
@@ -113,7 +114,7 @@ pub trait Dialog {
 impl Gui {
     pub fn add_dialog<D: Dialog + 'static>(&mut self, mut dialog: D) {
         dialog.on_open();
-        self.dialogs.push(Box::new(dialog));
+        self.dialogs.insert(TypeId::of::<D>(), Box::new(dialog));
     }
 }
 
@@ -241,8 +242,8 @@ pub fn do_egui(
                 - app.hex_ui.hex_iface_rect.y)
                 - padding * 2;
         }
-        let mut dialogs: Vec<_> = std::mem::take(&mut gui.dialogs);
-        dialogs.retain_mut(|dialog| {
+        let mut dialogs = std::mem::take(&mut gui.dialogs);
+        dialogs.retain(|_k, dialog| {
             let mut retain = true;
             Window::new(dialog.title()).show(ctx, |ui| {
                 retain = dialog.ui(ui, app, &mut gui.msg_dialog);

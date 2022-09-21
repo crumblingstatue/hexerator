@@ -10,6 +10,7 @@
 
 - Show error message box instead of panic when failing to allocate textures
 - Fill dialog and Jump dialog don't keep stealing focus when they are open
+- Certain dialog types no longer erroneusly stack on top of each other if opened multiple times.
 
 ## [0.1.0] - 2022-09-16
 
