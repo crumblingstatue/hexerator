@@ -311,8 +311,9 @@ dependencies = [
 
 [[package]]
 name = "egui-modal"
-version = "0.1.2"
-source = "git+https://github.com/crumblingstatue/egui-modal.git#ad4b07a23d677cc4bccceb9457605be09fce4c2b"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2980b87b45e52241b2acc464592c8c855c2ef9d1c4ef391337297b9fbb7294a6"
 dependencies = [
  "egui",
 ]
