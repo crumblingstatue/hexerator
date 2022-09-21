@@ -97,10 +97,15 @@ impl MessageDialog {
                     ui.label(&self.desc);
                 });
                 let (enter_pressed, esc_pressed) = {
-                    let input = ui.input();
+                    let mut input = ui.input_mut();
                     (
-                        input.key_pressed(egui::Key::Enter),
-                        input.key_pressed(egui::Key::Escape),
+                        // Consume enter and escape, so when the dialog is closed
+                        // using these keys, the normal UI won't receive these keys right away.
+                        // Receiving the keys could for example cause a text parse box
+                        // that parses on enter press to parse again right away with the
+                        // same error when the message box is closed with enter.
+                        input.consume_key(egui::Modifiers::default(), egui::Key::Enter),
+                        input.consume_key(egui::Modifiers::default(), egui::Key::Escape),
                     )
                 };
                 if ui.button("Ok").clicked() || enter_pressed || esc_pressed {
