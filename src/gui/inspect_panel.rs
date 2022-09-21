@@ -7,10 +7,7 @@ use {
         view::ViewportVec,
     },
     anyhow::bail,
-    egui_sfml::{
-        egui::{self, Ui},
-        sfml::window::clipboard,
-    },
+    egui_sfml::egui::{self, Ui},
     slotmap::Key,
     std::{array::TryFromSliceError, marker::PhantomData},
     thiserror::Error,
@@ -435,7 +432,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                 ui.link(format!("offset: {} (0x{:x})", off + add, off + add))
                     .context_menu(|ui| {
                         if ui.button("Copy to clipboard").clicked() {
-                            clipboard::set_string(&format!("{:x}", off + add));
+                            ui.output().copied_text = format!("{:x}", off + add);
                             ui.close_menu();
                         }
                     });
@@ -470,7 +467,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
         ui.horizontal(|ui| {
             ui.label(thingy.label());
             if ui.button("📋").on_hover_text("copy to clipboard").clicked() {
-                clipboard::set_string(&*thingy.buf_mut());
+                ui.output().copied_text = thingy.buf_mut().clone();
             }
             if ui.button("⬇").on_hover_text("go to offset").clicked() {
                 let result: anyhow::Result<()> = try {
@@ -576,7 +573,7 @@ fn edit_offset(app: &mut App, gui: &mut crate::gui::Gui, ui: &mut Ui) -> usize {
     ui.link(format!("offset: {} ({:x}h)", off, off))
         .context_menu(|ui| {
             if ui.button("Copy to clipboard").clicked() {
-                clipboard::set_string(&format!("{:x}", off));
+                ui.output().copied_text = format!("{:x}", off);
                 ui.close_menu();
             }
         });
