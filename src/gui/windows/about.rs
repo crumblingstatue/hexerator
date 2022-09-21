@@ -18,9 +18,11 @@ impl AboutWindow {
             let info = format!(
                 "Version: {}\n\n\
                  Git SHA: {}\n\n\
+                 Cargo profile: {}\n\n\
                  Built with rustc {}\n",
                 env!("VERGEN_GIT_SEMVER"),
                 env!("VERGEN_GIT_SHA"),
+                env!("VERGEN_CARGO_PROFILE"),
                 env!("VERGEN_RUSTC_SEMVER"),
             );
             ui.label(&info);
