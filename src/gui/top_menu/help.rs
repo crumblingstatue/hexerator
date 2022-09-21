@@ -19,4 +19,8 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui) {
         ui.close_menu();
         gamedebug_core::toggle();
     }
+    ui.separator();
+    if ui.button("About Hexerator...").clicked() {
+        gui.about_window.open.toggle();
+    }
 }

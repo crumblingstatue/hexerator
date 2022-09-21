@@ -52,3 +52,6 @@ opt-level = 2
 [profile.release]
 panic = "abort"
 lto = "thin"
+
+[build-dependencies]
+vergen = "7.4.2"

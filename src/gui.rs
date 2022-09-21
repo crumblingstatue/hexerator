@@ -3,7 +3,7 @@ use {
         external_command_window::ExternalCommandWindow, message_dialog::MessageDialog,
         preferences_window::PreferencesWindow,
     },
-    crate::config::Style,
+    crate::{config::Style, gui::windows::AboutWindow},
     egui_sfml::{
         egui::{FontFamily, FontId},
         TextureCreateError,
@@ -35,6 +35,7 @@ mod top_panel;
 mod util;
 mod views_window;
 mod window_open;
+mod windows;
 
 use {
     self::{
@@ -83,6 +84,7 @@ pub struct Gui {
     pub external_command_window: ExternalCommandWindow,
     pub preferences_window: PreferencesWindow,
     pub msg_dialog: MessageDialog,
+    pub about_window: AboutWindow,
 }
 
 pub struct ContextMenu {
@@ -137,10 +139,10 @@ pub fn do_egui(
         }
         gui.msg_dialog.show(ctx);
         macro_rules! windows {
-            ($($title:expr, $field:ident, $ty:ty: $($arg:ident)+;)*) => {
+            ($($title:expr, $field:ident, $ty:ty: $($arg:ident)*;)*) => {
                 $(
                     open = gui.$field.open.is();
-                    Window::new($title).open(&mut open).show(ctx, |ui| <$ty>::ui(ui, $($arg,)+));
+                    Window::new($title).open(&mut open).show(ctx, |ui| <$ty>::ui(ui, $($arg,)*));
                     if !open {
                         gui.$field.open.set(false);
                     }
@@ -161,6 +163,7 @@ pub fn do_egui(
             "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
             "External command",        external_command_window,     ExternalCommandWindow: gui app;
             "Preferences",             preferences_window,          PreferencesWindow: gui app;
+            "About Hexerator",         about_window,                AboutWindow:;
         }
         // Context menu
         if let Some(menu) = &gui.context_menu {
