@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- About dialog with version info + links
+
 ### Changed
 
 - Replace most native message boxes with egui ones
