@@ -567,6 +567,8 @@ impl App {
         return load_proc_memory_linux(self, pid, start, size, is_write, font, msg);
         #[cfg(windows)]
         return crate::windows::load_proc_memory(self, pid, start, size, is_write, font);
+        #[cfg(target_os = "macos")]
+        return load_proc_memory_macos(self, pid, start, size, is_write, font, msg);
     }
 
     pub fn consume_meta_from_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
@@ -594,6 +596,34 @@ impl App {
 
 #[cfg(target_os = "linux")]
 fn load_proc_memory_linux(
+    app: &mut App,
+    pid: sysinfo::Pid,
+    start: usize,
+    size: usize,
+    is_write: bool,
+    font: &Font,
+    msg: &mut MessageDialog,
+) -> anyhow::Result<()> {
+    app.load_file_args(
+        Args {
+            src: SourceArgs {
+                file: Some(Path::new("/proc/").join(pid.to_string()).join("mem")),
+                jump: None,
+                hard_seek: Some(start),
+                take: Some(size),
+                read_only: !is_write,
+                stream: false,
+            },
+            recent: false,
+            meta: None,
+        },
+        font,
+        msg,
+    )
+}
+
+#[cfg(target_os = "macos")]
+fn load_proc_memory_macos(
     app: &mut App,
     pid: sysinfo::Pid,
     start: usize,
