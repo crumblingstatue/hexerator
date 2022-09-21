@@ -106,10 +106,13 @@ pub trait Dialog {
     fn title(&self) -> &str;
     /// Do the ui for this dialog. Returns whether to keep this dialog open.
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool;
+    /// Called when dialog is opened. Can be used to set just-opened flag, etc.
+    fn on_open(&mut self) {}
 }
 
 impl Gui {
-    pub fn add_dialog<D: Dialog + 'static>(&mut self, dialog: D) {
+    pub fn add_dialog<D: Dialog + 'static>(&mut self, mut dialog: D) {
+        dialog.on_open();
         self.dialogs.push(Box::new(dialog));
     }
 }

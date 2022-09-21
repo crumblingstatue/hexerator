@@ -21,6 +21,7 @@ use {
 pub struct JumpDialog {
     string_buf: String,
     relative: bool,
+    just_opened: bool,
 }
 
 impl Dialog for JumpDialog {
@@ -28,12 +29,19 @@ impl Dialog for JumpDialog {
         "Jump"
     }
 
+    fn on_open(&mut self) {
+        self.just_opened = true;
+    }
+
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
         ui.horizontal(|ui| {
             ui.label("Offset");
-            ui.text_edit_singleline(&mut self.string_buf)
-                .request_focus();
+            let re = ui.text_edit_singleline(&mut self.string_buf);
+            if self.just_opened {
+                re.request_focus();
+            }
         });
+        self.just_opened = false;
         easy_mark(
             ui,
             "Accepts both decimal and hexadecimal.\nPrefix with `0x` to force hex.\n\
@@ -100,6 +108,7 @@ impl Dialog for AutoSaveReloadDialog {
 #[derive(Debug, Default)]
 pub struct PatternFillDialog {
     pattern_string: String,
+    just_opened: bool,
 }
 
 impl Dialog for PatternFillDialog {
@@ -107,13 +116,20 @@ impl Dialog for PatternFillDialog {
         "Selection pattern fill"
     }
 
+    fn on_open(&mut self) {
+        self.just_opened = true;
+    }
+
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
             return true;
         };
-        ui.text_edit_singleline(&mut self.pattern_string)
-            .request_focus();
+        let re = ui.text_edit_singleline(&mut self.pattern_string);
+        if self.just_opened {
+            re.request_focus();
+        }
+        self.just_opened = false;
         if ui.input().key_pressed(egui::Key::Enter) {
             let values: Result<Vec<u8>, _> = self
                 .pattern_string
