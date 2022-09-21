@@ -2,6 +2,7 @@ use {
     super::{dialogs::LuaColorDialog, message_dialog::Icon, top_menu::top_menu, Gui},
     crate::{
         app::App,
+        backend,
         shell::{msg_fail, msg_if_fail},
         value_color::{self, ColorMethod, Palette},
     },
@@ -97,7 +98,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                         .on_hover_text("From hex code on clipboard")
                         .clicked()
                     {
-                        match color_from_hexcode(&egui_sfml::sfml::window::clipboard::get_string()) {
+                        match color_from_hexcode(&backend::get_clipboard_string(&mut gui.msg_dialog)) {
                             Ok(new) => *col = new,
                             Err(e) => gui.msg_dialog.open(Icon::Error, "Color parse error", e.to_string()),
                         }
