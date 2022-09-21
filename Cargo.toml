@@ -10,7 +10,7 @@ default = ["backend-sfml"]
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "3.2.17", features = ["derive"] }
+clap = { version = "4.0.0-rc.1", features = ["derive"] }
 anyhow = "1.0.62"
 rfd = "0.10.0"
 rand = "0.8.5"
