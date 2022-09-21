@@ -13,7 +13,7 @@ use {
     },
     egui_sfml::{
         egui::{self, Layout},
-        sfml::{graphics::Font, window::clipboard},
+        sfml::graphics::Font,
     },
     rand::{thread_rng, RngCore},
     std::fmt::Write,
@@ -169,7 +169,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                     for &byte in &app.data[sel.begin..=sel.end] {
                         write!(&mut s, "{:02x} ", byte).unwrap();
                     }
-                    clipboard::set_string(s.trim_end());
+                    ui.output().copied_text = s.trim_end().to_string();
                 }
                 ui.close_menu();
             }
