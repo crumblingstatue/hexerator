@@ -163,7 +163,7 @@ pub fn do_egui(
             "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
             "External command",        external_command_window,     ExternalCommandWindow: gui app;
             "Preferences",             preferences_window,          PreferencesWindow: gui app;
-            "About Hexerator",         about_window,                AboutWindow:;
+            "About Hexerator",         about_window,                AboutWindow: gui;
         }
         // Context menu
         if let Some(menu) = &gui.context_menu {

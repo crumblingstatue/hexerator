@@ -22,5 +22,6 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui) {
     ui.separator();
     if ui.button("About Hexerator...").clicked() {
         gui.about_window.open.toggle();
+        ui.close_menu();
     }
 }
