@@ -3,17 +3,22 @@ use {
         gui::{window_open::WindowOpen, Gui},
         shell::msg_if_fail,
     },
+    egui_extras::{Size, TableBuilder},
     egui_sfml::egui,
+    std::fmt::Write,
     sysinfo::{CpuExt, System, SystemExt},
 };
+
+type InfoPair = (&'static str, String);
 
 #[derive(Default)]
 pub struct AboutWindow {
     pub open: WindowOpen,
     sys: System,
-    system_name: String,
-    os_ver: String,
+    info: [InfoPair; 14],
 }
+
+const MIB: u64 = 1_048_576;
 
 impl AboutWindow {
     pub fn ui(ui: &mut egui::Ui, gui: &mut Gui) {
@@ -21,64 +26,61 @@ impl AboutWindow {
         if win.open.just_now() {
             win.sys.refresh_cpu();
             win.sys.refresh_memory();
-            win.system_name = win.sys.name().unwrap_or_else(|| "Unknown".into());
-            win.os_ver = win
+            let system_name = win.sys.name().unwrap_or_else(|| "Unknown".into());
+            let os_ver = win
                 .sys
                 .os_version()
                 .unwrap_or_else(|| "Unknown version".into());
+            win.info = [
+                ("Hexerator", String::new()),
+                ("Version", env!("VERGEN_GIT_SEMVER").into()),
+                ("Git SHA", env!("VERGEN_GIT_SHA").into()),
+                (
+                    "Commit date",
+                    env!("VERGEN_GIT_COMMIT_TIMESTAMP")
+                        .split('T')
+                        .next()
+                        .unwrap_or("error")
+                        .into(),
+                ),
+                (
+                    "Build date",
+                    env!("VERGEN_BUILD_TIMESTAMP")
+                        .split('T')
+                        .next()
+                        .unwrap_or("error")
+                        .into(),
+                ),
+                ("Target", env!("VERGEN_CARGO_TARGET_TRIPLE").into()),
+                ("Cargo profile", env!("VERGEN_CARGO_PROFILE").into()),
+                ("Built with rustc", env!("VERGEN_RUSTC_SEMVER").into()),
+                ("System", String::new()),
+                ("OS", format!("{} {}", system_name, os_ver)),
+                ("CPU", win.sys.global_cpu_info().brand().into()),
+                (
+                    "Total memory",
+                    format!("{} MiB", win.sys.total_memory() / MIB),
+                ),
+                (
+                    "Used memory",
+                    format!("{} MiB", win.sys.used_memory() / MIB),
+                ),
+                (
+                    "Available memory",
+                    format!("{} MiB", win.sys.available_memory() / MIB),
+                ),
+            ];
         }
-        ui.heading("Hexerator");
+        info_table(ui, &win.info);
+        ui.separator();
         ui.vertical_centered_justified(|ui| {
-            let info = format!(
-                "Version: {}\n\n\
-                 Git SHA: {}\n\n\
-                 Commit date: {}\n\n\
-                 Build date: {}\n\n\
-                 Target: {}\n\n\
-                 Cargo profile: {}\n\n\
-                 Built with rustc {}\n",
-                env!("VERGEN_GIT_SEMVER"),
-                env!("VERGEN_GIT_SHA"),
-                env!("VERGEN_GIT_COMMIT_TIMESTAMP")
-                    .split('T')
-                    .next()
-                    .unwrap_or("error"),
-                env!("VERGEN_BUILD_TIMESTAMP")
-                    .split('T')
-                    .next()
-                    .unwrap_or("error"),
-                env!("VERGEN_CARGO_TARGET_TRIPLE"),
-                env!("VERGEN_CARGO_PROFILE"),
-                env!("VERGEN_RUSTC_SEMVER"),
-            );
-            ui.label(&info);
             if ui.button("Copy to clipboard").clicked() {
-                ui.output().copied_text = info;
+                ui.output().copied_text = clipfmt_info(&win.info);
             }
         });
         ui.separator();
-        ui.heading("System");
-        ui.vertical_centered_justified(|ui| {
-            let cpu = win.sys.global_cpu_info();
-            const MIB: u64 = 1_048_576;
-            ui.label(format!(
-                "\
-                OS: {} {}\n\
-                CPU: {}\n\
-                Total memory: {} MiB\n\
-                Used memory: {} MiB\n\
-                Available memory: {} MiB\n\
-                ",
-                win.system_name,
-                win.os_ver,
-                cpu.brand(),
-                win.sys.total_memory() / MIB,
-                win.sys.used_memory() / MIB,
-                win.sys.available_memory() / MIB,
-            ));
-        });
-        ui.separator();
         ui.heading("Links");
+        win.open.post_ui();
         ui.vertical_centered_justified(|ui| {
             let result: anyhow::Result<()> = try {
                 if ui.link("📖 Book").clicked() {
@@ -98,4 +100,34 @@ impl AboutWindow {
             }
         });
     }
+}
+
+fn info_table(ui: &mut egui::Ui, info: &[InfoPair]) {
+    ui.push_id(info.as_ptr(), |ui| {
+        TableBuilder::new(ui)
+            .column(Size::initial(100.0))
+            .column(Size::remainder())
+            .resizable(true)
+            .striped(true)
+            .body(|mut body| {
+                for (k, v) in info {
+                    body.row(20.0, |mut row| {
+                        row.col(|ui| {
+                            ui.label(*k);
+                        });
+                        row.col(|ui| {
+                            ui.label(v);
+                        });
+                    })
+                }
+            });
+    });
+}
+
+fn clipfmt_info(info: &[InfoPair]) -> String {
+    let mut out = String::new();
+    for (k, v) in info {
+        let _ = writeln!(out, "{}: {}", k, v);
+    }
+    out
 }
