@@ -1611,7 +1611,6 @@ dependencies = [
  "git2",
  "rustc_version",
  "rustversion",
- "sysinfo",
  "thiserror",
  "time",
 ]
