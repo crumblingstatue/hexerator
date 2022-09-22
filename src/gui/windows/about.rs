@@ -104,14 +104,15 @@ impl AboutWindow {
 
 fn info_table(ui: &mut egui::Ui, info: &[InfoPair]) {
     ui.push_id(info.as_ptr(), |ui| {
+        let body_height = ui.text_style_height(&egui::TextStyle::Body);
         TableBuilder::new(ui)
-            .column(Size::initial(100.0))
-            .column(Size::remainder())
+            .column(Size::initial(120.0))
+            .column(Size::initial(360.0))
             .resizable(true)
             .striped(true)
             .body(|mut body| {
                 for (k, v) in info {
-                    body.row(20.0, |mut row| {
+                    body.row(body_height + 2.0, |mut row| {
                         row.col(|ui| {
                             ui.label(*k);
                         });
