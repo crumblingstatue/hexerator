@@ -4,15 +4,22 @@ use {
         shell::msg_if_fail,
     },
     egui_sfml::egui,
+    sysinfo::{CpuExt, System, SystemExt},
 };
 
 #[derive(Default)]
 pub struct AboutWindow {
     pub open: WindowOpen,
+    pub sys: System,
 }
 
 impl AboutWindow {
     pub fn ui(ui: &mut egui::Ui, gui: &mut Gui) {
+        let win = &mut gui.about_window;
+        if win.open.just_now() {
+            win.sys.refresh_cpu();
+            win.sys.refresh_memory();
+        }
         ui.heading("Hexerator");
         ui.vertical_centered_justified(|ui| {
             let info = format!(
@@ -41,6 +48,26 @@ impl AboutWindow {
             if ui.button("Copy to clipboard").clicked() {
                 ui.output().copied_text = info;
             }
+        });
+        ui.separator();
+        ui.heading("System");
+        ui.vertical_centered_justified(|ui| {
+            let cpu = win.sys.global_cpu_info();
+            const MIB: u64 = 1_048_576;
+            ui.label(format!(
+                "\
+                CPU: {}\n\
+                CPU cores: {}\n\
+                Total memory: {} MiB\n\
+                Used memory: {} MiB\n\
+                Available memory: {} MiB\n\
+                ",
+                cpu.brand(),
+                win.sys.physical_core_count().unwrap_or(0),
+                win.sys.total_memory() / MIB,
+                win.sys.used_memory() / MIB,
+                win.sys.available_memory() / MIB,
+            ));
         });
         ui.separator();
         ui.heading("Links");
