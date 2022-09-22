@@ -10,7 +10,9 @@ use {
 #[derive(Default)]
 pub struct AboutWindow {
     pub open: WindowOpen,
-    pub sys: System,
+    sys: System,
+    system_name: String,
+    os_ver: String,
 }
 
 impl AboutWindow {
@@ -19,6 +21,11 @@ impl AboutWindow {
         if win.open.just_now() {
             win.sys.refresh_cpu();
             win.sys.refresh_memory();
+            win.system_name = win.sys.name().unwrap_or_else(|| "Unknown".into());
+            win.os_ver = win
+                .sys
+                .os_version()
+                .unwrap_or_else(|| "Unknown version".into());
         }
         ui.heading("Hexerator");
         ui.vertical_centered_justified(|ui| {
@@ -56,14 +63,15 @@ impl AboutWindow {
             const MIB: u64 = 1_048_576;
             ui.label(format!(
                 "\
+                OS: {} {}\n\
                 CPU: {}\n\
-                CPU cores: {}\n\
                 Total memory: {} MiB\n\
                 Used memory: {} MiB\n\
                 Available memory: {} MiB\n\
                 ",
+                win.system_name,
+                win.os_ver,
                 cpu.brand(),
-                win.sys.physical_core_count().unwrap_or(0),
                 win.sys.total_memory() / MIB,
                 win.sys.used_memory() / MIB,
                 win.sys.available_memory() / MIB,
