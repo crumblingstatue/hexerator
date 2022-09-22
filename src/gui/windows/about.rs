@@ -18,11 +18,21 @@ impl AboutWindow {
             let info = format!(
                 "Version: {}\n\n\
                  Git SHA: {}\n\n\
+                 Commit date: {}\n\n\
+                 Build date: {}\n\n\
                  Target: {}\n\n\
                  Cargo profile: {}\n\n\
                  Built with rustc {}\n",
                 env!("VERGEN_GIT_SEMVER"),
                 env!("VERGEN_GIT_SHA"),
+                env!("VERGEN_GIT_COMMIT_TIMESTAMP")
+                    .split('T')
+                    .next()
+                    .unwrap_or("error"),
+                env!("VERGEN_BUILD_TIMESTAMP")
+                    .split('T')
+                    .next()
+                    .unwrap_or("error"),
                 env!("VERGEN_CARGO_TARGET_TRIPLE"),
                 env!("VERGEN_CARGO_PROFILE"),
                 env!("VERGEN_RUSTC_SEMVER"),
