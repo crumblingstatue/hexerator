@@ -2,7 +2,6 @@ use {
     super::{window_open::WindowOpen, Gui},
     crate::{app::App, shell::msg_if_fail},
     anyhow::Context,
-    egui,
     std::{
         ffi::OsString,
         io::Read,

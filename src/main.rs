@@ -19,11 +19,6 @@
 )]
 #![windows_subsystem = "windows"]
 
-use {
-    gui::message_dialog::{Icon, MessageDialog},
-    rfd::MessageLevel,
-};
-
 mod app;
 mod args;
 mod backend;
@@ -67,9 +62,14 @@ use {
         },
         SfEgui,
     },
-    gamedebug_core::per_msg,
-    gui::{dialogs::JumpDialog, ContextMenu, ContextMenuData, Gui},
+    gamedebug_core::per,
+    gui::{
+        dialogs::JumpDialog,
+        message_dialog::{Icon, MessageDialog},
+        ContextMenu, ContextMenuData, Gui,
+    },
     meta::{NamedView, PerspectiveMap, RegionMap},
+    rfd::MessageLevel,
     serde::{Deserialize, Serialize},
     shell::msg_if_fail,
     slotmap::Key as _,
@@ -118,7 +118,7 @@ fn try_main() -> anyhow::Result<()> {
         // Save a metafile backup every so often
         if app.meta_state.last_meta_backup.get().elapsed() >= Duration::from_secs(60) {
             if let Err(e) = app.save_temp_metafile_backup() {
-                per_msg!("Failed to save temp metafile backup: {}", e);
+                per!("Failed to save temp metafile backup: {}", e);
             }
         }
     }
@@ -183,7 +183,7 @@ where
     match src.try_into() {
         Ok(mp) => mp,
         Err(e) => {
-            per_msg!("Mouse position conversion error: {}\nHexerator doesn't support extremely high (>32700) mouse positions.", e);
+            per!("Mouse position conversion error: {}\nHexerator doesn't support extremely high (>32700) mouse positions.", e);
             ViewportVec { x: 0, y: 0 }
         }
     }
@@ -237,11 +237,11 @@ fn update(app: &mut App, egui_wants_kb: bool) {
                 view.scroll_offset.pix_xoff = 0;
             }
             let Some(per) = &app.meta_state.meta.low.perspectives.get(view.perspective) else {
-                per_msg!("View doesn't have a perspective. Probably a bug.");
+                per!("View doesn't have a perspective. Probably a bug.");
                 continue;
             };
             if view.cols() < 0 {
-                per_msg!("view.cols for some reason is less than 0. Probably a bug.");
+                per!("view.cols for some reason is less than 0. Probably a bug.");
                 return;
             }
             if view.scroll_offset.col + 1 > per.cols {

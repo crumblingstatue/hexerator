@@ -7,7 +7,6 @@ use {
         shell::msg_if_fail,
         Gui,
     },
-    egui,
     egui_extras::Size,
     std::{path::PathBuf, time::Instant},
 };

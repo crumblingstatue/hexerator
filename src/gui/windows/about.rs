@@ -3,7 +3,6 @@ use {
         gui::{window_open::WindowOpen, Gui},
         shell::msg_if_fail,
     },
-    egui,
     egui_extras::{Size, TableBuilder},
     std::fmt::Write,
     sysinfo::{CpuExt, System, SystemExt},

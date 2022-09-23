@@ -1,4 +1,4 @@
-use gamedebug_core::per_msg;
+use gamedebug_core::per;
 
 #[derive(Debug, Default, Clone)]
 pub struct EditBuffer {
@@ -61,7 +61,7 @@ impl EditBuffer {
         if self.cursor >= self.buf.len() as u16 - 1 {
             false
         } else {
-            per_msg!("Moving cursor forward, no problem");
+            per!("Moving cursor forward, no problem");
             self.cursor += 1;
             true
         }

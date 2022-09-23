@@ -1,7 +1,6 @@
 use {
     super::{window_open::WindowOpen, Gui},
     crate::{app::App, config},
-    egui,
 };
 
 #[derive(Default)]

@@ -9,7 +9,7 @@ use {
         preferences::Preferences,
     },
     egui_sfml::sfml::graphics::Font,
-    gamedebug_core::per_msg,
+    gamedebug_core::{per, per_dbg},
     serde::{Deserialize, Serialize},
     slotmap::Key,
 };
@@ -190,7 +190,7 @@ impl View {
         let perspective = match perspectives.get(self.perspective) {
             Some(per) => per,
             None => {
-                per_msg!("row_col_of_rel_pos: Invalid perspective key");
+                per!("row_col_of_rel_pos: Invalid perspective key");
                 return None;
             }
         };
@@ -286,7 +286,7 @@ impl View {
         match self.viewport_rect.w.checked_div(self.col_w as i16) {
             Some(result) => result,
             None => {
-                per_msg!("Divide by zero in View::cols. Bug.");
+                per!("Divide by zero in View::cols. Bug.");
                 0
             }
         }
@@ -400,7 +400,7 @@ impl View {
             ViewKind::Hex(hex) => {
                 match merge_hex_halves(hex.edit_buf.buf[0], hex.edit_buf.buf[1]) {
                     Some(merged) => data[edit_state.cursor] = merged,
-                    None => per_msg!("finish_editing: Failed to merge hex halves"),
+                    None => per!("finish_editing: Failed to merge hex halves"),
                 }
                 edit_state.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
             }
@@ -681,7 +681,7 @@ impl TextData {
     pub fn default_from_font(font: &Font, font_size: u16) -> Self {
         Self {
             text_kind: TextKind::Ascii,
-            line_spacing: font.line_spacing(u32::from(font_size)) as u16,
+            line_spacing: per_dbg!(font.line_spacing(u32::from(font_size)) as u16),
             edit_buf: EditBuffer::default(),
             font_size,
         }

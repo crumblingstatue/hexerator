@@ -73,7 +73,7 @@ impl Read for SourceProvider {
             SourceProvider::Stdin(stdin) => stdin.read(buf),
             #[cfg(windows)]
             SourceProvider::WinProc { .. } => {
-                gamedebug_core::per_msg!("Todo: Read unimplemented");
+                gamedebug_core::per!("Todo: Read unimplemented");
                 Ok(0)
             }
         }

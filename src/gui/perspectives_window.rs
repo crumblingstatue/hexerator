@@ -5,7 +5,6 @@ use {
         meta::{perspective::Perspective, PerspectiveKey, RegionKey},
         region_context_menu,
     },
-    egui,
     egui_extras::{Size, TableBuilder},
     slotmap::Key,
 };

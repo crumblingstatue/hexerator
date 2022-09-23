@@ -1,10 +1,7 @@
-use {
-    crate::{
-        app::App,
-        gui::{message_dialog::Icon, Gui},
-        shell::msg_if_fail,
-    },
-    egui,
+use crate::{
+    app::App,
+    gui::{message_dialog::Icon, Gui},
+    shell::msg_if_fail,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {

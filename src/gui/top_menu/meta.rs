@@ -1,10 +1,7 @@
-use {
-    crate::{
-        app::App,
-        gui::{util::button_with_shortcut, Gui},
-        shell::msg_if_fail,
-    },
-    egui,
+use crate::{
+    app::App,
+    gui::{util::button_with_shortcut, Gui},
+    shell::msg_if_fail,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {

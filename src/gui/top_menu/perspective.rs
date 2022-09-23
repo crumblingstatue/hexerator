@@ -1,9 +1,6 @@
-use {
-    crate::{
-        app::{col_change_impl_view_perspective, App},
-        gui::{util::button_with_shortcut, Gui},
-    },
-    egui,
+use crate::{
+    app::{col_change_impl_view_perspective, App},
+    gui::{util::button_with_shortcut, Gui},
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {

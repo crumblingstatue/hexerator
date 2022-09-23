@@ -28,7 +28,7 @@ use {
     },
     anyhow::{bail, Context},
     egui_sfml::sfml::graphics::Font,
-    gamedebug_core::per_msg,
+    gamedebug_core::per,
     slotmap::Key,
     std::{
         ffi::OsString,
@@ -164,7 +164,7 @@ impl App {
         file.write_all(data_to_write)?;
         self.edit_state.dirty_region = None;
         if let Err(e) = self.save_temp_metafile_backup() {
-            per_msg!("Failed to save metafile backup: {}", e);
+            per!("Failed to save metafile backup: {}", e);
         }
         Ok(())
     }
@@ -173,7 +173,7 @@ impl App {
         // a never ending stream of constant save failures.
         self.meta_state.last_meta_backup.set(Instant::now());
         self.save_meta_to_file(temp_metafile_backup_path(), true)?;
-        per_msg!("Saved temp metafile backup");
+        per!("Saved temp metafile backup");
         Ok(())
     }
     pub fn search_focus(&mut self, offset: usize) {
@@ -374,7 +374,7 @@ impl App {
                         tx.send(buf)?;
                     };
                     if let Err(e) = result {
-                        per_msg!("Stream error: {}", e);
+                        per!("Stream error: {}", e);
                     }
                 });
             }
@@ -465,7 +465,7 @@ impl App {
         }
         if self.preferences.auto_save && self.edit_state.dirty_region.is_some() {
             if let Err(e) = self.save() {
-                per_msg!("Save fail: {}", e);
+                per!("Save fail: {}", e);
             }
         }
         if self.preferences.auto_reload

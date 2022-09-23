@@ -1,6 +1,6 @@
 use {
     crate::{damage_region::DamageRegion, meta::region::Region},
-    gamedebug_core::per_msg,
+    gamedebug_core::per,
 };
 
 #[derive(Default, Debug)]
@@ -67,7 +67,7 @@ impl EditState {
                 let end = damage.end();
                 {
                     if end < dirty_region.begin {
-                        per_msg!("TODO: logic error in widen_dirty_region");
+                        per!("TODO: logic error in widen_dirty_region");
                         return;
                     }
                     if end > dirty_region.end {

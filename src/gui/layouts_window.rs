@@ -6,7 +6,6 @@ use {
         meta::{LayoutKey, MetaLow, NamedView, ViewKey, ViewMap},
         view::{HexData, View, ViewKind},
     },
-    egui,
     slotmap::Key,
 };
 
