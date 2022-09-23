@@ -9,7 +9,7 @@ use {
         },
         shell::msg_if_fail,
     },
-    egui_sfml::egui,
+    egui,
     rand::{thread_rng, RngCore},
     std::fmt::Write,
 };

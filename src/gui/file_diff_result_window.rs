@@ -7,8 +7,8 @@ use {
         shell::msg_if_fail,
         Gui,
     },
+    egui,
     egui_extras::Size,
-    egui_sfml::egui,
     std::{path::PathBuf, time::Instant},
 };
 
@@ -34,7 +34,7 @@ impl Default for FileDiffResultWindow {
     }
 }
 impl FileDiffResultWindow {
-    pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, gui: &mut Gui, app: &mut crate::app::App) {
+    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut crate::app::App) {
         if gui.file_diff_result_window.diff_entries.is_empty() {
             ui.label("No difference");
             return;

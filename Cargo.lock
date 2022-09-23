@@ -666,6 +666,7 @@ dependencies = [
  "bytemuck",
  "clap 4.0.0-rc.1",
  "directories",
+ "egui",
  "egui-modal",
  "egui-sfml",
  "egui_easy_mark_standalone",

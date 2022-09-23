@@ -42,7 +42,7 @@ pub const MAX_FONT_SIZE: u16 = 256;
 
 impl ViewsWindow {
     pub(crate) fn ui(
-        ui: &mut egui_sfml::egui::Ui,
+        ui: &mut egui::Ui,
         gui: &mut crate::gui::Gui,
         app: &mut crate::app::App,
         font: &Font,

@@ -17,7 +17,7 @@ pub struct MetaDiffWindow {
     pub open: WindowOpen,
 }
 impl MetaDiffWindow {
-    pub(crate) fn ui(ui: &mut egui_sfml::egui::Ui, app: &mut crate::app::App) {
+    pub(crate) fn ui(ui: &mut egui::Ui, app: &mut crate::app::App) {
         let this = &mut app.meta_state.meta;
         let clean = &app.meta_state.clean_meta;
         ui.heading("Regions");
@@ -95,7 +95,7 @@ impl SlotmapDiffItem for Layout {
 }
 
 fn diff_slotmap<I: SlotmapDiffItem>(
-    ui: &mut egui_sfml::egui::Ui,
+    ui: &mut egui::Ui,
     this: &mut SlotMap<I::Key, I>,
     clean: &SlotMap<I::Key, I>,
 ) {

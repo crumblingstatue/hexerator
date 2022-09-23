@@ -9,8 +9,8 @@ use {
         parse_radix::parse_guess_radix,
         region_context_menu,
     },
+    egui::{self, Align, Ui},
     egui_extras::{Size, StripBuilder, TableBuilder},
-    egui_sfml::egui::{self, Align, Ui},
     std::collections::HashSet,
 };
 

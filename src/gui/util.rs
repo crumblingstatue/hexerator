@@ -1,6 +1,6 @@
 //! Various egui utility functions
 
-use egui_sfml::egui::{pos2, text::LayoutJob, Response, TextStyle, Ui, Widget};
+use egui::{pos2, text::LayoutJob, Response, TextStyle, Ui, Widget};
 
 pub struct ButtonWithShortcut(pub &'static str, pub &'static str);
 

@@ -3,9 +3,7 @@ use {
         app::{interact_mode::InteractMode, App},
         view::ViewportVec,
     },
-    egui_sfml::egui::{
-        text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui,
-    },
+    egui::{text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui},
     slotmap::Key,
 };
 

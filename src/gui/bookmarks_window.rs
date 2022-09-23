@@ -8,8 +8,8 @@ use {
         shell::msg_if_fail,
     },
     anyhow::Context,
+    egui::{self, Ui},
     egui_extras::{Size, TableBuilder},
-    egui_sfml::egui::{self, Ui},
     std::mem::discriminant,
 };
 

@@ -3,7 +3,7 @@ use {
         app::App,
         gui::{dialogs::JumpDialog, util::button_with_shortcut, Gui},
     },
-    egui_sfml::egui,
+    egui,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {

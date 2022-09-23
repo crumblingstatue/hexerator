@@ -4,7 +4,7 @@ pub mod region;
 use {
     self::{perspective::Perspective, region::Region},
     crate::{layout::Layout, view::View},
-    egui_sfml::egui::epaint::ahash::HashMap,
+    egui::epaint::ahash::HashMap,
     serde::{Deserialize, Serialize},
     slotmap::{new_key_type, SlotMap},
 };

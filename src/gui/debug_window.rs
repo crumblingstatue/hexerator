@@ -1,5 +1,5 @@
 use {
-    egui_sfml::egui::{self, Ui},
+    egui::{self, Ui},
     gamedebug_core::{Info, PerEntry, IMMEDIATE, PERSISTENT},
 };
 

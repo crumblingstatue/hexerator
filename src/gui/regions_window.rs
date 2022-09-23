@@ -1,8 +1,8 @@
 use {
     super::window_open::WindowOpen,
     crate::{app::App, meta::RegionKey},
+    egui::{self, Ui},
     egui_extras::{Size, TableBuilder},
-    egui_sfml::egui::{self, Ui},
 };
 
 #[derive(Default)]

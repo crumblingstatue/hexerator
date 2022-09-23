@@ -11,8 +11,8 @@ use {
         slice_ext::SliceExt,
         value_color::ColorMethod,
     },
+    egui,
     egui_easy_mark_standalone::easy_mark,
-    egui_sfml::egui,
     rlua::Function,
     std::time::Instant,
 };

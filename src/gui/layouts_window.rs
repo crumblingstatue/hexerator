@@ -6,7 +6,7 @@ use {
         meta::{LayoutKey, MetaLow, NamedView, ViewKey, ViewMap},
         view::{HexData, View, ViewKind},
     },
-    egui_sfml::egui,
+    egui,
     slotmap::Key,
 };
 
@@ -18,11 +18,7 @@ pub struct LayoutsWindow {
     edit_name: bool,
 }
 impl LayoutsWindow {
-    pub(crate) fn ui(
-        ui: &mut egui_sfml::egui::Ui,
-        gui: &mut crate::gui::Gui,
-        app: &mut crate::app::App,
-    ) {
+    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut crate::app::App) {
         let win = &mut gui.layouts_window;
         if win.open.just_now() {
             win.selected = app.hex_ui.current_layout;

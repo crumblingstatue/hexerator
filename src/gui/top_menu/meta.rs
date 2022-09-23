@@ -4,7 +4,7 @@ use {
         gui::{util::button_with_shortcut, Gui},
         shell::msg_if_fail,
     },
-    egui_sfml::egui,
+    egui,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {

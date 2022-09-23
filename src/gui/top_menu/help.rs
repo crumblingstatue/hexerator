@@ -3,7 +3,7 @@ use {
         gui::{util::button_with_shortcut, Gui},
         shell::msg_if_fail,
     },
-    egui_sfml::egui::Ui,
+    egui::Ui,
 };
 
 pub fn ui(ui: &mut Ui, gui: &mut Gui) {
