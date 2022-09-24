@@ -114,6 +114,30 @@ impl BookmarksWindow {
                                     &mut gui.msg_dialog,
                                 );
                             }
+                            ValueType::U64Le => {
+                                let result: anyhow::Result<()> = try {
+                                    match app.data.get(bm.offset..bm.offset + 8) {
+                                        Some(slice) => {
+                                            let mut val = u64::from_le_bytes(slice.try_into()?);
+                                            if ui.add(egui::DragValue::new(&mut val)).changed() {
+                                                app.data[bm.offset..bm.offset + 8]
+                                                    .copy_from_slice(&val.to_le_bytes());
+                                                app.edit_state.widen_dirty_region(
+                                                    DamageRegion::Range(bm.offset..bm.offset + 8),
+                                                )
+                                            }
+                                        }
+                                        None => {
+                                            ui.label("??");
+                                        }
+                                    }
+                                };
+                                msg_if_fail(
+                                    result,
+                                    "Failed u64-le conversion",
+                                    &mut gui.msg_dialog,
+                                );
+                            }
                             ValueType::StringMap(list) => {
                                 let val = &mut app.data[bm.offset];
                                 let mut s = String::new();
@@ -188,6 +212,11 @@ impl BookmarksWindow {
                         ValueType::U16Le,
                         ValueType::U16Le.label(),
                     );
+                    ui.selectable_value(
+                        &mut mark.value_type,
+                        ValueType::U64Le,
+                        ValueType::U64Le.label(),
+                    );
                     let val = ValueType::StringMap(Default::default());
                     if ui
                         .selectable_label(
@@ -259,6 +288,7 @@ impl ValueType {
             ValueType::None => "none",
             ValueType::U8 => "u8",
             ValueType::U16Le => "u16-le",
+            ValueType::U64Le => "u64-le",
             ValueType::StringMap(_) => "string list",
         }
     }

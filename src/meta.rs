@@ -42,6 +42,7 @@ pub enum ValueType {
     None,
     U8,
     U16Le,
+    U64Le,
     StringMap(HashMap<u8, String>),
 }
 
