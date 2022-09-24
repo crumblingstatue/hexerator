@@ -1,5 +1,5 @@
 use {
-    super::{message_dialog::MessageDialog, window_open::WindowOpen, Gui},
+    super::{window_open::WindowOpen, Gui},
     crate::{
         app::{edit_state::EditState, App},
         damage_region::DamageRegion,
@@ -76,13 +76,13 @@ impl BookmarksWindow {
                         }
                     });
                     row.col(|ui| {
-                        value_ui(
+                        let result = value_ui(
                             &app.meta_state.meta.bookmarks[idx],
                             &mut app.data,
                             &mut app.edit_state,
                             ui,
-                            &mut gui.msg_dialog,
                         );
+                        msg_if_fail(result, "Value ui failed", &mut gui.msg_dialog);
                     });
                     row.col(|ui| {
                         let off = app.meta_state.meta.bookmarks[idx].offset;
@@ -216,8 +216,7 @@ fn value_ui(
     data: &mut [u8],
     edit_state: &mut EditState,
     ui: &mut Ui,
-    msg: &mut MessageDialog,
-) {
+) -> anyhow::Result<()> {
     match &bm.value_type {
         ValueType::None => {}
         ValueType::U8 => match data.get_mut(bm.offset) {
@@ -230,42 +229,30 @@ fn value_ui(
                 ui.label("??");
             }
         },
-        ValueType::U16Le => {
-            let result: anyhow::Result<()> = try {
-                match data.get(bm.offset..bm.offset + 2) {
-                    Some(slice) => {
-                        let mut val = u16::from_le_bytes(slice.try_into()?);
-                        if ui.add(egui::DragValue::new(&mut val)).changed() {
-                            data[bm.offset..bm.offset + 2].copy_from_slice(&val.to_le_bytes());
-                            edit_state
-                                .widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 2));
-                        }
-                    }
-                    None => {
-                        ui.label("??");
-                    }
+        ValueType::U16Le => match data.get(bm.offset..bm.offset + 2) {
+            Some(slice) => {
+                let mut val = u16::from_le_bytes(slice.try_into()?);
+                if ui.add(egui::DragValue::new(&mut val)).changed() {
+                    data[bm.offset..bm.offset + 2].copy_from_slice(&val.to_le_bytes());
+                    edit_state.widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 2));
                 }
-            };
-            msg_if_fail(result, "Failed u16-le conversion", msg);
-        }
-        ValueType::U64Le => {
-            let result: anyhow::Result<()> = try {
-                match data.get(bm.offset..bm.offset + 8) {
-                    Some(slice) => {
-                        let mut val = u64::from_le_bytes(slice.try_into()?);
-                        if ui.add(egui::DragValue::new(&mut val)).changed() {
-                            data[bm.offset..bm.offset + 8].copy_from_slice(&val.to_le_bytes());
-                            edit_state
-                                .widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 8))
-                        }
-                    }
-                    None => {
-                        ui.label("??");
-                    }
+            }
+            None => {
+                ui.label("??");
+            }
+        },
+        ValueType::U64Le => match data.get(bm.offset..bm.offset + 8) {
+            Some(slice) => {
+                let mut val = u64::from_le_bytes(slice.try_into()?);
+                if ui.add(egui::DragValue::new(&mut val)).changed() {
+                    data[bm.offset..bm.offset + 8].copy_from_slice(&val.to_le_bytes());
+                    edit_state.widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 8))
                 }
-            };
-            msg_if_fail(result, "Failed u64-le conversion", msg);
-        }
+            }
+            None => {
+                ui.label("??");
+            }
+        },
         ValueType::StringMap(list) => {
             let val = &mut data[bm.offset];
             let mut s = String::new();
@@ -282,6 +269,7 @@ fn value_ui(
                 });
         }
     }
+    Ok(())
 }
 
 enum Action {
