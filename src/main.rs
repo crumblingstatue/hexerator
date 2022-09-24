@@ -5,6 +5,7 @@
     is_some_with,
     let_chains,
     array_windows,
+    type_alias_impl_trait,
     generic_const_exprs
 )]
 #![warn(

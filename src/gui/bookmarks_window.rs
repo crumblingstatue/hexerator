@@ -5,7 +5,7 @@ use {
         damage_region::DamageRegion,
         meta::{
             find_most_specific_region_for_offset,
-            value_type::{StringMap, U16Le, U64Le, ValueType, U8},
+            value_type::{StringMap, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, U8},
             Bookmark,
         },
         region_context_menu,
@@ -151,8 +151,28 @@ impl BookmarksWindow {
                     );
                     ui.selectable_value(
                         &mut mark.value_type,
+                        ValueType::U16Be(U16Be),
+                        ValueType::U16Be(U16Be).label(),
+                    );
+                    ui.selectable_value(
+                        &mut mark.value_type,
+                        ValueType::U32Le(U32Le),
+                        ValueType::U32Le(U32Le).label(),
+                    );
+                    ui.selectable_value(
+                        &mut mark.value_type,
+                        ValueType::U32Be(U32Be),
+                        ValueType::U32Be(U32Be).label(),
+                    );
+                    ui.selectable_value(
+                        &mut mark.value_type,
                         ValueType::U64Le(U64Le),
                         ValueType::U64Le(U64Le).label(),
+                    );
+                    ui.selectable_value(
+                        &mut mark.value_type,
+                        ValueType::U64Be(U64Be),
+                        ValueType::U64Be(U64Be).label(),
                     );
                     let val = ValueType::StringMap(Default::default());
                     if ui
@@ -231,12 +251,15 @@ fn value_ui(
         ValueType::U16Le(u16) => u16.value_ui_for_self(bm, data, edit_state, ui),
         ValueType::U64Le(u64) => u64.value_ui_for_self(bm, data, edit_state, ui),
         ValueType::StringMap(list) => list.value_ui_for_self(bm, data, edit_state, ui),
+        ValueType::U16Be(v) => v.value_ui_for_self(bm, data, edit_state, ui),
+        ValueType::U32Le(v) => v.value_ui_for_self(bm, data, edit_state, ui),
+        ValueType::U32Be(v) => v.value_ui_for_self(bm, data, edit_state, ui),
+        ValueType::U64Be(v) => v.value_ui_for_self(bm, data, edit_state, ui),
     }
     Ok(())
 }
 
-trait ValueTrait {
-    const BYTE_LEN: usize;
+trait ValueTrait: EndianedPrimitive {
     /// Returns whether the value was changed.
     fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool;
     fn value_ui_for_self(
@@ -267,35 +290,141 @@ trait ValueTrait {
     }
 }
 
-impl ValueTrait for U8 {
+trait EndianedPrimitive {
+    const BYTE_LEN: usize;
+    type Primitive: egui::emath::Numeric;
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive;
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN];
+}
+
+trait DefaultUi {}
+
+impl EndianedPrimitive for U8 {
     const BYTE_LEN: usize = 1;
 
-    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
-        ui.add(egui::DragValue::new(&mut bytes[0])).changed()
+    type Primitive = u8;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        bytes[0]
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        [prim]
     }
 }
 
-impl ValueTrait for U16Le {
+impl DefaultUi for U8 {}
+
+impl EndianedPrimitive for U16Le {
+    const BYTE_LEN: usize = 2;
+    type Primitive = u16;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        u16::from_le_bytes(bytes)
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        prim.to_le_bytes()
+    }
+}
+
+impl EndianedPrimitive for U16Be {
     const BYTE_LEN: usize = 2;
 
-    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
-        let mut val = u16::from_le_bytes(*bytes);
-        if ui.add(egui::DragValue::new(&mut val)).changed() {
-            bytes.copy_from_slice(&val.to_le_bytes());
-            true
-        } else {
-            false
-        }
+    type Primitive = u16;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        u16::from_be_bytes(bytes)
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        prim.to_be_bytes()
     }
 }
 
-impl ValueTrait for U64Le {
+impl DefaultUi for U16Le {}
+impl DefaultUi for U16Be {}
+
+impl EndianedPrimitive for U32Le {
+    const BYTE_LEN: usize = 4;
+
+    type Primitive = u32;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        u32::from_le_bytes(bytes)
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        prim.to_le_bytes()
+    }
+}
+
+impl EndianedPrimitive for U32Be {
+    const BYTE_LEN: usize = 4;
+
+    type Primitive = u32;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        u32::from_be_bytes(bytes)
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        prim.to_be_bytes()
+    }
+}
+
+impl DefaultUi for U32Le {}
+impl DefaultUi for U32Be {}
+
+impl EndianedPrimitive for U64Le {
+    const BYTE_LEN: usize = 8;
+    type Primitive = u64;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        u64::from_le_bytes(bytes)
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        prim.to_le_bytes()
+    }
+}
+
+impl EndianedPrimitive for U64Be {
     const BYTE_LEN: usize = 8;
 
+    type Primitive = u64;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        u64::from_be_bytes(bytes)
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        prim.to_be_bytes()
+    }
+}
+
+impl DefaultUi for U64Le {}
+impl DefaultUi for U64Be {}
+
+impl EndianedPrimitive for StringMap {
+    const BYTE_LEN: usize = 1;
+
+    type Primitive = u8;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        bytes[0]
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        [prim]
+    }
+}
+
+impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
     fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
-        let mut val = u64::from_le_bytes(*bytes);
+        let mut val = Self::from_bytes(*bytes);
         if ui.add(egui::DragValue::new(&mut val)).changed() {
-            bytes.copy_from_slice(&val.to_le_bytes());
+            bytes.copy_from_slice(&Self::to_bytes(val));
             true
         } else {
             false
@@ -304,8 +433,6 @@ impl ValueTrait for U64Le {
 }
 
 impl ValueTrait for StringMap {
-    const BYTE_LEN: usize = 1;
-
     fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
         let val = &mut bytes[0];
         let mut s = String::new();
