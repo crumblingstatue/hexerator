@@ -5,6 +5,7 @@
 ### Added
 
 - About dialog with version info + links
+- Clickable file size label in bottom right corner
 
 ### Changed
 

@@ -62,6 +62,13 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
         if !app.hex_ui.current_layout.is_null() && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
             ui.label(format!("mouse: {} ({:x})", offset, offset));
         }
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            let label = egui::Label::new(format!("File size: {}", app.data.len()))
+                .sense(egui::Sense::click());
+            if ui.add(label).on_hover_text("Click to copy").clicked() {
+                ui.output().copied_text = app.data.len().to_string();
+            }
+        });
     });
 }
 
