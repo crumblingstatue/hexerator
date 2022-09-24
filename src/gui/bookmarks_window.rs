@@ -229,11 +229,11 @@ fn value_ui(
                 ui.label("??");
             }
         },
-        ValueType::U16Le => match data.get(bm.offset..bm.offset + 2) {
+        ValueType::U16Le => match data.get_mut(bm.offset..bm.offset + 2) {
             Some(slice) => {
                 let mut val = u16::from_le_bytes(slice.try_into()?);
                 if ui.add(egui::DragValue::new(&mut val)).changed() {
-                    data[bm.offset..bm.offset + 2].copy_from_slice(&val.to_le_bytes());
+                    slice.copy_from_slice(&val.to_le_bytes());
                     edit_state.widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 2));
                 }
             }
@@ -241,11 +241,11 @@ fn value_ui(
                 ui.label("??");
             }
         },
-        ValueType::U64Le => match data.get(bm.offset..bm.offset + 8) {
+        ValueType::U64Le => match data.get_mut(bm.offset..bm.offset + 8) {
             Some(slice) => {
                 let mut val = u64::from_le_bytes(slice.try_into()?);
                 if ui.add(egui::DragValue::new(&mut val)).changed() {
-                    data[bm.offset..bm.offset + 8].copy_from_slice(&val.to_le_bytes());
+                    slice.copy_from_slice(&val.to_le_bytes());
                     edit_state.widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 8))
                 }
             }
