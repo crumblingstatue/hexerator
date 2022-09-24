@@ -18,7 +18,6 @@ pub enum Icon {
     #[default]
     None,
     Info,
-    Success,
     Warn,
     Error,
 }
@@ -30,7 +29,6 @@ impl Icon {
         match self {
             Icon::None => Color32::default(),
             Icon::Info => Color32::from_rgb(0, 155, 255),
-            Icon::Success => Color32::from_rgb(0, 255, 32),
             Icon::Warn => Color32::from_rgb(255, 212, 0),
             Icon::Error => Color32::from_rgb(255, 32, 0),
         }
@@ -39,7 +37,6 @@ impl Icon {
         match self {
             Icon::None => "",
             Icon::Info => "ℹ",
-            Icon::Success => "✔",
             Icon::Warn => "⚠",
             Icon::Error => "❗",
         }
@@ -48,7 +45,6 @@ impl Icon {
         let label = match self {
             Icon::None => "",
             Icon::Info => "Info",
-            Icon::Success => "Success",
             Icon::Warn => "Warning",
             Icon::Error => "Error",
         };
