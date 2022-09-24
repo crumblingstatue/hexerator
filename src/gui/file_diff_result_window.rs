@@ -2,7 +2,7 @@ use {
     crate::{
         app::{read_source_to_buf, FileDiffEntry},
         gui::window_open::WindowOpen,
-        meta::{find_most_specific_region_for_offset, Bookmark, RegionKey, ValueType},
+        meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark, RegionKey},
         region_context_menu,
         shell::msg_if_fail,
         Gui,

@@ -3,7 +3,7 @@ use {
         external_command_window::ExternalCommandWindow, message_dialog::MessageDialog,
         preferences_window::PreferencesWindow,
     },
-    crate::{config::Style, gui::windows::AboutWindow},
+    crate::{config::Style, gui::windows::AboutWindow, meta::value_type::ValueType},
     egui_sfml::{
         egui::{FontFamily, FontId},
         TextureCreateError,
@@ -48,7 +48,7 @@ use {
     },
     crate::{
         app::App,
-        meta::{Bookmark, ValueType, ViewKey},
+        meta::{Bookmark, ViewKey},
         view::{ViewportScalar, ViewportVec},
     },
     egui_sfml::{

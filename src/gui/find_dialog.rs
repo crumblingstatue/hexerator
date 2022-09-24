@@ -5,7 +5,7 @@ use {
     },
     crate::{
         app::App,
-        meta::{find_most_specific_region_for_offset, Bookmark, Meta, ValueType},
+        meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta},
         parse_radix::parse_guess_radix,
         region_context_menu,
     },

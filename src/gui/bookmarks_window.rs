@@ -3,7 +3,7 @@ use {
     crate::{
         app::App,
         damage_region::DamageRegion,
-        meta::{find_most_specific_region_for_offset, Bookmark, ValueType},
+        meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark},
         region_context_menu,
         shell::msg_if_fail,
     },
@@ -278,18 +278,6 @@ impl BookmarksWindow {
                 app.center_view_on_offset(off);
                 app.hex_ui.flash_cursor();
             }
-        }
-    }
-}
-
-impl ValueType {
-    fn label(&self) -> &str {
-        match self {
-            ValueType::None => "none",
-            ValueType::U8 => "u8",
-            ValueType::U16Le => "u16-le",
-            ValueType::U64Le => "u64-le",
-            ValueType::StringMap(_) => "string list",
         }
     }
 }

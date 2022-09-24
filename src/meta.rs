@@ -1,10 +1,10 @@
 pub mod perspective;
 pub mod region;
+pub mod value_type;
 
 use {
-    self::{perspective::Perspective, region::Region},
+    self::{perspective::Perspective, region::Region, value_type::ValueType},
     crate::{layout::Layout, view::View},
-    egui::epaint::ahash::HashMap,
     serde::{Deserialize, Serialize},
     slotmap::{new_key_type, SlotMap},
 };
@@ -34,16 +34,6 @@ pub struct Bookmark {
     /// A bookmark can optionally have a type, which can be used to display its value, etc.
     #[serde(default)]
     pub value_type: ValueType,
-}
-
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Default)]
-pub enum ValueType {
-    #[default]
-    None,
-    U8,
-    U16Le,
-    U64Le,
-    StringMap(HashMap<u8, String>),
 }
 
 /// "Low" region of the meta, containing the least dependent data, like regions and perspectives
