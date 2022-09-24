@@ -1,7 +1,7 @@
 use {
-    super::{window_open::WindowOpen, Gui},
+    super::{message_dialog::MessageDialog, window_open::WindowOpen, Gui},
     crate::{
-        app::App,
+        app::{edit_state::EditState, App},
         damage_region::DamageRegion,
         meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark},
         region_context_menu,
@@ -76,84 +76,13 @@ impl BookmarksWindow {
                         }
                     });
                     row.col(|ui| {
-                        let bm = &app.meta_state.meta.bookmarks[idx];
-                        match &bm.value_type {
-                            ValueType::None => {}
-                            ValueType::U8 => match app.data.get_mut(bm.offset) {
-                                Some(byte) => {
-                                    if ui.add(egui::DragValue::new(byte)).changed() {
-                                        app.edit_state
-                                            .widen_dirty_region(DamageRegion::Single(bm.offset));
-                                    }
-                                }
-                                None => {
-                                    ui.label("??");
-                                }
-                            },
-                            ValueType::U16Le => {
-                                let result: anyhow::Result<()> = try {
-                                    match app.data.get(bm.offset..bm.offset + 2) {
-                                        Some(slice) => {
-                                            let mut val = u16::from_le_bytes(slice.try_into()?);
-                                            if ui.add(egui::DragValue::new(&mut val)).changed() {
-                                                app.data[bm.offset..bm.offset + 2]
-                                                    .copy_from_slice(&val.to_le_bytes());
-                                                app.edit_state.widen_dirty_region(
-                                                    DamageRegion::Range(bm.offset..bm.offset + 2),
-                                                );
-                                            }
-                                        }
-                                        None => {
-                                            ui.label("??");
-                                        }
-                                    }
-                                };
-                                msg_if_fail(
-                                    result,
-                                    "Failed u16-le conversion",
-                                    &mut gui.msg_dialog,
-                                );
-                            }
-                            ValueType::U64Le => {
-                                let result: anyhow::Result<()> = try {
-                                    match app.data.get(bm.offset..bm.offset + 8) {
-                                        Some(slice) => {
-                                            let mut val = u64::from_le_bytes(slice.try_into()?);
-                                            if ui.add(egui::DragValue::new(&mut val)).changed() {
-                                                app.data[bm.offset..bm.offset + 8]
-                                                    .copy_from_slice(&val.to_le_bytes());
-                                                app.edit_state.widen_dirty_region(
-                                                    DamageRegion::Range(bm.offset..bm.offset + 8),
-                                                )
-                                            }
-                                        }
-                                        None => {
-                                            ui.label("??");
-                                        }
-                                    }
-                                };
-                                msg_if_fail(
-                                    result,
-                                    "Failed u64-le conversion",
-                                    &mut gui.msg_dialog,
-                                );
-                            }
-                            ValueType::StringMap(list) => {
-                                let val = &mut app.data[bm.offset];
-                                let mut s = String::new();
-                                let label = list.get(val).unwrap_or_else(|| {
-                                    s = format!("[unmapped: {}]", val);
-                                    &s
-                                });
-                                egui::ComboBox::new("val_combo", "")
-                                    .selected_text(label)
-                                    .show_ui(ui, |ui| {
-                                        for (k, v) in list {
-                                            ui.selectable_value(val, *k, v);
-                                        }
-                                    });
-                            }
-                        }
+                        value_ui(
+                            &app.meta_state.meta.bookmarks[idx],
+                            &mut app.data,
+                            &mut app.edit_state,
+                            ui,
+                            &mut gui.msg_dialog,
+                        );
                     });
                     row.col(|ui| {
                         let off = app.meta_state.meta.bookmarks[idx].offset;
@@ -278,6 +207,79 @@ impl BookmarksWindow {
                 app.center_view_on_offset(off);
                 app.hex_ui.flash_cursor();
             }
+        }
+    }
+}
+
+fn value_ui(
+    bm: &Bookmark,
+    data: &mut [u8],
+    edit_state: &mut EditState,
+    ui: &mut Ui,
+    msg: &mut MessageDialog,
+) {
+    match &bm.value_type {
+        ValueType::None => {}
+        ValueType::U8 => match data.get_mut(bm.offset) {
+            Some(byte) => {
+                if ui.add(egui::DragValue::new(byte)).changed() {
+                    edit_state.widen_dirty_region(DamageRegion::Single(bm.offset));
+                }
+            }
+            None => {
+                ui.label("??");
+            }
+        },
+        ValueType::U16Le => {
+            let result: anyhow::Result<()> = try {
+                match data.get(bm.offset..bm.offset + 2) {
+                    Some(slice) => {
+                        let mut val = u16::from_le_bytes(slice.try_into()?);
+                        if ui.add(egui::DragValue::new(&mut val)).changed() {
+                            data[bm.offset..bm.offset + 2].copy_from_slice(&val.to_le_bytes());
+                            edit_state
+                                .widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 2));
+                        }
+                    }
+                    None => {
+                        ui.label("??");
+                    }
+                }
+            };
+            msg_if_fail(result, "Failed u16-le conversion", msg);
+        }
+        ValueType::U64Le => {
+            let result: anyhow::Result<()> = try {
+                match data.get(bm.offset..bm.offset + 8) {
+                    Some(slice) => {
+                        let mut val = u64::from_le_bytes(slice.try_into()?);
+                        if ui.add(egui::DragValue::new(&mut val)).changed() {
+                            data[bm.offset..bm.offset + 8].copy_from_slice(&val.to_le_bytes());
+                            edit_state
+                                .widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 8))
+                        }
+                    }
+                    None => {
+                        ui.label("??");
+                    }
+                }
+            };
+            msg_if_fail(result, "Failed u64-le conversion", msg);
+        }
+        ValueType::StringMap(list) => {
+            let val = &mut data[bm.offset];
+            let mut s = String::new();
+            let label = list.get(val).unwrap_or_else(|| {
+                s = format!("[unmapped: {}]", val);
+                &s
+            });
+            egui::ComboBox::new("val_combo", "")
+                .selected_text(label)
+                .show_ui(ui, |ui| {
+                    for (k, v) in list {
+                        ui.selectable_value(val, *k, v);
+                    }
+                });
         }
     }
 }
