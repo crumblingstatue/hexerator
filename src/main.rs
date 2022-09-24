@@ -4,7 +4,8 @@
     array_chunks,
     is_some_with,
     let_chains,
-    array_windows
+    array_windows,
+    generic_const_exprs
 )]
 #![warn(
     trivial_casts,

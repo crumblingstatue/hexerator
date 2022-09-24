@@ -3,7 +3,11 @@ use {
     crate::{
         app::{edit_state::EditState, App},
         damage_region::DamageRegion,
-        meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark},
+        meta::{
+            find_most_specific_region_for_offset,
+            value_type::{StringMap, U16Le, U64Le, ValueType, U8},
+            Bookmark,
+        },
         region_context_menu,
         shell::msg_if_fail,
     },
@@ -135,16 +139,20 @@ impl BookmarksWindow {
                         ValueType::None,
                         ValueType::None.label(),
                     );
-                    ui.selectable_value(&mut mark.value_type, ValueType::U8, ValueType::U8.label());
                     ui.selectable_value(
                         &mut mark.value_type,
-                        ValueType::U16Le,
-                        ValueType::U16Le.label(),
+                        ValueType::U8(U8),
+                        ValueType::U8(U8).label(),
                     );
                     ui.selectable_value(
                         &mut mark.value_type,
-                        ValueType::U64Le,
-                        ValueType::U64Le.label(),
+                        ValueType::U16Le(U16Le),
+                        ValueType::U16Le(U16Le).label(),
+                    );
+                    ui.selectable_value(
+                        &mut mark.value_type,
+                        ValueType::U64Le(U64Le),
+                        ValueType::U64Le(U64Le).label(),
                     );
                     let val = ValueType::StringMap(Default::default());
                     if ui
@@ -219,57 +227,104 @@ fn value_ui(
 ) -> anyhow::Result<()> {
     match &bm.value_type {
         ValueType::None => {}
-        ValueType::U8 => match data.get_mut(bm.offset) {
-            Some(byte) => {
-                if ui.add(egui::DragValue::new(byte)).changed() {
-                    edit_state.widen_dirty_region(DamageRegion::Single(bm.offset));
-                }
-            }
-            None => {
-                ui.label("??");
-            }
-        },
-        ValueType::U16Le => match data.get_mut(bm.offset..bm.offset + 2) {
-            Some(slice) => {
-                let mut val = u16::from_le_bytes(slice.try_into()?);
-                if ui.add(egui::DragValue::new(&mut val)).changed() {
-                    slice.copy_from_slice(&val.to_le_bytes());
-                    edit_state.widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 2));
-                }
-            }
-            None => {
-                ui.label("??");
-            }
-        },
-        ValueType::U64Le => match data.get_mut(bm.offset..bm.offset + 8) {
-            Some(slice) => {
-                let mut val = u64::from_le_bytes(slice.try_into()?);
-                if ui.add(egui::DragValue::new(&mut val)).changed() {
-                    slice.copy_from_slice(&val.to_le_bytes());
-                    edit_state.widen_dirty_region(DamageRegion::Range(bm.offset..bm.offset + 8))
-                }
-            }
-            None => {
-                ui.label("??");
-            }
-        },
-        ValueType::StringMap(list) => {
-            let val = &mut data[bm.offset];
-            let mut s = String::new();
-            let label = list.get(val).unwrap_or_else(|| {
-                s = format!("[unmapped: {}]", val);
-                &s
-            });
-            egui::ComboBox::new("val_combo", "")
-                .selected_text(label)
-                .show_ui(ui, |ui| {
-                    for (k, v) in list {
-                        ui.selectable_value(val, *k, v);
-                    }
-                });
-        }
+        ValueType::U8(u8) => u8.value_ui_for_self(bm, data, edit_state, ui),
+        ValueType::U16Le(u16) => u16.value_ui_for_self(bm, data, edit_state, ui),
+        ValueType::U64Le(u64) => u64.value_ui_for_self(bm, data, edit_state, ui),
+        ValueType::StringMap(list) => list.value_ui_for_self(bm, data, edit_state, ui),
     }
     Ok(())
+}
+
+trait ValueTrait {
+    const BYTE_LEN: usize;
+    /// Returns whether the value was changed.
+    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool;
+    fn value_ui_for_self(
+        &self,
+        bm: &Bookmark,
+        data: &mut [u8],
+        edit_state: &mut EditState,
+        ui: &mut Ui,
+    ) where
+        [(); Self::BYTE_LEN]:,
+    {
+        let range = bm.offset..bm.offset + Self::BYTE_LEN;
+        match data.get_mut(range.clone()) {
+            Some(slice) =>
+            {
+                #[expect(
+                    clippy::unwrap_used,
+                    reason = "If slicing is successful, we're guaranteed to have slice of right length"
+                )]
+                if self.value_change_ui(ui, slice.try_into().unwrap()) {
+                    edit_state.widen_dirty_region(DamageRegion::Range(range));
+                }
+            }
+            None => {
+                ui.label("??");
+            }
+        }
+    }
+}
+
+impl ValueTrait for U8 {
+    const BYTE_LEN: usize = 1;
+
+    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
+        ui.add(egui::DragValue::new(&mut bytes[0])).changed()
+    }
+}
+
+impl ValueTrait for U16Le {
+    const BYTE_LEN: usize = 2;
+
+    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
+        let mut val = u16::from_le_bytes(*bytes);
+        if ui.add(egui::DragValue::new(&mut val)).changed() {
+            bytes.copy_from_slice(&val.to_le_bytes());
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl ValueTrait for U64Le {
+    const BYTE_LEN: usize = 8;
+
+    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
+        let mut val = u64::from_le_bytes(*bytes);
+        if ui.add(egui::DragValue::new(&mut val)).changed() {
+            bytes.copy_from_slice(&val.to_le_bytes());
+            true
+        } else {
+            false
+        }
+    }
+}
+
+impl ValueTrait for StringMap {
+    const BYTE_LEN: usize = 1;
+
+    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
+        let val = &mut bytes[0];
+        let mut s = String::new();
+        let label = self.get(val).unwrap_or_else(|| {
+            s = format!("[unmapped: {}]", val);
+            &s
+        });
+        let mut ret = false;
+        egui::ComboBox::new("val_combo", "")
+            .selected_text(label)
+            .show_ui(ui, |ui| {
+                for (k, v) in self {
+                    if ui.selectable_value(val, *k, v).clicked() {
+                        ret = true;
+                    }
+                }
+            });
+        ret
+    }
 }
 
 enum Action {
