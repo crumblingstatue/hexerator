@@ -8,7 +8,11 @@ use {
 };
 
 pub fn open_file(app: &mut App, font: &Font, msg: &mut MessageDialog) {
-    if let Some(path) = rfd::FileDialog::new().pick_file() {
+    let mut file_dialog = rfd::FileDialog::new();
+    if let Some(src_file) = app.source_file() && let Some(parent) = src_file.parent() {
+        file_dialog = file_dialog.set_directory(parent);
+    }
+    if let Some(path) = file_dialog.pick_file() {
         let write = OpenOptions::new().write(true).open(&path).is_ok();
         msg_if_fail(
             app.load_file(path, !write, font, msg),

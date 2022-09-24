@@ -8,6 +8,7 @@
 
 ### Changed
 
+- Open file dialog opens same directory as current file, if available
 - Replace most native message boxes with egui ones
 
 ### Fixed
