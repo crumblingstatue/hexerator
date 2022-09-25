@@ -14,7 +14,7 @@ use {
     anyhow::Context,
     egui::{self, Ui},
     egui_extras::{Size, TableBuilder},
-    std::{error::Error, mem::discriminant},
+    std::mem::discriminant,
 };
 
 #[derive(Default)]
@@ -511,10 +511,7 @@ enum UiAction<T> {
     Goto(T),
 }
 impl<T: TryInto<usize> + Copy> UiAction<T> {
-    fn try_into_action(&self) -> Result<Action, anyhow::Error>
-    where
-        <T as TryInto<usize>>::Error: Error + Send + Sync + 'static,
-    {
+    fn try_into_action(&self) -> Result<Action, <T as TryInto<usize>>::Error> {
         Ok(match self {
             UiAction::None => Action::None,
             &UiAction::Goto(val) => Action::Goto(val.try_into()?),
