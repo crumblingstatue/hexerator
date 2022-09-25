@@ -6,6 +6,7 @@
     let_chains,
     array_windows,
     type_alias_impl_trait,
+    decl_macro,
     generic_const_exprs
 )]
 #![warn(

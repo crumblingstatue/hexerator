@@ -251,32 +251,20 @@ fn value_ui(
     edit_state: &mut EditState,
     ui: &mut Ui,
 ) -> anyhow::Result<Action> {
+    macro val_ui_dispatch($i:ident) {
+        $i.value_ui_for_self(bm, data, edit_state, ui)
+            .try_into_action()?
+    }
     Ok(match &bm.value_type {
         ValueType::None => Action::None,
-        ValueType::U8(u8) => u8
-            .value_ui_for_self(bm, data, edit_state, ui)
-            .try_into_action()?,
-        ValueType::U16Le(u16) => u16
-            .value_ui_for_self(bm, data, edit_state, ui)
-            .try_into_action()?,
-        ValueType::U64Le(u64) => u64
-            .value_ui_for_self(bm, data, edit_state, ui)
-            .try_into_action()?,
-        ValueType::StringMap(list) => list
-            .value_ui_for_self(bm, data, edit_state, ui)
-            .try_into_action()?,
-        ValueType::U16Be(v) => v
-            .value_ui_for_self(bm, data, edit_state, ui)
-            .try_into_action()?,
-        ValueType::U32Le(v) => v
-            .value_ui_for_self(bm, data, edit_state, ui)
-            .try_into_action()?,
-        ValueType::U32Be(v) => v
-            .value_ui_for_self(bm, data, edit_state, ui)
-            .try_into_action()?,
-        ValueType::U64Be(v) => v
-            .value_ui_for_self(bm, data, edit_state, ui)
-            .try_into_action()?,
+        ValueType::U8(v) => val_ui_dispatch!(v),
+        ValueType::U16Le(v) => val_ui_dispatch!(v),
+        ValueType::U16Be(v) => val_ui_dispatch!(v),
+        ValueType::U32Le(v) => val_ui_dispatch!(v),
+        ValueType::U32Be(v) => val_ui_dispatch!(v),
+        ValueType::U64Le(v) => val_ui_dispatch!(v),
+        ValueType::U64Be(v) => val_ui_dispatch!(v),
+        ValueType::StringMap(v) => val_ui_dispatch!(v),
     })
 }
 
