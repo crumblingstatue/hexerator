@@ -324,7 +324,7 @@ struct ValueUiOutput<T> {
 }
 
 trait EndianedPrimitive {
-    const BYTE_LEN: usize;
+    const BYTE_LEN: usize = std::mem::size_of::<Self::Primitive>();
     type Primitive: egui::emath::Numeric + std::fmt::Display + TryInto<usize>;
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive;
     fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN];
@@ -333,8 +333,6 @@ trait EndianedPrimitive {
 trait DefaultUi {}
 
 impl EndianedPrimitive for U8 {
-    const BYTE_LEN: usize = 1;
-
     type Primitive = u8;
 
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
@@ -349,7 +347,6 @@ impl EndianedPrimitive for U8 {
 impl DefaultUi for U8 {}
 
 impl EndianedPrimitive for U16Le {
-    const BYTE_LEN: usize = 2;
     type Primitive = u16;
 
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
@@ -362,8 +359,6 @@ impl EndianedPrimitive for U16Le {
 }
 
 impl EndianedPrimitive for U16Be {
-    const BYTE_LEN: usize = 2;
-
     type Primitive = u16;
 
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
@@ -379,8 +374,6 @@ impl DefaultUi for U16Le {}
 impl DefaultUi for U16Be {}
 
 impl EndianedPrimitive for U32Le {
-    const BYTE_LEN: usize = 4;
-
     type Primitive = u32;
 
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
@@ -393,8 +386,6 @@ impl EndianedPrimitive for U32Le {
 }
 
 impl EndianedPrimitive for U32Be {
-    const BYTE_LEN: usize = 4;
-
     type Primitive = u32;
 
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
@@ -410,7 +401,6 @@ impl DefaultUi for U32Le {}
 impl DefaultUi for U32Be {}
 
 impl EndianedPrimitive for U64Le {
-    const BYTE_LEN: usize = 8;
     type Primitive = u64;
 
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
@@ -423,8 +413,6 @@ impl EndianedPrimitive for U64Le {
 }
 
 impl EndianedPrimitive for U64Be {
-    const BYTE_LEN: usize = 8;
-
     type Primitive = u64;
 
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
@@ -440,8 +428,6 @@ impl DefaultUi for U64Le {}
 impl DefaultUi for U64Be {}
 
 impl EndianedPrimitive for StringMap {
-    const BYTE_LEN: usize = 1;
-
     type Primitive = u8;
 
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
