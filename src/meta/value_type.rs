@@ -3,7 +3,7 @@ use {
     std::collections::HashMap,
 };
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, Default)]
+#[derive(Serialize, Deserialize, Clone, Default)]
 pub enum ValueType {
     #[default]
     None,
@@ -17,19 +17,25 @@ pub enum ValueType {
     StringMap(StringMap),
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+impl PartialEq for ValueType {
+    fn eq(&self, other: &Self) -> bool {
+        core::mem::discriminant(self) == core::mem::discriminant(other)
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct U8;
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct U16Le;
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct U16Be;
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct U32Le;
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct U32Be;
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct U64Le;
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct U64Be;
 
 pub type StringMap = HashMap<u8, String>;
