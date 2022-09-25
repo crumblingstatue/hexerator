@@ -32,7 +32,7 @@ impl BookmarksWindow {
         ui.add(egui::TextEdit::singleline(&mut win.name_filter_string).hint_text("Filter by name"));
         let mut action = Action::None;
         TableBuilder::new(ui)
-            .columns(Size::remainder(), 4)
+            .columns(Size::remainder(), 5)
             .striped(true)
             .header(24.0, |mut row| {
                 row.col(|ui| {
@@ -40,6 +40,9 @@ impl BookmarksWindow {
                 });
                 row.col(|ui| {
                     ui.label("Offset");
+                });
+                row.col(|ui| {
+                    ui.label("Type");
                 });
                 row.col(|ui| {
                     ui.label("Value");
@@ -78,6 +81,9 @@ impl BookmarksWindow {
                         {
                             action = Action::Goto(app.meta_state.meta.bookmarks[idx].offset);
                         }
+                    });
+                    row.col(|ui| {
+                        ui.label(app.meta_state.meta.bookmarks[idx].value_type.label());
                     });
                     row.col(|ui| {
                         let result = value_ui(
