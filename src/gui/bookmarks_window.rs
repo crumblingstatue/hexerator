@@ -9,12 +9,12 @@ use {
             Bookmark,
         },
         region_context_menu,
-        shell::msg_if_fail,
+        shell::{msg_fail, msg_if_fail},
     },
     anyhow::Context,
     egui::{self, Ui},
     egui_extras::{Size, TableBuilder},
-    std::mem::discriminant,
+    std::{error::Error, mem::discriminant},
 };
 
 #[derive(Default)]
@@ -86,7 +86,13 @@ impl BookmarksWindow {
                             &mut app.edit_state,
                             ui,
                         );
-                        msg_if_fail(result, "Value ui failed", &mut gui.msg_dialog);
+                        match result {
+                            Ok(action) => match action {
+                                Action::None => {}
+                                Action::Goto(offset) => app.search_focus(offset),
+                            },
+                            Err(e) => msg_fail(&e, "Value ui error", &mut gui.msg_dialog),
+                        }
                     });
                     row.col(|ui| {
                         let off = app.meta_state.meta.bookmarks[idx].offset;
@@ -244,55 +250,82 @@ fn value_ui(
     data: &mut [u8],
     edit_state: &mut EditState,
     ui: &mut Ui,
-) -> anyhow::Result<()> {
-    match &bm.value_type {
-        ValueType::None => {}
-        ValueType::U8(u8) => u8.value_ui_for_self(bm, data, edit_state, ui),
-        ValueType::U16Le(u16) => u16.value_ui_for_self(bm, data, edit_state, ui),
-        ValueType::U64Le(u64) => u64.value_ui_for_self(bm, data, edit_state, ui),
-        ValueType::StringMap(list) => list.value_ui_for_self(bm, data, edit_state, ui),
-        ValueType::U16Be(v) => v.value_ui_for_self(bm, data, edit_state, ui),
-        ValueType::U32Le(v) => v.value_ui_for_self(bm, data, edit_state, ui),
-        ValueType::U32Be(v) => v.value_ui_for_self(bm, data, edit_state, ui),
-        ValueType::U64Be(v) => v.value_ui_for_self(bm, data, edit_state, ui),
-    }
-    Ok(())
+) -> anyhow::Result<Action> {
+    Ok(match &bm.value_type {
+        ValueType::None => Action::None,
+        ValueType::U8(u8) => u8
+            .value_ui_for_self(bm, data, edit_state, ui)
+            .try_into_action()?,
+        ValueType::U16Le(u16) => u16
+            .value_ui_for_self(bm, data, edit_state, ui)
+            .try_into_action()?,
+        ValueType::U64Le(u64) => u64
+            .value_ui_for_self(bm, data, edit_state, ui)
+            .try_into_action()?,
+        ValueType::StringMap(list) => list
+            .value_ui_for_self(bm, data, edit_state, ui)
+            .try_into_action()?,
+        ValueType::U16Be(v) => v
+            .value_ui_for_self(bm, data, edit_state, ui)
+            .try_into_action()?,
+        ValueType::U32Le(v) => v
+            .value_ui_for_self(bm, data, edit_state, ui)
+            .try_into_action()?,
+        ValueType::U32Be(v) => v
+            .value_ui_for_self(bm, data, edit_state, ui)
+            .try_into_action()?,
+        ValueType::U64Be(v) => v
+            .value_ui_for_self(bm, data, edit_state, ui)
+            .try_into_action()?,
+    })
 }
 
 trait ValueTrait: EndianedPrimitive {
     /// Returns whether the value was changed.
-    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool;
+    fn value_change_ui(
+        &self,
+        ui: &mut egui::Ui,
+        bytes: &mut [u8; Self::BYTE_LEN],
+    ) -> ValueUiOutput<Self::Primitive>;
     fn value_ui_for_self(
         &self,
         bm: &Bookmark,
         data: &mut [u8],
         edit_state: &mut EditState,
         ui: &mut Ui,
-    ) where
+    ) -> UiAction<Self::Primitive>
+    where
         [(); Self::BYTE_LEN]:,
     {
         let range = bm.offset..bm.offset + Self::BYTE_LEN;
         match data.get_mut(range.clone()) {
-            Some(slice) =>
-            {
+            Some(slice) => {
                 #[expect(
                     clippy::unwrap_used,
                     reason = "If slicing is successful, we're guaranteed to have slice of right length"
                 )]
-                if self.value_change_ui(ui, slice.try_into().unwrap()) {
+                let out = self.value_change_ui(ui, slice.try_into().unwrap());
+                if out.changed {
                     edit_state.widen_dirty_region(DamageRegion::Range(range));
                 }
+                out.action
             }
             None => {
                 ui.label("??");
+                UiAction::None
             }
         }
     }
 }
 
+struct ValueUiOutput<T> {
+    changed: bool,
+    action: UiAction<T>,
+}
+
 trait EndianedPrimitive {
     const BYTE_LEN: usize;
-    type Primitive: egui::emath::Numeric;
+    type Primitive: egui::emath::Numeric + std::fmt::Display + TryInto<usize>;
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive;
     fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN];
 }
@@ -421,40 +454,84 @@ impl EndianedPrimitive for StringMap {
 }
 
 impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
-    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
+    fn value_change_ui(
+        &self,
+        ui: &mut egui::Ui,
+        bytes: &mut [u8; Self::BYTE_LEN],
+    ) -> ValueUiOutput<Self::Primitive> {
         let mut val = Self::from_bytes(*bytes);
-        if ui.add(egui::DragValue::new(&mut val)).changed() {
+        let mut action = UiAction::None;
+        let act_mut = &mut action;
+        let ctx_menu = move |ui: &mut egui::Ui| {
+            if ui.button("Copy").clicked() {
+                ui.output().copied_text = val.to_string();
+                ui.close_menu();
+            }
+            if ui.button("Jump").clicked() {
+                ui.close_menu();
+                *act_mut = UiAction::Goto(val);
+            }
+        };
+        let changed = if ui
+            .add(egui::DragValue::new(&mut val))
+            .context_menu(ctx_menu)
+            .changed()
+        {
             bytes.copy_from_slice(&Self::to_bytes(val));
             true
         } else {
             false
-        }
+        };
+        ValueUiOutput { changed, action }
     }
 }
 
 impl ValueTrait for StringMap {
-    fn value_change_ui(&self, ui: &mut egui::Ui, bytes: &mut [u8; Self::BYTE_LEN]) -> bool {
+    fn value_change_ui(
+        &self,
+        ui: &mut egui::Ui,
+        bytes: &mut [u8; Self::BYTE_LEN],
+    ) -> ValueUiOutput<Self::Primitive> {
         let val = &mut bytes[0];
         let mut s = String::new();
         let label = self.get(val).unwrap_or_else(|| {
             s = format!("[unmapped: {}]", val);
             &s
         });
-        let mut ret = false;
+        let mut changed = false;
         egui::ComboBox::new("val_combo", "")
             .selected_text(label)
             .show_ui(ui, |ui| {
                 for (k, v) in self {
                     if ui.selectable_value(val, *k, v).clicked() {
-                        ret = true;
+                        changed = true;
                     }
                 }
             });
-        ret
+        ValueUiOutput {
+            changed,
+            action: UiAction::None,
+        }
     }
 }
 
 enum Action {
     None,
     Goto(usize),
+}
+
+enum UiAction<T> {
+    None,
+    Goto(T),
+}
+impl<T: TryInto<usize> + Copy> UiAction<T> {
+    fn try_into_action(&self) -> Result<Action, anyhow::Error>
+    where
+        <T as TryInto<usize>>::Error: Error + Send + Sync + 'static,
+    {
+        Ok(match self {
+            UiAction::None => Action::None,
+            &UiAction::Goto(val) => Action::Goto(val.try_into()?),
+        })
+    }
 }
