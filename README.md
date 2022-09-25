@@ -5,5 +5,11 @@ Check out [the Hexerator book](https://crumblingstatue.github.io/hexerator-book/
 
 ## Note for contributors:
 Hexerator only supports latest nightly Rust. You need an up-to-date nightly to build Hexerator.
-As Hexerator matures, it will slowly transition to stable Rust.
-The plan is for Hexerator 1.0 to be buildable with a stable Rust version.
+Hexerator doesn't shy away from experimenting with unstable Rust features.
+Contributors can use any nightly feature they wish.
+
+Contributors however are free to rewrite code to use stable features if it doesn't result in:
+
+A loss of features
+Reduced performance
+Significantly worse maintainability
