@@ -39,6 +39,7 @@ proc-maps = "0.2.1"
 open = "3.0.3"
 egui-modal = "0.1.4"
 arboard = { version = "3.1.0", default-features = false }
+paste = "1.0.9"
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.36.1"

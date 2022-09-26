@@ -7,12 +7,19 @@ use {
 pub enum ValueType {
     #[default]
     None,
+    I8(I8),
     U8(U8),
+    I16Le(I16Le),
     U16Le(U16Le),
+    I16Be(I16Be),
     U16Be(U16Be),
+    I32Le(I32Le),
     U32Le(U32Le),
+    I32Be(I32Be),
     U32Be(U32Be),
+    I64Le(I64Le),
     U64Le(U64Le),
+    I64Be(I64Be),
     U64Be(U64Be),
     StringMap(StringMap),
 }
@@ -23,35 +30,27 @@ impl PartialEq for ValueType {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct U8;
-#[derive(Serialize, Deserialize, Clone)]
-pub struct U16Le;
-#[derive(Serialize, Deserialize, Clone)]
-pub struct U16Be;
-#[derive(Serialize, Deserialize, Clone)]
-pub struct U32Le;
-#[derive(Serialize, Deserialize, Clone)]
-pub struct U32Be;
-#[derive(Serialize, Deserialize, Clone)]
-pub struct U64Le;
-#[derive(Serialize, Deserialize, Clone)]
-pub struct U64Be;
-
 pub type StringMap = HashMap<u8, String>;
 
 impl ValueType {
     pub fn label(&self) -> &str {
         match self {
             ValueType::None => "none",
-            ValueType::U8(_) => "u8",
-            ValueType::U16Le(_) => "u16-le",
-            ValueType::U64Le(_) => "u64-le",
-            ValueType::StringMap(_) => "string list",
-            ValueType::U16Be(_) => "u16-be",
-            ValueType::U32Le(_) => "u32-le",
-            ValueType::U32Be(_) => "u32-be",
-            ValueType::U64Be(_) => "u64-be",
+            ValueType::I8(v) => v.label(),
+            ValueType::U8(v) => v.label(),
+            ValueType::I16Le(v) => v.label(),
+            ValueType::U16Le(v) => v.label(),
+            ValueType::I16Be(v) => v.label(),
+            ValueType::U16Be(v) => v.label(),
+            ValueType::I32Le(v) => v.label(),
+            ValueType::U32Le(v) => v.label(),
+            ValueType::I32Be(v) => v.label(),
+            ValueType::U32Be(v) => v.label(),
+            ValueType::I64Le(v) => v.label(),
+            ValueType::U64Le(v) => v.label(),
+            ValueType::I64Be(v) => v.label(),
+            ValueType::U64Be(v) => v.label(),
+            ValueType::StringMap(v) => v.label(),
         }
     }
 }
@@ -61,88 +60,47 @@ pub trait EndianedPrimitive {
     type Primitive: egui::emath::Numeric + std::fmt::Display + TryInto<usize>;
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive;
     fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN];
+    fn label(&self) -> &'static str;
 }
 
-impl EndianedPrimitive for U8 {
-    type Primitive = u8;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        bytes[0]
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        [prim]
-    }
+impl_for_int! {
+    I8 => i8 ne,
+    U8 => u8 ne,
+    I16Le => i16 le,
+    U16Le => u16 le,
+    I16Be => i16 be,
+    U16Be => u16 be,
+    I32Le => i32 le,
+    U32Le => u32 le,
+    I32Be => i32 be,
+    U32Be => u32 be,
+    I64Le => i64 le,
+    U64Le => u64 le,
+    I64Be => i64 be,
+    U64Be => u64 be,
 }
 
-impl EndianedPrimitive for U16Le {
-    type Primitive = u16;
+macro impl_for_int($($wrap:ident => $prim:ident $en:ident,)*) {
+    $(
+        #[derive(Serialize, Deserialize, Clone)]
+        pub struct $wrap;
 
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u16::from_le_bytes(bytes)
-    }
+        impl EndianedPrimitive for $wrap {
+            type Primitive = $prim;
 
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_le_bytes()
-    }
-}
+            paste::paste! {
+                fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+                    $prim::[<from_ $en _bytes>](bytes)
+                }
 
-impl EndianedPrimitive for U16Be {
-    type Primitive = u16;
+                fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+                    prim.[<to_ $en _bytes>]()
+                }
 
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u16::from_be_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_be_bytes()
-    }
-}
-
-impl EndianedPrimitive for U32Le {
-    type Primitive = u32;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u32::from_le_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_le_bytes()
-    }
-}
-
-impl EndianedPrimitive for U32Be {
-    type Primitive = u32;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u32::from_be_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_be_bytes()
-    }
-}
-
-impl EndianedPrimitive for U64Le {
-    type Primitive = u64;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u64::from_le_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_le_bytes()
-    }
-}
-
-impl EndianedPrimitive for U64Be {
-    type Primitive = u64;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u64::from_be_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_be_bytes()
-    }
+                fn label(&self) -> &'static str {
+                    concat!(stringify!($prim), "-", stringify!($en))
+                }
+            }
+        }
+    )*
 }

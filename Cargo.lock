@@ -679,6 +679,7 @@ dependencies = [
  "memchr",
  "num-traits",
  "open",
+ "paste",
  "proc-maps",
  "rand",
  "recently_used_list",

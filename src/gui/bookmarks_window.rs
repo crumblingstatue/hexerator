@@ -6,8 +6,8 @@ use {
         meta::{
             find_most_specific_region_for_offset,
             value_type::{
-                EndianedPrimitive, StringMap, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType,
-                U8,
+                EndianedPrimitive, I16Be, I16Le, I32Be, I32Le, I64Be, I64Le, StringMap, U16Be,
+                U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8, U8,
             },
             Bookmark,
         },
@@ -149,46 +149,26 @@ impl BookmarksWindow {
             egui::ComboBox::new("type_combo", "value type")
                 .selected_text(mark.value_type.label())
                 .show_ui(ui, |ui| {
+                    macro int_sel_vals($($t:ident,)*) {
+                        $(
+                            ui.selectable_value(
+                                &mut mark.value_type,
+                                ValueType::$t($t),
+                                ValueType::$t($t).label(),
+                            );
+                        )*
+                    }
                     ui.selectable_value(
                         &mut mark.value_type,
                         ValueType::None,
                         ValueType::None.label(),
                     );
-                    ui.selectable_value(
-                        &mut mark.value_type,
-                        ValueType::U8(U8),
-                        ValueType::U8(U8).label(),
-                    );
-                    ui.selectable_value(
-                        &mut mark.value_type,
-                        ValueType::U16Le(U16Le),
-                        ValueType::U16Le(U16Le).label(),
-                    );
-                    ui.selectable_value(
-                        &mut mark.value_type,
-                        ValueType::U16Be(U16Be),
-                        ValueType::U16Be(U16Be).label(),
-                    );
-                    ui.selectable_value(
-                        &mut mark.value_type,
-                        ValueType::U32Le(U32Le),
-                        ValueType::U32Le(U32Le).label(),
-                    );
-                    ui.selectable_value(
-                        &mut mark.value_type,
-                        ValueType::U32Be(U32Be),
-                        ValueType::U32Be(U32Be).label(),
-                    );
-                    ui.selectable_value(
-                        &mut mark.value_type,
-                        ValueType::U64Le(U64Le),
-                        ValueType::U64Le(U64Le).label(),
-                    );
-                    ui.selectable_value(
-                        &mut mark.value_type,
-                        ValueType::U64Be(U64Be),
-                        ValueType::U64Be(U64Be).label(),
-                    );
+                    int_sel_vals! {
+                        I8, U8,
+                        I16Le, U16Le, I16Be, U16Be,
+                        I32Le, U32Le, I32Be, U32Be,
+                        I64Le, U64Le, I64Be, U64Be,
+                    }
                     let val = ValueType::StringMap(Default::default());
                     if ui
                         .selectable_label(
@@ -266,12 +246,19 @@ fn value_ui(
     }
     Ok(match &bm.value_type {
         ValueType::None => Action::None,
+        ValueType::I8(v) => val_ui_dispatch!(v),
         ValueType::U8(v) => val_ui_dispatch!(v),
+        ValueType::I16Le(v) => val_ui_dispatch!(v),
         ValueType::U16Le(v) => val_ui_dispatch!(v),
+        ValueType::I16Be(v) => val_ui_dispatch!(v),
         ValueType::U16Be(v) => val_ui_dispatch!(v),
+        ValueType::I32Le(v) => val_ui_dispatch!(v),
         ValueType::U32Le(v) => val_ui_dispatch!(v),
+        ValueType::I32Be(v) => val_ui_dispatch!(v),
         ValueType::U32Be(v) => val_ui_dispatch!(v),
+        ValueType::I64Le(v) => val_ui_dispatch!(v),
         ValueType::U64Le(v) => val_ui_dispatch!(v),
+        ValueType::I64Be(v) => val_ui_dispatch!(v),
         ValueType::U64Be(v) => val_ui_dispatch!(v),
         ValueType::StringMap(v) => val_ui_dispatch!(v),
     })
@@ -321,12 +308,19 @@ struct ValueUiOutput<T> {
 }
 
 trait DefaultUi {}
+impl DefaultUi for I8 {}
 impl DefaultUi for U8 {}
+impl DefaultUi for I16Le {}
 impl DefaultUi for U16Le {}
+impl DefaultUi for I16Be {}
 impl DefaultUi for U16Be {}
+impl DefaultUi for I32Le {}
 impl DefaultUi for U32Le {}
+impl DefaultUi for I32Be {}
 impl DefaultUi for U32Be {}
+impl DefaultUi for I64Le {}
 impl DefaultUi for U64Le {}
+impl DefaultUi for I64Be {}
 impl DefaultUi for U64Be {}
 
 impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
@@ -371,6 +365,10 @@ impl EndianedPrimitive for StringMap {
 
     fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
         [prim]
+    }
+
+    fn label(&self) -> &'static str {
+        "string map"
     }
 }
 
