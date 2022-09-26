@@ -5,7 +5,10 @@ use {
         damage_region::DamageRegion,
         meta::{
             find_most_specific_region_for_offset,
-            value_type::{StringMap, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, U8},
+            value_type::{
+                EndianedPrimitive, StringMap, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType,
+                U8,
+            },
             Bookmark,
         },
         region_context_menu,
@@ -317,121 +320,14 @@ struct ValueUiOutput<T> {
     action: UiAction<T>,
 }
 
-trait EndianedPrimitive {
-    const BYTE_LEN: usize = std::mem::size_of::<Self::Primitive>();
-    type Primitive: egui::emath::Numeric + std::fmt::Display + TryInto<usize>;
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive;
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN];
-}
-
 trait DefaultUi {}
-
-impl EndianedPrimitive for U8 {
-    type Primitive = u8;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        bytes[0]
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        [prim]
-    }
-}
-
 impl DefaultUi for U8 {}
-
-impl EndianedPrimitive for U16Le {
-    type Primitive = u16;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u16::from_le_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_le_bytes()
-    }
-}
-
-impl EndianedPrimitive for U16Be {
-    type Primitive = u16;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u16::from_be_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_be_bytes()
-    }
-}
-
 impl DefaultUi for U16Le {}
 impl DefaultUi for U16Be {}
-
-impl EndianedPrimitive for U32Le {
-    type Primitive = u32;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u32::from_le_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_le_bytes()
-    }
-}
-
-impl EndianedPrimitive for U32Be {
-    type Primitive = u32;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u32::from_be_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_be_bytes()
-    }
-}
-
 impl DefaultUi for U32Le {}
 impl DefaultUi for U32Be {}
-
-impl EndianedPrimitive for U64Le {
-    type Primitive = u64;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u64::from_le_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_le_bytes()
-    }
-}
-
-impl EndianedPrimitive for U64Be {
-    type Primitive = u64;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        u64::from_be_bytes(bytes)
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        prim.to_be_bytes()
-    }
-}
-
 impl DefaultUi for U64Le {}
 impl DefaultUi for U64Be {}
-
-impl EndianedPrimitive for StringMap {
-    type Primitive = u8;
-
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-        bytes[0]
-    }
-
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-        [prim]
-    }
-}
 
 impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
     fn value_change_ui(
@@ -463,6 +359,18 @@ impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
             false
         };
         ValueUiOutput { changed, action }
+    }
+}
+
+impl EndianedPrimitive for StringMap {
+    type Primitive = u8;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        bytes[0]
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        [prim]
     }
 }
 
