@@ -6,8 +6,8 @@ use {
         meta::{
             find_most_specific_region_for_offset,
             value_type::{
-                EndianedPrimitive, I16Be, I16Le, I32Be, I32Le, I64Be, I64Le, StringMap, U16Be,
-                U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8, U8,
+                EndianedPrimitive, F32Be, F32Le, F64Be, F64Le, I16Be, I16Le, I32Be, I32Le, I64Be,
+                I64Le, StringMap, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8, U8,
             },
             Bookmark,
         },
@@ -17,6 +17,7 @@ use {
     anyhow::Context,
     egui::{self, Ui},
     egui_extras::{Size, TableBuilder},
+    num_traits::AsPrimitive,
     std::mem::discriminant,
 };
 
@@ -168,6 +169,7 @@ impl BookmarksWindow {
                         I16Le, U16Le, I16Be, U16Be,
                         I32Le, U32Le, I32Be, U32Be,
                         I64Le, U64Le, I64Be, U64Be,
+                        F32Le, F32Be, F64Le, F64Be,
                     }
                     let val = ValueType::StringMap(Default::default());
                     if ui
@@ -241,8 +243,7 @@ fn value_ui(
     ui: &mut Ui,
 ) -> anyhow::Result<Action> {
     macro val_ui_dispatch($i:ident) {
-        $i.value_ui_for_self(bm, data, edit_state, ui)
-            .try_into_action()?
+        $i.value_ui_for_self(bm, data, edit_state, ui).to_action()
     }
     Ok(match &bm.value_type {
         ValueType::None => Action::None,
@@ -260,6 +261,10 @@ fn value_ui(
         ValueType::U64Le(v) => val_ui_dispatch!(v),
         ValueType::I64Be(v) => val_ui_dispatch!(v),
         ValueType::U64Be(v) => val_ui_dispatch!(v),
+        ValueType::F32Le(v) => val_ui_dispatch!(v),
+        ValueType::F32Be(v) => val_ui_dispatch!(v),
+        ValueType::F64Le(v) => val_ui_dispatch!(v),
+        ValueType::F64Be(v) => val_ui_dispatch!(v),
         ValueType::StringMap(v) => val_ui_dispatch!(v),
     })
 }
@@ -322,6 +327,10 @@ impl DefaultUi for I64Le {}
 impl DefaultUi for U64Le {}
 impl DefaultUi for I64Be {}
 impl DefaultUi for U64Be {}
+impl DefaultUi for F32Le {}
+impl DefaultUi for F32Be {}
+impl DefaultUi for F64Le {}
+impl DefaultUi for F64Be {}
 
 impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
     fn value_change_ui(
@@ -410,11 +419,11 @@ enum UiAction<T> {
     None,
     Goto(T),
 }
-impl<T: TryInto<usize> + Copy> UiAction<T> {
-    fn try_into_action(&self) -> Result<Action, <T as TryInto<usize>>::Error> {
-        Ok(match self {
+impl<T: AsPrimitive<usize>> UiAction<T> {
+    fn to_action(&self) -> Action {
+        match self {
             UiAction::None => Action::None,
-            &UiAction::Goto(val) => Action::Goto(val.try_into()?),
-        })
+            &UiAction::Goto(val) => Action::Goto(val.as_()),
+        }
     }
 }

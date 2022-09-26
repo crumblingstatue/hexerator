@@ -21,6 +21,10 @@ pub enum ValueType {
     U64Le(U64Le),
     I64Be(I64Be),
     U64Be(U64Be),
+    F32Le(F32Le),
+    F32Be(F32Be),
+    F64Le(F64Le),
+    F64Be(F64Be),
     StringMap(StringMap),
 }
 
@@ -50,6 +54,10 @@ impl ValueType {
             ValueType::U64Le(v) => v.label(),
             ValueType::I64Be(v) => v.label(),
             ValueType::U64Be(v) => v.label(),
+            ValueType::F32Le(v) => v.label(),
+            ValueType::F32Be(v) => v.label(),
+            ValueType::F64Le(v) => v.label(),
+            ValueType::F64Be(v) => v.label(),
             ValueType::StringMap(v) => v.label(),
         }
     }
@@ -57,7 +65,7 @@ impl ValueType {
 
 pub trait EndianedPrimitive {
     const BYTE_LEN: usize = std::mem::size_of::<Self::Primitive>();
-    type Primitive: egui::emath::Numeric + std::fmt::Display + TryInto<usize>;
+    type Primitive: egui::emath::Numeric + std::fmt::Display;
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive;
     fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN];
     fn label(&self) -> &'static str;
@@ -78,6 +86,10 @@ impl_for_int! {
     U64Le => u64 le,
     I64Be => i64 be,
     U64Be => u64 be,
+    F32Le => f32 le,
+    F32Be => f32 be,
+    F64Le => f64 le,
+    F64Be => f64 be,
 }
 
 macro impl_for_int($($wrap:ident => $prim:ident $en:ident,)*) {
