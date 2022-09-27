@@ -423,7 +423,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
         return;
     }
     let offset = match app.hex_ui.interact_mode {
-        InteractMode::View => {
+        InteractMode::View if !ui.ctx().wants_pointer_input() => {
             if let Some((off, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
                 let mut add = 0;
                 if gui.inspect_panel.offset_relative {
@@ -441,7 +441,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                 edit_offset(app, gui, ui)
             }
         }
-        InteractMode::Edit => edit_offset(app, gui, ui),
+        _ => edit_offset(app, gui, ui),
     };
     ui.checkbox(&mut gui.inspect_panel.offset_relative, "Relative offset")
         .on_hover_text("Offset relative to --hard-seek");

@@ -11,6 +11,7 @@
 
 - Open file dialog opens same directory as current file, if available
 - Replace most native message boxes with egui ones
+- Inspect panel shows value at edit cursor if mouse pointer is over a window that covers the hex view.
 
 ### Fixed
 
