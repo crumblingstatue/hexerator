@@ -32,8 +32,19 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                     match src.provider {
                         SourceProvider::File(_) => {
                             match &app.args.src.file {
-                                Some(file) => ui.label(file.display().to_string()),
-                                None => ui.label("File path unknown"),
+                                Some(file) => {
+                                    let s = file.display().to_string();
+                                    if ui
+                                        .add(egui::Label::new(&s).sense(egui::Sense::click()))
+                                        .on_hover_text("Click to copy")
+                                        .clicked()
+                                    {
+                                        ui.output().copied_text = s;
+                                    }
+                                }
+                                None => {
+                                    ui.label("File path unknown");
+                                }
                             };
                         }
                         SourceProvider::Stdin(_) => {
