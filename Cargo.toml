@@ -10,17 +10,17 @@ default = ["backend-sfml"]
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "4.0.0-rc.1", features = ["derive"] }
-anyhow = "1.0.62"
+clap = { version = "4.0.1", features = ["derive"] }
+anyhow = "1.0.65"
 rfd = "0.10.0"
 rand = "0.8.5"
-rmp-serde = "1.1.0"
-serde = { version = "1.0.143", features = ["derive"] }
+rmp-serde = "1.1.1"
+serde = { version = "1.0.145", features = ["derive"] }
 directories = "4.0.1"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 memchr = "2.5.0"
 glu-sys = "0.1.4"
-thiserror = "1.0.32"
+thiserror = "1.0.37"
 either = "1.8.0"
 tree_magic_mini = { version = "3.0.3", features = ["tree_magic_db"] }
 bytemuck = "1.12.1"
@@ -33,8 +33,8 @@ serde-big-array = "0.4.1"
 egui = "0.19.0"
 egui_extras = { version = "0.19.0", default-features = false }
 rlua = "0.19.4"
-itertools = "0.10.3"
-sysinfo = { version = "0.26.2", default-features = false }
+itertools = "0.10.5"
+sysinfo = { version = "0.26.4", default-features = false }
 proc-maps = "0.2.1"
 open = "3.0.3"
 egui-modal = "0.1.4"
@@ -42,7 +42,7 @@ arboard = { version = "3.1.0", default-features = false }
 paste = "1.0.9"
 
 [target."cfg(windows)".dependencies.windows-sys]
- version = "0.36.1"
+ version = "0.42.0"
  features = ["Win32_System_Diagnostics_Debug", "Win32_Foundation", "Win32_System_Threading"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
