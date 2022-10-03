@@ -20,6 +20,7 @@
 - Prevent fill dialog and Jump dialog from constantly stealing focus when they are open
 - Certain dialog types no longer erroneusly stack on top of themselves if opened multiple times.
 - Lua fill dialog with empty selection now has a close button.
+- Make regions window scroll properly
 
 ## [0.1.0] - 2022-09-16
 
