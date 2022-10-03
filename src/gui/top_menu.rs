@@ -5,6 +5,7 @@ mod file;
 mod help;
 mod meta;
 mod perspective;
+mod scripting;
 mod view;
 
 use {
@@ -24,6 +25,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
         ui.menu_button("Perspective", |ui| perspective::ui(ui, gui, app));
         ui.menu_button("Meta", |ui| meta::ui(ui, gui, app));
         ui.menu_button("Analysis", |ui| analysis::ui(ui, gui, app));
+        ui.menu_button("Scripting", |ui| scripting::ui(ui, gui, app));
         ui.menu_button("Help", |ui| help::ui(ui, gui));
         ui.with_layout(
             Layout::right_to_left(egui::Align::Center),

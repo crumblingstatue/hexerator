@@ -2,11 +2,7 @@ use {
     crate::{
         app::App,
         damage_region::DamageRegion,
-        gui::{
-            dialogs::{LuaFillDialog, PatternFillDialog},
-            util::button_with_shortcut,
-            Gui,
-        },
+        gui::{dialogs::PatternFillDialog, util::button_with_shortcut, Gui},
         shell::msg_if_fail,
     },
     rand::{thread_rng, RngCore},
@@ -44,10 +40,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     ui.separator();
     if ui.button("Pattern fill...").clicked() {
         gui.add_dialog(PatternFillDialog::default());
-        ui.close_menu();
-    }
-    if ui.button("Lua fill...").clicked() {
-        gui.add_dialog(LuaFillDialog::default());
         ui.close_menu();
     }
     if ui.button("Random fill").clicked() {
