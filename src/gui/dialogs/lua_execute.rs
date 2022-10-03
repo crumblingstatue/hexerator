@@ -18,7 +18,7 @@ pub struct LuaExecuteDialog {
 
 impl Dialog for LuaExecuteDialog {
     fn title(&self) -> &str {
-        "Lua fill"
+        "Execute Lua"
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {

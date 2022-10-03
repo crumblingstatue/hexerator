@@ -54,6 +54,52 @@ impl RegionsWindow {
                 ui.add_enabled(false, button);
             }
         }
+        if let &Some(key) = &gui.regions_window.selected_key {
+            ui.separator();
+            let reg = &mut app.meta_state.meta.low.regions[key];
+            ui.horizontal(|ui| {
+                if gui.regions_window.rename_active {
+                    if ui.text_edit_singleline(&mut reg.name).lost_focus() {
+                        gui.regions_window.rename_active = false;
+                    }
+                } else {
+                    ui.heading(&reg.name);
+                }
+                if ui.button("✏").on_hover_text("Rename").clicked() {
+                    gui.regions_window.rename_active ^= true;
+                }
+            });
+            ui.horizontal(|ui| {
+                ui.label("First byte");
+                ui.add(egui::DragValue::new(&mut reg.region.begin));
+                ui.label("Last byte");
+                ui.add(egui::DragValue::new(&mut reg.region.end));
+            });
+            if gui.regions_window.select_active {
+                app.hex_ui.select_a = Some(reg.region.begin);
+                app.hex_ui.select_b = Some(reg.region.end);
+            }
+            if ui
+                .checkbox(&mut gui.regions_window.select_active, "Select")
+                .clicked()
+            {
+                app.hex_ui.select_a = None;
+                app.hex_ui.select_b = None;
+            }
+            if let Some(sel) = app.hex_ui.selection() {
+                if ui.button("Set to selection").clicked() {
+                    reg.region = sel;
+                }
+            } else {
+                ui.add_enabled(false, egui::Button::new("Set to selection"));
+            }
+            ui.label("Description");
+            ui.text_edit_multiline(&mut reg.desc);
+            if ui.button("Delete").clicked() {
+                app.meta_state.meta.low.regions.remove(key);
+                gui.regions_window.selected_key = None;
+            }
+        }
         ui.separator();
         TableBuilder::new(ui)
             .striped(true)
@@ -108,9 +154,16 @@ impl RegionsWindow {
                                 action = Action::Goto(reg.region.end);
                             }
                         });
-                        row.col(|ui| {
-                            ui.label(((reg.region.end + 1) - reg.region.begin).to_string());
-                        });
+                        row.col(
+                            |ui| match (reg.region.end + 1).checked_sub(reg.region.begin) {
+                                Some(len) => {
+                                    ui.label(len.to_string());
+                                }
+                                None => {
+                                    ui.label("Overflow!");
+                                }
+                            },
+                        );
                     });
                 }
                 match action {
@@ -122,52 +175,6 @@ impl RegionsWindow {
                     }
                 }
             });
-        ui.separator();
-        if let &Some(key) = &gui.regions_window.selected_key {
-            let reg = &mut app.meta_state.meta.low.regions[key];
-            ui.horizontal(|ui| {
-                if gui.regions_window.rename_active {
-                    if ui.text_edit_singleline(&mut reg.name).lost_focus() {
-                        gui.regions_window.rename_active = false;
-                    }
-                } else {
-                    ui.heading(&reg.name);
-                }
-                if ui.button("✏").on_hover_text("Rename").clicked() {
-                    gui.regions_window.rename_active ^= true;
-                }
-            });
-            ui.horizontal(|ui| {
-                ui.label("First byte");
-                ui.add(egui::DragValue::new(&mut reg.region.begin));
-                ui.label("Last byte");
-                ui.add(egui::DragValue::new(&mut reg.region.end));
-            });
-            if gui.regions_window.select_active {
-                app.hex_ui.select_a = Some(reg.region.begin);
-                app.hex_ui.select_b = Some(reg.region.end);
-            }
-            if ui
-                .checkbox(&mut gui.regions_window.select_active, "Select")
-                .clicked()
-            {
-                app.hex_ui.select_a = None;
-                app.hex_ui.select_b = None;
-            }
-            if let Some(sel) = app.hex_ui.selection() {
-                if ui.button("Set to selection").clicked() {
-                    reg.region = sel;
-                }
-            } else {
-                ui.add_enabled(false, egui::Button::new("Set to selection"));
-            }
-            ui.label("Description");
-            ui.text_edit_multiline(&mut reg.desc);
-            if ui.button("Delete").clicked() {
-                app.meta_state.meta.low.regions.remove(key);
-                gui.regions_window.selected_key = None;
-            }
-        }
     }
 }
 
