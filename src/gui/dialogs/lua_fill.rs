@@ -24,7 +24,7 @@ impl Dialog for LuaFillDialog {
     fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
-            return true;
+            return !ui.button("Close").clicked();
         };
         let ctrl_enter = ui
             .input_mut()
