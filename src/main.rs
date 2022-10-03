@@ -19,6 +19,7 @@
     clippy::cast_possible_wrap,
     clippy::panic
 )]
+#![allow(incomplete_features)]
 #![windows_subsystem = "windows"]
 
 mod app;
