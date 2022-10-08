@@ -52,7 +52,8 @@ impl ExternalCommandWindow {
                     0..=app.data.len() - 1
                 };
                 let path = std::env::temp_dir().join("hexerator_data_tmp.bin");
-                std::fs::write(&path, &app.data[range])?;
+                let data = app.data.get(range).context("Range out of bounds")?;
+                std::fs::write(&path, data)?;
                 // Spawn process
                 let handle = Command::new(cmd)
                     .args(resolve_args(args, &path))
