@@ -2,7 +2,7 @@
     lint_reasons,
     try_blocks,
     array_chunks,
-    is_some_with,
+    is_some_and,
     let_chains,
     array_windows,
     decl_macro,

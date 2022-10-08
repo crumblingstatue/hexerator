@@ -87,7 +87,9 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     ui.separator();
     if ui
         .add_enabled(
-            app.source.is_some_and(|src| src.attr.permissions.write)
+            app.source
+                .as_ref()
+                .is_some_and(|src| src.attr.permissions.write)
                 && app.edit_state.dirty_region.is_some(),
             ButtonWithShortcut("Save", "Ctrl+S"),
         )
