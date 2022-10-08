@@ -37,7 +37,7 @@ impl Dialog for LuaExecuteDialog {
             // beyond window height
             .max_height(ui.available_height() - 100.0)
             .show(ui, |ui| {
-                egui::TextEdit::multiline(&mut app.meta_state.meta.misc.fill_lua_script)
+                egui::TextEdit::multiline(&mut app.meta_state.meta.misc.exec_lua_script)
                     .code_editor()
                     .desired_width(f32::INFINITY)
                     .show(ui);
@@ -58,7 +58,7 @@ impl Dialog for LuaExecuteDialog {
                             },
                         )?;
                         ctx.globals().set("add_region", add_region)?;
-                        let chunk = ctx.load(&app.meta_state.meta.misc.fill_lua_script);
+                        let chunk = ctx.load(&app.meta_state.meta.misc.exec_lua_script);
                         chunk.exec()?;
                     };
                     if let Err(e) = res {
