@@ -19,6 +19,7 @@ pub struct ExternalCommandWindow {
     stdout: String,
     stderr: String,
     auto_exec: bool,
+    inherited_streams: bool,
 }
 
 enum Arg<'src> {
@@ -33,6 +34,10 @@ impl ExternalCommandWindow {
             egui::TextEdit::multiline(&mut win.cmd_str)
                 .hint_text("Use {} to substitute filename.\nExample: aplay {} -f s16_le"),
         );
+        ui.checkbox(&mut win.inherited_streams, "Inherited stdout/stderr")
+            .on_hover_text(
+                "Use this for large amounts of data that could block child processes, like music players, etc."
+            );
         let exec_enabled = win.child.is_none();
 
         if ui
@@ -55,11 +60,16 @@ impl ExternalCommandWindow {
                 let data = app.data.get(range).context("Range out of bounds")?;
                 std::fs::write(&path, data)?;
                 // Spawn process
-                let handle = Command::new(cmd)
-                    .args(resolve_args(args, &path))
-                    .stdout(Stdio::piped())
-                    .stderr(Stdio::piped())
-                    .spawn()?;
+                let mut cmd = Command::new(cmd);
+                cmd.args(resolve_args(args, &path));
+                if win.inherited_streams {
+                    cmd.stdout(Stdio::inherit());
+                    cmd.stderr(Stdio::inherit());
+                } else {
+                    cmd.stdout(Stdio::piped());
+                    cmd.stderr(Stdio::piped());
+                }
+                let handle = cmd.spawn()?;
                 win.child = Some(handle);
             };
             msg_if_fail(res, "Failed to spawn command", &mut gui.msg_dialog);
