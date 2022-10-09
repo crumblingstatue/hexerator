@@ -9,6 +9,7 @@ use {
         TextureCreateError,
     },
     rfd::MessageLevel,
+    rlua::Lua,
     std::{any::TypeId, collections::HashMap},
 };
 
@@ -108,7 +109,7 @@ pub enum ContextMenuData {
 pub trait Dialog {
     fn title(&self) -> &str;
     /// Do the ui for this dialog. Returns whether to keep this dialog open.
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool;
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog, lua: &Lua) -> bool;
     /// Called when dialog is opened. Can be used to set just-opened flag, etc.
     fn on_open(&mut self) {}
 }
@@ -127,6 +128,7 @@ pub fn do_egui(
     app: &mut App,
     mouse_pos: ViewportVec,
     font: &Font,
+    lua: &Lua,
 ) -> bool {
     let result = sf_egui.do_frame(|ctx| {
         let mut open = gamedebug_core::enabled();
@@ -249,7 +251,7 @@ pub fn do_egui(
         dialogs.retain(|_k, dialog| {
             let mut retain = true;
             Window::new(dialog.title()).show(ctx, |ui| {
-                retain = dialog.ui(ui, app, &mut gui.msg_dialog);
+                retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua);
             });
             retain
         });

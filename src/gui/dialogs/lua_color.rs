@@ -5,7 +5,7 @@ use {
         value_color::ColorMethod,
     },
     egui,
-    rlua::Function,
+    rlua::{Function, Lua},
 };
 
 pub struct LuaColorDialog {
@@ -31,7 +31,13 @@ impl Dialog for LuaColorDialog {
         "Lua color"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, _msg: &mut MessageDialog) -> bool {
+    fn ui(
+        &mut self,
+        ui: &mut egui::Ui,
+        app: &mut App,
+        _msg: &mut MessageDialog,
+        lua: &Lua,
+    ) -> bool {
         let color_data = match app.hex_ui.focused_view {
             Some(view_key) => {
                 let view = &mut app.meta_state.meta.views[view_key].view;
@@ -53,7 +59,7 @@ impl Dialog for LuaColorDialog {
             .desired_width(f32::INFINITY)
             .show(ui);
         if ui.button("Execute").clicked() || self.auto_exec {
-            app.lua.context(|ctx| {
+            lua.context(|ctx| {
                 let chunk = ctx.load(&self.script);
                 let res: rlua::Result<()> = try {
                     let fun = chunk.eval::<Function>()?;

@@ -22,6 +22,8 @@
 #![allow(incomplete_features)]
 #![windows_subsystem = "windows"]
 
+use rlua::Lua;
+
 mod app;
 mod args;
 mod backend;
@@ -103,6 +105,7 @@ fn try_main() -> anyhow::Result<()> {
     };
     let mut gui = Gui::default();
     let mut app = App::new(args, Config::load_or_default()?, &font, &mut gui.msg_dialog)?;
+    let lua = Lua::default();
     crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);
     let mut vertex_buffer = Vec::new();
@@ -115,6 +118,7 @@ fn try_main() -> anyhow::Result<()> {
             &mut window,
             &font,
             &mut vertex_buffer,
+            &lua,
         ) {
             return Ok(());
         }
@@ -148,12 +152,13 @@ fn do_frame(
     window: &mut RenderWindow,
     font: &Font,
     vertex_buffer: &mut Vec<Vertex>,
+    lua: &Lua,
 ) -> bool {
     handle_events(gui, app, window, sf_egui, font);
     update(app, sf_egui.context().wants_keyboard_input());
     app.update(&mut gui.msg_dialog);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
-    if !gui::do_egui(sf_egui, gui, app, mp, font) {
+    if !gui::do_egui(sf_egui, gui, app, mp, font, lua) {
         return false;
     }
     let [r, g, b] = app.preferences.bg_color;

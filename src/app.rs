@@ -1,7 +1,4 @@
-use {
-    crate::gui::message_dialog::{Icon, MessageDialog},
-    rlua::Lua,
-};
+use crate::gui::message_dialog::{Icon, MessageDialog};
 
 pub mod edit_state;
 pub mod interact_mode;
@@ -55,7 +52,6 @@ pub struct App {
     pub preferences: Preferences,
     pub hex_ui: HexUi,
     pub meta_state: MetaState,
-    pub lua: Lua,
 }
 
 impl App {
@@ -81,7 +77,6 @@ impl App {
             preferences: Preferences::default(),
             hex_ui: HexUi::default(),
             meta_state: MetaState::default(),
-            lua: Lua::default(),
         };
         msg_if_fail(
             this.load_file_args(args, font, msg),

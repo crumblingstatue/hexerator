@@ -9,6 +9,7 @@ use {
         slice_ext::SliceExt,
     },
     egui,
+    rlua::Lua,
 };
 
 #[derive(Debug, Default)]
@@ -26,7 +27,13 @@ impl Dialog for PatternFillDialog {
         self.just_opened = true;
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
+    fn ui(
+        &mut self,
+        ui: &mut egui::Ui,
+        app: &mut App,
+        msg: &mut MessageDialog,
+        _lua: &Lua,
+    ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
             return true;

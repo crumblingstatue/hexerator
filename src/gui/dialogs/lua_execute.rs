@@ -7,6 +7,7 @@ use {
     },
     egui,
     egui_easy_mark_standalone::easy_mark,
+    rlua::Lua,
     std::time::Instant,
 };
 
@@ -21,7 +22,7 @@ impl Dialog for LuaExecuteDialog {
         "Execute Lua"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog, lua: &Lua) -> bool {
         let ctrl_enter = ui
             .input_mut()
             .consume_key(egui::Modifiers::CTRL, egui::Key::Enter);
@@ -44,7 +45,7 @@ impl Dialog for LuaExecuteDialog {
             });
         if ui.button("Execute").clicked() || ctrl_enter {
             let start_time = Instant::now();
-            app.lua.context(|ctx| {
+            lua.context(|ctx| {
                 ctx.scope(|scope| {
                     let res: rlua::Result<()> = try {
                         let add_region = scope.create_function_mut(

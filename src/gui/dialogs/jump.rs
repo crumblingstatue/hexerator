@@ -7,6 +7,7 @@ use {
     },
     egui,
     egui_easy_mark_standalone::easy_mark,
+    rlua::Lua,
 };
 
 #[derive(Debug, Default)]
@@ -25,7 +26,13 @@ impl Dialog for JumpDialog {
         self.just_opened = true;
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
+    fn ui(
+        &mut self,
+        ui: &mut egui::Ui,
+        app: &mut App,
+        msg: &mut MessageDialog,
+        _lua: &Lua,
+    ) -> bool {
         ui.horizontal(|ui| {
             ui.label("Offset");
             let re = ui.text_edit_singleline(&mut self.string_buf);

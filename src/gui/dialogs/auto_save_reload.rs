@@ -4,6 +4,7 @@ use {
         gui::{message_dialog::MessageDialog, Dialog},
     },
     egui,
+    rlua::Lua,
 };
 
 #[derive(Debug)]
@@ -14,7 +15,13 @@ impl Dialog for AutoSaveReloadDialog {
         "Auto save/reload"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, _msg: &mut MessageDialog) -> bool {
+    fn ui(
+        &mut self,
+        ui: &mut egui::Ui,
+        app: &mut App,
+        _msg: &mut MessageDialog,
+        _lua: &Lua,
+    ) -> bool {
         ui.checkbox(&mut app.preferences.auto_reload, "Auto reload");
         ui.horizontal(|ui| {
             ui.label("Interval (ms)");

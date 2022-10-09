@@ -6,7 +6,7 @@ use {
     },
     egui,
     egui_easy_mark_standalone::easy_mark,
-    rlua::Function,
+    rlua::{Function, Lua},
     std::time::Instant,
 };
 
@@ -21,7 +21,7 @@ impl Dialog for LuaFillDialog {
         "Lua fill"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog) -> bool {
+    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog, lua: &Lua) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
             return !ui.button("Close").clicked();
@@ -48,7 +48,7 @@ impl Dialog for LuaFillDialog {
             });
         if ui.button("Execute").clicked() || ctrl_enter {
             let start_time = Instant::now();
-            app.lua.context(|ctx| {
+            lua.context(|ctx| {
                 let chunk = ctx.load(&app.meta_state.meta.misc.fill_lua_script);
                 let res: rlua::Result<()> = try {
                     let f = chunk.eval::<Function>()?;
