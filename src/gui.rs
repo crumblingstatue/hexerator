@@ -109,7 +109,14 @@ pub enum ContextMenuData {
 pub trait Dialog {
     fn title(&self) -> &str;
     /// Do the ui for this dialog. Returns whether to keep this dialog open.
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog, lua: &Lua) -> bool;
+    fn ui(
+        &mut self,
+        ui: &mut egui::Ui,
+        app: &mut App,
+        msg: &mut MessageDialog,
+        lua: &Lua,
+        font: &Font,
+    ) -> bool;
     /// Called when dialog is opened. Can be used to set just-opened flag, etc.
     fn on_open(&mut self) {}
 }
@@ -251,7 +258,7 @@ pub fn do_egui(
         dialogs.retain(|_k, dialog| {
             let mut retain = true;
             Window::new(dialog.title()).show(ctx, |ui| {
-                retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua);
+                retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua, font);
             });
             retain
         });

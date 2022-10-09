@@ -6,6 +6,7 @@ use {
     },
     egui,
     egui_easy_mark_standalone::easy_mark,
+    egui_sfml::sfml::graphics::Font,
     rlua::{Function, Lua},
     std::time::Instant,
 };
@@ -21,7 +22,14 @@ impl Dialog for LuaFillDialog {
         "Lua fill"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog, lua: &Lua) -> bool {
+    fn ui(
+        &mut self,
+        ui: &mut egui::Ui,
+        app: &mut App,
+        msg: &mut MessageDialog,
+        lua: &Lua,
+        _font: &Font,
+    ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
             return !ui.button("Close").clicked();

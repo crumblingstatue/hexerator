@@ -9,6 +9,7 @@ use {
         slice_ext::SliceExt,
     },
     egui,
+    egui_sfml::sfml::graphics::Font,
     rlua::Lua,
 };
 
@@ -33,6 +34,7 @@ impl Dialog for PatternFillDialog {
         app: &mut App,
         msg: &mut MessageDialog,
         _lua: &Lua,
+        _font: &Font,
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");

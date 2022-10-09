@@ -4,6 +4,7 @@ use {
         gui::{message_dialog::MessageDialog, Dialog},
     },
     egui,
+    egui_sfml::sfml::graphics::Font,
     rlua::Lua,
 };
 
@@ -21,6 +22,7 @@ impl Dialog for AutoSaveReloadDialog {
         app: &mut App,
         _msg: &mut MessageDialog,
         _lua: &Lua,
+        _font: &Font,
     ) -> bool {
         ui.checkbox(&mut app.preferences.auto_reload, "Auto reload");
         ui.horizontal(|ui| {

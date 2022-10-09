@@ -7,6 +7,7 @@ use {
     },
     egui,
     egui_easy_mark_standalone::easy_mark,
+    egui_sfml::sfml::graphics::Font,
     rlua::Lua,
 };
 
@@ -32,6 +33,7 @@ impl Dialog for JumpDialog {
         app: &mut App,
         msg: &mut MessageDialog,
         _lua: &Lua,
+        _font: &Font,
     ) -> bool {
         ui.horizontal(|ui| {
             ui.label("Offset");

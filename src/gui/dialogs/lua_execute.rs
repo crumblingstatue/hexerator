@@ -7,7 +7,8 @@ use {
     },
     egui,
     egui_easy_mark_standalone::easy_mark,
-    rlua::Lua,
+    egui_sfml::sfml::graphics::Font,
+    rlua::{ExternalError, Function, Lua, UserData},
     std::time::Instant,
 };
 
@@ -17,12 +18,47 @@ pub struct LuaExecuteDialog {
     err: bool,
 }
 
+struct LuaExecContext<'app, 'msg, 'font> {
+    app: &'app mut App,
+    msg: &'msg mut MessageDialog,
+    font: &'font Font,
+}
+
+impl<'app, 'msg, 'font> UserData for LuaExecContext<'app, 'msg, 'font> {
+    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+        methods.add_method_mut(
+            "add_region",
+            |_ctx, exec, (name, begin, end): (String, usize, usize)| {
+                exec.app.meta_state.meta.low.regions.insert(NamedRegion {
+                    name,
+                    desc: String::new(),
+                    region: Region { begin, end },
+                });
+                Ok(())
+            },
+        );
+        methods.add_method_mut("load_file", |_ctx, exec, (path,): (String,)| {
+            exec.app
+                .load_file(path.into(), true, exec.font, exec.msg)
+                .map_err(|e| e.to_lua_err())?;
+            Ok(())
+        });
+    }
+}
+
 impl Dialog for LuaExecuteDialog {
     fn title(&self) -> &str {
         "Execute Lua"
     }
 
-    fn ui(&mut self, ui: &mut egui::Ui, app: &mut App, msg: &mut MessageDialog, lua: &Lua) -> bool {
+    fn ui(
+        &mut self,
+        ui: &mut egui::Ui,
+        app: &mut App,
+        msg: &mut MessageDialog,
+        lua: &Lua,
+        font: &Font,
+    ) -> bool {
         let ctrl_enter = ui
             .input_mut()
             .consume_key(egui::Modifiers::CTRL, egui::Key::Enter);
@@ -45,22 +81,23 @@ impl Dialog for LuaExecuteDialog {
             });
         if ui.button("Execute").clicked() || ctrl_enter {
             let start_time = Instant::now();
+            let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
             lua.context(|ctx| {
                 ctx.scope(|scope| {
                     let res: rlua::Result<()> = try {
-                        let add_region = scope.create_function_mut(
-                            |_ctx, (name, begin, end): (String, usize, usize)| {
-                                app.meta_state.meta.low.regions.insert(NamedRegion {
-                                    name,
-                                    desc: String::new(),
-                                    region: Region { begin, end },
-                                });
-                                Ok(())
-                            },
+                        /*let add_region = scope.create_function_mut(
+                            ,
                         )?;
-                        ctx.globals().set("add_region", add_region)?;
-                        let chunk = ctx.load(&app.meta_state.meta.misc.exec_lua_script);
-                        chunk.exec()?;
+                        ctx.globals().set("add_region", add_region)?;*/
+                        let chunk = ctx.load(&lua_script);
+                        let f = chunk.eval::<Function>()?;
+                        let app = scope.create_nonstatic_userdata(LuaExecContext {
+                            app: &mut *app,
+                            msg,
+                            font,
+                        })?;
+                        f.call(app)?;
+                        //chunk.exec()?;
                     };
                     if let Err(e) = res {
                         self.result_info_string = e.to_string();

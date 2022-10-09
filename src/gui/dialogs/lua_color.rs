@@ -5,6 +5,7 @@ use {
         value_color::ColorMethod,
     },
     egui,
+    egui_sfml::sfml::graphics::Font,
     rlua::{Function, Lua},
 };
 
@@ -37,6 +38,7 @@ impl Dialog for LuaColorDialog {
         app: &mut App,
         _msg: &mut MessageDialog,
         lua: &Lua,
+        _font: &Font,
     ) -> bool {
         let color_data = match app.hex_ui.focused_view {
             Some(view_key) => {
