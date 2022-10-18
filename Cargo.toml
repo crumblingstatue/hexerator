@@ -10,7 +10,7 @@ default = ["backend-sfml"]
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "4.0.1", features = ["derive"] }
+clap = { version = "4.0.16", features = ["derive"] }
 anyhow = "1.0.65"
 rfd = "0.10.0"
 rand = "0.8.5"
@@ -34,11 +34,11 @@ egui = "0.19.0"
 egui_extras = { version = "0.19.0", default-features = false }
 rlua = "0.19.4"
 itertools = "0.10.5"
-sysinfo = { version = "0.26.4", default-features = false }
-proc-maps = "0.2.1"
+sysinfo = { version = "0.26.5", default-features = false }
+proc-maps = "0.3.0"
 open = "3.0.3"
-egui-modal = "0.1.4"
-arboard = { version = "3.1.0", default-features = false }
+egui-modal = "0.1.6"
+arboard = { version = "3.1.1", default-features = false }
 paste = "1.0.9"
 
 [target."cfg(windows)".dependencies.windows-sys]
