@@ -297,7 +297,7 @@ impl App {
 
     pub(crate) fn restore_backup(&mut self) -> Result<(), anyhow::Error> {
         std::fs::copy(
-            &self.backup_path().context("Failed to get backup path")?,
+            self.backup_path().context("Failed to get backup path")?,
             self.args.src.file.as_ref().context("No file open")?,
         )?;
         self.reload()
@@ -306,7 +306,7 @@ impl App {
     pub(crate) fn create_backup(&self) -> Result<(), anyhow::Error> {
         std::fs::copy(
             self.args.src.file.as_ref().context("No file open")?,
-            &self.backup_path().context("Failed to get backup path")?,
+            self.backup_path().context("Failed to get backup path")?,
         )?;
         Ok(())
     }
@@ -410,7 +410,7 @@ impl App {
 
     pub fn save_meta_to_file(&mut self, path: PathBuf, temp: bool) -> Result<(), anyhow::Error> {
         let data = rmp_serde::to_vec(&self.meta_state.meta)?;
-        std::fs::write(&path, &data)?;
+        std::fs::write(&path, data)?;
         if !temp {
             self.meta_state.current_meta_path = path;
             self.meta_state.clean_meta = self.meta_state.meta.clone();

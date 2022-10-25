@@ -20,10 +20,10 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
             ui.label("Selection");
         }
         if let Some(a) = app.hex_ui.select_a {
-            ui.label(format!("a: {}", a));
+            ui.label(format!("a: {a}"));
         }
         if let Some(b) = app.hex_ui.select_b {
-            ui.label(format!("b: {}", b));
+            ui.label(format!("b: {b}"));
         }
         if let Some(sel) = app.hex_ui.selection() && let Some(view_key) = app.hex_ui.focused_view {
             let view = &app.meta_state.meta.views[view_key].view;

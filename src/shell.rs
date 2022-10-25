@@ -42,5 +42,5 @@ pub fn msg_if_fail<T, E: std::fmt::Debug>(
 }
 
 pub fn msg_fail<E: std::fmt::Debug>(e: &E, prefix: &str, msg: &mut MessageDialog) {
-    msg.open(Icon::Error, "Error", format!("{}: {:?}", prefix, e));
+    msg.open(Icon::Error, "Error", format!("{prefix}: {e:?}"));
 }

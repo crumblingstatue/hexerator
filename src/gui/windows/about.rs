@@ -54,7 +54,7 @@ impl AboutWindow {
                 ("Cargo profile", env!("VERGEN_CARGO_PROFILE").into()),
                 ("Built with rustc", env!("VERGEN_RUSTC_SEMVER").into()),
                 ("System", String::new()),
-                ("OS", format!("{} {}", system_name, os_ver)),
+                ("OS", format!("{system_name} {os_ver}")),
                 ("CPU", win.sys.global_cpu_info().brand().into()),
                 (
                     "Total memory",
@@ -127,7 +127,7 @@ fn info_table(ui: &mut egui::Ui, info: &[InfoPair]) {
 fn clipfmt_info(info: &[InfoPair]) -> String {
     let mut out = String::new();
     for (k, v) in info {
-        let _ = writeln!(out, "{}: {}", k, v);
+        let _ = writeln!(out, "{k}: {v}");
     }
     out
 }

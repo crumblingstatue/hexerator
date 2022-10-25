@@ -200,7 +200,7 @@ pub fn do_egui(
                                     let idx = bms.len();
                                     bms.push(Bookmark {
                                         offset: byte_off,
-                                        label: format!("New @ offset {}", byte_off),
+                                        label: format!("New @ offset {byte_off}"),
                                         desc: String::new(),
                                         value_type: ValueType::None,
                                     });

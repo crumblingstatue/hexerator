@@ -89,13 +89,13 @@ impl ExternalCommandWindow {
                         if let Some(stdout) = &mut child.stdout {
                             win.stdout.clear();
                             if let Err(e) = stdout.read_to_string(&mut win.stdout) {
-                                win.stdout = format!("<Error reading stdout: {}>", e);
+                                win.stdout = format!("<Error reading stdout: {e}>");
                             }
                         }
                         if let Some(stderr) = &mut child.stderr {
                             win.stderr.clear();
                             if let Err(e) = stderr.read_to_string(&mut win.stderr) {
-                                win.stderr = format!("<Error reading stderr: {}>", e);
+                                win.stderr = format!("<Error reading stderr: {e}>");
                             }
                         }
                         win.child = None;

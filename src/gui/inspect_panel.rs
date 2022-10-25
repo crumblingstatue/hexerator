@@ -346,7 +346,7 @@ impl BytesManip for Ascii {
             let valid_ascii_end = find_valid_ascii_end(slice);
             match String::from_utf8(data[offset..offset + valid_ascii_end].to_vec()) {
                 Ok(ascii) => *buf = ascii,
-                Err(e) => *buf = format!("[ascii error]: {}", e),
+                Err(e) => *buf = format!("[ascii error]: {e}"),
             }
         }
     }
@@ -570,10 +570,10 @@ fn edit_offset(app: &mut App, gui: &mut crate::gui::Gui, ui: &mut Ui) -> usize {
     if gui.inspect_panel.offset_relative {
         off += app.args.src.hard_seek.unwrap_or(0);
     }
-    ui.link(format!("offset: {} ({:x}h)", off, off))
+    ui.link(format!("offset: {off} ({off:x}h)"))
         .context_menu(|ui| {
             if ui.button("Copy to clipboard").clicked() {
-                ui.output().copied_text = format!("{:x}", off);
+                ui.output().copied_text = format!("{off:x}");
                 ui.close_menu();
             }
         });

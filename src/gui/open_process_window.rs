@@ -49,7 +49,7 @@ fn sort_button(ui: &mut egui::Ui, label: &str, active: bool, sort: Sort) -> egui
     if active {
         ui.style_mut().visuals.faint_bg_color = egui::Color32::RED;
     }
-    ui.button(format!("{} {}", label, arrow_str))
+    ui.button(format!("{label} {arrow_str}"))
 }
 
 #[derive(Default, PartialEq, Eq)]

@@ -70,7 +70,7 @@ impl Config {
                 Ok(cfg) => Ok(cfg),
                 Err(e) => if rfd::MessageDialog::new().set_buttons(
                     rfd::MessageButtons::OkCancelCustom("Overwrite".into(), "Quit".into()),
-                ).set_description(&format!("Failed to load config: {:?}\n Create a new default config and overwrite, or quit?", e)).show() {
+                ).set_description(&format!("Failed to load config: {e:?}\n Create a new default config and overwrite, or quit?")).show() {
                     Ok(Config::default())
                 } else {
                     anyhow::bail!("Couldn't create config");
@@ -82,7 +82,7 @@ impl Config {
         let bytes = rmp_serde::to_vec(self)?;
         let proj_dirs = project_dirs().context("Failed to get project dirs")?;
         let cfg_dir = proj_dirs.config_dir();
-        std::fs::write(cfg_dir.join(FILENAME), &bytes)?;
+        std::fs::write(cfg_dir.join(FILENAME), bytes)?;
         Ok(())
     }
 }

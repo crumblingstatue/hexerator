@@ -55,7 +55,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         if let Some(sel) = app.hex_ui.selection() {
             let mut s = String::new();
             for &byte in &app.data[sel.begin..=sel.end] {
-                write!(&mut s, "{:02x} ", byte).unwrap();
+                write!(&mut s, "{byte:02x} ").unwrap();
             }
             ui.output().copied_text = s.trim_end().to_string();
         }

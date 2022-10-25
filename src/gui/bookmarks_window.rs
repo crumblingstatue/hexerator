@@ -390,7 +390,7 @@ impl ValueTrait for StringMap {
         let val = &mut bytes[0];
         let mut s = String::new();
         let label = self.get(val).unwrap_or_else(|| {
-            s = format!("[unmapped: {}]", val);
+            s = format!("[unmapped: {val}]");
             &s
         });
         let mut changed = false;
