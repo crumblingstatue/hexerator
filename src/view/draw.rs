@@ -517,16 +517,16 @@ impl View {
         }
         draw_rect_outline(
             vertex_buffer,
-            this.view.viewport_rect.x.into(),
-            this.view.viewport_rect.y.into(),
-            this.view.viewport_rect.w.into(),
-            this.view.viewport_rect.h.into(),
+            f32::from(this.view.viewport_rect.x - 2),
+            f32::from(this.view.viewport_rect.y - 2),
+            f32::from(this.view.viewport_rect.w + 3),
+            f32::from(this.view.viewport_rect.h + 3),
             if Some(key) == app.hex_ui.focused_view {
                 Color::rgb(255, 255, 150)
             } else {
                 Color::rgb(120, 120, 150)
             },
-            1.0,
+            -1.0,
         );
         if app.hex_ui.scissor_views {
             unsafe {
@@ -537,10 +537,10 @@ impl View {
                 )]
                 let vh = window.size().y as i16;
                 let (x, y, w, h) = rect_to_gl_viewport(
-                    this.view.viewport_rect.x - 1,
-                    this.view.viewport_rect.y - 1,
-                    this.view.viewport_rect.w + 2,
-                    this.view.viewport_rect.h + 2,
+                    this.view.viewport_rect.x - 2,
+                    this.view.viewport_rect.y - 2,
+                    this.view.viewport_rect.w + 3,
+                    this.view.viewport_rect.h + 3,
                     vh,
                 );
                 glu_sys::glScissor(x, y, w, h);
