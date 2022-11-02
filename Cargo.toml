@@ -10,12 +10,12 @@ default = ["backend-sfml"]
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "4.0.16", features = ["derive"] }
-anyhow = "1.0.65"
+clap = { version = "4.0.18", features = ["derive"] }
+anyhow = "1.0.66"
 rfd = "0.10.0"
 rand = "0.8.5"
 rmp-serde = "1.1.1"
-serde = { version = "1.0.145", features = ["derive"] }
+serde = { version = "1.0.147", features = ["derive"] }
 directories = "4.0.1"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 memchr = "2.5.0"
@@ -23,7 +23,7 @@ glu-sys = "0.1.4"
 thiserror = "1.0.37"
 either = "1.8.0"
 tree_magic_mini = { version = "3.0.3", features = ["tree_magic_db"] }
-bytemuck = "1.12.1"
+bytemuck = "1.12.2"
 egui_easy_mark_standalone = { git = "https://github.com/crumblingstatue/egui-easymark-standalone.git", version = "0.1.0" }
 index_many = "0.6.1"
 slotmap = { version = "1.0.6", features = ["serde"] }
@@ -34,7 +34,7 @@ egui = "0.19.0"
 egui_extras = { version = "0.19.0", default-features = false }
 rlua = "0.19.4"
 itertools = "0.10.5"
-sysinfo = { version = "0.26.5", default-features = false }
+sysinfo = { version = "0.26.7", default-features = false }
 proc-maps = "0.3.0"
 open = "3.0.3"
 egui-modal = "0.1.6"
