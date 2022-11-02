@@ -353,7 +353,7 @@ impl View {
                             gx += f32::from(hex.font_size - 4);
                         }
                         let extra_x = hex.edit_buf.cursor * (hex.font_size - 4);
-                        if idx == app.edit_state.cursor {
+                        if !app.preferences.hide_cursor && idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
                                 y,
@@ -406,7 +406,7 @@ impl View {
                             gx += f32::from(dec.font_size - 4);
                         }
                         let extra_x = dec.edit_buf.cursor * (dec.font_size - 4);
-                        if idx == app.edit_state.cursor {
+                        if !app.preferences.hide_cursor && idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
                                 y,
@@ -466,7 +466,7 @@ impl View {
                             glyph,
                             c.into(),
                         );
-                        if idx == app.edit_state.cursor {
+                        if !app.preferences.hide_cursor && idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x,
                                 y,
@@ -500,7 +500,7 @@ impl View {
                             f32::from(this.view.row_h),
                             c.into(),
                         );
-                        if idx == app.edit_state.cursor {
+                        if !app.preferences.hide_cursor && idx == app.edit_state.cursor {
                             draw_block_cursor(
                                 x,
                                 y,

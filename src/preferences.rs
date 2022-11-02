@@ -21,6 +21,8 @@ pub struct Preferences {
     pub auto_reload: bool,
     /// Auto-reload interval in milliseconds
     pub auto_reload_interval_ms: u32,
+    /// Hide the edit cursor
+    pub hide_cursor: bool,
 }
 
 impl Default for Preferences {
@@ -36,6 +38,7 @@ impl Default for Preferences {
             bg_color: [0.0; 3],
             auto_reload: false,
             auto_reload_interval_ms: 250,
+            hide_cursor: false,
         }
     }
 }

@@ -17,12 +17,20 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         gui.add_dialog(JumpDialog::default());
     }
     if ui.button("Flash cursor").clicked() {
+        app.preferences.hide_cursor = false;
         app.hex_ui.flash_cursor();
         ui.close_menu();
     }
     if ui.button("Center view on cursor").clicked() {
+        app.preferences.hide_cursor = false;
         app.center_view_on_offset(app.edit_state.cursor);
         app.hex_ui.flash_cursor();
+        ui.close_menu();
+    }
+    if ui
+        .checkbox(&mut app.preferences.hide_cursor, "Hide cursor")
+        .clicked()
+    {
         ui.close_menu();
     }
 }
