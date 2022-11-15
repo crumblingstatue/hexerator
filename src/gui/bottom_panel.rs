@@ -63,9 +63,18 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
             ui.label(format!("mouse: {offset} ({offset:x})"));
         }
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            let label = egui::Label::new(format!("File size: {}", app.data.len()))
+            let mut txt = egui::RichText::new(format!("File size: {}", app.data.len()));
+            let truncated = app.data.len() != app.orig_data_len;
+            if truncated {
+                txt = txt.color(egui::Color32::RED);
+            }
+            let label = egui::Label::new(txt)
                 .sense(egui::Sense::click());
-            if ui.add(label).on_hover_text("Click to copy").clicked() {
+            let mut label_re = ui.add(label).on_hover_text("Click to copy");
+            if truncated {
+                label_re = label_re.on_hover_text(format!("Length changed, orig.: {}", app.orig_data_len));
+            }
+            if label_re.clicked() {
                 ui.output().copied_text = app.data.len().to_string();
             }
         });

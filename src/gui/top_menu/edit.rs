@@ -2,7 +2,11 @@ use {
     crate::{
         app::App,
         damage_region::DamageRegion,
-        gui::{dialogs::PatternFillDialog, util::button_with_shortcut, Gui},
+        gui::{
+            dialogs::{PatternFillDialog, TruncateDialog},
+            util::button_with_shortcut,
+            Gui,
+        },
         shell::msg_if_fail,
     },
     rand::{thread_rng, RngCore},
@@ -82,4 +86,9 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         );
     ui.checkbox(&mut app.preferences.sticky_edit, "Sticky edit")
         .on_hover_text("Don't automatically move cursor after editing is finished");
+    ui.separator();
+    if ui.button("Truncate/Extend").clicked() {
+        gui.add_dialog(TruncateDialog::new(app.data.len(), app.hex_ui.selection()));
+        ui.close_menu();
+    }
 }

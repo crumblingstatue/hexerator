@@ -41,6 +41,8 @@ use {
 /// The hexerator application state
 pub struct App {
     pub data: Vec<u8>,
+    /// Original data length. Compared with current data length to detect truncation.
+    pub orig_data_len: usize,
     pub edit_state: EditState,
     pub input: Input,
     pub args: Args,
@@ -65,6 +67,7 @@ impl App {
             args.src = recent.clone();
         }
         let mut this = Self {
+            orig_data_len: 0,
             data: Vec::new(),
             edit_state: EditState::default(),
             input: Input::default(),
@@ -137,6 +140,26 @@ impl App {
             },
             None => bail!("No surce opened, nothing to save"),
         };
+        // If the file was truncated, we completely save over it
+        if self.data.len() != self.orig_data_len {
+            if !rfd::MessageDialog::new()
+                .set_title("File truncated/extended")
+                .set_description("Data is truncated/extended. Are you sure you want to save?")
+                .set_buttons(rfd::MessageButtons::OkCancelCustom(
+                    "Overwrite".into(),
+                    "Cancel".into(),
+                ))
+                .show()
+            {
+                bail!("Save of truncated/extended data cancelled");
+            }
+            file.set_len(self.data.len() as u64)?;
+            file.seek(SeekFrom::Start(0))?;
+            file.write_all(&self.data)?;
+            self.edit_state.dirty_region = None;
+            self.orig_data_len = self.data.len();
+            return Ok(());
+        }
         let offset = self.args.src.hard_seek.unwrap_or(0);
         file.seek(SeekFrom::Start(offset as u64))?;
         let data_to_write = match self.edit_state.dirty_region {
@@ -259,6 +282,7 @@ impl App {
 
     /// Readjust to a new file
     pub fn new_file_readjust(&mut self, font: &Font) {
+        self.orig_data_len = self.data.len();
         self.meta_state.meta = Meta::default();
         self.meta_state.current_meta_path.clear();
         let def_region = self.meta_state.meta.low.regions.insert(NamedRegion {
