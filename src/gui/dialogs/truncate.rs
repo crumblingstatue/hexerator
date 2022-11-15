@@ -12,7 +12,7 @@ impl TruncateDialog {
     pub fn new(data_len: usize, selection: Option<Region>) -> Self {
         let (begin, end) = match selection {
             Some(region) => (region.begin, region.end),
-            None => (0, data_len - 1),
+            None => (0, data_len.saturating_sub(1)),
         };
         Self { begin, end }
     }
