@@ -1,6 +1,7 @@
 use {
     crate::{
         app::App,
+        backend::get_clipboard_string,
         damage_region::DamageRegion,
         gui::{
             dialogs::{PatternFillDialog, TruncateDialog},
@@ -78,6 +79,21 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         gui.external_command_window.open.toggle();
         ui.close_menu();
     }
+    ui.separator();
+    ui.menu_button("Paste at cursor", |ui| {
+        if ui.button("Hex text from clipboard").clicked() {
+            ui.close_menu();
+            let s = get_clipboard_string(&mut gui.msg_dialog);
+            let mut cursor = app.edit_state.cursor;
+            let result: anyhow::Result<()> = try {
+                for hex in s.split_ascii_whitespace() {
+                    app.data[cursor] = u8::from_str_radix(hex, 16)?;
+                    cursor += 1;
+                }
+            };
+            msg_if_fail(result, "Hex text paste error", &mut gui.msg_dialog);
+        }
+    });
     ui.separator();
     ui.checkbox(&mut app.preferences.move_edit_cursor, "Move edit cursor")
         .on_hover_text(
