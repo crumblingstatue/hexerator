@@ -17,6 +17,7 @@
 - Make path label in top right corner click-to-copy
 - Process name filter in process open dialog is now case-insensitive
 - "Diff with file" file prompt will now open in same directory as current file
+- Don't insert a tab character for text views in edit mode when tab is pressed to switch focus
 
 ### Fixed
 

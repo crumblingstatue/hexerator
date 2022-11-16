@@ -384,7 +384,9 @@ impl View {
         match self.kind {
             ViewKind::Hex(_) => matches!(unicode, '0'..='9' | 'a'..='f'),
             ViewKind::Dec(_) => matches!(unicode, '0'..='9'),
-            ViewKind::Text { .. } => unicode.is_ascii(),
+            ViewKind::Text { .. } => {
+                unicode.is_ascii() && !unicode.is_control() && !matches!(unicode, '\t')
+            }
             ViewKind::Block => false,
         }
     }
