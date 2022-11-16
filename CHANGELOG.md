@@ -9,6 +9,7 @@
 - Functionality to change the length of the data (truncate/extend)
 - Context menus in process open menu to copy addresses/sizes/etc. to clipboard
 - Right click context menu option on a view to remove it from the current layout
+- Layout properties is accessible from right click context menu on the layout
 
 ### Changed
 

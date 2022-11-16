@@ -344,6 +344,9 @@ fn handle_events(
                                 byte_off: off,
                             },
                         ));
+                    } else {
+                        gui.context_menu =
+                            Some(ContextMenu::new(mp.x, mp.y, ContextMenuData::Empty));
                     }
                 }
             }

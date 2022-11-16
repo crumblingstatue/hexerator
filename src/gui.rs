@@ -103,7 +103,10 @@ impl ContextMenu {
 }
 
 pub enum ContextMenuData {
+    /// Clicked a byte in a view
     ViewByte { view: ViewKey, byte_off: usize },
+    /// Clicked empty region
+    Empty,
 }
 
 pub trait Dialog {
@@ -183,43 +186,51 @@ pub fn do_egui(
                     ui.set_max_width(180.0);
                     egui::Frame::menu(ui.style())
                         .inner_margin(2.0)
-                        .show(ui, |ui| match &menu.data {
-                            &ContextMenuData::ViewByte { view, byte_off } => {
-                                if let Some(sel) = app.hex_ui.selection() {
-                                    if ui.button("Add selection as region").clicked() {
-                                        ops::add_region_from_selection(sel, &mut app.meta_state, &mut gui.regions_window);
+                        .show(ui, |ui| {
+                            match &menu.data {
+                                &ContextMenuData::ViewByte { view, byte_off } => {
+                                    if let Some(sel) = app.hex_ui.selection() {
+                                        if ui.button("Add selection as region").clicked() {
+                                            ops::add_region_from_selection(sel, &mut app.meta_state, &mut gui.regions_window);
+                                            close = true;
+                                        }
+                                        ui.separator();
+                                    }
+                                    if ui
+                                        .button("Add bookmark")
+                                        .clicked()
+                                    {
+                                        let bms = &mut app.meta_state.meta.bookmarks;
+                                        let idx = bms.len();
+                                        bms.push(Bookmark {
+                                            offset: byte_off,
+                                            label: format!("New @ offset {byte_off}"),
+                                            desc: String::new(),
+                                            value_type: ValueType::None,
+                                        });
+                                        gui.bookmarks_window.open.set(true);
+                                        gui.bookmarks_window.selected = Some(idx);
                                         close = true;
                                     }
                                     ui.separator();
-                                }
-                                if ui
-                                    .button("Add bookmark")
-                                    .clicked()
-                                {
-                                    let bms = &mut app.meta_state.meta.bookmarks;
-                                    let idx = bms.len();
-                                    bms.push(Bookmark {
-                                        offset: byte_off,
-                                        label: format!("New @ offset {byte_off}"),
-                                        desc: String::new(),
-                                        value_type: ValueType::None,
-                                    });
-                                    gui.bookmarks_window.open.set(true);
-                                    gui.bookmarks_window.selected = Some(idx);
-                                    close = true;
-                                }
-                                ui.separator();
-                                if ui.button("View properties...").clicked() {
-                                    gui.views_window.selected = view;
-                                    gui.views_window.open.set(true);
-                                    close = true;
-                                }
-                                if ui.button("Remove from layout").clicked() {
-                                    if let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) {
-                                        layout.remove_view(view);
+                                    if ui.button("View properties...").clicked() {
+                                        gui.views_window.selected = view;
+                                        gui.views_window.open.set(true);
                                         close = true;
                                     }
+                                    if ui.button("Remove from layout").clicked() {
+                                        if let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) {
+                                            layout.remove_view(view);
+                                            close = true;
+                                        }
+                                    }
                                 }
+                                ContextMenuData::Empty => {}
+                            }
+                            ui.separator();
+                            if ui.button("Layout properties...").clicked() {
+                                gui.layouts_window.open.toggle();
+                                close = true;
                             }
                         });
                 });
