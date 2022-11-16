@@ -168,12 +168,23 @@ impl OpenProcessWindow {
                     body.rows(20.0, filtered.len(), |idx, mut row| {
                         let map_range = filtered[idx].clone();
                         row.col(|ui| {
-                            if ui
-                                .add_enabled(
-                                    map_range.is_read(),
-                                    egui::Button::new(format!("{:X}", map_range.start())),
-                                )
+                            let txt = format!("{:X}", map_range.start());
+                            let mut is_button = false;
+                            let re = if map_range.is_read() {
+                                is_button = true;
+                                ui.add(egui::Button::new(&txt))
+                            } else {
+                                ui.add(egui::Label::new(&txt).sense(egui::Sense::click()))
+                            };
+                            if re
+                                .context_menu(|ui| {
+                                    if ui.button("📋 Copy to clipboard").clicked() {
+                                        ui.output().copied_text = txt;
+                                        ui.close_menu();
+                                    }
+                                })
                                 .clicked()
+                                && is_button
                             {
                                 msg_if_fail(
                                     app.load_proc_memory(
@@ -197,7 +208,14 @@ impl OpenProcessWindow {
                             }
                         });
                         row.col(|ui| {
-                            ui.label(map_range.size().to_string());
+                            let txt = map_range.size().to_string();
+                            ui.add(egui::Label::new(&txt).sense(egui::Sense::click()))
+                                .context_menu(|ui| {
+                                    if ui.button("📋 Copy to clipboard").clicked() {
+                                        ui.output().copied_text = txt;
+                                        ui.close_menu();
+                                    }
+                                });
                         });
                         row.col(|ui| {
                             ui.label(format!(
@@ -208,12 +226,17 @@ impl OpenProcessWindow {
                             ));
                         });
                         row.col(|ui| {
-                            ui.label(
-                                map_range
-                                    .filename()
-                                    .map(|p| p.display().to_string())
-                                    .unwrap_or_else(String::new),
-                            );
+                            let txt = map_range
+                                .filename()
+                                .map(|p| p.display().to_string())
+                                .unwrap_or_else(String::new);
+                            ui.add(egui::Label::new(&txt).sense(egui::Sense::click()))
+                                .context_menu(|ui| {
+                                    if ui.button("📋 Copy to clipboard").clicked() {
+                                        ui.output().copied_text = txt;
+                                        ui.close_menu();
+                                    }
+                                });
                         });
                     });
                 });
