@@ -19,6 +19,48 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         ui.close_menu();
     }
     ui.separator();
+    let no_sel = app.hex_ui.select_a.is_none() || app.hex_ui.select_b.is_none();
+    if no_sel {
+        ui.label("<No selection>");
+    } else {
+        ui.menu_button("Selection", |ui| {
+            if button_with_shortcut(ui, "Unselect", "Esc").clicked() {
+                app.hex_ui.select_a = None;
+                app.hex_ui.select_b = None;
+                ui.close_menu();
+            }
+            if ui.button("Pattern fill...").clicked() {
+                gui.add_dialog(PatternFillDialog::default());
+                ui.close_menu();
+            }
+            if ui.button("Random fill").clicked() {
+                if let Some(sel) = app.hex_ui.selection() {
+                    let range = sel.begin..=sel.end;
+                    thread_rng().fill_bytes(&mut app.data[range.clone()]);
+                    app.edit_state
+                        .widen_dirty_region(DamageRegion::RangeInclusive(range));
+                }
+                ui.close_menu();
+            }
+            if ui.button("Copy as hex").clicked() {
+                if let Some(sel) = app.hex_ui.selection() {
+                    let mut s = String::new();
+                    for &byte in &app.data[sel.begin..=sel.end] {
+                        write!(&mut s, "{byte:02x} ").unwrap();
+                    }
+                    ui.output().copied_text = s.trim_end().to_string();
+                }
+                ui.close_menu();
+            }
+            if ui.button("Save to file").clicked() {
+                if let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = app.hex_ui.selection() {
+                    let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
+                    msg_if_fail(result, "Failed to save selection to file", &mut gui.msg_dialog);
+                }
+                ui.close_menu();
+            }
+        });
+    }
     if button_with_shortcut(ui, "Set select a", "shift+1").clicked() {
         app.hex_ui.select_a = Some(app.edit_state.cursor);
         ui.close_menu();
@@ -31,45 +73,9 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         app.focused_view_select_all();
         ui.close_menu();
     }
-    if button_with_shortcut(ui, "Unselect all", "Esc").clicked() {
-        app.hex_ui.select_a = None;
-        app.hex_ui.select_b = None;
-        ui.close_menu();
-    }
     ui.separator();
     if ui.button("External command...").clicked() {
         gui.external_command_window.open.toggle();
-        ui.close_menu();
-    }
-    ui.separator();
-    if ui.button("Pattern fill...").clicked() {
-        gui.add_dialog(PatternFillDialog::default());
-        ui.close_menu();
-    }
-    if ui.button("Random fill").clicked() {
-        if let Some(sel) = app.hex_ui.selection() {
-            let range = sel.begin..=sel.end;
-            thread_rng().fill_bytes(&mut app.data[range.clone()]);
-            app.edit_state
-                .widen_dirty_region(DamageRegion::RangeInclusive(range));
-        }
-        ui.close_menu();
-    }
-    if ui.button("Copy selection as hex").clicked() {
-        if let Some(sel) = app.hex_ui.selection() {
-            let mut s = String::new();
-            for &byte in &app.data[sel.begin..=sel.end] {
-                write!(&mut s, "{byte:02x} ").unwrap();
-            }
-            ui.output().copied_text = s.trim_end().to_string();
-        }
-        ui.close_menu();
-    }
-    if ui.button("Save selection to file").clicked() {
-        if let Some(file_path) = rfd::FileDialog::new().save_file() && let Some(sel) = app.hex_ui.selection() {
-            let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
-            msg_if_fail(result, "Failed to save selection to file", &mut gui.msg_dialog);
-        }
         ui.close_menu();
     }
     ui.separator();
