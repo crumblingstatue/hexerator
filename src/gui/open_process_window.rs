@@ -179,7 +179,11 @@ impl OpenProcessWindow {
                             if re
                                 .context_menu(|ui| {
                                     if ui.button("📋 Copy to clipboard").clicked() {
-                                        ui.output().copied_text = txt;
+                                        crate::app::set_clipboard_string(
+                                            &mut app.clipboard,
+                                            &mut gui.msg_dialog,
+                                            &txt,
+                                        );
                                         ui.close_menu();
                                     }
                                 })
@@ -212,7 +216,11 @@ impl OpenProcessWindow {
                             ui.add(egui::Label::new(&txt).sense(egui::Sense::click()))
                                 .context_menu(|ui| {
                                     if ui.button("📋 Copy to clipboard").clicked() {
-                                        ui.output().copied_text = txt;
+                                        crate::app::set_clipboard_string(
+                                            &mut app.clipboard,
+                                            &mut gui.msg_dialog,
+                                            &txt,
+                                        );
                                         ui.close_menu();
                                     }
                                 });
@@ -233,7 +241,11 @@ impl OpenProcessWindow {
                             ui.add(egui::Label::new(&txt).sense(egui::Sense::click()))
                                 .context_menu(|ui| {
                                     if ui.button("📋 Copy to clipboard").clicked() {
-                                        ui.output().copied_text = txt;
+                                        crate::app::set_clipboard_string(
+                                            &mut app.clipboard,
+                                            &mut gui.msg_dialog,
+                                            &txt,
+                                        );
                                         ui.close_menu();
                                     }
                                 });

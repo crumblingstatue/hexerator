@@ -432,7 +432,11 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                 ui.link(format!("offset: {} (0x{:x})", off + add, off + add))
                     .context_menu(|ui| {
                         if ui.button("Copy to clipboard").clicked() {
-                            ui.output().copied_text = format!("{:x}", off + add);
+                            crate::app::set_clipboard_string(
+                                &mut app.clipboard,
+                                &mut gui.msg_dialog,
+                                &format!("{:x}", off + add),
+                            );
                             ui.close_menu();
                         }
                     });
@@ -467,7 +471,11 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
         ui.horizontal(|ui| {
             ui.label(thingy.label());
             if ui.button("📋").on_hover_text("copy to clipboard").clicked() {
-                ui.output().copied_text = thingy.buf_mut().clone();
+                crate::app::set_clipboard_string(
+                    &mut app.clipboard,
+                    &mut gui.msg_dialog,
+                    thingy.buf_mut(),
+                );
             }
             if ui.button("⬇").on_hover_text("go to offset").clicked() {
                 let result: anyhow::Result<()> = try {
@@ -573,7 +581,11 @@ fn edit_offset(app: &mut App, gui: &mut crate::gui::Gui, ui: &mut Ui) -> usize {
     ui.link(format!("offset: {off} ({off:x}h)"))
         .context_menu(|ui| {
             if ui.button("Copy to clipboard").clicked() {
-                ui.output().copied_text = format!("{off:x}");
+                crate::app::set_clipboard_string(
+                    &mut app.clipboard,
+                    &mut gui.msg_dialog,
+                    &format!("{off:x}"),
+                );
                 ui.close_menu();
             }
         });

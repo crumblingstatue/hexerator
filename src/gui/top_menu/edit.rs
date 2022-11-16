@@ -1,7 +1,6 @@
 use {
     crate::{
         app::App,
-        backend::get_clipboard_string,
         damage_region::DamageRegion,
         gui::{
             dialogs::{PatternFillDialog, TruncateDialog},
@@ -49,7 +48,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                     for &byte in &app.data[sel.begin..=sel.end] {
                         write!(&mut s, "{byte:02x} ").unwrap();
                     }
-                    ui.output().copied_text = s.trim_end().to_string();
+                    crate::app::set_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog, s.trim_end());
                 }
                 ui.close_menu();
             }
@@ -83,7 +82,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     ui.menu_button("Paste at cursor", |ui| {
         if ui.button("Hex text from clipboard").clicked() {
             ui.close_menu();
-            let s = get_clipboard_string(&mut gui.msg_dialog);
+            let s = crate::app::get_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog);
             let mut cursor = app.edit_state.cursor;
             let result: anyhow::Result<()> = try {
                 for hex in s.split_ascii_whitespace() {

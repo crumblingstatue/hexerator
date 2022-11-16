@@ -1,5 +1,6 @@
 use {
     crate::{
+        app::App,
         gui::{window_open::WindowOpen, Gui},
         shell::msg_if_fail,
     },
@@ -20,7 +21,7 @@ pub struct AboutWindow {
 const MIB: u64 = 1_048_576;
 
 impl AboutWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui) {
+    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         let win = &mut gui.about_window;
         if win.open.just_now() {
             win.sys.refresh_cpu();
@@ -74,7 +75,11 @@ impl AboutWindow {
         ui.separator();
         ui.vertical_centered_justified(|ui| {
             if ui.button("Copy to clipboard").clicked() {
-                ui.output().copied_text = clipfmt_info(&win.info);
+                crate::app::set_clipboard_string(
+                    &mut app.clipboard,
+                    &mut gui.msg_dialog,
+                    &clipfmt_info(&win.info),
+                );
             }
         });
         ui.separator();

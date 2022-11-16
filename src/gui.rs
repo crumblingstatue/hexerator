@@ -149,7 +149,7 @@ pub fn do_egui(
         if was_open && !open {
             gamedebug_core::toggle();
         }
-        gui.msg_dialog.show(ctx);
+        gui.msg_dialog.show(ctx, &mut app.clipboard);
         macro_rules! windows {
             ($($title:expr, $field:ident, $ty:ty: $($arg:ident)*;)*) => {
                 $(
@@ -175,7 +175,7 @@ pub fn do_egui(
             "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
             "External command",        external_command_window,     ExternalCommandWindow: gui app;
             "Preferences",             preferences_window,          PreferencesWindow: gui app;
-            "About Hexerator",         about_window,                AboutWindow: gui;
+            "About Hexerator",         about_window,                AboutWindow: gui app;
         }
         // Context menu
         if let Some(menu) = &gui.context_menu {
@@ -242,7 +242,7 @@ pub fn do_egui(
         let top_re =
             TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, gui, app, font));
         let bot_re = TopBottomPanel::bottom("bottom_panel")
-            .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos));
+            .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos, &mut gui.msg_dialog));
         let right_re = egui::SidePanel::right("right_panel")
             .show(ctx, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
             .response;

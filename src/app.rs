@@ -54,6 +54,7 @@ pub struct App {
     pub preferences: Preferences,
     pub hex_ui: HexUi,
     pub meta_state: MetaState,
+    pub clipboard: arboard::Clipboard,
 }
 
 impl App {
@@ -80,6 +81,7 @@ impl App {
             preferences: Preferences::default(),
             hex_ui: HexUi::default(),
             meta_state: MetaState::default(),
+            clipboard: arboard::Clipboard::new()?,
         };
         msg_if_fail(
             this.load_file_args(args, font, msg),
@@ -611,6 +613,24 @@ impl App {
             &meta.low.perspectives[per_key]
         })
     }
+}
+
+pub fn get_clipboard_string(cb: &mut arboard::Clipboard, msg: &mut MessageDialog) -> String {
+    match cb.get_text() {
+        Ok(text) => text,
+        Err(e) => {
+            msg.open(
+                Icon::Error,
+                "Failed to get text from clipboard",
+                e.to_string(),
+            );
+            String::new()
+        }
+    }
+}
+
+pub fn set_clipboard_string(cb: &mut arboard::Clipboard, msg: &mut MessageDialog, text: &str) {
+    msg_if_fail(cb.set_text(text), "Failed to set clipboard text", msg);
 }
 
 #[cfg(target_os = "linux")]

@@ -63,7 +63,7 @@ impl MessageDialog {
         self.open_modal = true;
     }
 
-    pub(crate) fn show(&mut self, ctx: &egui::Context) {
+    pub(crate) fn show(&mut self, ctx: &egui::Context, cb: &mut arboard::Clipboard) {
         let modal = self
             .modal
             .get_or_insert_with(|| Modal::new(ctx, "modal_message_dialog"));
@@ -88,7 +88,9 @@ impl MessageDialog {
                             .on_hover_text(self.icon.hover_text())
                             .clicked()
                     {
-                        ui.output().copied_text = self.desc.clone();
+                        if let Err(e) = cb.set_text(self.desc.clone()) {
+                            gamedebug_core::per!("Clipboard set error: {e:?}");
+                        }
                     }
                     ui.label(&self.desc);
                 });

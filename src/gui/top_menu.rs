@@ -41,7 +41,11 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                                         .on_hover_text("Click to copy")
                                         .clicked()
                                     {
-                                        ui.output().copied_text = s;
+                                        crate::app::set_clipboard_string(
+                                            &mut app.clipboard,
+                                            &mut gui.msg_dialog,
+                                            &s,
+                                        );
                                     }
                                 }
                                 None => {

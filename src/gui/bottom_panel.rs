@@ -1,4 +1,5 @@
 use {
+    super::message_dialog::MessageDialog,
     crate::{
         app::{interact_mode::InteractMode, App},
         view::ViewportVec,
@@ -7,7 +8,7 @@ use {
     slotmap::Key,
 };
 
-pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
+pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageDialog) {
     ui.horizontal(|ui| {
         let job = key_label(ui, "F1", "View");
         if ui
@@ -75,7 +76,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec) {
                 label_re = label_re.on_hover_text(format!("Length changed, orig.: {}", app.orig_data_len));
             }
             if label_re.clicked() {
-                ui.output().copied_text = app.data.len().to_string();
+                crate::app::set_clipboard_string(&mut app.clipboard, msg, &app.data.len().to_string());
             }
         });
     });

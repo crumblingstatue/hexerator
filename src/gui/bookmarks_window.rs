@@ -1,5 +1,5 @@
 use {
-    super::{window_open::WindowOpen, Gui},
+    super::{message_dialog::MessageDialog, window_open::WindowOpen, Gui},
     crate::{
         app::{edit_state::EditState, App},
         damage_region::DamageRegion,
@@ -95,6 +95,8 @@ impl BookmarksWindow {
                             &mut app.data,
                             &mut app.edit_state,
                             ui,
+                            &mut app.clipboard,
+                            &mut gui.msg_dialog,
                         );
                         match result {
                             Ok(action) => match action {
@@ -241,9 +243,12 @@ fn value_ui(
     data: &mut [u8],
     edit_state: &mut EditState,
     ui: &mut Ui,
+    cb: &mut arboard::Clipboard,
+    msg: &mut MessageDialog,
 ) -> anyhow::Result<Action> {
     macro val_ui_dispatch($i:ident) {
-        $i.value_ui_for_self(bm, data, edit_state, ui).to_action()
+        $i.value_ui_for_self(bm, data, edit_state, ui, cb, msg)
+            .to_action()
     }
     Ok(match &bm.value_type {
         ValueType::None => Action::None,
@@ -275,6 +280,8 @@ trait ValueTrait: EndianedPrimitive {
         &self,
         ui: &mut egui::Ui,
         bytes: &mut [u8; Self::BYTE_LEN],
+        cb: &mut arboard::Clipboard,
+        msg: &mut MessageDialog,
     ) -> ValueUiOutput<Self::Primitive>;
     fn value_ui_for_self(
         &self,
@@ -282,6 +289,8 @@ trait ValueTrait: EndianedPrimitive {
         data: &mut [u8],
         edit_state: &mut EditState,
         ui: &mut Ui,
+        cb: &mut arboard::Clipboard,
+        msg: &mut MessageDialog,
     ) -> UiAction<Self::Primitive>
     where
         [(); Self::BYTE_LEN]:,
@@ -293,7 +302,7 @@ trait ValueTrait: EndianedPrimitive {
                     clippy::unwrap_used,
                     reason = "If slicing is successful, we're guaranteed to have slice of right length"
                 )]
-                let out = self.value_change_ui(ui, slice.try_into().unwrap());
+                let out = self.value_change_ui(ui, slice.try_into().unwrap(), cb, msg);
                 if out.changed {
                     edit_state.widen_dirty_region(DamageRegion::Range(range));
                 }
@@ -337,13 +346,15 @@ impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
         &self,
         ui: &mut egui::Ui,
         bytes: &mut [u8; Self::BYTE_LEN],
+        cb: &mut arboard::Clipboard,
+        msg: &mut MessageDialog,
     ) -> ValueUiOutput<Self::Primitive> {
         let mut val = Self::from_bytes(*bytes);
         let mut action = UiAction::None;
         let act_mut = &mut action;
         let ctx_menu = move |ui: &mut egui::Ui| {
             if ui.button("Copy").clicked() {
-                ui.output().copied_text = val.to_string();
+                crate::app::set_clipboard_string(cb, msg, &val.to_string());
                 ui.close_menu();
             }
             if ui.button("Jump").clicked() {
@@ -386,6 +397,8 @@ impl ValueTrait for StringMap {
         &self,
         ui: &mut egui::Ui,
         bytes: &mut [u8; Self::BYTE_LEN],
+        _cb: &mut arboard::Clipboard,
+        _msg: &mut MessageDialog,
     ) -> ValueUiOutput<Self::Primitive> {
         let val = &mut bytes[0];
         let mut s = String::new();
