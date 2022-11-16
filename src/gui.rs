@@ -214,6 +214,12 @@ pub fn do_egui(
                                     gui.views_window.open.set(true);
                                     close = true;
                                 }
+                                if ui.button("Remove from layout").clicked() {
+                                    if let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) {
+                                        layout.remove_view(view);
+                                        close = true;
+                                    }
+                                }
                             }
                         });
                 });
