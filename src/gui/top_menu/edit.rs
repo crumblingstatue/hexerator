@@ -42,7 +42,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                 }
                 ui.close_menu();
             }
-            if ui.button("Copy as hex").clicked() {
+            if ui.button("Copy as hex text").clicked() {
                 if let Some(sel) = app.hex_ui.selection() {
                     let mut s = String::new();
                     for &byte in &app.data[sel.begin..=sel.end] {
