@@ -16,6 +16,7 @@
 - Inspect panel shows value at edit cursor if mouse pointer is over a window that covers the hex view.
 - Make path label in top right corner click-to-copy
 - Process name filter in process open dialog is now case-insensitive
+- "Diff with file" file prompt will now open in same directory as current file
 
 ### Fixed
 

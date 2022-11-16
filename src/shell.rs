@@ -4,15 +4,19 @@ use {
         gui::message_dialog::{Icon, MessageDialog},
     },
     egui_sfml::sfml::graphics::Font,
-    std::fs::OpenOptions,
+    std::{fs::OpenOptions, path::Path},
 };
 
-pub fn open_file(app: &mut App, font: &Font, msg: &mut MessageDialog) {
+pub fn open_dialog_same_dir(src_path: Option<&Path>) -> rfd::FileDialog {
     let mut file_dialog = rfd::FileDialog::new();
-    if let Some(src_file) = app.source_file() && let Some(parent) = src_file.parent() {
+    if let Some(src_path) = src_path && let Some(parent) = src_path.parent() {
         file_dialog = file_dialog.set_directory(parent);
     }
-    if let Some(path) = file_dialog.pick_file() {
+    file_dialog
+}
+
+pub fn open_file(app: &mut App, font: &Font, msg: &mut MessageDialog) {
+    if let Some(path) = open_dialog_same_dir(app.source_file()).pick_file() {
         let write = OpenOptions::new().write(true).open(&path).is_ok();
         msg_if_fail(
             app.load_file(path, !write, font, msg),

@@ -1,7 +1,7 @@
 use crate::{
     app::App,
     gui::{message_dialog::Icon, Gui},
-    shell::msg_if_fail,
+    shell::{msg_if_fail, open_dialog_same_dir},
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
@@ -16,7 +16,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     ui.separator();
     if ui.button("Diff with file...").clicked() {
         ui.close_menu();
-        if let Some(path) = rfd::FileDialog::default().pick_file() {
+        if let Some(path) = open_dialog_same_dir(app.source_file()).pick_file() {
             msg_if_fail(
                 app.diff_with_file(path, gui),
                 "Failed to diff",
