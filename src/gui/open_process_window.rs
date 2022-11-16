@@ -261,9 +261,10 @@ impl OpenProcessWindow {
                 })
                 .body(|body| {
                     let procs = win.sys.processes();
+                    let filt_str = win.proc_name_filter_string.to_ascii_lowercase();
                     let mut pids: Vec<&sysinfo::Pid> = procs
                         .keys()
-                        .filter(|&pid| procs[pid].name().contains(&win.proc_name_filter_string))
+                        .filter(|&pid| procs[pid].name().to_ascii_lowercase().contains(&filt_str))
                         .collect();
                     pids.sort_by(|pid1, pid2| match win.pid_sort {
                         Sort::Ascending => pid1.cmp(pid2),
