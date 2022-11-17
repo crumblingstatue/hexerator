@@ -10,6 +10,7 @@
 - Context menus in process open menu to copy addresses/sizes/etc. to clipboard
 - Right click context menu option on a view to remove it from the current layout
 - Layout properties is accessible from right click context menu on the layout
+- Error reporting message dialog if the program panics
 
 ### Changed
 

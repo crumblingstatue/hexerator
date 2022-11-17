@@ -135,6 +135,27 @@ fn try_main() -> anyhow::Result<()> {
 }
 
 fn main() {
+    std::panic::set_hook(Box::new(|panic_info| {
+        let payload = panic_info.payload();
+        let msg = if let Some(s) = payload.downcast_ref::<&str>() {
+            s
+        } else if let Some(s) = payload.downcast_ref::<String>() {
+            s
+        } else {
+            "Unknown panic payload"
+        };
+        let (file, line, column) = match panic_info.location() {
+            Some(loc) => (loc.file(), loc.line().to_string(), loc.column().to_string()),
+            None => ("unknown", "unknown".into(), "unknown".into()),
+        };
+        rfd::MessageDialog::new()
+            .set_title("Program panic")
+            .set_description(&format!(
+                "Panic occured:\n\n {msg}\n\nLocation: {file}:{line}:{column}\n\nTerminating."
+            ))
+            .set_level(MessageLevel::Error)
+            .show();
+    }));
     if let Err(e) = try_main() {
         rfd::MessageDialog::new()
             .set_title("Fatal error")
