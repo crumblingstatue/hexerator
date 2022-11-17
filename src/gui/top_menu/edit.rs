@@ -13,6 +13,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     match app.hex_ui.selection() {
         Some(sel) => {
             if crate::gui::selection_menu::selection_menu(
+                "Selection",
                 ui,
                 app,
                 &mut gui.dialogs,

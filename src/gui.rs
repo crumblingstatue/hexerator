@@ -193,8 +193,7 @@ pub fn do_egui(
                             match &menu.data {
                                 &ContextMenuData::ViewByte { view, byte_off } => {
                                     if let Some(sel) = app.hex_ui.selection() {
-                                        if crate::gui::selection_menu::selection_menu(ui, app, &mut gui.dialogs, &mut gui.msg_dialog, &mut gui.regions_window, sel) {
-                                            ui.close_menu();
+                                        if crate::gui::selection_menu::selection_menu("Selection... ⏷", ui, app, &mut gui.dialogs, &mut gui.msg_dialog, &mut gui.regions_window, sel) {
                                             close = true;
                                         }
                                         ui.separator();
