@@ -54,7 +54,11 @@ impl Dialog for PatternFillDialog {
             match values {
                 Ok(values) => {
                     let range = sel.begin..=sel.end;
-                    app.data[range.clone()].pattern_fill(&values);
+                    let Some(data_slice) = app.data.get_mut(range.clone()) else {
+                        msg.open(Icon::Error, "Pattern fill error", format!("Invalid range for fill.\nRequested range: {range:?}\nData length: {}", app.data.len()));
+                        return false;
+                    };
+                    data_slice.pattern_fill(&values);
                     app.edit_state
                         .widen_dirty_region(DamageRegion::RangeInclusive(range));
                     false
