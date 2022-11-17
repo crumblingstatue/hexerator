@@ -38,6 +38,7 @@ impl BookmarksWindow {
         TableBuilder::new(ui)
             .columns(Size::remainder(), 5)
             .striped(true)
+            .resizable(true)
             .header(24.0, |mut row| {
                 row.col(|ui| {
                     ui.label("Name");
