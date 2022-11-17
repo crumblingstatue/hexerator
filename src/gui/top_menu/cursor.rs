@@ -14,7 +14,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     }
     if button_with_shortcut(ui, "Jump...", "Ctrl+J").clicked() {
         ui.close_menu();
-        gui.add_dialog(JumpDialog::default());
+        Gui::add_dialog(&mut gui.dialogs, JumpDialog::default());
     }
     if ui.button("Flash cursor").clicked() {
         app.preferences.hide_cursor = false;

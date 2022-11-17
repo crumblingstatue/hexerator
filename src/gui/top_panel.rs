@@ -103,7 +103,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                         }
                     }
                     if ui.button("Lua").on_hover_text("From lua script").clicked() {
-                        gui.add_dialog(LuaColorDialog::default());
+                        Gui::add_dialog(&mut gui.dialogs, LuaColorDialog::default());
                     }
                     if ui.button("Save").clicked() {
                         if let Some(path) = rfd::FileDialog::new().save_file() {

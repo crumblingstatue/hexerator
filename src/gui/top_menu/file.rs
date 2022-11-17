@@ -104,7 +104,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     }
     if ui.button("Auto save/reload...").clicked() {
         ui.close_menu();
-        gui.add_dialog(AutoSaveReloadDialog);
+        Gui::add_dialog(&mut gui.dialogs, AutoSaveReloadDialog);
     }
     ui.separator();
     if ui.button("Create backup").clicked() {

@@ -30,7 +30,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                 ui.close_menu();
             }
             if ui.button("Pattern fill...").clicked() {
-                gui.add_dialog(PatternFillDialog::default());
+                Gui::add_dialog(&mut gui.dialogs, PatternFillDialog::default());
                 ui.close_menu();
             }
             if ui.button("Random fill").clicked() {
@@ -109,7 +109,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         .on_hover_text("Don't automatically move cursor after editing is finished");
     ui.separator();
     if ui.button("Truncate/Extend").clicked() {
-        gui.add_dialog(TruncateDialog::new(app.data.len(), app.hex_ui.selection()));
+        Gui::add_dialog(
+            &mut gui.dialogs,
+            TruncateDialog::new(app.data.len(), app.hex_ui.selection()),
+        );
         ui.close_menu();
     }
 }

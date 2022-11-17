@@ -672,7 +672,7 @@ fn handle_key_pressed(
             }
         }
         Key::W if key_mod.ctrl => app.close_file(),
-        Key::J if key_mod.ctrl => gui.add_dialog(JumpDialog::default()),
+        Key::J if key_mod.ctrl => Gui::add_dialog(&mut gui.dialogs, JumpDialog::default()),
         Key::Num1 if key_mod.shift => app.hex_ui.select_a = Some(app.edit_state.cursor),
         Key::Num2 if key_mod.shift => app.hex_ui.select_b = Some(app.edit_state.cursor),
         Key::Tab if key_mod.shift => app.focus_prev_view_in_layout(),

@@ -64,6 +64,8 @@ use {
     },
 };
 
+type Dialogs = HashMap<TypeId, Box<dyn Dialog>>;
+
 #[derive(Default)]
 pub struct Gui {
     pub inspect_panel: InspectPanel,
@@ -72,7 +74,7 @@ pub struct Gui {
     pub seek_byte_offset_input: String,
     pub regions_window: RegionsWindow,
     pub bookmarks_window: BookmarksWindow,
-    pub dialogs: HashMap<TypeId, Box<dyn Dialog>>,
+    pub dialogs: Dialogs,
     pub layouts_window: LayoutsWindow,
     pub views_window: ViewsWindow,
     pub perspectives_window: PerspectivesWindow,
@@ -125,9 +127,9 @@ pub trait Dialog {
 }
 
 impl Gui {
-    pub fn add_dialog<D: Dialog + 'static>(&mut self, mut dialog: D) {
+    pub fn add_dialog<D: Dialog + 'static>(gui_dialogs: &mut Dialogs, mut dialog: D) {
         dialog.on_open();
-        self.dialogs.insert(TypeId::of::<D>(), Box::new(dialog));
+        gui_dialogs.insert(TypeId::of::<D>(), Box::new(dialog));
     }
 }
 
