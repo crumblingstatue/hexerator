@@ -22,7 +22,8 @@
 - Don't insert a tab character for text views in edit mode when tab is pressed to switch focus
 - Active selection actions in edit menu are now in a submenu named "Selection"
 - "Copy as hex" is now known as "Copy as hex text"
-- Bookmarks table is now resizable
+- Bookmarks table is now resizable horizontally
+- Bookmarks table is now scrollable vertically
 
 ### Fixed
 

@@ -15,7 +15,7 @@ use {
         shell::{msg_fail, msg_if_fail},
     },
     anyhow::Context,
-    egui::{self, Ui},
+    egui::{self, ScrollArea, Ui},
     egui_extras::{Size, TableBuilder},
     num_traits::AsPrimitive,
     std::mem::discriminant,
@@ -35,102 +35,105 @@ impl BookmarksWindow {
         let win = &mut gui.bookmarks_window;
         ui.add(egui::TextEdit::singleline(&mut win.name_filter_string).hint_text("Filter by name"));
         let mut action = Action::None;
-        TableBuilder::new(ui)
-            .columns(Size::remainder(), 5)
-            .striped(true)
-            .resizable(true)
-            .header(24.0, |mut row| {
-                row.col(|ui| {
-                    ui.label("Name");
-                });
-                row.col(|ui| {
-                    ui.label("Offset");
-                });
-                row.col(|ui| {
-                    ui.label("Type");
-                });
-                row.col(|ui| {
-                    ui.label("Value");
-                });
-                row.col(|ui| {
-                    ui.label("Region");
-                });
-            })
-            .body(|body| {
-                // Sort by offset
-                let mut keys: Vec<usize> = (0..app.meta_state.meta.bookmarks.len()).collect();
-                keys.sort_by_key(|&idx| app.meta_state.meta.bookmarks[idx].offset);
-                keys.retain(|&k| {
-                    win.name_filter_string.is_empty()
-                        || app.meta_state.meta.bookmarks[k]
-                            .label
-                            .contains(&win.name_filter_string)
-                });
-                body.rows(20.0, keys.len(), |idx, mut row| {
-                    let idx = keys[idx];
+        ScrollArea::vertical().max_height(500.0).show(ui, |ui| {
+            TableBuilder::new(ui)
+                .columns(Size::remainder(), 5)
+                .striped(true)
+                .resizable(true)
+                .header(24.0, |mut row| {
                     row.col(|ui| {
-                        if ui
-                            .selectable_label(
-                                win.selected == Some(idx),
-                                &app.meta_state.meta.bookmarks[idx].label,
-                            )
-                            .clicked()
-                        {
-                            win.selected = Some(idx);
-                        }
+                        ui.label("Name");
                     });
                     row.col(|ui| {
-                        if ui
-                            .link(app.meta_state.meta.bookmarks[idx].offset.to_string())
-                            .clicked()
-                        {
-                            action = Action::Goto(app.meta_state.meta.bookmarks[idx].offset);
-                        }
+                        ui.label("Offset");
                     });
                     row.col(|ui| {
-                        ui.label(app.meta_state.meta.bookmarks[idx].value_type.label());
+                        ui.label("Type");
                     });
                     row.col(|ui| {
-                        let result = value_ui(
-                            &app.meta_state.meta.bookmarks[idx],
-                            &mut app.data,
-                            &mut app.edit_state,
-                            ui,
-                            &mut app.clipboard,
-                            &mut gui.msg_dialog,
-                        );
-                        match result {
-                            Ok(action) => match action {
-                                Action::None => {}
-                                Action::Goto(offset) => app.search_focus(offset),
-                            },
-                            Err(e) => msg_fail(&e, "Value ui error", &mut gui.msg_dialog),
-                        }
+                        ui.label("Value");
                     });
                     row.col(|ui| {
-                        let off = app.meta_state.meta.bookmarks[idx].offset;
-                        if let Some(region_key) = find_most_specific_region_for_offset(
-                            &app.meta_state.meta.low.regions,
-                            off,
-                        ) {
-                            let region = &app.meta_state.meta.low.regions[region_key];
-                            let ctx_menu =
-                                |ui: &mut egui::Ui| region_context_menu!(ui, app, region, action);
+                        ui.label("Region");
+                    });
+                })
+                .body(|body| {
+                    // Sort by offset
+                    let mut keys: Vec<usize> = (0..app.meta_state.meta.bookmarks.len()).collect();
+                    keys.sort_by_key(|&idx| app.meta_state.meta.bookmarks[idx].offset);
+                    keys.retain(|&k| {
+                        win.name_filter_string.is_empty()
+                            || app.meta_state.meta.bookmarks[k]
+                                .label
+                                .contains(&win.name_filter_string)
+                    });
+                    body.rows(20.0, keys.len(), |idx, mut row| {
+                        let idx = keys[idx];
+                        row.col(|ui| {
                             if ui
-                                .link(&region.name)
-                                .on_hover_text(&region.desc)
-                                .context_menu(ctx_menu)
+                                .selectable_label(
+                                    win.selected == Some(idx),
+                                    &app.meta_state.meta.bookmarks[idx].label,
+                                )
                                 .clicked()
                             {
-                                gui.regions_window.open.set(true);
-                                gui.regions_window.selected_key = Some(region_key);
+                                win.selected = Some(idx);
                             }
-                        } else {
-                            ui.label("<no region>");
-                        }
+                        });
+                        row.col(|ui| {
+                            if ui
+                                .link(app.meta_state.meta.bookmarks[idx].offset.to_string())
+                                .clicked()
+                            {
+                                action = Action::Goto(app.meta_state.meta.bookmarks[idx].offset);
+                            }
+                        });
+                        row.col(|ui| {
+                            ui.label(app.meta_state.meta.bookmarks[idx].value_type.label());
+                        });
+                        row.col(|ui| {
+                            let result = value_ui(
+                                &app.meta_state.meta.bookmarks[idx],
+                                &mut app.data,
+                                &mut app.edit_state,
+                                ui,
+                                &mut app.clipboard,
+                                &mut gui.msg_dialog,
+                            );
+                            match result {
+                                Ok(action) => match action {
+                                    Action::None => {}
+                                    Action::Goto(offset) => app.search_focus(offset),
+                                },
+                                Err(e) => msg_fail(&e, "Value ui error", &mut gui.msg_dialog),
+                            }
+                        });
+                        row.col(|ui| {
+                            let off = app.meta_state.meta.bookmarks[idx].offset;
+                            if let Some(region_key) = find_most_specific_region_for_offset(
+                                &app.meta_state.meta.low.regions,
+                                off,
+                            ) {
+                                let region = &app.meta_state.meta.low.regions[region_key];
+                                let ctx_menu = |ui: &mut egui::Ui| {
+                                    region_context_menu!(ui, app, region, action)
+                                };
+                                if ui
+                                    .link(&region.name)
+                                    .on_hover_text(&region.desc)
+                                    .context_menu(ctx_menu)
+                                    .clicked()
+                                {
+                                    gui.regions_window.open.set(true);
+                                    gui.regions_window.selected_key = Some(region_key);
+                                }
+                            } else {
+                                ui.label("<no region>");
+                            }
+                        });
                     });
                 });
-            });
+        });
         if let Some(idx) = win.selected {
             ui.separator();
             let mark = &mut app.meta_state.meta.bookmarks[idx];
