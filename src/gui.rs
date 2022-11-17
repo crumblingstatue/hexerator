@@ -31,6 +31,7 @@ mod ops;
 mod perspectives_window;
 mod preferences_window;
 mod regions_window;
+pub mod selection_menu;
 mod top_menu;
 mod top_panel;
 mod util;
@@ -192,8 +193,8 @@ pub fn do_egui(
                             match &menu.data {
                                 &ContextMenuData::ViewByte { view, byte_off } => {
                                     if let Some(sel) = app.hex_ui.selection() {
-                                        if ui.button("Add selection as region").clicked() {
-                                            ops::add_region_from_selection(sel, &mut app.meta_state, &mut gui.regions_window);
+                                        if crate::gui::selection_menu::selection_menu(ui, app, &mut gui.dialogs, &mut gui.msg_dialog, &mut gui.regions_window, sel) {
+                                            ui.close_menu();
                                             close = true;
                                         }
                                         ui.separator();
