@@ -257,7 +257,9 @@ fn update(app: &mut App, egui_wants_kb: bool) {
                 view.scroll_offset.pix_xoff = 0;
             }
             if view.scroll_offset.row + 1 > per.n_rows(&app.meta_state.meta.low.regions) {
-                view.scroll_offset.row = per.n_rows(&app.meta_state.meta.low.regions) - 1;
+                view.scroll_offset.row = per
+                    .n_rows(&app.meta_state.meta.low.regions)
+                    .saturating_sub(1);
                 view.scroll_offset.pix_yoff = 0;
             }
         }
