@@ -1,7 +1,10 @@
 use {
     super::{
-        dialogs::PatternFillDialog, message_dialog::MessageDialog, regions_window::RegionsWindow,
-        util::button_with_shortcut, Gui,
+        dialogs::{LuaFillDialog, PatternFillDialog},
+        message_dialog::MessageDialog,
+        regions_window::RegionsWindow,
+        util::button_with_shortcut,
+        Gui,
     },
     crate::{app::App, damage_region::DamageRegion, shell::msg_if_fail},
     rand::RngCore,
@@ -28,6 +31,11 @@ pub fn selection_menu(
         }
         if ui.button("Pattern fill...").clicked() {
             Gui::add_dialog(gui_dialogs, PatternFillDialog::default());
+            ui.close_menu();
+            clicked = true;
+        }
+        if ui.button("Lua fill...").clicked() {
+            Gui::add_dialog(gui_dialogs, LuaFillDialog::default());
             ui.close_menu();
             clicked = true;
         }
