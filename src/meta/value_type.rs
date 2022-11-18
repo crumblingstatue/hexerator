@@ -71,9 +71,45 @@ pub trait EndianedPrimitive {
     fn label(&self) -> &'static str;
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct I8;
+
+impl EndianedPrimitive for I8 {
+    type Primitive = i8;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        i8::from_ne_bytes(bytes)
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        prim.to_ne_bytes()
+    }
+
+    fn label(&self) -> &'static str {
+        "i8"
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct U8;
+
+impl EndianedPrimitive for U8 {
+    type Primitive = u8;
+
+    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+        u8::from_ne_bytes(bytes)
+    }
+
+    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+        prim.to_ne_bytes()
+    }
+
+    fn label(&self) -> &'static str {
+        "u8"
+    }
+}
+
 impl_for_int! {
-    I8 => i8 ne,
-    U8 => u8 ne,
     I16Le => i16 le,
     U16Le => u16 le,
     I16Be => i16 be,
