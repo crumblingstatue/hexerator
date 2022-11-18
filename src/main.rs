@@ -148,10 +148,18 @@ fn main() {
             Some(loc) => (loc.file(), loc.line().to_string(), loc.column().to_string()),
             None => ("unknown", "unknown".into(), "unknown".into()),
         };
+        let bkpath = app::temp_metafile_backup_path();
+        let bkpath = bkpath.display();
         rfd::MessageDialog::new()
-            .set_title("Program panic")
+            .set_title("Hexerator panic")
             .set_description(&format!(
-                "Panic occured:\n\n {msg}\n\nLocation: {file}:{line}:{column}\n\nTerminating."
+                "\
+                {msg}\n\n\
+                Location:\n\
+                {file}:{line}:{column}\n\n\
+                Meta Backup path:\n\
+                {bkpath}\n\n\
+                Terminating."
             ))
             .set_level(MessageLevel::Error)
             .show();
