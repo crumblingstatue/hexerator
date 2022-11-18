@@ -25,6 +25,7 @@
 - "Copy as hex" is now known as "Copy as hex text"
 - Bookmarks table is now resizable horizontally
 - Bookmarks table is now scrollable vertically
+- Native dialog boxes now have a title, and their text is selectable and copyable!
 
 ### Fixed
 
