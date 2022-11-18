@@ -1240,8 +1240,7 @@ checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
 [[package]]
 name = "rfd"
 version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0149778bd99b6959285b0933288206090c50e2327f47a9c463bfdbf45c8823ea"
+source = "git+https://github.com/crumblingstatue/rfd.git?branch=hexerator#0583fb89303bb2bfd93dc94a1b8ab316552a788c"
 dependencies = [
  "block",
  "dispatch",
