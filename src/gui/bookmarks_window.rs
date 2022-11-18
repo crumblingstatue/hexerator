@@ -65,7 +65,8 @@ impl BookmarksWindow {
                         win.name_filter_string.is_empty()
                             || app.meta_state.meta.bookmarks[k]
                                 .label
-                                .contains(&win.name_filter_string)
+                                .to_ascii_lowercase()
+                                .contains(&win.name_filter_string.to_ascii_lowercase())
                     });
                     body.rows(20.0, keys.len(), |idx, mut row| {
                         let idx = keys[idx];
