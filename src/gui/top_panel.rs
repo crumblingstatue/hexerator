@@ -33,6 +33,12 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                 sel.len()
             ));
         }
+        if !gui.highlight_set.is_empty() {
+            ui.label(format!("{} bytes highlighted", gui.highlight_set.len()));
+            if ui.button("Clear").clicked() {
+                gui.highlight_set.clear();
+            }
+        }
         if let Some(view_key) = app.hex_ui.focused_view {
             let presentation = &mut app.meta_state.meta.views[view_key].view.presentation;
             ui.with_layout(Layout::right_to_left(egui::Align::Center), |ui| {

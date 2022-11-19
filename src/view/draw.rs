@@ -640,12 +640,8 @@ fn test_rect_to_gl() {
     );
 }
 
-fn should_highlight(app_selection: Option<Region>, idx: usize, app_ui: &Gui) -> bool {
-    selected(app_selection, idx) || find_result_contains(app_ui, idx)
-}
-
-fn find_result_contains(gui: &Gui, idx: usize) -> bool {
-    gui.find_dialog.open.is() && gui.highlight_set.contains(&idx)
+fn should_highlight(app_selection: Option<Region>, idx: usize, gui: &Gui) -> bool {
+    selected(app_selection, idx) || gui.highlight_set.contains(&idx)
 }
 
 fn selected(app_selection: Option<Region>, idx: usize) -> bool {

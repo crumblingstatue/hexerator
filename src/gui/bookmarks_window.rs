@@ -33,7 +33,17 @@ pub struct BookmarksWindow {
 impl BookmarksWindow {
     pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App) {
         let win = &mut gui.bookmarks_window;
-        ui.add(egui::TextEdit::singleline(&mut win.name_filter_string).hint_text("Filter by name"));
+        ui.horizontal(|ui| {
+            ui.add(
+                egui::TextEdit::singleline(&mut win.name_filter_string).hint_text("Filter by name"),
+            );
+            if ui.button("Highlight all").clicked() {
+                gui.highlight_set.clear();
+                for bm in &app.meta_state.meta.bookmarks {
+                    gui.highlight_set.insert(bm.offset);
+                }
+            }
+        });
         let mut action = Action::None;
         ScrollArea::vertical().max_height(500.0).show(ui, |ui| {
             TableBuilder::new(ui)
