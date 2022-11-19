@@ -1,6 +1,6 @@
 use {
     crate::{
-        app::App,
+        app::{set_clipboard_string, App},
         args::Args,
         gui::{
             dialogs::AutoSaveReloadDialog,
@@ -38,21 +38,20 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     ui.menu_button("Recent", |ui| {
         app.cfg.recent.retain(|entry| {
             let mut retain = true;
+            let path = entry
+                .file
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| String::from("Unnamed file"));
             ui.horizontal(|ui| {
-                if ui
-                    .button(
-                        entry
-                            .file
-                            .as_ref()
-                            .map(|path| path.display().to_string())
-                            .unwrap_or_else(|| String::from("Unnamed file")),
-                    )
-                    .clicked()
-                {
+                if ui.button(&path).clicked() {
                     load = Some(entry.clone());
                     ui.close_menu();
                 }
                 ui.separator();
+                if ui.button("📋").clicked() {
+                    set_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog, &path);
+                }
                 if ui.button("🗑").clicked() {
                     retain = false;
                 }
