@@ -37,6 +37,7 @@
 - Lua fill dialog with empty selection now has a close button.
 - Make regions window scroll properly
 - Pattern fill dialog is now closeable
+- "Select all" action now doesn't select more data than is available, even if region is bigger than data.
 
 ## [0.1.0] - 2022-09-16
 

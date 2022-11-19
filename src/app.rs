@@ -505,7 +505,8 @@ impl App {
             let p = &self.meta_state.meta.low.perspectives[p_key];
             let r = &self.meta_state.meta.low.regions[p.region];
             self.hex_ui.select_a = Some(r.region.begin);
-            self.hex_ui.select_b = Some(r.region.end);
+            // Don't select more than the data length, even if region is bigger
+            self.hex_ui.select_b = Some(r.region.end.min(self.data.len().saturating_sub(1)));
         }
     }
 
