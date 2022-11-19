@@ -250,7 +250,8 @@ impl BookmarksWindow {
                 label: format!("New bookmark at {}", app.edit_state.cursor),
                 desc: String::new(),
                 value_type: ValueType::None,
-            })
+            });
+            win.selected = Some(app.meta_state.meta.bookmarks.len() - 1);
         }
         match action {
             Action::None => {}
