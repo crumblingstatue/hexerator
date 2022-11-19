@@ -58,8 +58,14 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
         ui.separator();
         ui.label(format!(
             "cursor: {} ({:x})",
-            app.edit_state.cursor, app.edit_state.cursor
+            app.edit_state.cursor,
+            app.edit_state.cursor,
         ));
+        if let Some(label) = app.meta_state.meta.bookmarks
+                                .iter()
+                                .find_map(|bm| (bm.offset == app.edit_state.cursor).then_some(bm.label.as_str())) {
+            ui.label(egui::RichText::new(label).color(Color32::from_rgb(150, 170, 40)));
+        }
         if !app.hex_ui.current_layout.is_null() && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
             ui.label(format!("mouse: {offset} ({offset:x})"));
         }
