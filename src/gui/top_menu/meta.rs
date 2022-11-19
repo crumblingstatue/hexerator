@@ -92,4 +92,26 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         }
         ui.close_menu();
     }
+    ui.separator();
+    match (
+        app.source_file(),
+        app.meta_state.current_meta_path.as_os_str().is_empty(),
+    ) {
+        (Some(src), false) => {
+            if ui
+                .button("Associate with current file")
+                .on_hover_text("When you open this file, it will use this metafile")
+                .clicked()
+            {
+                app.cfg
+                    .meta_assocs
+                    .insert(src.to_owned(), app.meta_state.current_meta_path.clone());
+                ui.close_menu();
+            }
+        }
+        _ => {
+            ui.add_enabled(false, egui::Button::new("Associate with current file"))
+                .on_disabled_hover_text("Both file and metafile need to have a path");
+        }
+    }
 }

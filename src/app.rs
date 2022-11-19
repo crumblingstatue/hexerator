@@ -1,4 +1,7 @@
-use crate::gui::message_dialog::{Icon, MessageDialog};
+use {
+    crate::gui::message_dialog::{Icon, MessageDialog},
+    gamedebug_core::per_dbg,
+};
 
 pub mod edit_state;
 pub mod interact_mode;
@@ -282,11 +285,11 @@ impl App {
         )
     }
 
-    /// Readjust to a new file
-    pub fn new_file_readjust(&mut self, font: &Font) {
-        self.orig_data_len = self.data.len();
-        self.meta_state.meta = Meta::default();
+    /// Set a new clean meta for the current data, and switch to default layout
+    pub fn set_new_clean_meta(&mut self, font: &Font) {
+        per!("Setting up new clean meta");
         self.meta_state.current_meta_path.clear();
+        self.meta_state.meta = Meta::default();
         let def_region = self.meta_state.meta.low.regions.insert(NamedRegion {
             name: "default".into(),
             region: Region {
@@ -457,10 +460,23 @@ impl App {
             &mut self.data,
             msg,
         ) {
+            // Loaded new file, set the "original" data length to this length to prepare for truncation/etc.
+            self.orig_data_len = self.data.len();
+            // Set up meta
             if !self.preferences.keep_meta {
-                self.new_file_readjust(font);
                 if let Some(meta_path) = &args.meta {
                     self.consume_meta_from_file(meta_path.clone())?;
+                } else if let Some(src_path) = per_dbg!(&args.src.file) && let Some(meta_path) = per_dbg!(self.cfg.meta_assocs.get(src_path)) {
+                        // We only load if the new meta path is not the same as the old.
+                        // Keep the current metafile otherwise
+                        if self.meta_state.current_meta_path != *meta_path {
+                            per!("Mismatch: {:?} vs. {:?}", self.meta_state.current_meta_path.display(), meta_path.display());
+                            self.consume_meta_from_file(meta_path.clone())?;
+                        }
+                } else {
+                    // We didn't load any meta, but we're loading a new file.
+                    // Set up a new clean meta for it.
+                    self.set_new_clean_meta(font);
                 }
             }
             self.args = args;
@@ -594,6 +610,7 @@ impl App {
     }
 
     pub fn consume_meta_from_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
+        per!("Consuming metafile: {}", path.display());
         let data = std::fs::read(&path)?;
         let meta = rmp_serde::from_slice(&data)?;
         self.hex_ui.clear_meta_refs();

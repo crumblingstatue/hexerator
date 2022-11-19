@@ -11,6 +11,7 @@
 - Right click context menu option on a view to remove it from the current layout
 - Layout properties is accessible from right click context menu on the layout
 - Error reporting message dialog if the program panics
+- Each file can set a metafile association to always load that meta when loaded
 
 ### Changed
 

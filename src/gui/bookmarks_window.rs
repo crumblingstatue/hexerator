@@ -17,6 +17,7 @@ use {
     anyhow::Context,
     egui::{self, ScrollArea, Ui},
     egui_extras::{Size, TableBuilder},
+    gamedebug_core::per,
     num_traits::AsPrimitive,
     std::mem::discriminant,
 };
@@ -146,8 +147,12 @@ impl BookmarksWindow {
                 });
         });
         if let Some(idx) = win.selected {
+            let Some(mark) = app.meta_state.meta.bookmarks.get_mut(idx) else {
+                per!("Invalid bookmark selection: {idx}");
+                win.selected = None;
+                return;
+            };
             ui.separator();
-            let mark = &mut app.meta_state.meta.bookmarks[idx];
             ui.horizontal(|ui| {
                 if win.edit_name {
                     if ui.text_edit_singleline(&mut mark.label).lost_focus() {

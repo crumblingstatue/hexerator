@@ -4,13 +4,19 @@ use {
     directories::ProjectDirs,
     recently_used_list::RecentlyUsedList,
     serde::{Deserialize, Serialize},
+    std::{collections::HashMap, path::PathBuf},
 };
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub recent: RecentlyUsedList<SourceArgs>,
     pub style: Style,
+    /// filepath->meta associations
+    #[serde(default)]
+    pub meta_assocs: MetaAssocs,
 }
+
+pub type MetaAssocs = HashMap<PathBuf, PathBuf>;
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Style {
@@ -47,6 +53,7 @@ impl Default for Config {
         Self {
             recent,
             style: Style::default(),
+            meta_assocs: HashMap::default(),
         }
     }
 }
