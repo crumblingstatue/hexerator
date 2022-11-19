@@ -54,7 +54,7 @@ unsafe fn load_proc_memory_inner(
         state: SourceState::default(),
     });
     if !app.preferences.keep_meta {
-        app.new_file_readjust(font);
+        app.set_new_clean_meta(font);
     }
     Ok(())
 }
