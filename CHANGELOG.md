@@ -14,6 +14,7 @@
 - Each file can set a metafile association to always load that meta when loaded
 - Vsync and fps limit settings in preferences window
 - Bookmark names are displayed when mouse hovers over a bookmarked offset
+- "Open bookmark" context menu option in hex view for existing bookmarks
 
 ### Changed
 

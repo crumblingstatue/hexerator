@@ -207,21 +207,32 @@ pub fn do_egui(
                                         }
                                         ui.separator();
                                     }
-                                    if ui
-                                        .button("Add bookmark")
-                                        .clicked()
-                                    {
-                                        let bms = &mut app.meta_state.meta.bookmarks;
-                                        let idx = bms.len();
-                                        bms.push(Bookmark {
-                                            offset: byte_off,
-                                            label: format!("New @ offset {byte_off}"),
-                                            desc: String::new(),
-                                            value_type: ValueType::None,
-                                        });
-                                        gui.bookmarks_window.open.set(true);
-                                        gui.bookmarks_window.selected = Some(idx);
-                                        close = true;
+                                    match app.meta_state.meta.bookmarks.iter().position(|bm| bm.offset == byte_off) {
+                                        Some(pos) => {
+                                            if ui.button("Open bookmark").clicked() {
+                                                gui.bookmarks_window.open.set(true);
+                                                gui.bookmarks_window.selected = Some(pos);
+                                                close = true;
+                                            }
+                                        },
+                                        None => {
+                                            if ui
+                                            .button("Add bookmark")
+                                            .clicked()
+                                        {
+                                            let bms = &mut app.meta_state.meta.bookmarks;
+                                            let idx = bms.len();
+                                            bms.push(Bookmark {
+                                                offset: byte_off,
+                                                label: format!("New @ offset {byte_off}"),
+                                                desc: String::new(),
+                                                value_type: ValueType::None,
+                                            });
+                                            gui.bookmarks_window.open.set(true);
+                                            gui.bookmarks_window.selected = Some(idx);
+                                            close = true;
+                                        }
+                                        },
                                     }
                                     ui.separator();
                                     if ui.button("View properties...").clicked() {
