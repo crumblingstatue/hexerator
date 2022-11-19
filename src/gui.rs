@@ -10,7 +10,10 @@ use {
     },
     rfd::MessageLevel,
     rlua::Lua,
-    std::{any::TypeId, collections::HashMap},
+    std::{
+        any::TypeId,
+        collections::{HashMap, HashSet},
+    },
 };
 
 mod advanced_open_window;
@@ -67,6 +70,8 @@ use {
 
 type Dialogs = HashMap<TypeId, Box<dyn Dialog>>;
 
+pub type HighlightSet = HashSet<usize>;
+
 #[derive(Default)]
 pub struct Gui {
     pub inspect_panel: InspectPanel,
@@ -89,6 +94,8 @@ pub struct Gui {
     pub preferences_window: PreferencesWindow,
     pub msg_dialog: MessageDialog,
     pub about_window: AboutWindow,
+    /// What to highlight in addition to selection. Can be updated by various actions that want to highlight stuff
+    pub highlight_set: HighlightSet,
 }
 
 pub struct ContextMenu {

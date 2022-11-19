@@ -2,6 +2,7 @@ use {
     super::{
         message_dialog::{Icon, MessageDialog},
         window_open::WindowOpen,
+        HighlightSet,
     },
     crate::{
         app::App,
@@ -11,7 +12,6 @@ use {
     },
     egui::{self, Align, Ui},
     egui_extras::{Size, StripBuilder, TableBuilder},
-    std::collections::HashSet,
 };
 
 #[derive(Default, Debug, PartialEq, Eq)]
@@ -36,8 +36,6 @@ pub struct FindDialog {
     pub input: String,
     /// Results, as a Bec that can be indexed. Needed because of search cursor.
     pub results_vec: Vec<usize>,
-    /// Results, as a BTreeSet for fast "contains" lookup. Needed for highlighting.
-    pub results_set: HashSet<usize>,
     /// Used to keep track of previous/next result to go to
     pub result_cursor: usize,
     /// When Some, the results list should be scrolled to the offset of that result
@@ -179,11 +177,11 @@ impl FindDialog {
                     Action::RemoveRegionFromResults(key) => {
                         let reg = &app.meta_state.meta.low.regions[key];
                         gui.find_dialog.results_vec.retain(|&idx| !reg.region.contains(idx));
-                        gui.find_dialog.results_set.retain(|&idx| !reg.region.contains(idx));
+                        gui.highlight_set.retain(|&idx| !reg.region.contains(idx));
                     },
                     Action::RemoveIdxFromResults(idx) => {
                         gui.find_dialog.results_vec.remove(idx);
-                        gui.find_dialog.results_set.remove(&idx);
+                        gui.highlight_set.remove(&idx);
                     },
                 }
             });
@@ -226,14 +224,14 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
     let dia = &mut gui.find_dialog;
     if !dia.filter_results {
         dia.results_vec.clear();
-        dia.results_set.clear();
+        gui.highlight_set.clear();
     }
     match dia.find_type {
-        FindType::U8 => find_u8(dia, app, &mut gui.msg_dialog),
+        FindType::U8 => find_u8(dia, app, &mut gui.msg_dialog, &mut gui.highlight_set),
         FindType::Ascii => {
             for offset in memchr::memmem::find_iter(&app.data, &dia.input) {
                 dia.results_vec.push(offset);
-                dia.results_set.insert(offset);
+                gui.highlight_set.insert(offset);
             }
         }
     }
@@ -242,23 +240,27 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
     }
 }
 
-fn find_u8(dia: &mut FindDialog, app: &mut App, msg: &mut MessageDialog) {
+fn find_u8(
+    dia: &mut FindDialog,
+    app: &mut App,
+    msg: &mut MessageDialog,
+    highlight: &mut HighlightSet,
+) {
     match dia.input.as_str() {
         "?" => {
             dia.data_snapshot = app.data.clone();
             dia.results_vec.clear();
-            dia.results_set.clear();
+            highlight.clear();
             for i in 0..app.data.len() {
                 dia.results_vec.push(i);
-                dia.results_set.insert(i);
+                highlight.insert(i);
             }
         }
         ">" => {
             if dia.filter_results {
                 dia.results_vec
                     .retain(|&offset| app.data[offset] > dia.data_snapshot[offset]);
-                dia.results_set
-                    .retain(|&offset| app.data[offset] > dia.data_snapshot[offset]);
+                highlight.retain(|&offset| app.data[offset] > dia.data_snapshot[offset]);
             } else {
                 for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new > old {
@@ -272,8 +274,7 @@ fn find_u8(dia: &mut FindDialog, app: &mut App, msg: &mut MessageDialog) {
             if dia.filter_results {
                 dia.results_vec
                     .retain(|&offset| app.data[offset] == dia.data_snapshot[offset]);
-                dia.results_set
-                    .retain(|&offset| app.data[offset] == dia.data_snapshot[offset]);
+                highlight.retain(|&offset| app.data[offset] == dia.data_snapshot[offset]);
             } else {
                 for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new == old {
@@ -287,8 +288,7 @@ fn find_u8(dia: &mut FindDialog, app: &mut App, msg: &mut MessageDialog) {
             if dia.filter_results {
                 dia.results_vec
                     .retain(|&offset| app.data[offset] != dia.data_snapshot[offset]);
-                dia.results_set
-                    .retain(|&offset| app.data[offset] != dia.data_snapshot[offset]);
+                highlight.retain(|&offset| app.data[offset] != dia.data_snapshot[offset]);
             } else {
                 for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new == old {
@@ -302,8 +302,7 @@ fn find_u8(dia: &mut FindDialog, app: &mut App, msg: &mut MessageDialog) {
             if dia.filter_results {
                 dia.results_vec
                     .retain(|&offset| app.data[offset] < dia.data_snapshot[offset]);
-                dia.results_set
-                    .retain(|&offset| app.data[offset] < dia.data_snapshot[offset]);
+                highlight.retain(|&offset| app.data[offset] < dia.data_snapshot[offset]);
             } else {
                 for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new < old {
@@ -318,14 +317,15 @@ fn find_u8(dia: &mut FindDialog, app: &mut App, msg: &mut MessageDialog) {
                 if dia.filter_results {
                     let results_vec_clone = dia.results_vec.clone();
                     dia.results_vec.clear();
-                    dia.results_set.clear();
+                    highlight.clear();
                     u8_search(
                         dia,
                         results_vec_clone.iter().map(|&off| (off, app.data[off])),
                         needle,
+                        highlight,
                     );
                 } else {
-                    u8_search(dia, app.data.iter().cloned().enumerate(), needle);
+                    u8_search(dia, app.data.iter().cloned().enumerate(), needle, highlight);
                 }
             }
             Err(e) => msg.open(Icon::Error, "Parse error", e.to_string()),
@@ -333,11 +333,16 @@ fn find_u8(dia: &mut FindDialog, app: &mut App, msg: &mut MessageDialog) {
     }
 }
 
-fn u8_search(dialog: &mut FindDialog, haystack: impl Iterator<Item = (usize, u8)>, needle: u8) {
+fn u8_search(
+    dialog: &mut FindDialog,
+    haystack: impl Iterator<Item = (usize, u8)>,
+    needle: u8,
+    highlight: &mut HighlightSet,
+) {
     for (offset, byte) in haystack {
         if byte == needle {
             dialog.results_vec.push(offset);
-            dialog.results_set.insert(offset);
+            highlight.insert(offset);
         }
     }
 }

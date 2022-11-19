@@ -28,6 +28,7 @@ struct DrawArgs<'vert, 'data> {
     data: &'data [u8],
     idx: usize,
     color: RgbColor,
+    highlight: bool,
 }
 
 fn draw_view(
@@ -35,6 +36,8 @@ fn draw_view(
     app_perspectives: &PerspectiveMap,
     app_regions: &RegionMap,
     app_data: &[u8],
+    app_selection: Option<Region>,
+    app_ui: &Gui,
     vertex_buffer: &mut Vec<Vertex>,
     mut drawfn: impl FnMut(DrawArgs),
 ) {
@@ -100,6 +103,7 @@ fn draw_view(
                         data,
                         idx,
                         color: c,
+                        highlight: should_highlight(app_selection, idx, app_ui),
                     });
                     /*if gamedebug_core::enabled() {
                         #[expect(
@@ -330,6 +334,8 @@ impl View {
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
+                    app.hex_ui.selection(),
+                    gui,
                     vertex_buffer,
                     |DrawArgs {
                          vertices,
@@ -338,8 +344,9 @@ impl View {
                          data,
                          idx,
                          color: c,
+                         highlight,
                      }| {
-                        if should_highlight(app.hex_ui.selection(), idx, gui) {
+                        if highlight {
                             draw_rect(
                                 vertices,
                                 x,
@@ -390,6 +397,8 @@ impl View {
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
+                    app.hex_ui.selection(),
+                    gui,
                     vertex_buffer,
                     |DrawArgs {
                          vertices,
@@ -398,8 +407,9 @@ impl View {
                          data,
                          idx,
                          color: c,
+                         highlight,
                      }| {
-                        if should_highlight(app.hex_ui.selection(), idx, gui) {
+                        if highlight {
                             draw_rect(
                                 vertices,
                                 x,
@@ -450,6 +460,8 @@ impl View {
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
+                    app.hex_ui.selection(),
+                    gui,
                     vertex_buffer,
                     |DrawArgs {
                          vertices,
@@ -458,8 +470,9 @@ impl View {
                          data,
                          idx,
                          color: c,
+                         highlight,
                      }| {
-                        if should_highlight(app.hex_ui.selection(), idx, gui) {
+                        if highlight {
                             draw_rect(
                                 vertices,
                                 x,
@@ -509,6 +522,8 @@ impl View {
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
+                    app.hex_ui.selection(),
+                    gui,
                     vertex_buffer,
                     |DrawArgs {
                          vertices,
@@ -517,8 +532,9 @@ impl View {
                          data: _,
                          idx,
                          color: mut c,
+                         highlight,
                      }| {
-                        if should_highlight(app.hex_ui.selection(), idx, gui) {
+                        if highlight {
                             c = c.invert();
                         }
                         draw_rect(
@@ -628,8 +644,8 @@ fn should_highlight(app_selection: Option<Region>, idx: usize, app_ui: &Gui) -> 
     selected(app_selection, idx) || find_result_contains(app_ui, idx)
 }
 
-fn find_result_contains(app_ui: &Gui, idx: usize) -> bool {
-    app_ui.find_dialog.open.is() && app_ui.find_dialog.results_set.contains(&idx)
+fn find_result_contains(gui: &Gui, idx: usize) -> bool {
+    gui.find_dialog.open.is() && gui.highlight_set.contains(&idx)
 }
 
 fn selected(app_selection: Option<Region>, idx: usize) -> bool {

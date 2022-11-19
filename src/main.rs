@@ -19,7 +19,11 @@
     clippy::cast_possible_wrap,
     clippy::panic
 )]
-#![allow(incomplete_features)]
+#![allow(
+    incomplete_features,
+    // It's hard to reconcile lack of partial borrows with few arguments
+    clippy::too_many_arguments
+)]
 #![windows_subsystem = "windows"]
 
 use rlua::Lua;
