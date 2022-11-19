@@ -14,6 +14,10 @@ pub struct Config {
     /// filepath->meta associations
     #[serde(default)]
     pub meta_assocs: MetaAssocs,
+    #[serde(default)]
+    pub vsync: bool,
+    #[serde(default)]
+    pub fps_limit: u32,
 }
 
 pub type MetaAssocs = HashMap<PathBuf, PathBuf>;
@@ -54,6 +58,8 @@ impl Default for Config {
             recent,
             style: Style::default(),
             meta_assocs: HashMap::default(),
+            fps_limit: 0,
+            vsync: false,
         }
     }
 }

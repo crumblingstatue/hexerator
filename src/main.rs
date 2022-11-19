@@ -99,7 +99,9 @@ fn try_main() -> anyhow::Result<()> {
         Style::RESIZE | Style::CLOSE,
         &ContextSettings::default(),
     );
-    window.set_vertical_sync_enabled(true);
+    let cfg = Config::load_or_default()?;
+    window.set_vertical_sync_enabled(cfg.vsync);
+    window.set_framerate_limit(cfg.fps_limit);
     window.set_position(Vector2::new(0, 0));
     let mut sf_egui = SfEgui::new(&window);
     let mut style = egui::Style::default();
@@ -108,7 +110,7 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
-    let mut app = App::new(args, Config::load_or_default()?, &font, &mut gui.msg_dialog)?;
+    let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog)?;
     let lua = Lua::default();
     crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);
@@ -191,7 +193,7 @@ fn do_frame(
     update(app, sf_egui.context().wants_keyboard_input());
     app.update(&mut gui.msg_dialog);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
-    if !gui::do_egui(sf_egui, gui, app, mp, font, lua) {
+    if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window) {
         return false;
     }
     let [r, g, b] = app.preferences.bg_color;

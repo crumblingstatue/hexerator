@@ -6,6 +6,7 @@ use {
     crate::{config::Style, gui::windows::AboutWindow, meta::value_type::ValueType},
     egui_sfml::{
         egui::{FontFamily, FontId},
+        sfml::graphics::RenderWindow,
         TextureCreateError,
     },
     rfd::MessageLevel,
@@ -149,6 +150,7 @@ pub fn do_egui(
     mouse_pos: ViewportVec,
     font: &Font,
     lua: &Lua,
+    rwin: &mut RenderWindow,
 ) -> bool {
     let result = sf_egui.do_frame(|ctx| {
         let mut open = gamedebug_core::enabled();
@@ -184,7 +186,7 @@ pub fn do_egui(
             "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font;
             "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
             "External command",        external_command_window,     ExternalCommandWindow: gui app;
-            "Preferences",             preferences_window,          PreferencesWindow: gui app;
+            "Preferences",             preferences_window,          PreferencesWindow: gui app rwin;
             "About Hexerator",         about_window,                AboutWindow: gui app;
         }
         // Context menu
