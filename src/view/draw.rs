@@ -21,13 +21,22 @@ use {
     slotmap::Key,
 };
 
-pub fn draw_view(
+struct DrawArgs<'vert, 'data> {
+    vertices: &'vert mut Vec<Vertex>,
+    x: f32,
+    y: f32,
+    data: &'data [u8],
+    idx: usize,
+    color: RgbColor,
+}
+
+fn draw_view(
     view: &View,
     app_perspectives: &PerspectiveMap,
     app_regions: &RegionMap,
     app_data: &[u8],
     vertex_buffer: &mut Vec<Vertex>,
-    mut drawfn: impl FnMut(&mut Vec<Vertex>, f32, f32, &[u8], usize, RgbColor),
+    mut drawfn: impl FnMut(DrawArgs),
 ) {
     // Protect against infinite loop lock up when scrolling horizontally out of view
     if view.scroll_offset.pix_xoff <= -view.viewport_rect.w || view.perspective.is_null() {
@@ -84,14 +93,14 @@ pub fn draw_view(
                         clippy::cast_precision_loss,
                         reason = "At this point, the viewport coordinates should be small enough to fit in viewport"
                     )]
-                    drawfn(
-                        vertex_buffer,
-                        viewport_x as f32,
-                        viewport_y as f32,
+                    drawfn(DrawArgs {
+                        vertices: vertex_buffer,
+                        x: viewport_x as f32,
+                        y: viewport_y as f32,
                         data,
                         idx,
-                        c,
-                    );
+                        color: c,
+                    });
                     /*if gamedebug_core::enabled() {
                         #[expect(
                             clippy::cast_precision_loss,
@@ -322,10 +331,17 @@ impl View {
                     &app.meta_state.meta.low.regions,
                     &app.data,
                     vertex_buffer,
-                    |vertex_buffer, x, y, data, idx, c| {
-                        if selected_or_find_result_contains(app.hex_ui.selection(), idx, gui) {
+                    |DrawArgs {
+                         vertices,
+                         x,
+                         y,
+                         data,
+                         idx,
+                         color: c,
+                     }| {
+                        if should_highlight(app.hex_ui.selection(), idx, gui) {
                             draw_rect(
-                                vertex_buffer,
+                                vertices,
                                 x,
                                 y,
                                 f32::from(this.view.col_w),
@@ -344,7 +360,7 @@ impl View {
                             draw_glyph(
                                 font,
                                 hex.font_size.into(),
-                                vertex_buffer,
+                                vertices,
                                 gx,
                                 y,
                                 d.into(),
@@ -357,7 +373,7 @@ impl View {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
                                 y,
-                                vertex_buffer,
+                                vertices,
                                 app.hex_ui.focused_view == Some(key),
                                 app.hex_ui.cursor_flash_timer(),
                                 &this.view.presentation,
@@ -375,10 +391,17 @@ impl View {
                     &app.meta_state.meta.low.regions,
                     &app.data,
                     vertex_buffer,
-                    |vertex_buffer, x, y, data, idx, c| {
-                        if selected_or_find_result_contains(app.hex_ui.selection(), idx, gui) {
+                    |DrawArgs {
+                         vertices,
+                         x,
+                         y,
+                         data,
+                         idx,
+                         color: c,
+                     }| {
+                        if should_highlight(app.hex_ui.selection(), idx, gui) {
                             draw_rect(
-                                vertex_buffer,
+                                vertices,
                                 x,
                                 y,
                                 f32::from(this.view.col_w),
@@ -397,7 +420,7 @@ impl View {
                             draw_glyph(
                                 font,
                                 dec.font_size.into(),
-                                vertex_buffer,
+                                vertices,
                                 gx,
                                 y,
                                 d.into(),
@@ -410,7 +433,7 @@ impl View {
                             draw_text_cursor(
                                 x + f32::from(extra_x),
                                 y,
-                                vertex_buffer,
+                                vertices,
                                 app.hex_ui.focused_view == Some(key),
                                 app.hex_ui.cursor_flash_timer(),
                                 &this.view.presentation,
@@ -428,10 +451,17 @@ impl View {
                     &app.meta_state.meta.low.regions,
                     &app.data,
                     vertex_buffer,
-                    |vertex_buffer, x, y, data, idx, c| {
-                        if selected_or_find_result_contains(app.hex_ui.selection(), idx, gui) {
+                    |DrawArgs {
+                         vertices,
+                         x,
+                         y,
+                         data,
+                         idx,
+                         color: c,
+                     }| {
+                        if should_highlight(app.hex_ui.selection(), idx, gui) {
                             draw_rect(
-                                vertex_buffer,
+                                vertices,
                                 x,
                                 y,
                                 f32::from(this.view.col_w),
@@ -457,20 +487,12 @@ impl View {
                             0xFF => '■' as u32,
                             _ => raw_data,
                         };
-                        draw_glyph(
-                            font,
-                            text.font_size.into(),
-                            vertex_buffer,
-                            x,
-                            y,
-                            glyph,
-                            c.into(),
-                        );
+                        draw_glyph(font, text.font_size.into(), vertices, x, y, glyph, c.into());
                         if !app.preferences.hide_cursor && idx == app.edit_state.cursor {
                             draw_text_cursor(
                                 x,
                                 y,
-                                vertex_buffer,
+                                vertices,
                                 app.hex_ui.focused_view == Some(key),
                                 app.hex_ui.cursor_flash_timer(),
                                 &this.view.presentation,
@@ -488,12 +510,19 @@ impl View {
                     &app.meta_state.meta.low.regions,
                     &app.data,
                     vertex_buffer,
-                    |vertex_buffer, x, y, _byte, idx, mut c| {
-                        if selected_or_find_result_contains(app.hex_ui.selection(), idx, gui) {
+                    |DrawArgs {
+                         vertices,
+                         x,
+                         y,
+                         data: _,
+                         idx,
+                         color: mut c,
+                     }| {
+                        if should_highlight(app.hex_ui.selection(), idx, gui) {
                             c = c.invert();
                         }
                         draw_rect(
-                            vertex_buffer,
+                            vertices,
                             x,
                             y,
                             f32::from(this.view.col_w),
@@ -504,7 +533,7 @@ impl View {
                             draw_block_cursor(
                                 x,
                                 y,
-                                vertex_buffer,
+                                vertices,
                                 app.hex_ui.focused_view == Some(key),
                                 app.hex_ui.cursor_flash_timer(),
                                 &this.view.presentation,
@@ -595,11 +624,7 @@ fn test_rect_to_gl() {
     );
 }
 
-fn selected_or_find_result_contains(
-    app_selection: Option<Region>,
-    idx: usize,
-    app_ui: &Gui,
-) -> bool {
+fn should_highlight(app_selection: Option<Region>, idx: usize, app_ui: &Gui) -> bool {
     selected(app_selection, idx) || find_result_contains(app_ui, idx)
 }
 
