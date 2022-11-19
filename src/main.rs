@@ -208,6 +208,19 @@ fn do_frame(
         (b * 255.) as u8,
     ));
     draw(app, gui, window, font, vertex_buffer);
+    if let Some((offs, _view)) = app.byte_offset_at_pos(mp.x, mp.y) {
+        if let Some(bm) = app
+            .meta_state
+            .meta
+            .bookmarks
+            .iter()
+            .find(|bm| bm.offset == offs)
+        {
+            let mut txt = Text::new(&bm.label, font, 20);
+            txt.set_position((f32::from(mp.x), f32::from(mp.y + 15)));
+            window.draw(&txt);
+        }
+    }
     sf_egui.draw(window, None);
     window.display();
     // Should only be true on the frame right after reloading

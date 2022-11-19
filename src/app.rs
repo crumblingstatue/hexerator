@@ -408,7 +408,11 @@ impl App {
     //
     // Also returns the index of the view the position is from
     pub fn byte_offset_at_pos(&self, x: i16, y: i16) -> Option<(usize, ViewKey)> {
-        let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
+        let layout = self
+            .meta_state
+            .meta
+            .layouts
+            .get(self.hex_ui.current_layout)?;
         for view_key in layout.iter() {
             let view = &self.meta_state.meta.views[view_key];
             if let Some((row, col)) = view.view.row_col_offset_of_pos(
