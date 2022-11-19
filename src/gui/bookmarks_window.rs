@@ -236,7 +236,7 @@ impl BookmarksWindow {
                 .id_source("desc_scroll")
                 .max_height(200.0)
                 .show(ui, |ui| {
-                    ui.text_edit_multiline(&mut mark.desc);
+                    ui.add(egui::TextEdit::multiline(&mut mark.desc).code_editor());
                 });
             if ui.button("Delete").clicked() {
                 app.meta_state.meta.bookmarks.remove(idx);

@@ -31,6 +31,7 @@
 - Bookmarks table is now scrollable vertically
 - Native dialog boxes now have a title, and their text is selectable and copyable!
 - Bookmarks window name filter is now case insensitive
+- Bookmarks window description editor is now monospace
 - Bookmark description is now in a scroll area
 - Bookmarks window "add new at cursor" button selects newly added bookmark automatically
 
