@@ -217,7 +217,12 @@ impl BookmarksWindow {
                 _ => {}
             }
             ui.heading("Description");
-            ui.text_edit_multiline(&mut mark.desc);
+            egui::ScrollArea::vertical()
+                .id_source("desc_scroll")
+                .max_height(200.0)
+                .show(ui, |ui| {
+                    ui.text_edit_multiline(&mut mark.desc);
+                });
             if ui.button("Delete").clicked() {
                 app.meta_state.meta.bookmarks.remove(idx);
                 win.selected = None;
