@@ -191,7 +191,7 @@ impl FindDialog {
                 ui.horizontal(|ui| {
                     ui.set_enabled(!gui.find_dialog.results_vec.is_empty());
                     if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
-                        && gui.find_dialog.result_cursor > 0
+                        && gui.find_dialog.result_cursor > 0 && !gui.find_dialog.results_vec.is_empty()
                     {
                         gui.find_dialog.result_cursor -= 1;
                         let off = gui.find_dialog.results_vec[gui.find_dialog.result_cursor];
