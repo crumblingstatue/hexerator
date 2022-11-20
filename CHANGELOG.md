@@ -15,6 +15,7 @@
 - Vsync and fps limit settings in preferences window
 - Bookmark names are displayed when mouse hovers over a bookmarked offset
 - "Open bookmark" context menu option in hex view for existing bookmarks
+- "Save as" action
 
 ### Changed
 
@@ -34,6 +35,7 @@
 - Bookmarks window description editor is now monospace
 - Bookmark description is now in a scroll area
 - Bookmarks window "add new at cursor" button selects newly added bookmark automatically
+- Create default metadata for empty documents, allowing creation of binary files from scratch with Hexerator
 
 ### Fixed
 
