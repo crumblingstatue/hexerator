@@ -1,5 +1,8 @@
 use {
-    crate::gui::message_dialog::{Icon, MessageDialog},
+    crate::{
+        event::{Event, EventQueue},
+        gui::message_dialog::{Icon, MessageDialog},
+    },
     gamedebug_core::per_dbg,
 };
 
@@ -66,6 +69,7 @@ impl App {
         cfg: Config,
         font: &Font,
         msg: &mut MessageDialog,
+        events: &mut EventQueue,
     ) -> anyhow::Result<Self> {
         if args.recent && let Some(recent) = cfg.recent.most_recent() {
             args.src = recent.clone();
@@ -89,7 +93,7 @@ impl App {
         // Set a clean meta, for an empty document
         this.set_new_clean_meta(font);
         msg_if_fail(
-            this.load_file_args(args, font, msg),
+            this.load_file_args(args, font, msg, events),
             "Failed to load file",
             msg,
         );
@@ -268,6 +272,7 @@ impl App {
         read_only: bool,
         font: &Font,
         msg: &mut MessageDialog,
+        events: &mut EventQueue,
     ) -> Result<(), anyhow::Error> {
         self.load_file_args(
             Args {
@@ -284,6 +289,7 @@ impl App {
             },
             font,
             msg,
+            events,
         )
     }
 
@@ -458,6 +464,7 @@ impl App {
         mut args: Args,
         font: &Font,
         msg: &mut MessageDialog,
+        events: &mut EventQueue,
     ) -> anyhow::Result<()> {
         if load_file_from_src_args(
             &mut args.src,
@@ -465,6 +472,7 @@ impl App {
             &mut self.source,
             &mut self.data,
             msg,
+            events,
         ) {
             // Loaded new file, set the "original" data length to this length to prepare for truncation/etc.
             self.orig_data_len = self.data.len();
@@ -606,9 +614,10 @@ impl App {
         is_write: bool,
         font: &Font,
         msg: &mut MessageDialog,
+        events: &mut EventQueue,
     ) -> anyhow::Result<()> {
         #[cfg(target_os = "linux")]
-        return load_proc_memory_linux(self, pid, start, size, is_write, font, msg);
+        return load_proc_memory_linux(self, pid, start, size, is_write, font, msg, events);
         #[cfg(windows)]
         return crate::windows::load_proc_memory(self, pid, start, size, is_write, font);
         #[cfg(target_os = "macos")]
@@ -666,6 +675,7 @@ fn load_proc_memory_linux(
     is_write: bool,
     font: &Font,
     msg: &mut MessageDialog,
+    events: &mut EventQueue,
 ) -> anyhow::Result<()> {
     app.load_file_args(
         Args {
@@ -682,6 +692,7 @@ fn load_proc_memory_linux(
         },
         font,
         msg,
+        events,
     )
 }
 
@@ -779,6 +790,7 @@ fn load_file_from_src_args(
     source: &mut Option<Source>,
     data: &mut Vec<u8>,
     msg: &mut MessageDialog,
+    events: &mut EventQueue,
 ) -> bool {
     if let Some(file_arg) = &src_args.file {
         if file_arg.as_os_str() == "-" {
@@ -794,6 +806,7 @@ fn load_file_from_src_args(
                 },
                 state: SourceState::default(),
             });
+            events.push_back(Event::SourceChanged);
             true
         } else {
             let result: Result<(), anyhow::Error> = try {
@@ -830,6 +843,7 @@ fn load_file_from_src_args(
                     },
                     state: SourceState::default(),
                 });
+                events.push_back(Event::SourceChanged);
             };
             match result {
                 Ok(()) => true,

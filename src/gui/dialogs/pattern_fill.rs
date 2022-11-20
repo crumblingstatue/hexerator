@@ -35,6 +35,7 @@ impl Dialog for PatternFillDialog {
         msg: &mut MessageDialog,
         _lua: &Lua,
         _font: &Font,
+        _events: &mut crate::event::EventQueue,
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");

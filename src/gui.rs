@@ -3,7 +3,9 @@ use {
         external_command_window::ExternalCommandWindow, message_dialog::MessageDialog,
         preferences_window::PreferencesWindow,
     },
-    crate::{config::Style, gui::windows::AboutWindow, meta::value_type::ValueType},
+    crate::{
+        config::Style, event::EventQueue, gui::windows::AboutWindow, meta::value_type::ValueType,
+    },
     egui_sfml::{
         egui::{FontFamily, FontId},
         sfml::graphics::RenderWindow,
@@ -130,6 +132,7 @@ pub trait Dialog {
         msg: &mut MessageDialog,
         lua: &Lua,
         font: &Font,
+        events: &mut EventQueue,
     ) -> bool;
     /// Called when dialog is opened. Can be used to set just-opened flag, etc.
     fn on_open(&mut self) {}
@@ -151,6 +154,7 @@ pub fn do_egui(
     font: &Font,
     lua: &Lua,
     rwin: &mut RenderWindow,
+    events: &mut EventQueue,
 ) -> bool {
     let result = sf_egui.do_frame(|ctx| {
         let mut open = gamedebug_core::enabled();
@@ -182,9 +186,9 @@ pub fn do_egui(
             "Perspectives",            perspectives_window,         PerspectivesWindow: gui app;
             "File Diff results",       file_diff_result_window,     FileDiffResultWindow: gui app;
             "Diff against clean meta", meta_diff_window,            MetaDiffWindow: app;
-            "Open process",            open_process_window,         OpenProcessWindow: gui app font;
-            "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font;
-            "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
+            "Open process",            open_process_window,         OpenProcessWindow: gui app font events;
+            "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font events;
+            "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font events;
             "External command",        external_command_window,     ExternalCommandWindow: gui app;
             "Preferences",             preferences_window,          PreferencesWindow: gui app rwin;
             "About Hexerator",         about_window,                AboutWindow: gui app;
@@ -262,7 +266,7 @@ pub fn do_egui(
         }
         // Panels
         let top_re =
-            TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, gui, app, font));
+            TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, gui, app, font, events));
         let bot_re = TopBottomPanel::bottom("bottom_panel")
             .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos, &mut gui.msg_dialog));
         let right_re = egui::SidePanel::right("right_panel")
@@ -297,7 +301,7 @@ pub fn do_egui(
         dialogs.retain(|_k, dialog| {
             let mut retain = true;
             Window::new(dialog.title()).show(ctx, |ui| {
-                retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua, font);
+                retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua, font, events);
             });
             retain
         });

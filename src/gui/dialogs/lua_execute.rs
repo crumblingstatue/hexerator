@@ -1,6 +1,7 @@
 use {
     crate::{
         app::App,
+        event::EventQueue,
         gui::{message_dialog::MessageDialog, Dialog},
         meta::{region::Region, NamedRegion},
         shell::msg_if_fail,
@@ -18,13 +19,14 @@ pub struct LuaExecuteDialog {
     err: bool,
 }
 
-struct LuaExecContext<'app, 'msg, 'font> {
+struct LuaExecContext<'app, 'msg, 'font, 'events> {
     app: &'app mut App,
     msg: &'msg mut MessageDialog,
     font: &'font Font,
+    events: &'events mut EventQueue,
 }
 
-impl<'app, 'msg, 'font> UserData for LuaExecContext<'app, 'msg, 'font> {
+impl<'app, 'msg, 'font, 'events> UserData for LuaExecContext<'app, 'msg, 'font, 'events> {
     fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_method_mut(
             "add_region",
@@ -39,7 +41,7 @@ impl<'app, 'msg, 'font> UserData for LuaExecContext<'app, 'msg, 'font> {
         );
         methods.add_method_mut("load_file", |_ctx, exec, (path,): (String,)| {
             exec.app
-                .load_file(path.into(), true, exec.font, exec.msg)
+                .load_file(path.into(), true, exec.font, exec.msg, exec.events)
                 .map_err(|e| e.to_lua_err())?;
             Ok(())
         });
@@ -58,6 +60,7 @@ impl Dialog for LuaExecuteDialog {
         msg: &mut MessageDialog,
         lua: &Lua,
         font: &Font,
+        events: &mut EventQueue,
     ) -> bool {
         let ctrl_enter = ui
             .input_mut()
@@ -95,6 +98,7 @@ impl Dialog for LuaExecuteDialog {
                             app: &mut *app,
                             msg,
                             font,
+                            events: &mut *events,
                         })?;
                         f.call(app)?;
                         //chunk.exec()?;

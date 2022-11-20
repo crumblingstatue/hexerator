@@ -1,6 +1,6 @@
 use {
     super::{window_open::WindowOpen, Gui},
-    crate::{app::App, args::Args, shell::msg_if_fail},
+    crate::{app::App, args::Args, event::EventQueue, shell::msg_if_fail},
     egui_sfml::{egui, sfml::graphics::Font},
 };
 
@@ -30,7 +30,13 @@ fn opt<V: Default>(
 }
 
 impl AdvancedOpenWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
+    pub fn ui(
+        ui: &mut egui::Ui,
+        gui: &mut Gui,
+        app: &mut App,
+        font: &Font,
+        events: &mut EventQueue,
+    ) {
         let win = &mut gui.advanced_open_window;
         let args = &mut win.args;
         ui.heading("Source");
@@ -106,7 +112,7 @@ impl AdvancedOpenWindow {
             .clicked()
         {
             msg_if_fail(
-                app.load_file_args(args.clone(), font, &mut gui.msg_dialog),
+                app.load_file_args(args.clone(), font, &mut gui.msg_dialog, events),
                 "Failed to load file",
                 &mut gui.msg_dialog,
             );

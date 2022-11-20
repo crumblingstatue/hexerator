@@ -39,6 +39,7 @@ impl Dialog for LuaColorDialog {
         _msg: &mut MessageDialog,
         lua: &Lua,
         _font: &Font,
+        _events: &mut crate::event::EventQueue,
     ) -> bool {
         let color_data = match app.hex_ui.focused_view {
             Some(view_key) => {

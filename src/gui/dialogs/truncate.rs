@@ -30,6 +30,7 @@ impl Dialog for TruncateDialog {
         _msg: &mut crate::gui::message_dialog::MessageDialog,
         _lua: &rlua::Lua,
         _font: &egui_sfml::sfml::graphics::Font,
+        _events: &mut crate::event::EventQueue,
     ) -> bool {
         ui.horizontal(|ui| {
             ui.label("Begin");

@@ -2,6 +2,7 @@ use {
     super::{dialogs::LuaColorDialog, message_dialog::Icon, top_menu::top_menu, Gui},
     crate::{
         app::App,
+        event::EventQueue,
         shell::{msg_fail, msg_if_fail},
         value_color::{self, ColorMethod, Palette},
     },
@@ -12,8 +13,8 @@ use {
     },
 };
 
-pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
-    top_menu(ui, gui, app, font);
+pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &mut EventQueue) {
+    top_menu(ui, gui, app, font, events);
     ui.horizontal(|ui| {
         if app.hex_ui.select_a.is_some() || app.hex_ui.select_b.is_some() {
             ui.label("Selection");

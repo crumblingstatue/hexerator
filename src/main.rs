@@ -26,7 +26,7 @@
 )]
 #![windows_subsystem = "windows"]
 
-use rlua::Lua;
+use {event::EventQueue, rlua::Lua};
 
 mod app;
 mod args;
@@ -36,6 +36,7 @@ mod config;
 mod damage_region;
 mod dec_conv;
 pub mod edit_buffer;
+mod event;
 mod gui;
 mod hex_conv;
 mod hex_ui;
@@ -110,7 +111,8 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
-    let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog)?;
+    let mut event_queue = EventQueue::new();
+    let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog, &mut event_queue)?;
     let lua = Lua::default();
     crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);
@@ -125,6 +127,7 @@ fn try_main() -> anyhow::Result<()> {
             &font,
             &mut vertex_buffer,
             &lua,
+            &mut event_queue,
         ) {
             return Ok(());
         }
@@ -188,12 +191,16 @@ fn do_frame(
     font: &Font,
     vertex_buffer: &mut Vec<Vertex>,
     lua: &Lua,
+    events: &mut EventQueue,
 ) -> bool {
-    handle_events(gui, app, window, sf_egui, font);
+    // Handle hexerator events
+    crate::event::handle_events(events, app, window);
+    // Handle window events
+    handle_events(gui, app, window, sf_egui, font, events);
     update(app, sf_egui.context().wants_keyboard_input());
     app.update(&mut gui.msg_dialog);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
-    if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window) {
+    if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window, events) {
         return false;
     }
     let [r, g, b] = app.preferences.bg_color;
@@ -341,6 +348,7 @@ fn handle_events(
     window: &mut RenderWindow,
     sf_egui: &mut SfEgui,
     font: &Font,
+    events: &mut EventQueue,
 ) {
     while let Some(event) = window.poll_event() {
         app.input.update_from_event(&event);
@@ -366,7 +374,15 @@ fn handle_events(
                 ctrl,
                 alt,
                 ..
-            } => handle_key_pressed(code, gui, app, KeyMod { ctrl, shift, alt }, font, wants_kb),
+            } => handle_key_pressed(
+                code,
+                gui,
+                app,
+                KeyMod { ctrl, shift, alt },
+                font,
+                wants_kb,
+                events,
+            ),
             Event::TextEntered { unicode } => {
                 handle_text_entered(app, unicode, &mut gui.msg_dialog)
             }
@@ -479,6 +495,7 @@ fn handle_key_pressed(
     key_mod: KeyMod,
     font: &Font,
     egui_wants_kb: bool,
+    events: &mut EventQueue,
 ) {
     if code == Key::F12 && !key_mod.shift && !key_mod.ctrl && !key_mod.alt {
         gamedebug_core::toggle();
@@ -685,14 +702,14 @@ fn handle_key_pressed(
             msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
         }
         Key::O if key_mod.ctrl => {
-            shell::open_file(app, font, &mut gui.msg_dialog);
+            shell::open_file(app, font, &mut gui.msg_dialog, events);
         }
         Key::P if key_mod.ctrl => {
             let mut load = None;
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(Args{ src: args, recent: false, meta: None },font, &mut gui.msg_dialog),
+                    app.load_file_args(Args{ src: args, recent: false, meta: None },font, &mut gui.msg_dialog, events),
                     "Failed to load file",
                     &mut gui.msg_dialog
                 );

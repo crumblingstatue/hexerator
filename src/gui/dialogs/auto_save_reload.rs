@@ -1,6 +1,7 @@
 use {
     crate::{
         app::App,
+        event::EventQueue,
         gui::{message_dialog::MessageDialog, Dialog},
     },
     egui,
@@ -23,6 +24,7 @@ impl Dialog for AutoSaveReloadDialog {
         _msg: &mut MessageDialog,
         _lua: &Lua,
         _font: &Font,
+        _events: &mut EventQueue,
     ) -> bool {
         ui.checkbox(&mut app.preferences.auto_reload, "Auto reload");
         ui.horizontal(|ui| {

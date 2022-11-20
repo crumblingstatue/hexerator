@@ -2,6 +2,7 @@ use {
     crate::{
         app::{set_clipboard_string, App},
         args::{Args, SourceArgs},
+        event::EventQueue,
         gui::{
             dialogs::AutoSaveReloadDialog,
             util::{button_with_shortcut, ButtonWithShortcut},
@@ -14,9 +15,9 @@ use {
     std::io::Write,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &mut EventQueue) {
     if button_with_shortcut(ui, "Open...", "Ctrl+O").clicked() {
-        crate::shell::open_file(app, font, &mut gui.msg_dialog);
+        crate::shell::open_file(app, font, &mut gui.msg_dialog, events);
         ui.close_menu();
     }
     if ui.button("Advanced open...").clicked() {
@@ -80,6 +81,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
                 },
                 font,
                 &mut gui.msg_dialog,
+                events,
             ),
             "Failed to load file",
             &mut gui.msg_dialog,

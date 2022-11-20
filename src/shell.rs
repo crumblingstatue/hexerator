@@ -1,6 +1,7 @@
 use {
     crate::{
         app::App,
+        event::EventQueue,
         gui::message_dialog::{Icon, MessageDialog},
     },
     egui_sfml::sfml::graphics::Font,
@@ -15,11 +16,11 @@ pub fn open_dialog_same_dir(src_path: Option<&Path>) -> rfd::FileDialog {
     file_dialog
 }
 
-pub fn open_file(app: &mut App, font: &Font, msg: &mut MessageDialog) {
+pub fn open_file(app: &mut App, font: &Font, msg: &mut MessageDialog, events: &mut EventQueue) {
     if let Some(path) = open_dialog_same_dir(app.source_file()).pick_file() {
         let write = OpenOptions::new().write(true).open(&path).is_ok();
         msg_if_fail(
-            app.load_file(path, !write, font, msg),
+            app.load_file(path, !write, font, msg, events),
             "Failed to load file (read-write)",
             msg,
         );

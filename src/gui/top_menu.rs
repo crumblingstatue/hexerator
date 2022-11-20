@@ -1,3 +1,5 @@
+use crate::event::EventQueue;
+
 mod analysis;
 mod cursor;
 mod edit;
@@ -16,9 +18,15 @@ use {
     },
 };
 
-pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, font: &Font) {
+pub fn top_menu(
+    ui: &mut egui::Ui,
+    gui: &mut crate::gui::Gui,
+    app: &mut App,
+    font: &Font,
+    events: &mut EventQueue,
+) {
     ui.horizontal(|ui| {
-        ui.menu_button("File", |ui| file::ui(ui, gui, app, font));
+        ui.menu_button("File", |ui| file::ui(ui, gui, app, font, events));
         ui.menu_button("Edit", |ui| edit::ui(ui, gui, app));
         ui.menu_button("Cursor", |ui| cursor::ui(ui, gui, app));
         ui.menu_button("View", |ui| view::ui(ui, gui, app));
