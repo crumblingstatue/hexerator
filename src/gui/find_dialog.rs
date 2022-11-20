@@ -9,6 +9,7 @@ use {
         meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta},
         parse_radix::parse_guess_radix,
         region_context_menu,
+        shell::msg_fail,
     },
     egui::{self, Align, Ui},
     egui_extras::{Size, StripBuilder, TableBuilder},
@@ -19,6 +20,7 @@ pub enum FindType {
     #[default]
     U8,
     Ascii,
+    HexString,
 }
 
 impl FindType {
@@ -26,6 +28,7 @@ impl FindType {
         match self {
             FindType::U8 => "u8",
             FindType::Ascii => "ascii",
+            FindType::HexString => "hex string",
         }
     }
 }
@@ -60,6 +63,11 @@ impl FindDialog {
                     &mut gui.find_dialog.find_type,
                     FindType::Ascii,
                     FindType::Ascii.label(),
+                );
+                ui.selectable_value(
+                    &mut gui.find_dialog.find_type,
+                    FindType::HexString,
+                    FindType::HexString.label(),
                 );
             });
         let re = ui.text_edit_singleline(&mut gui.find_dialog.input);
@@ -232,6 +240,22 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
             for offset in memchr::memmem::find_iter(&app.data, &dia.input) {
                 dia.results_vec.push(offset);
                 gui.highlight_set.insert(offset);
+            }
+        }
+        FindType::HexString => {
+            let input_bytes: Result<Vec<u8>, _> = dia
+                .input
+                .split_whitespace()
+                .map(|s| u8::from_str_radix(s, 16))
+                .collect();
+            match input_bytes {
+                Ok(bytes) => {
+                    for offset in memchr::memmem::find_iter(&app.data, &bytes) {
+                        dia.results_vec.push(offset);
+                        gui.highlight_set.insert(offset);
+                    }
+                }
+                Err(e) => msg_fail(&e, "Hex string search error", &mut gui.msg_dialog),
             }
         }
     }

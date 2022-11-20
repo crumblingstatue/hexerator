@@ -16,6 +16,7 @@
 - Bookmark names are displayed when mouse hovers over a bookmarked offset
 - "Open bookmark" context menu option in hex view for existing bookmarks
 - "Save as" action
+- Hex string search in find dialog (de ad be ef)
 
 ### Changed
 
