@@ -86,6 +86,8 @@ impl App {
             meta_state: MetaState::default(),
             clipboard: arboard::Clipboard::new()?,
         };
+        // Set a clean meta, for an empty document
+        this.set_new_clean_meta(font);
         msg_if_fail(
             this.load_file_args(args, font, msg),
             "Failed to load file",
