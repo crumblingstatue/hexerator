@@ -71,7 +71,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                     }
                 }
                 None => {
-                    ui.label("No source loaded");
+                    ui.label("No source");
                 }
             },
         );

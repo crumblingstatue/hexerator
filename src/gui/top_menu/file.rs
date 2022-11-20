@@ -1,15 +1,17 @@
 use {
     crate::{
         app::{set_clipboard_string, App},
-        args::Args,
+        args::{Args, SourceArgs},
         gui::{
             dialogs::AutoSaveReloadDialog,
             util::{button_with_shortcut, ButtonWithShortcut},
             Gui,
         },
         shell::msg_if_fail,
+        source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     },
     egui_sfml::{egui, sfml::graphics::Font},
+    std::io::Write,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
@@ -96,6 +98,41 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     {
         msg_if_fail(app.save(), "Failed to save", &mut gui.msg_dialog);
         ui.close_menu();
+    }
+    if ui.button("Save as...").clicked() {
+        if let Some(path) = rfd::FileDialog::new().save_file() {
+            let result: anyhow::Result<()> = try {
+                let mut f = std::fs::OpenOptions::new()
+                    .create(true)
+                    .truncate(true)
+                    .read(true)
+                    .write(true)
+                    .open(&path)?;
+                f.write_all(&app.data)?;
+                app.source = Some(Source {
+                    provider: SourceProvider::File(f),
+                    attr: SourceAttributes {
+                        seekable: true,
+                        stream: false,
+                        permissions: SourcePermissions {
+                            read: true,
+                            write: true,
+                        },
+                    },
+                    state: SourceState::default(),
+                });
+                app.args.src.file = Some(path);
+                app.cfg.recent.use_(SourceArgs {
+                    file: app.args.src.file.clone(),
+                    jump: None,
+                    hard_seek: None,
+                    take: None,
+                    read_only: false,
+                    stream: false,
+                });
+            };
+            msg_if_fail(result, "Failed to save as", &mut gui.msg_dialog);
+        }
     }
     if button_with_shortcut(ui, "Reload", "Ctrl+R").clicked() {
         msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
