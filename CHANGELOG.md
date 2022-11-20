@@ -17,6 +17,7 @@
 - "Open bookmark" context menu option in hex view for existing bookmarks
 - "Save as" action
 - Hex string search in find dialog (de ad be ef)
+- Window title now includes filename of opened file
 
 ### Changed
 
