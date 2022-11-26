@@ -165,7 +165,7 @@ impl App {
                 bail!("Save of truncated/extended data cancelled");
             }
             file.set_len(self.data.len() as u64)?;
-            file.seek(SeekFrom::Start(0))?;
+            file.rewind()?;
             file.write_all(&self.data)?;
             self.edit_state.dirty_region = None;
             self.orig_data_len = self.data.len();

@@ -383,7 +383,7 @@ impl View {
     fn char_valid(&self, unicode: char) -> bool {
         match self.kind {
             ViewKind::Hex(_) => matches!(unicode, '0'..='9' | 'a'..='f'),
-            ViewKind::Dec(_) => matches!(unicode, '0'..='9'),
+            ViewKind::Dec(_) => unicode.is_ascii_digit(),
             ViewKind::Text { .. } => {
                 unicode.is_ascii() && !unicode.is_control() && !matches!(unicode, '\t')
             }
