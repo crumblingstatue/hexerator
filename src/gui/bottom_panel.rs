@@ -2,6 +2,7 @@ use {
     super::message_dialog::MessageDialog,
     crate::{
         app::{interact_mode::InteractMode, App},
+        meta::find_most_specific_region_for_offset,
         view::ViewportVec,
     },
     egui::{text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui},
@@ -66,8 +67,14 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
                                 .find_map(|bm| (bm.offset == app.edit_state.cursor).then_some(bm.label.as_str())) {
             ui.label(egui::RichText::new(label).color(Color32::from_rgb(150, 170, 40)));
         }
+        if let Some(region) = find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, app.edit_state.cursor) {
+            region_label(ui, &app.meta_state.meta.low.regions[region].name);
+        }
         if !app.hex_ui.current_layout.is_null() && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
             ui.label(format!("mouse: {offset} ({offset:x})"));
+            if let Some(region) = find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, offset) {
+                region_label(ui, &app.meta_state.meta.low.regions[region].name);
+            }
         }
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             let mut txt = egui::RichText::new(format!("File size: {}", app.data.len()));
@@ -86,6 +93,10 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
             }
         });
     });
+}
+
+fn region_label(ui: &mut Ui, name: &str) {
+    ui.label(egui::RichText::new(format!("[{}]", name)).color(egui::Color32::LIGHT_BLUE));
 }
 
 /// A key "box" and then some text. Like `[F1] View`
