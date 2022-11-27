@@ -68,7 +68,14 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
             ui.label(egui::RichText::new(label).color(Color32::from_rgb(150, 170, 40)));
         }
         if let Some(region) = find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, app.edit_state.cursor) {
-            region_label(ui, &app.meta_state.meta.low.regions[region].name);
+            let reg = &app.meta_state.meta.low.regions[region];
+            region_label(ui, &reg.name).context_menu(|ui| {
+                if ui.button("Select").clicked() {
+                    app.hex_ui.select_a = Some(reg.region.begin);
+                    app.hex_ui.select_b = Some(reg.region.end);
+                    ui.close_menu();
+                }
+            });
         }
         if !app.hex_ui.current_layout.is_null() && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
             ui.label(format!("mouse: {offset} ({offset:x})"));
@@ -95,8 +102,12 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
     });
 }
 
-fn region_label(ui: &mut Ui, name: &str) {
-    ui.label(egui::RichText::new(format!("[{}]", name)).color(egui::Color32::LIGHT_BLUE));
+fn region_label(ui: &mut Ui, name: &str) -> egui::Response {
+    let label = egui::Label::new(
+        egui::RichText::new(format!("[{}]", name)).color(egui::Color32::LIGHT_BLUE),
+    )
+    .sense(egui::Sense::click());
+    ui.add(label)
 }
 
 /// A key "box" and then some text. Like `[F1] View`
