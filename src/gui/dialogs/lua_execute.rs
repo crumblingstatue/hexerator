@@ -128,6 +128,26 @@ impl Dialog for LuaExecuteDialog {
                 });
             });
         }
+        ui.horizontal(|ui| {
+            if ui.button("Load script...").clicked() {
+                if let Some(path) = rfd::FileDialog::new().pick_file() {
+                    let res: anyhow::Result<()> = try {
+                        app.meta_state.meta.misc.exec_lua_script = std::fs::read_to_string(path)?;
+                    };
+                    msg_if_fail(res, "Failed to load script", msg);
+                }
+            }
+            if ui.button("Save script...").clicked() {
+                if let Some(path) = rfd::FileDialog::new().save_file() {
+                    msg_if_fail(
+                        std::fs::write(path, &app.meta_state.meta.misc.exec_lua_script),
+                        "Failed to save script",
+                        msg,
+                    );
+                }
+            }
+        });
+        ui.separator();
         let close = ui.button("Close").clicked();
         if app.edit_state.dirty_region.is_some() {
             ui.label(
