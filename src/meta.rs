@@ -184,6 +184,13 @@ impl Meta {
     pub(crate) fn bookmark_by_name_mut(&mut self, name: &str) -> Option<&mut Bookmark> {
         self.bookmarks.iter_mut().find(|bm| bm.label == name)
     }
+
+    pub(crate) fn region_by_name_mut(&mut self, name: &str) -> Option<&mut NamedRegion> {
+        self.low
+            .regions
+            .iter_mut()
+            .find_map(|(_k, v)| (v.name == name).then_some(v))
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

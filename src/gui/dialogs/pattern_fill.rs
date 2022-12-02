@@ -47,11 +47,7 @@ impl Dialog for PatternFillDialog {
         }
         self.just_opened = false;
         if ui.input().key_pressed(egui::Key::Enter) {
-            let values: Result<Vec<u8>, _> = self
-                .pattern_string
-                .split(' ')
-                .map(|token| u8::from_str_radix(token, 16))
-                .collect();
+            let values: Result<Vec<u8>, _> = parse_pattern_string(&self.pattern_string);
             match values {
                 Ok(values) => {
                     let range = sel.begin..=sel.end;
@@ -73,4 +69,11 @@ impl Dialog for PatternFillDialog {
             !ui.button("Close").clicked()
         }
     }
+}
+
+pub fn parse_pattern_string(string: &str) -> Result<Vec<u8>, std::num::ParseIntError> {
+    string
+        .split(' ')
+        .map(|token| u8::from_str_radix(token, 16))
+        .collect()
 }

@@ -1,10 +1,12 @@
 use {
+    super::pattern_fill::parse_pattern_string,
     crate::{
         app::App,
         event::EventQueue,
         gui::{message_dialog::MessageDialog, Dialog},
         meta::{region::Region, NamedRegion},
         shell::msg_if_fail,
+        slice_ext::SliceExt,
     },
     egui,
     egui_easy_mark_standalone::easy_mark,
@@ -56,6 +58,20 @@ impl<'app, 'msg, 'font, 'events> UserData for LuaExecContext<'app, 'msg, 'font, 
                     .ok_or("no such bookmark".to_lua_err())?;
                 bm.write_int(&mut exec.app.data[bm.offset..], val)
                     .map_err(|e| e.to_lua_err())?;
+                Ok(())
+            },
+        );
+        methods.add_method_mut(
+            "region_pattern_fill",
+            |_ctx, exec, (name, pattern): (String, String)| {
+                let reg = exec
+                    .app
+                    .meta_state
+                    .meta
+                    .region_by_name_mut(&name)
+                    .ok_or("no such region".to_lua_err())?;
+                let pat = parse_pattern_string(&pattern).map_err(|e| e.to_lua_err())?;
+                exec.app.data[reg.region.begin..=reg.region.end].pattern_fill(&pat);
                 Ok(())
             },
         );

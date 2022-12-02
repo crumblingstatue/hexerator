@@ -20,6 +20,7 @@
 - Window title now includes filename of opened file
 - Ability to save/load scripts in lua execute dialog
 - `app:bookmark_set_int(name, value)` lua method to set integer value of a bookmark
+- `app:region_pattern_fill(name, pattern)` lua method to fill a region
 - Context menu to copy bookmark names in bookmarks window
 
 ### Changed
