@@ -1,7 +1,7 @@
 use {
     super::{message_dialog::MessageDialog, window_open::WindowOpen, Gui},
     crate::{
-        app::{edit_state::EditState, App},
+        app::{edit_state::EditState, set_clipboard_string, App},
         damage_region::DamageRegion,
         meta::{
             find_most_specific_region_for_offset,
@@ -87,6 +87,16 @@ impl BookmarksWindow {
                                     win.selected == Some(idx),
                                     &app.meta_state.meta.bookmarks[idx].label,
                                 )
+                                .context_menu(|ui| {
+                                    if ui.button("Copy name to clipboard").clicked() {
+                                        set_clipboard_string(
+                                            &mut app.clipboard,
+                                            &mut gui.msg_dialog,
+                                            &app.meta_state.meta.bookmarks[idx].label,
+                                        );
+                                        ui.close_menu();
+                                    }
+                                })
                                 .clicked()
                             {
                                 win.selected = Some(idx);
