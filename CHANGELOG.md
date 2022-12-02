@@ -18,6 +18,8 @@
 - "Save as" action
 - Hex string search in find dialog (de ad be ef)
 - Window title now includes filename of opened file
+- Ability to save/load scripts in lua execute dialog
+- `app:bookmark_set_int(name, value)` lua method to set integer value of a bookmark
 
 ### Changed
 
