@@ -5,7 +5,7 @@ use {
         HighlightSet,
     },
     crate::{
-        app::App,
+        app::{get_clipboard_string, set_clipboard_string, App},
         meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta},
         parse_radix::parse_guess_radix,
         region_context_menu,
@@ -13,6 +13,7 @@ use {
     },
     egui::{self, Align, Ui},
     egui_extras::{Size, StripBuilder, TableBuilder},
+    itertools::Itertools,
 };
 
 #[derive(Default, Debug, PartialEq, Eq)]
@@ -79,7 +80,7 @@ impl FindDialog {
         }
         ui.checkbox(&mut gui.find_dialog.filter_results, "Filter results")
             .on_hover_text("Base search on existing results");
-        StripBuilder::new(ui).size(Size::initial(400.0)).size(Size::exact(20.0)).vertical(|mut strip| {
+        StripBuilder::new(ui).size(Size::initial(400.0)).size(Size::exact(20.0)).size(Size::exact(20.0)).vertical(|mut strip| {
             strip.cell(|ui| {
                 let mut action = Action::None;
                 TableBuilder::new(ui)
@@ -214,6 +215,25 @@ impl FindDialog {
                         gui.find_dialog.scroll_to = Some(gui.find_dialog.result_cursor);
                     }
                     ui.label(format!("{} results", gui.find_dialog.results_vec.len()));
+                });
+            });
+            strip.cell(|ui| {
+                ui.horizontal(|ui| {
+                    if ui.button("Copy offsets").clicked() {
+                        let s = gui.find_dialog.results_vec.iter().map(ToString::to_string).join(" ");
+                        set_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog, &s);
+                    }
+                    if ui.button("Paste offsets").clicked() {
+                        let s = get_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog);
+                        let offsets: Result<Vec<usize>, _> = s.split_ascii_whitespace().map(|s| s.parse()).collect();
+                        match offsets {
+                            Ok(offs) => gui.find_dialog.results_vec = offs,
+                            Err(e) => msg_fail(&e, "failed to parse offsets", &mut gui.msg_dialog),
+                        }
+                    }
+                    if ui.button("Clear").clicked() {
+                        gui.find_dialog.results_vec.clear();
+                    }
                 });
             });
         });
