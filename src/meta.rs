@@ -1,3 +1,5 @@
+use std::io::{ErrorKind, Write};
+
 pub mod perspective;
 pub mod region;
 pub mod value_type;
@@ -34,6 +36,41 @@ pub struct Bookmark {
     /// A bookmark can optionally have a type, which can be used to display its value, etc.
     #[serde(default)]
     pub value_type: ValueType,
+}
+impl Bookmark {
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        clippy::cast_precision_loss,
+        reason = "Not much we can do about cast errors here"
+    )]
+    pub(crate) fn write_int(&self, mut data: &mut [u8], val: i64) -> std::io::Result<()> {
+        match self.value_type {
+            ValueType::None => Err(std::io::Error::new(
+                ErrorKind::Other,
+                "Bookmark doesn't have value type",
+            )),
+            ValueType::I8(_) => data.write_all(&(val as i8).to_ne_bytes()),
+            ValueType::U8(_) => data.write_all(&(val as u8).to_ne_bytes()),
+            ValueType::I16Le(_) => data.write_all(&(val as i16).to_le_bytes()),
+            ValueType::U16Le(_) => data.write_all(&(val as u16).to_le_bytes()),
+            ValueType::I16Be(_) => data.write_all(&(val as i16).to_be_bytes()),
+            ValueType::U16Be(_) => data.write_all(&(val as u16).to_be_bytes()),
+            ValueType::I32Le(_) => data.write_all(&(val as i32).to_le_bytes()),
+            ValueType::U32Le(_) => data.write_all(&(val as u32).to_le_bytes()),
+            ValueType::I32Be(_) => data.write_all(&(val as i32).to_be_bytes()),
+            ValueType::U32Be(_) => data.write_all(&(val as u32).to_be_bytes()),
+            ValueType::I64Le(_) => data.write_all(&(val).to_le_bytes()),
+            ValueType::U64Le(_) => data.write_all(&(val as u64).to_le_bytes()),
+            ValueType::I64Be(_) => data.write_all(&(val).to_be_bytes()),
+            ValueType::U64Be(_) => data.write_all(&(val as u64).to_be_bytes()),
+            ValueType::F32Le(_) => data.write_all(&(val as f32).to_le_bytes()),
+            ValueType::F32Be(_) => data.write_all(&(val as f32).to_be_bytes()),
+            ValueType::F64Le(_) => data.write_all(&(val as f64).to_le_bytes()),
+            ValueType::F64Be(_) => data.write_all(&(val as f64).to_be_bytes()),
+            ValueType::StringMap(_) => data.write_all(&(val as u8).to_ne_bytes()),
+        }
+    }
 }
 
 /// "Low" region of the meta, containing the least dependent data, like regions and perspectives
@@ -142,6 +179,10 @@ impl Meta {
         for layout in self.layouts.values_mut() {
             layout.remove_view(rem_key);
         }
+    }
+
+    pub(crate) fn bookmark_by_name_mut(&mut self, name: &str) -> Option<&mut Bookmark> {
+        self.bookmarks.iter_mut().find(|bm| bm.label == name)
     }
 }
 

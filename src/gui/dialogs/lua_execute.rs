@@ -45,6 +45,20 @@ impl<'app, 'msg, 'font, 'events> UserData for LuaExecContext<'app, 'msg, 'font, 
                 .map_err(|e| e.to_lua_err())?;
             Ok(())
         });
+        methods.add_method_mut(
+            "bookmark_set_int",
+            |_ctx, exec, (name, val): (String, i64)| {
+                let bm = exec
+                    .app
+                    .meta_state
+                    .meta
+                    .bookmark_by_name_mut(&name)
+                    .ok_or("no such bookmark".to_lua_err())?;
+                bm.write_int(&mut exec.app.data[bm.offset..], val)
+                    .map_err(|e| e.to_lua_err())?;
+                Ok(())
+            },
+        );
     }
 }
 
