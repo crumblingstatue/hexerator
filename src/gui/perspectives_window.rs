@@ -19,6 +19,7 @@ impl PerspectivesWindow {
         TableBuilder::new(ui)
             .columns(Column::auto(), 4)
             .striped(true)
+            .resizable(true)
             .header(24.0, |mut row| {
                 row.col(|ui| {
                     ui.label("Name");

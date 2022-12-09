@@ -86,6 +86,7 @@ impl FindDialog {
                 TableBuilder::new(ui)
                 .striped(true)
                 .columns(Column::auto(), 4)
+                .resizable(true)
                 .header(16.0, |mut row| {
                     row.col(|ui| {
                         ui.label("Offset");

@@ -61,6 +61,7 @@ impl ViewsWindow {
         }
         TableBuilder::new(ui)
             .columns(Column::auto(), 4)
+            .resizable(true)
             .header(24.0, |mut row| {
                 row.col(|ui| {
                     ui.label("Name");
