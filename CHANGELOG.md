@@ -23,9 +23,11 @@
 - `app:region_pattern_fill(name, pattern)` lua method to fill a region
 - Context menu to copy bookmark names in bookmarks window
 - Make the offsets in the find dialog copiable/pasteable
+- Add x86 disassembly
 
 ### Changed
 
+- Update to egui 0.20
 - Open file dialog opens same directory as current file, if available
 - Replace most native message boxes with egui ones
 - Inspect panel shows value at edit cursor if mouse pointer is over a window that covers the hex view.
