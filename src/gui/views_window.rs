@@ -6,7 +6,7 @@ use {
         region_context_menu,
         view::{HexData, TextData, TextKind, View, ViewKind},
     },
-    egui_extras::{Size, TableBuilder},
+    egui_extras::{Column, TableBuilder},
     egui_sfml::{
         egui::{self, emath::Numeric},
         sfml::graphics::Font,
@@ -60,7 +60,7 @@ impl ViewsWindow {
             return;
         }
         TableBuilder::new(ui)
-            .columns(Size::remainder().at_least(100.0), 4)
+            .columns(Column::auto(), 4)
             .header(24.0, |mut row| {
                 row.col(|ui| {
                     ui.label("Name");

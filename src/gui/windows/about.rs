@@ -4,7 +4,7 @@ use {
         gui::{window_open::WindowOpen, Gui},
         shell::msg_if_fail,
     },
-    egui_extras::{Size, TableBuilder},
+    egui_extras::{Column, TableBuilder},
     std::fmt::Write,
     sysinfo::{CpuExt, System, SystemExt},
 };
@@ -110,8 +110,8 @@ fn info_table(ui: &mut egui::Ui, info: &[InfoPair]) {
     ui.push_id(info.as_ptr(), |ui| {
         let body_height = ui.text_style_height(&egui::TextStyle::Body);
         TableBuilder::new(ui)
-            .column(Size::initial(120.0))
-            .column(Size::initial(360.0))
+            .column(Column::auto())
+            .column(Column::auto())
             .resizable(true)
             .striped(true)
             .body(|mut body| {

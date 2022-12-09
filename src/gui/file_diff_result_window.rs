@@ -7,7 +7,7 @@ use {
         shell::msg_if_fail,
         Gui,
     },
-    egui_extras::Size,
+    egui_extras::Column,
     std::{path::PathBuf, time::Instant},
 };
 
@@ -101,7 +101,7 @@ impl FileDiffResultWindow {
         ui.separator();
         let mut action = Action::None;
         egui_extras::TableBuilder::new(ui)
-            .columns(Size::initial(100.0), 5)
+            .columns(Column::auto(), 5)
             .resizable(true)
             .striped(true)
             .header(32.0, |mut row| {

@@ -12,7 +12,7 @@ use {
         shell::msg_fail,
     },
     egui::{self, Align, Ui},
-    egui_extras::{Size, StripBuilder, TableBuilder},
+    egui_extras::{Column, Size, StripBuilder, TableBuilder},
     itertools::Itertools,
 };
 
@@ -85,7 +85,7 @@ impl FindDialog {
                 let mut action = Action::None;
                 TableBuilder::new(ui)
                 .striped(true)
-                .columns(Size::remainder(), 4)
+                .columns(Column::auto(), 4)
                 .header(16.0, |mut row| {
                     row.col(|ui| {
                         ui.label("Offset");
@@ -106,7 +106,7 @@ impl FindDialog {
                         gui.find_dialog.results_vec.len(),
                         |i, mut row| {
                             let off = gui.find_dialog.results_vec[i];
-                            let col1_re = row.col(|ui| {
+                            let (_, col1_re) = row.col(|ui| {
                                 if ui.selectable_label(
                                     gui.find_dialog.result_cursor == i,
                                     off.to_string(),

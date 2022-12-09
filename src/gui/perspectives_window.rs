@@ -5,7 +5,7 @@ use {
         meta::{perspective::Perspective, PerspectiveKey, RegionKey},
         region_context_menu,
     },
-    egui_extras::{Size, TableBuilder},
+    egui_extras::{Column, TableBuilder},
     slotmap::Key,
 };
 
@@ -17,7 +17,7 @@ pub struct PerspectivesWindow {
 impl PerspectivesWindow {
     pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut crate::app::App) {
         TableBuilder::new(ui)
-            .columns(Size::remainder(), 4)
+            .columns(Column::auto(), 4)
             .striped(true)
             .header(24.0, |mut row| {
                 row.col(|ui| {

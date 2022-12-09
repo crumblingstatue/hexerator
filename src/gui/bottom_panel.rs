@@ -103,10 +103,9 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
 }
 
 fn region_label(ui: &mut Ui, name: &str) -> egui::Response {
-    let label = egui::Label::new(
-        egui::RichText::new(format!("[{}]", name)).color(egui::Color32::LIGHT_BLUE),
-    )
-    .sense(egui::Sense::click());
+    let label =
+        egui::Label::new(egui::RichText::new(format!("[{name}]")).color(egui::Color32::LIGHT_BLUE))
+            .sense(egui::Sense::click());
     ui.add(label)
 }
 
@@ -123,8 +122,8 @@ fn key_label(ui: &mut Ui, key_text: &str, label_text: &str) -> LayoutJob {
             color: style.visuals.widgets.active.fg_stroke.color,
             background: style.visuals.code_bg_color,
             italics: false,
-            underline: Stroke::none(),
-            strikethrough: Stroke::none(),
+            underline: Stroke::NONE,
+            strikethrough: Stroke::NONE,
             valign: Align::Center,
         },
     );

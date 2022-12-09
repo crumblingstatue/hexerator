@@ -2,7 +2,7 @@ use {
     super::window_open::WindowOpen,
     crate::{app::App, meta::RegionKey},
     egui::{self, Ui},
-    egui_extras::{Size, TableBuilder},
+    egui_extras::{Column, TableBuilder},
 };
 
 #[derive(Default)]
@@ -104,10 +104,10 @@ impl RegionsWindow {
         TableBuilder::new(ui)
             .striped(true)
             .resizable(true)
-            .column(Size::remainder().at_least(200.0))
-            .column(Size::remainder().at_least(80.0))
-            .column(Size::remainder().at_least(80.0))
-            .column(Size::remainder().at_least(80.0))
+            .column(Column::auto())
+            .column(Column::auto())
+            .column(Column::auto())
+            .column(Column::auto())
             .header(20.0, |mut header| {
                 header.col(|ui| {
                     ui.label("Name");

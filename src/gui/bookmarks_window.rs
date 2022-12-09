@@ -16,7 +16,7 @@ use {
     },
     anyhow::Context,
     egui::{self, ScrollArea, Ui},
-    egui_extras::{Size, TableBuilder},
+    egui_extras::{Column, TableBuilder},
     gamedebug_core::per,
     num_traits::AsPrimitive,
     std::mem::discriminant,
@@ -48,7 +48,7 @@ impl BookmarksWindow {
         let mut action = Action::None;
         ScrollArea::vertical().max_height(500.0).show(ui, |ui| {
             TableBuilder::new(ui)
-                .columns(Size::remainder(), 5)
+                .columns(Column::auto(), 5)
                 .striped(true)
                 .resizable(true)
                 .header(24.0, |mut row| {

@@ -4,7 +4,7 @@ use {
         event::EventQueue,
         shell::{msg_fail, msg_if_fail},
     },
-    egui_extras::{Size, TableBuilder},
+    egui_extras::{Column, TableBuilder},
     egui_sfml::{egui, sfml::graphics::Font},
     sysinfo::{ProcessExt, Signal, SystemExt},
 };
@@ -92,10 +92,10 @@ impl OpenProcessWindow {
                 });
             }
             TableBuilder::new(ui)
-                .column(Size::initial(140.0))
-                .column(Size::initial(80.0))
-                .column(Size::initial(40.0))
-                .column(Size::initial(300.0))
+                .column(Column::auto())
+                .column(Column::auto())
+                .column(Column::auto())
+                .column(Column::auto())
                 .striped(true)
                 .resizable(true)
                 .header(20.0, |mut row| {
@@ -259,8 +259,8 @@ impl OpenProcessWindow {
                 });
         } else {
             TableBuilder::new(ui)
-                .column(Size::initial(100.0))
-                .column(Size::remainder())
+                .column(Column::auto())
+                .column(Column::auto())
                 .resizable(true)
                 .striped(true)
                 .header(20.0, |mut row| {

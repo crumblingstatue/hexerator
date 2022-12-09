@@ -59,7 +59,7 @@ impl Dialog for TruncateDialog {
             }
         });
         let new_len = (self.end + 1) - self.begin;
-        let mut text = egui::RichText::new(format!("New length: {}", new_len));
+        let mut text = egui::RichText::new(format!("New length: {new_len}"));
         match new_len.cmp(&app.orig_data_len) {
             std::cmp::Ordering::Less => text = text.color(egui::Color32::RED),
             std::cmp::Ordering::Equal => {}

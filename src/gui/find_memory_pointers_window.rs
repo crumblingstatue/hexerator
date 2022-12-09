@@ -1,7 +1,7 @@
 use {
     super::{window_open::WindowOpen, Gui},
     crate::{app::App, event::EventQueue, shell::msg_fail},
-    egui_extras::{Size, TableBuilder},
+    egui_extras::{Column, TableBuilder},
     egui_sfml::{egui, sfml::graphics::Font},
 };
 
@@ -50,9 +50,9 @@ impl FindMemoryPointersWindow {
         }
         let mut action = Action::None;
         TableBuilder::new(ui)
-            .column(Size::initial(100.))
-            .column(Size::remainder())
-            .column(Size::initial(100.))
+            .column(Column::auto())
+            .column(Column::auto())
+            .column(Column::auto())
             .striped(true)
             .header(20.0, |mut row| {
                 row.col(|ui| {
