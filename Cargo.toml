@@ -13,7 +13,7 @@ gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git"
 clap = { version = "4.0.29", features = ["derive"] }
 anyhow = "1.0.66"
 #rfd = "0.10.0"
-rfd = { git = "https://github.com/crumblingstatue/rfd.git", branch = "hexerator" }
+rfd = { git = "https://github.com/PolyMeilex/rfd.git"}
 rand = "0.8.5"
 rmp-serde = "1.1.1"
 serde = { version = "1.0.149", features = ["derive"] }
