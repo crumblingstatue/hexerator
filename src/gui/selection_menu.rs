@@ -1,6 +1,6 @@
 use {
     super::{
-        dialogs::{LuaFillDialog, PatternFillDialog},
+        dialogs::{LuaFillDialog, PatternFillDialog, X86AsmDialog},
         message_dialog::MessageDialog,
         regions_window::RegionsWindow,
         Gui,
@@ -73,6 +73,11 @@ pub fn selection_menu(
                 let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
                 msg_if_fail(result, "Failed to save selection to file", gui_msg_dialog);
             }
+            ui.close_menu();
+            clicked = true;
+        }
+        if ui.button("X86 asm").clicked() {
+            Gui::add_dialog(gui_dialogs, X86AsmDialog::new());
             ui.close_menu();
             clicked = true;
         }
