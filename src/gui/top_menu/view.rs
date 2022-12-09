@@ -1,6 +1,6 @@
-use crate::{
-    app::App,
-    gui::{util::button_with_shortcut, Gui},
+use {
+    crate::{app::App, gui::Gui},
+    egui::Button,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
@@ -15,19 +15,31 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
             }
         }
     });
-    if button_with_shortcut(ui, "Layouts...", "F5").clicked() {
+    if ui
+        .add(Button::new("Layouts...").shortcut_text("F5"))
+        .clicked()
+    {
         gui.layouts_window.open.toggle();
         ui.close_menu();
     }
-    if button_with_shortcut(ui, "Prev view", "Shift+Tab").clicked() {
+    if ui
+        .add(Button::new("Prev view").shortcut_text("Shift+Tab"))
+        .clicked()
+    {
         app.focus_prev_view_in_layout();
         ui.close_menu();
     }
-    if button_with_shortcut(ui, "Next view", "Tab").clicked() {
+    if ui
+        .add(Button::new("Next view").shortcut_text("Tab"))
+        .clicked()
+    {
         app.focus_next_view_in_layout();
         ui.close_menu();
     }
-    if button_with_shortcut(ui, "Views...", "F6").clicked() {
+    if ui
+        .add(Button::new("Views...").shortcut_text("F6"))
+        .clicked()
+    {
         gui.views_window.open.toggle();
         ui.close_menu();
     }

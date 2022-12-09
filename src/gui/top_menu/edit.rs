@@ -1,11 +1,17 @@
-use crate::{
-    app::App,
-    gui::{dialogs::TruncateDialog, util::button_with_shortcut, Gui},
-    shell::msg_if_fail,
+use {
+    crate::{
+        app::App,
+        gui::{dialogs::TruncateDialog, Gui},
+        shell::msg_if_fail,
+    },
+    egui::Button,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
-    if button_with_shortcut(ui, "Find...", "Ctrl+F").clicked() {
+    if ui
+        .add(Button::new("Find...").shortcut_text("Ctrl+F"))
+        .clicked()
+    {
         gui.find_dialog.open.toggle();
         ui.close_menu();
     }
@@ -28,15 +34,24 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
             ui.label("<No selection>");
         }
     }
-    if button_with_shortcut(ui, "Set select a", "shift+1").clicked() {
+    if ui
+        .add(Button::new("Set select a").shortcut_text("shift+1"))
+        .clicked()
+    {
         app.hex_ui.select_a = Some(app.edit_state.cursor);
         ui.close_menu();
     }
-    if button_with_shortcut(ui, "Set select b", "shift+2").clicked() {
+    if ui
+        .add(Button::new("Set select b").shortcut_text("shift+2"))
+        .clicked()
+    {
         app.hex_ui.select_b = Some(app.edit_state.cursor);
         ui.close_menu();
     }
-    if button_with_shortcut(ui, "Select all in view", "Ctrl+A").clicked() {
+    if ui
+        .add(Button::new("Select all in view").shortcut_text("Ctrl+A"))
+        .clicked()
+    {
         app.focused_view_select_all();
         ui.close_menu();
     }

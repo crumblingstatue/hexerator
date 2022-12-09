@@ -3,20 +3,20 @@ use {
         app::{set_clipboard_string, App},
         args::{Args, SourceArgs},
         event::EventQueue,
-        gui::{
-            dialogs::AutoSaveReloadDialog,
-            util::{button_with_shortcut, ButtonWithShortcut},
-            Gui,
-        },
+        gui::{dialogs::AutoSaveReloadDialog, Gui},
         shell::msg_if_fail,
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     },
+    egui::Button,
     egui_sfml::{egui, sfml::graphics::Font},
     std::io::Write,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &mut EventQueue) {
-    if button_with_shortcut(ui, "Open...", "Ctrl+O").clicked() {
+    if ui
+        .add(Button::new("Open...").shortcut_text("Ctrl+O"))
+        .clicked()
+    {
         crate::shell::open_file(app, font, &mut gui.msg_dialog, events);
         ui.close_menu();
     }
@@ -29,7 +29,8 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
         ui.close_menu();
     }
     let mut load = None;
-    if button_with_shortcut(ui, "Open previous", "Ctrl+P")
+    if ui
+        .add(Button::new("Open previous").shortcut_text("Ctrl+P"))
         .on_hover_text("Can be used to switch between 2 files quickly for comparison")
         .clicked()
     {
@@ -94,7 +95,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
                 .as_ref()
                 .is_some_and(|src| src.attr.permissions.write)
                 && app.edit_state.dirty_region.is_some(),
-            ButtonWithShortcut("Save", "Ctrl+S"),
+            Button::new("Save").shortcut_text("Ctrl+S"),
         )
         .clicked()
     {
@@ -136,7 +137,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
             msg_if_fail(result, "Failed to save as", &mut gui.msg_dialog);
         }
     }
-    if button_with_shortcut(ui, "Reload", "Ctrl+R").clicked() {
+    if ui
+        .add(Button::new("Reload").shortcut_text("Ctrl+R"))
+        .clicked()
+    {
         msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
         ui.close_menu();
     }
@@ -167,7 +171,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
         ui.close_menu();
     }
     ui.separator();
-    if button_with_shortcut(ui, "Close", "Ctrl+W").clicked() {
+    if ui
+        .add(Button::new("Close").shortcut_text("Ctrl+W"))
+        .clicked()
+    {
         app.close_file();
         ui.close_menu();
     }

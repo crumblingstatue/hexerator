@@ -3,10 +3,10 @@ use {
         dialogs::{LuaFillDialog, PatternFillDialog},
         message_dialog::MessageDialog,
         regions_window::RegionsWindow,
-        util::button_with_shortcut,
         Gui,
     },
     crate::{app::App, damage_region::DamageRegion, shell::msg_if_fail},
+    egui::Button,
     rand::RngCore,
     std::fmt::Write,
 };
@@ -23,7 +23,10 @@ pub fn selection_menu(
 ) -> bool {
     let mut clicked = false;
     ui.menu_button(title, |ui| {
-        if button_with_shortcut(ui, "Unselect", "Esc").clicked() {
+        if ui
+            .add(Button::new("Unselect").shortcut_text("Esc"))
+            .clicked()
+        {
             app.hex_ui.select_a = None;
             app.hex_ui.select_b = None;
             ui.close_menu();

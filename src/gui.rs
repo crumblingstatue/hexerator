@@ -40,7 +40,6 @@ mod regions_window;
 pub mod selection_menu;
 mod top_menu;
 mod top_panel;
-mod util;
 mod views_window;
 mod window_open;
 mod windows;

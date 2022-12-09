@@ -1,6 +1,9 @@
-use crate::{
-    app::App,
-    gui::{dialogs::JumpDialog, util::button_with_shortcut, Gui},
+use {
+    crate::{
+        app::App,
+        gui::{dialogs::JumpDialog, Gui},
+    },
+    egui::Button,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
@@ -12,7 +15,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         app.set_cursor_init();
         ui.close_menu();
     }
-    if button_with_shortcut(ui, "Jump...", "Ctrl+J").clicked() {
+    if ui
+        .add(Button::new("Jump...").shortcut_text("Ctrl+J"))
+        .clicked()
+    {
         ui.close_menu();
         Gui::add_dialog(&mut gui.dialogs, JumpDialog::default());
     }

@@ -1,10 +1,16 @@
-use crate::{
-    app::{col_change_impl_view_perspective, App},
-    gui::{util::button_with_shortcut, Gui},
+use {
+    crate::{
+        app::{col_change_impl_view_perspective, App},
+        gui::Gui,
+    },
+    egui::Button,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
-    if button_with_shortcut(ui, "Perspectives...", "F7").clicked() {
+    if ui
+        .add(Button::new("Perspectives...").shortcut_text("F7"))
+        .clicked()
+    {
         gui.perspectives_window.open.toggle();
         ui.close_menu();
     }

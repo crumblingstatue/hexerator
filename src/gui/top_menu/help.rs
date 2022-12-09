@@ -1,9 +1,6 @@
 use {
-    crate::{
-        gui::{util::button_with_shortcut, Gui},
-        shell::msg_if_fail,
-    },
-    egui::Ui,
+    crate::{gui::Gui, shell::msg_if_fail},
+    egui::{Button, Ui},
 };
 
 pub fn ui(ui: &mut Ui, gui: &mut Gui) {
@@ -15,7 +12,10 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui) {
         );
         ui.close_menu();
     }
-    if button_with_shortcut(ui, "Debug panel...", "F12").clicked() {
+    if ui
+        .add(Button::new("Debug panel...").shortcut_text("F12"))
+        .clicked()
+    {
         ui.close_menu();
         gamedebug_core::toggle();
     }

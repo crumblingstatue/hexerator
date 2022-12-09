@@ -1,15 +1,20 @@
-use crate::{
-    app::App,
-    gui::{util::button_with_shortcut, Gui},
-    shell::msg_if_fail,
+use {
+    crate::{app::App, gui::Gui, shell::msg_if_fail},
+    egui::Button,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
-    if button_with_shortcut(ui, "Regions...", "F8").clicked() {
+    if ui
+        .add(Button::new("Regions...").shortcut_text("F8"))
+        .clicked()
+    {
         gui.regions_window.open.toggle();
         ui.close_menu();
     }
-    if button_with_shortcut(ui, "Bookmarks...", "F9").clicked() {
+    if ui
+        .add(Button::new("Bookmarks...").shortcut_text("F9"))
+        .clicked()
+    {
         gui.bookmarks_window.open.toggle();
         ui.close_menu();
     }
