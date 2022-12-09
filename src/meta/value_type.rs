@@ -109,7 +109,7 @@ impl EndianedPrimitive for U8 {
     }
 }
 
-impl_for_int! {
+impl_for_num! {
     I16Le => i16 le,
     U16Le => u16 le,
     I16Be => i16 be,
@@ -128,7 +128,7 @@ impl_for_int! {
     F64Be => f64 be,
 }
 
-macro impl_for_int($($wrap:ident => $prim:ident $en:ident,)*) {
+macro impl_for_num($($wrap:ident => $prim:ident $en:ident,)*) {
     $(
         #[derive(Serialize, Deserialize, Clone)]
         pub struct $wrap;
