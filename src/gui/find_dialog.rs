@@ -6,10 +6,14 @@ use {
     },
     crate::{
         app::{get_clipboard_string, set_clipboard_string, App},
-        meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta},
+        meta::{
+            find_most_specific_region_for_offset,
+            value_type::{self, EndianedPrimitive, ValueType},
+            Bookmark, Meta,
+        },
         parse_radix::parse_guess_radix,
         region_context_menu,
-        shell::msg_fail,
+        shell::{msg_fail, msg_if_fail},
     },
     egui::{self, Align, Ui},
     egui_extras::{Column, Size, StripBuilder, TableBuilder},
@@ -20,6 +24,7 @@ use {
 pub enum FindType {
     #[default]
     U8,
+    U16Le,
     Ascii,
     HexString,
 }
@@ -28,6 +33,7 @@ impl FindType {
     fn label(&self) -> &str {
         match self {
             FindType::U8 => "u8",
+            FindType::U16Le => "u16-le",
             FindType::Ascii => "ascii",
             FindType::HexString => "hex string",
         }
@@ -62,6 +68,11 @@ impl FindDialog {
                 );
                 ui.selectable_value(
                     &mut gui.find_dialog.find_type,
+                    FindType::U16Le,
+                    FindType::U16Le.label(),
+                );
+                ui.selectable_value(
+                    &mut gui.find_dialog.find_type,
                     FindType::Ascii,
                     FindType::Ascii.label(),
                 );
@@ -76,7 +87,7 @@ impl FindDialog {
             re.request_focus();
         }
         if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
-            do_search(app, gui);
+            msg_if_fail(do_search(app, gui), "Search failed", &mut gui.msg_dialog);
         }
         ui.checkbox(&mut gui.find_dialog.filter_results, "Filter results")
             .on_hover_text("Base search on existing results");
@@ -249,7 +260,7 @@ enum Action {
     RemoveIdxFromResults(usize),
 }
 
-fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
+fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
     let dia = &mut gui.find_dialog;
     if !dia.filter_results {
         dia.results_vec.clear();
@@ -257,6 +268,14 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
     }
     match dia.find_type {
         FindType::U8 => find_u8(dia, app, &mut gui.msg_dialog, &mut gui.highlight_set),
+        FindType::U16Le => {
+            let n: u16 = dia.input.parse()?;
+            let bytes = value_type::U16Le::to_bytes(n);
+            for offset in memchr::memmem::find_iter(&app.data, &bytes) {
+                dia.results_vec.push(offset);
+                gui.highlight_set.insert(offset);
+            }
+        }
         FindType::Ascii => {
             for offset in memchr::memmem::find_iter(&app.data, &dia.input) {
                 dia.results_vec.push(offset);
@@ -283,6 +302,7 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) {
     if let Some(&off) = dia.results_vec.first() {
         app.search_focus(off);
     }
+    Ok(())
 }
 
 fn find_u8(
