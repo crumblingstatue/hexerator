@@ -4,6 +4,7 @@
 
 ### Added
 
+- Support for common value types in find dialog, in addition to u8
 - About dialog with version info + links
 - Clickable file size label in bottom right corner
 - Functionality to change the length of the data (truncate/extend)
