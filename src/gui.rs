@@ -243,6 +243,17 @@ pub fn do_egui(
                                         gui.views_window.open.set(true);
                                         close = true;
                                     }
+                                    ui.menu_button("Change this view to", |ui| {
+                                        let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) else  { return };
+                                        for (k, v) in app.meta_state.meta.views.iter().filter(|(k, _)| !layout.contains_view(*k)) {
+                                            if ui.button(&v.name).clicked() {
+                                                layout.change_view_type(view, k);
+                                                ui.close_menu();
+                                                close = true;
+                                                return;
+                                            }
+                                        }
+                                    });
                                     if ui.button("Remove from layout").clicked() {
                                         if let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) {
                                             layout.remove_view(view);

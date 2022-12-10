@@ -56,6 +56,12 @@ impl Layout {
             !row.is_empty()
         });
     }
+
+    pub(crate) fn change_view_type(&mut self, current: ViewKey, new: ViewKey) {
+        if let Some(current_key) = self.view_grid.iter_mut().flatten().find(|k| **k == current) {
+            *current_key = new;
+        }
+    }
 }
 
 pub fn do_auto_layout(
