@@ -270,22 +270,30 @@ impl FindDialog {
 
 trait SliceExt<T> {
     fn get_array<const N: usize>(&self, offset: usize) -> Option<&[T; N]>;
+    fn get_array_mut<const N: usize>(&mut self, offset: usize) -> Option<&mut [T; N]>;
 }
 
 impl<T> SliceExt<T> for [T] {
     fn get_array<const N: usize>(&self, offset: usize) -> Option<&[T; N]> {
         self[offset..offset + N].try_into().ok()
     }
+    fn get_array_mut<const N: usize>(&mut self, offset: usize) -> Option<&mut [T; N]> {
+        (&mut self[offset..offset + N]).try_into().ok()
+    }
 }
 
-fn data_value_label<N: EndianedPrimitive>(ui: &mut Ui, app: &mut App, off: usize) -> egui::Response
+fn data_value_label<N: EndianedPrimitive>(ui: &mut Ui, app: &mut App, off: usize)
 where
     [(); N::BYTE_LEN]:,
 {
-    let Some(data) = app.data.get_array(off) else {
-        return ui.label("!!").on_hover_text("Truncated");
+    let Some(data) = app.data.get_array_mut(off) else {
+        ui.label("!!").on_hover_text("Truncated");
+        return;
     };
-    ui.label(N::from_bytes(*data).to_string())
+    let mut n = N::from_bytes(*data);
+    if ui.add(egui::DragValue::new(&mut n)).changed() {
+        *data = N::to_bytes(n);
+    }
 }
 
 enum Action {
