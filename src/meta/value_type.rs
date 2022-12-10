@@ -65,7 +65,7 @@ impl ValueType {
 
 pub trait EndianedPrimitive {
     const BYTE_LEN: usize = std::mem::size_of::<Self::Primitive>();
-    type Primitive: egui::emath::Numeric + std::fmt::Display;
+    type Primitive: egui::emath::Numeric + std::fmt::Display + core::str::FromStr;
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive;
     fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN];
     fn label(&self) -> &'static str;

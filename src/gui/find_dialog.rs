@@ -8,7 +8,10 @@ use {
         app::{get_clipboard_string, set_clipboard_string, App},
         meta::{
             find_most_specific_region_for_offset,
-            value_type::{self, EndianedPrimitive, ValueType},
+            value_type::{
+                EndianedPrimitive, F32Be, F32Le, F64Be, F64Le, I16Be, I16Le, I32Be, I32Le, I64Be,
+                I64Le, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8,
+            },
             Bookmark, Meta,
         },
         parse_radix::parse_guess_radix,
@@ -18,14 +21,31 @@ use {
     egui::{self, Align, Ui},
     egui_extras::{Column, Size, StripBuilder, TableBuilder},
     itertools::Itertools,
+    std::{error::Error, str::FromStr},
     strum::{EnumIter, IntoEnumIterator, IntoStaticStr},
 };
 
 #[derive(Default, Debug, PartialEq, Eq, EnumIter, IntoStaticStr)]
 pub enum FindType {
+    I8,
     #[default]
     U8,
+    I16Le,
+    I16Be,
     U16Le,
+    U16Be,
+    I32Le,
+    I32Be,
+    U32Le,
+    U32Be,
+    I64Le,
+    I64Be,
+    U64Le,
+    U64Be,
+    F32Le,
+    F32Be,
+    F64Le,
+    F64Be,
     Ascii,
     HexString,
 }
@@ -235,29 +255,43 @@ enum Action {
 }
 
 fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
-    let dia = &mut gui.find_dialog;
-    if !dia.filter_results {
-        dia.results_vec.clear();
+    if !gui.find_dialog.filter_results {
+        gui.find_dialog.results_vec.clear();
         gui.highlight_set.clear();
     }
-    match dia.find_type {
-        FindType::U8 => find_u8(dia, app, &mut gui.msg_dialog, &mut gui.highlight_set),
-        FindType::U16Le => {
-            let n: u16 = dia.input.parse()?;
-            let bytes = value_type::U16Le::to_bytes(n);
-            for offset in memchr::memmem::find_iter(&app.data, &bytes) {
-                dia.results_vec.push(offset);
-                gui.highlight_set.insert(offset);
-            }
-        }
+    match gui.find_dialog.find_type {
+        FindType::I8 => find_num::<I8>(gui, app)?,
+        FindType::U8 => find_u8(
+            &mut gui.find_dialog,
+            app,
+            &mut gui.msg_dialog,
+            &mut gui.highlight_set,
+        ),
+        FindType::I16Le => find_num::<I16Le>(gui, app)?,
+        FindType::I16Be => find_num::<I16Be>(gui, app)?,
+        FindType::U16Le => find_num::<U16Le>(gui, app)?,
+        FindType::U16Be => find_num::<U16Be>(gui, app)?,
+        FindType::I32Le => find_num::<I32Le>(gui, app)?,
+        FindType::I32Be => find_num::<I32Be>(gui, app)?,
+        FindType::U32Le => find_num::<U32Le>(gui, app)?,
+        FindType::U32Be => find_num::<U32Be>(gui, app)?,
+        FindType::I64Le => find_num::<I64Le>(gui, app)?,
+        FindType::I64Be => find_num::<I64Be>(gui, app)?,
+        FindType::U64Le => find_num::<U64Le>(gui, app)?,
+        FindType::U64Be => find_num::<U64Be>(gui, app)?,
+        FindType::F32Le => find_num::<F32Le>(gui, app)?,
+        FindType::F32Be => find_num::<F32Be>(gui, app)?,
+        FindType::F64Le => find_num::<F64Le>(gui, app)?,
+        FindType::F64Be => find_num::<F64Be>(gui, app)?,
         FindType::Ascii => {
-            for offset in memchr::memmem::find_iter(&app.data, &dia.input) {
-                dia.results_vec.push(offset);
+            for offset in memchr::memmem::find_iter(&app.data, &gui.find_dialog.input) {
+                gui.find_dialog.results_vec.push(offset);
                 gui.highlight_set.insert(offset);
             }
         }
         FindType::HexString => {
-            let input_bytes: Result<Vec<u8>, _> = dia
+            let input_bytes: Result<Vec<u8>, _> = gui
+                .find_dialog
                 .input
                 .split_whitespace()
                 .map(|s| u8::from_str_radix(s, 16))
@@ -265,7 +299,7 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
             match input_bytes {
                 Ok(bytes) => {
                     for offset in memchr::memmem::find_iter(&app.data, &bytes) {
-                        dia.results_vec.push(offset);
+                        gui.find_dialog.results_vec.push(offset);
                         gui.highlight_set.insert(offset);
                     }
                 }
@@ -273,8 +307,25 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
             }
         }
     }
-    if let Some(&off) = dia.results_vec.first() {
+    if let Some(&off) = gui.find_dialog.results_vec.first() {
         app.search_focus(off);
+    }
+    Ok(())
+}
+
+fn find_num<N: EndianedPrimitive>(
+    gui: &mut crate::gui::Gui,
+    app: &mut App,
+) -> Result<(), anyhow::Error>
+where
+    [(); N::BYTE_LEN]:,
+    <<N as EndianedPrimitive>::Primitive as FromStr>::Err: Error + Send + Sync,
+{
+    let n: N::Primitive = gui.find_dialog.input.parse()?;
+    let bytes = N::to_bytes(n);
+    for offset in memchr::memmem::find_iter(&app.data, &bytes) {
+        gui.find_dialog.results_vec.push(offset);
+        gui.highlight_set.insert(offset);
     }
     Ok(())
 }
