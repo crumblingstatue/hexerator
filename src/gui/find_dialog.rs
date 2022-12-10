@@ -10,7 +10,7 @@ use {
             find_most_specific_region_for_offset,
             value_type::{
                 EndianedPrimitive, F32Be, F32Le, F64Be, F64Le, I16Be, I16Le, I32Be, I32Le, I64Be,
-                I64Le, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8,
+                I64Le, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8, U8,
             },
             Bookmark, Meta,
         },
@@ -127,7 +127,28 @@ impl FindDialog {
                                 }
                             });
                             row.col(|ui| {
-                                ui.label(app.data.get(off).map(|off| off.to_string()).as_deref().unwrap_or("??"));
+                                match gui.find_dialog.find_type {
+                                    FindType::I8 => data_value_label::<I8>(ui, app, off),
+                                    FindType::U8 => data_value_label::<U8>(ui, app, off),
+                                    FindType::I16Le => data_value_label::<I16Le>(ui, app, off),
+                                    FindType::I16Be => data_value_label::<I16Be>(ui, app, off),
+                                    FindType::U16Le => data_value_label::<U16Le>(ui, app, off),
+                                    FindType::U16Be => data_value_label::<U16Be>(ui, app, off),
+                                    FindType::I32Le => data_value_label::<I32Le>(ui, app, off),
+                                    FindType::I32Be => data_value_label::<I32Be>(ui, app, off),
+                                    FindType::U32Le => data_value_label::<U32Le>(ui, app, off),
+                                    FindType::U32Be => data_value_label::<U32Be>(ui, app, off),
+                                    FindType::I64Le => data_value_label::<I64Le>(ui, app, off),
+                                    FindType::I64Be => data_value_label::<I64Be>(ui, app, off),
+                                    FindType::U64Le => data_value_label::<U64Le>(ui, app, off),
+                                    FindType::U64Be => data_value_label::<U64Be>(ui, app, off),
+                                    FindType::F32Le => data_value_label::<F32Le>(ui, app, off),
+                                    FindType::F32Be => data_value_label::<F32Be>(ui, app, off),
+                                    FindType::F64Le => data_value_label::<F64Le>(ui, app, off),
+                                    FindType::F64Be => data_value_label::<F64Be>(ui, app, off),
+                                    FindType::Ascii => data_value_label::<U8>(ui, app, off),
+                                    FindType::HexString => data_value_label::<U8>(ui, app, off),
+                                };
                             });
                             row.col(|ui| {
                                 match find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, off) {
@@ -245,6 +266,26 @@ impl FindDialog {
         });
         gui.find_dialog.open.post_ui();
     }
+}
+
+trait SliceExt<T> {
+    fn get_array<const N: usize>(&self, offset: usize) -> Option<&[T; N]>;
+}
+
+impl<T> SliceExt<T> for [T] {
+    fn get_array<const N: usize>(&self, offset: usize) -> Option<&[T; N]> {
+        self[offset..offset + N].try_into().ok()
+    }
+}
+
+fn data_value_label<N: EndianedPrimitive>(ui: &mut Ui, app: &mut App, off: usize) -> egui::Response
+where
+    [(); N::BYTE_LEN]:,
+{
+    let Some(data) = app.data.get_array(off) else {
+        return ui.label("!!").on_hover_text("Truncated");
+    };
+    ui.label(N::from_bytes(*data).to_string())
 }
 
 enum Action {
