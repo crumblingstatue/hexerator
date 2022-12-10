@@ -1,9 +1,10 @@
 use {
     crate::{app::App, gui::Gui, shell::msg_if_fail},
     egui::Button,
+    egui_sfml::sfml::graphics::Font,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     if ui
         .add(Button::new("Regions...").shortcut_text("F8"))
         .clicked()
@@ -66,6 +67,14 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
             "Failed to load temp metafile",
             &mut gui.msg_dialog,
         );
+        ui.close_menu();
+    }
+    if ui
+        .button("🗑 Clear")
+        .on_hover_text("Replace current meta with default one")
+        .clicked()
+    {
+        app.set_new_clean_meta(font);
         ui.close_menu();
     }
     ui.separator();

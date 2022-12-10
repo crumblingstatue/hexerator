@@ -31,7 +31,7 @@ pub fn top_menu(
         ui.menu_button("Cursor", |ui| cursor::ui(ui, gui, app));
         ui.menu_button("View", |ui| view::ui(ui, gui, app));
         ui.menu_button("Perspective", |ui| perspective::ui(ui, gui, app));
-        ui.menu_button("Meta", |ui| meta::ui(ui, gui, app));
+        ui.menu_button("Meta", |ui| meta::ui(ui, gui, app, font));
         ui.menu_button("Analysis", |ui| analysis::ui(ui, gui, app));
         ui.menu_button("Scripting", |ui| scripting::ui(ui, gui, app));
         ui.menu_button("Help", |ui| help::ui(ui, gui));
