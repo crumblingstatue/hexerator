@@ -18,9 +18,10 @@ use {
     egui::{self, Align, Ui},
     egui_extras::{Column, Size, StripBuilder, TableBuilder},
     itertools::Itertools,
+    strum::{EnumIter, IntoEnumIterator},
 };
 
-#[derive(Default, Debug, PartialEq, Eq)]
+#[derive(Default, Debug, PartialEq, Eq, EnumIter)]
 pub enum FindType {
     #[default]
     U8,
@@ -30,7 +31,7 @@ pub enum FindType {
 }
 
 impl FindType {
-    fn label(&self) -> &str {
+    fn label(&self) -> &'static str {
         match self {
             FindType::U8 => "u8",
             FindType::U16Le => "u16-le",
@@ -61,26 +62,10 @@ impl FindDialog {
         egui::ComboBox::new("type_combo", "Data type")
             .selected_text(gui.find_dialog.find_type.label())
             .show_ui(ui, |ui| {
-                ui.selectable_value(
-                    &mut gui.find_dialog.find_type,
-                    FindType::U8,
-                    FindType::U8.label(),
-                );
-                ui.selectable_value(
-                    &mut gui.find_dialog.find_type,
-                    FindType::U16Le,
-                    FindType::U16Le.label(),
-                );
-                ui.selectable_value(
-                    &mut gui.find_dialog.find_type,
-                    FindType::Ascii,
-                    FindType::Ascii.label(),
-                );
-                ui.selectable_value(
-                    &mut gui.find_dialog.find_type,
-                    FindType::HexString,
-                    FindType::HexString.label(),
-                );
+                for type_ in FindType::iter() {
+                    let label = type_.label();
+                    ui.selectable_value(&mut gui.find_dialog.find_type, type_, label);
+                }
             });
         let re = ui.text_edit_singleline(&mut gui.find_dialog.input);
         if gui.find_dialog.open.just_now() {

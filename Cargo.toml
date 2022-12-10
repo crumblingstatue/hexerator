@@ -42,6 +42,7 @@ egui-modal = "0.1.8"
 arboard = { version = "3.2.0", default-features = false }
 paste = "1.0.9"
 iced-x86 = "1.17.0"
+strum = { version = "0.24.1", features = ["derive"] }
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.42.0"
