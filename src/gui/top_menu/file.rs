@@ -91,9 +91,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
     ui.separator();
     if ui
         .add_enabled(
-            app.source
-                .as_ref()
-                .is_some_and(|src| src.attr.permissions.write)
+            matches!(app.source.as_ref(), Some(src) if src.attr.permissions.write)
                 && app.edit_state.dirty_region.is_some(),
             Button::new("Save").shortcut_text("Ctrl+S"),
         )
