@@ -17,7 +17,7 @@ pub fn ui(ui: &mut Ui) {
                 });
         }
         Err(e) => {
-            ui.label(&format!("IMMEDIATE lock fail: {e}"));
+            ui.label(format!("IMMEDIATE lock fail: {e}"));
         }
     }
     gamedebug_core::clear_immediates();
@@ -36,7 +36,7 @@ pub fn ui(ui: &mut Ui) {
                 });
         }
         Err(e) => {
-            ui.label(&format!("PERSISTENT lock fail: {e}"));
+            ui.label(format!("PERSISTENT lock fail: {e}"));
         }
     }
 }

@@ -62,7 +62,7 @@ impl LayoutsWindow {
                                 win.swap_a = ViewKey::null();
                             }
                         } else if !win.swap_a.is_null() {
-                            if ui.button(&format!("🔃 {}", view.name)).clicked() {
+                            if ui.button(format!("🔃 {}", view.name)).clicked() {
                                 swap = Some((win.swap_a, *view_key));
                             }
                         } else {
