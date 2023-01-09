@@ -14,10 +14,14 @@ pub struct Config {
     /// filepath->meta associations
     #[serde(default)]
     pub meta_assocs: MetaAssocs,
-    #[serde(default)]
+    #[serde(default = "default_vsync")]
     pub vsync: bool,
     #[serde(default)]
     pub fps_limit: u32,
+}
+
+const fn default_vsync() -> bool {
+    true
 }
 
 pub type MetaAssocs = HashMap<PathBuf, PathBuf>;
@@ -59,7 +63,7 @@ impl Default for Config {
             style: Style::default(),
             meta_assocs: HashMap::default(),
             fps_limit: 0,
-            vsync: false,
+            vsync: default_vsync(),
         }
     }
 }
