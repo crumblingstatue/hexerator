@@ -22,6 +22,14 @@ pub struct OpenProcessWindow {
     addr_sort: Sort,
     size_sort: Sort,
     maps_sort_col: MapsSortColumn,
+    perm_filters: PermFilters,
+}
+
+#[derive(Default)]
+pub struct PermFilters {
+    read: bool,
+    write: bool,
+    execute: bool,
 }
 
 #[derive(Default, Clone, Copy)]
@@ -132,7 +140,14 @@ impl OpenProcessWindow {
                         }
                     });
                     row.col(|ui| {
-                        ui.label("r/w/x");
+                        ui.add(egui::Label::new("r/w/x").sense(egui::Sense::click()))
+                            .context_menu(|ui| {
+                                ui.label("Filter");
+                                ui.separator();
+                                ui.checkbox(&mut win.perm_filters.read, "Read");
+                                ui.checkbox(&mut win.perm_filters.write, "Write");
+                                ui.checkbox(&mut win.perm_filters.execute, "Execute");
+                            });
                     });
                     row.col(|ui| {
                         ui.add(
@@ -144,6 +159,15 @@ impl OpenProcessWindow {
                 .body(|body| {
                     let mut filtered = win.map_ranges.clone();
                     filtered.retain(|range| {
+                        if win.perm_filters.read && !range.is_read() {
+                            return false;
+                        }
+                        if win.perm_filters.write && !range.is_write() {
+                            return false;
+                        }
+                        if win.perm_filters.execute && !range.is_exec() {
+                            return false;
+                        }
                         if let Ok(addr) = usize::from_str_radix(&win.addr_filter_string, 16) {
                             if !(range.start() <= addr && range.start() + range.size() >= addr) {
                                 return false;
