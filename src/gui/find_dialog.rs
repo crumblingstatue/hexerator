@@ -275,10 +275,10 @@ trait SliceExt<T> {
 
 impl<T> SliceExt<T> for [T] {
     fn get_array<const N: usize>(&self, offset: usize) -> Option<&[T; N]> {
-        self[offset..offset + N].try_into().ok()
+        self.get(offset..offset + N)?.try_into().ok()
     }
     fn get_array_mut<const N: usize>(&mut self, offset: usize) -> Option<&mut [T; N]> {
-        (&mut self[offset..offset + N]).try_into().ok()
+        self.get_mut(offset..offset + N)?.try_into().ok()
     }
 }
 
