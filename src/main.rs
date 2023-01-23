@@ -441,7 +441,7 @@ fn handle_events(
                     clippy::cast_precision_loss,
                     reason = "Window sizes larger than i16::MAX aren't supported."
                 )]
-                window.set_view(&View::from_rect(&Rect::new(
+                window.set_view(&View::from_rect(Rect::new(
                     0.,
                     0.,
                     width as f32,
