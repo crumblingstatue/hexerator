@@ -56,6 +56,8 @@ unsafe fn load_proc_memory_inner(
     if !app.preferences.keep_meta {
         app.set_new_clean_meta(font);
     }
+    app.args.src.hard_seek = Some(start);
+    app.args.src.take = Some(size);
     Ok(())
 }
 
