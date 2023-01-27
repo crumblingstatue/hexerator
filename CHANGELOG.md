@@ -46,6 +46,7 @@
 - Bookmark description is now in a scroll area
 - Bookmarks window "add new at cursor" button selects newly added bookmark automatically
 - Create default metadata for empty documents, allowing creation of binary files from scratch with Hexerator
+- File path label has context menu for various options, left clicking opens the file in default application
 
 ### Fixed
 

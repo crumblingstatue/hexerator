@@ -1,4 +1,4 @@
-use crate::event::EventQueue;
+use crate::{event::EventQueue, shell::msg_if_fail};
 
 mod analysis;
 mod cursor;
@@ -44,16 +44,38 @@ pub fn top_menu(
                             match &app.args.src.file {
                                 Some(file) => {
                                     let s = file.display().to_string();
+                                    let ctx_menu = |ui: &mut egui::Ui| {
+                                        if ui.button("Open").clicked() {
+                                            try_open_file(file, gui);
+                                            ui.close_menu();
+                                        }
+                                        if let Some(parent) = file.parent() {
+                                            if ui.button("Open containing folder").clicked() {
+                                                let result = open::that(parent);
+                                                msg_if_fail(
+                                                    result,
+                                                    "Failed to open folder",
+                                                    &mut gui.msg_dialog,
+                                                );
+                                                ui.close_menu();
+                                            }
+                                        }
+                                        if ui.button("Copy path to clipboard").clicked() {
+                                            crate::app::set_clipboard_string(
+                                                &mut app.clipboard,
+                                                &mut gui.msg_dialog,
+                                                &s,
+                                            );
+                                            ui.close_menu();
+                                        }
+                                    };
                                     if ui
                                         .add(egui::Label::new(&s).sense(egui::Sense::click()))
-                                        .on_hover_text("Click to copy")
+                                        .context_menu(ctx_menu)
+                                        .on_hover_text("Right click for context menu")
                                         .clicked()
                                     {
-                                        crate::app::set_clipboard_string(
-                                            &mut app.clipboard,
-                                            &mut gui.msg_dialog,
-                                            &s,
-                                        );
+                                        try_open_file(file, gui);
                                     }
                                 }
                                 None => {
@@ -84,4 +106,9 @@ pub fn top_menu(
             },
         );
     });
+}
+
+fn try_open_file(file: &std::path::Path, gui: &mut super::Gui) {
+    let result = open::that(file);
+    msg_if_fail(result, "Failed to open file", &mut gui.msg_dialog);
 }
