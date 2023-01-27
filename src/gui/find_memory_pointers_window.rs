@@ -52,7 +52,7 @@ impl FindMemoryPointersWindow {
         TableBuilder::new(ui)
             .column(Column::auto())
             .column(Column::auto())
-            .column(Column::auto())
+            .column(Column::remainder())
             .striped(true)
             .header(20.0, |mut row| {
                 row.col(|ui| {

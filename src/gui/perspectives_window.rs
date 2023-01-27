@@ -17,7 +17,8 @@ pub struct PerspectivesWindow {
 impl PerspectivesWindow {
     pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut crate::app::App) {
         TableBuilder::new(ui)
-            .columns(Column::auto(), 4)
+            .columns(Column::auto(), 3)
+            .column(Column::remainder())
             .striped(true)
             .resizable(true)
             .header(24.0, |mut row| {

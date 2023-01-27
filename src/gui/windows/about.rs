@@ -111,7 +111,7 @@ fn info_table(ui: &mut egui::Ui, info: &[InfoPair]) {
         let body_height = ui.text_style_height(&egui::TextStyle::Body);
         TableBuilder::new(ui)
             .column(Column::auto())
-            .column(Column::auto())
+            .column(Column::remainder())
             .resizable(true)
             .striped(true)
             .body(|mut body| {

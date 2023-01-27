@@ -107,7 +107,7 @@ impl RegionsWindow {
             .column(Column::auto())
             .column(Column::auto())
             .column(Column::auto())
-            .column(Column::auto())
+            .column(Column::remainder())
             .header(20.0, |mut header| {
                 header.col(|ui| {
                     ui.label("Name");

@@ -60,7 +60,8 @@ impl ViewsWindow {
             return;
         }
         TableBuilder::new(ui)
-            .columns(Column::auto(), 4)
+            .columns(Column::auto(), 3)
+            .column(Column::remainder())
             .resizable(true)
             .header(24.0, |mut row| {
                 row.col(|ui| {

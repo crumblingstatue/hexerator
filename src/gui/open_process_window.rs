@@ -103,7 +103,7 @@ impl OpenProcessWindow {
                 .column(Column::auto())
                 .column(Column::auto())
                 .column(Column::auto())
-                .column(Column::auto())
+                .column(Column::remainder())
                 .striped(true)
                 .resizable(true)
                 .header(20.0, |mut row| {
@@ -284,7 +284,7 @@ impl OpenProcessWindow {
         } else {
             TableBuilder::new(ui)
                 .column(Column::auto())
-                .column(Column::auto())
+                .column(Column::remainder())
                 .resizable(true)
                 .striped(true)
                 .header(20.0, |mut row| {

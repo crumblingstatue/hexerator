@@ -101,7 +101,8 @@ impl FileDiffResultWindow {
         ui.separator();
         let mut action = Action::None;
         egui_extras::TableBuilder::new(ui)
-            .columns(Column::auto(), 5)
+            .columns(Column::auto(), 4)
+            .column(Column::remainder())
             .resizable(true)
             .striped(true)
             .header(32.0, |mut row| {

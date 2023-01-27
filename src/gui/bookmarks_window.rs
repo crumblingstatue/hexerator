@@ -48,7 +48,8 @@ impl BookmarksWindow {
         let mut action = Action::None;
         ScrollArea::vertical().max_height(500.0).show(ui, |ui| {
             TableBuilder::new(ui)
-                .columns(Column::auto(), 5)
+                .columns(Column::auto(), 4)
+                .column(Column::remainder())
                 .striped(true)
                 .resizable(true)
                 .header(24.0, |mut row| {
