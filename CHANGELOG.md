@@ -1,7 +1,10 @@
 # Changelog
 
 ## Unreleased
-- Nothing yet
+
+### Fixed
+
+- Loading process memory on windows now correctly sets relative offset
 
 ## [0.2.0] - 2023-01-27
 
