@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+
+- The virtual memory map window now makes it more clear that you're no longer
+  looking at the list of processes, but the maps for a process.
+
 ### Fixed
 
 - Loading process memory on windows now correctly sets relative offset
