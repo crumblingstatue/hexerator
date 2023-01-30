@@ -12,8 +12,7 @@ default = ["backend-sfml"]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
 clap = { version = "4.1.3", features = ["derive"] }
 anyhow = "1.0.68"
-#rfd = "0.10.0"
-rfd = { git = "https://github.com/PolyMeilex/rfd.git"}
+rfd = "0.10.1"
 rand = "0.8.5"
 rmp-serde = "1.1.1"
 serde = { version = "1.0.152", features = ["derive"] }
