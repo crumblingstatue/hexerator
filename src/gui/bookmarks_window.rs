@@ -104,11 +104,19 @@ impl BookmarksWindow {
                             }
                         });
                         row.col(|ui| {
-                            if ui
-                                .link(app.meta_state.meta.bookmarks[idx].offset.to_string())
-                                .clicked()
-                            {
-                                action = Action::Goto(app.meta_state.meta.bookmarks[idx].offset);
+                            let offset = app.meta_state.meta.bookmarks[idx].offset;
+                            let ctx_menu = |ui: &mut egui::Ui| {
+                                if ui.button("Copy to clipboard").clicked() {
+                                    set_clipboard_string(
+                                        &mut app.clipboard,
+                                        &mut gui.msg_dialog,
+                                        &offset.to_string(),
+                                    );
+                                    ui.close_menu();
+                                }
+                            };
+                            if ui.link(offset.to_string()).context_menu(ctx_menu).clicked() {
+                                action = Action::Goto(offset);
                             }
                         });
                         row.col(|ui| {
