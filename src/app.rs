@@ -545,6 +545,8 @@ impl App {
     }
 
     pub(crate) fn diff_with_file(&mut self, path: PathBuf, gui: &mut Gui) -> anyhow::Result<()> {
+        // FIXME: Skipping ignores changes to bookmarked values that happen later than the first
+        // byte.
         let file_data = read_source_to_buf(&path, &self.args.src)?;
         let mut offs = Vec::new();
         let mut skip = 0;
