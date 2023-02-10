@@ -129,7 +129,7 @@ impl FileDiffResultWindow {
                     |idx, mut row| {
                         let entry = &gui.file_diff_result_window.diff_entries[idx];
                         row.col(|ui| {
-                            ui.label(entry.my_val.to_string());
+                            ui.label(app.data[entry.offset].to_string());
                         });
                         row.col(|ui| {
                             ui.label(entry.file_val.to_string());

@@ -550,7 +550,6 @@ impl App {
         for ((offset, &my_byte), &file_byte) in self.data.iter().enumerate().zip(file_data.iter()) {
             if my_byte != file_byte {
                 diff_entries.push(FileDiffEntry {
-                    my_val: my_byte,
                     file_val: file_byte,
                     offset,
                 });
@@ -740,7 +739,6 @@ pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, any
 }
 
 pub struct FileDiffEntry {
-    pub my_val: u8,
     pub file_val: u8,
     pub offset: usize,
 }
