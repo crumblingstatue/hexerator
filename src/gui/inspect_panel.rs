@@ -501,7 +501,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
             }
         });
         if ui.text_edit_singleline(thingy.buf_mut()).lost_focus()
-            && ui.input().key_pressed(egui::Key::Enter)
+            && ui.input(|inp| inp.key_pressed(egui::Key::Enter))
         {
             if let Some(range) = thingy.write_data(
                 &mut app.data,

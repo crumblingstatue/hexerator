@@ -80,7 +80,7 @@ impl FindDialog {
         if gui.find_dialog.open.just_now() {
             re.request_focus();
         }
-        if re.lost_focus() && ui.input().key_pressed(egui::Key::Enter) {
+        if re.lost_focus() && ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
             msg_if_fail(do_search(app, gui), "Search failed", &mut gui.msg_dialog);
         }
         ui.checkbox(&mut gui.find_dialog.filter_results, "Filter results")
@@ -225,7 +225,7 @@ impl FindDialog {
             strip.cell(|ui| {
                 ui.horizontal(|ui| {
                     ui.set_enabled(!gui.find_dialog.results_vec.is_empty());
-                    if (ui.button("Previous (P)").clicked() || ui.input().key_pressed(egui::Key::P))
+                    if (ui.button("Previous (P)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::P)))
                         && gui.find_dialog.result_cursor > 0 && !gui.find_dialog.results_vec.is_empty()
                     {
                         gui.find_dialog.result_cursor -= 1;
@@ -234,7 +234,7 @@ impl FindDialog {
                         gui.find_dialog.scroll_to = Some(gui.find_dialog.result_cursor);
                     }
                     ui.label((gui.find_dialog.result_cursor + 1).to_string());
-                    if (ui.button("Next (N)").clicked() || ui.input().key_pressed(egui::Key::N))
+                    if (ui.button("Next (N)").clicked() || ui.input(|inp| inp.key_pressed(egui::Key::N)))
                         && gui.find_dialog.result_cursor + 1 < gui.find_dialog.results_vec.len()
                     {
                         gui.find_dialog.result_cursor += 1;

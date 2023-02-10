@@ -250,7 +250,7 @@ impl BookmarksWindow {
                                 .hint_text("key = value"),
                         )
                         .lost_focus()
-                        && ui.input().key_pressed(egui::Key::Enter);
+                        && ui.input(|inp| inp.key_pressed(egui::Key::Enter));
                     if text_edit_finished || ui.button("Set key = value").clicked() {
                         let result: anyhow::Result<()> = try {
                             let s = &win.value_type_string_buf;

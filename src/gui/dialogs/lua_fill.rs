@@ -35,12 +35,10 @@ impl Dialog for LuaFillDialog {
             ui.heading("No active selection");
             return !ui.button("Close").clicked();
         };
-        let ctrl_enter = ui
-            .input_mut()
-            .consume_key(egui::Modifiers::CTRL, egui::Key::Enter);
-        let ctrl_s = ui
-            .input_mut()
-            .consume_key(egui::Modifiers::CTRL, egui::Key::S);
+        let ctrl_enter =
+            ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::Enter));
+
+        let ctrl_s = ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::S));
         if ctrl_s {
             msg_if_fail(app.save(), "Failed to save", msg);
         }

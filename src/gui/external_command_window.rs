@@ -44,7 +44,7 @@ impl ExternalCommandWindow {
             .add_enabled(exec_enabled, egui::Button::new("Execute (ctrl+E)"))
             .clicked()
             || (exec_enabled
-                && ((ui.input().key_pressed(egui::Key::E) && ui.input().modifiers.ctrl)
+                && ((ui.input(|inp| inp.key_pressed(egui::Key::E) && inp.modifiers.ctrl))
                     || win.auto_exec))
         {
             let res: anyhow::Result<()> = try {

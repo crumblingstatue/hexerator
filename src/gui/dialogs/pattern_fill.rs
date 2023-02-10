@@ -46,7 +46,7 @@ impl Dialog for PatternFillDialog {
             re.request_focus();
         }
         self.just_opened = false;
-        if ui.input().key_pressed(egui::Key::Enter) {
+        if ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
             let values: Result<Vec<u8>, _> = parse_pattern_string(&self.pattern_string);
             match values {
                 Ok(values) => {

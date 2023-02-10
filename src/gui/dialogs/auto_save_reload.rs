@@ -38,7 +38,7 @@ impl Dialog for AutoSaveReloadDialog {
             .on_hover_text("Save every time an editing action is finished");
         ui.separator();
         !(ui.button("Close (enter/esc)").clicked()
-            || ui.input().key_pressed(egui::Key::Escape)
-            || ui.input().key_pressed(egui::Key::Enter))
+            || ui.input(|inp| inp.key_pressed(egui::Key::Escape))
+            || ui.input(|inp| inp.key_pressed(egui::Key::Enter)))
     }
 }

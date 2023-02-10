@@ -52,7 +52,7 @@ impl Dialog for JumpDialog {
         );
         ui.checkbox(&mut self.relative, "Relative")
             .on_hover_text("Relative to --hard-seek");
-        if ui.input().key_pressed(egui::Key::Enter) {
+        if ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
             match parse_offset_maybe_relative(&self.string_buf) {
                 Ok((offset, relativity)) => {
                     let offset = match relativity {
@@ -77,7 +77,7 @@ impl Dialog for JumpDialog {
                 }
             }
         } else {
-            !(ui.input().key_pressed(egui::Key::Escape))
+            !(ui.input(|inp| inp.key_pressed(egui::Key::Escape)))
         }
     }
 }

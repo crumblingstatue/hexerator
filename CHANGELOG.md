@@ -6,6 +6,7 @@
 - Context menu option to copy a bookmark's offset
 - Jump-to button in detail view for bookmarks
 - Value edit input in detail view for bookmarks
+- Update egui to 0.21
 
 
 ### Changed
