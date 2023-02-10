@@ -72,6 +72,19 @@ impl FileDiffResultWindow {
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
+            if ui.button("Highlight all").clicked() {
+                gui.highlight_set.clear();
+                for &offs in &gui.file_diff_result_window.offsets {
+                    gui.highlight_set.insert(offs);
+                    if let Some((_, bm)) =
+                        Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
+                    {
+                        for i in 1..bm.value_type.byte_len() {
+                            gui.highlight_set.insert(offs + i);
+                        }
+                    }
+                }
+            }
         });
         ui.horizontal(|ui| {
             if ui.button("Refresh").clicked()

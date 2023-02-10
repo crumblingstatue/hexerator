@@ -7,7 +7,7 @@
 - Jump-to button in detail view for bookmarks
 - Value edit input in detail view for bookmarks
 - Update egui to 0.21
-
+- "Highlight all" button in file diff window to highlight all differences
 
 ### Changed
 
