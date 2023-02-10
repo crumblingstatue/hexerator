@@ -13,6 +13,8 @@
 
 - The virtual memory map window now makes it more clear that you're no longer
   looking at the list of processes, but the maps for a process.
+- File diff now takes the value types of bookmarks into account, showing the whole values of
+  bookmarks instead of just raw bytes.
 
 ### Fixed
 

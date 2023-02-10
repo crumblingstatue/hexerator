@@ -2,7 +2,9 @@ use {
     crate::{
         app::read_source_to_buf,
         gui::window_open::WindowOpen,
-        meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark, RegionKey},
+        meta::{
+            find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta, RegionKey,
+        },
         region_context_menu,
         shell::msg_if_fail,
         Gui,
@@ -127,11 +129,29 @@ impl FileDiffResultWindow {
                     gui.file_diff_result_window.offsets.len(),
                     |idx, mut row| {
                         let offs = gui.file_diff_result_window.offsets[idx];
+                        let bm = Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
+                            .map(|(_, bm)| bm);
                         row.col(|ui| {
-                            ui.label(app.data[offs].to_string());
+                            let s = match bm {
+                                Some(bm) => bm
+                                    .value_type
+                                    .read(&app.data[offs..])
+                                    .map(|v| v.to_string())
+                                    .unwrap_or("err".into()),
+                                None => app.data[offs].to_string(),
+                            };
+                            ui.label(s);
                         });
                         row.col(|ui| {
-                            ui.label(gui.file_diff_result_window.file_data[offs].to_string());
+                            let s = match bm {
+                                Some(bm) => bm
+                                    .value_type
+                                    .read(&gui.file_diff_result_window.file_data[offs..])
+                                    .map(|v| v.to_string())
+                                    .unwrap_or("err".into()),
+                                None => gui.file_diff_result_window.file_data[offs].to_string(),
+                            };
+                            ui.label(s);
                         });
                         row.col(|ui| {
                             if ui

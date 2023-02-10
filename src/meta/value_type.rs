@@ -61,6 +61,98 @@ impl ValueType {
             ValueType::StringMap(v) => v.label(),
         }
     }
+
+    pub(crate) fn byte_len(&self) -> usize {
+        match self {
+            ValueType::None => 1,
+            ValueType::I8(_) => 1,
+            ValueType::U8(_) => 1,
+            ValueType::I16Le(_) => 2,
+            ValueType::U16Le(_) => 2,
+            ValueType::I16Be(_) => 2,
+            ValueType::U16Be(_) => 2,
+            ValueType::I32Le(_) => 4,
+            ValueType::U32Le(_) => 4,
+            ValueType::I32Be(_) => 4,
+            ValueType::U32Be(_) => 4,
+            ValueType::I64Le(_) => 8,
+            ValueType::U64Le(_) => 8,
+            ValueType::I64Be(_) => 8,
+            ValueType::U64Be(_) => 8,
+            ValueType::F32Le(_) => 4,
+            ValueType::F32Be(_) => 4,
+            ValueType::F64Le(_) => 8,
+            ValueType::F64Be(_) => 8,
+            ValueType::StringMap(_) => 1,
+        }
+    }
+
+    pub fn read(&self, data: &[u8]) -> anyhow::Result<ReadValue> {
+        macro r($t:ident $($en:ident)?) {
+            paste::paste! {
+                ReadValue::$t(read::<[<$t $($en)?>]>(data)?)
+            }
+        }
+        Ok(match self {
+            ValueType::None => r!(U8),
+            ValueType::I8(_) => r!(I8),
+            ValueType::U8(_) => r!(U8),
+            ValueType::I16Le(_) => r!(I16 Le),
+            ValueType::U16Le(_) => r!(U16 Le),
+            ValueType::I16Be(_) => r!(I16 Be),
+            ValueType::U16Be(_) => r!(U16 Be),
+            ValueType::I32Le(_) => r!(I32 Le),
+            ValueType::U32Le(_) => r!(U32 Le),
+            ValueType::I32Be(_) => r!(I32 Be),
+            ValueType::U32Be(_) => r!(U32 Be),
+            ValueType::I64Le(_) => r!(I64 Le),
+            ValueType::U64Le(_) => r!(U64 Le),
+            ValueType::I64Be(_) => r!(I64 Be),
+            ValueType::U64Be(_) => r!(U64 Be),
+            ValueType::F32Le(_) => r!(F32 Le),
+            ValueType::F32Be(_) => r!(F32 Be),
+            ValueType::F64Le(_) => r!(F64 Le),
+            ValueType::F64Be(_) => r!(F64 Be),
+            ValueType::StringMap(_) => r!(U8),
+        })
+    }
+}
+
+fn read<P: EndianedPrimitive>(data: &[u8]) -> Result<P::Primitive, anyhow::Error>
+where
+    [(); P::BYTE_LEN]:,
+{
+    Ok(P::from_bytes(data[..P::BYTE_LEN].try_into()?))
+}
+
+pub enum ReadValue {
+    I8(i8),
+    U8(u8),
+    I16(i16),
+    U16(u16),
+    I32(i32),
+    U32(u32),
+    I64(i64),
+    U64(u64),
+    F32(f32),
+    F64(f64),
+}
+
+impl std::fmt::Display for ReadValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ReadValue::U8(v) => v.fmt(f),
+            ReadValue::I8(v) => v.fmt(f),
+            ReadValue::I16(v) => v.fmt(f),
+            ReadValue::U16(v) => v.fmt(f),
+            ReadValue::I32(v) => v.fmt(f),
+            ReadValue::U32(v) => v.fmt(f),
+            ReadValue::I64(v) => v.fmt(f),
+            ReadValue::U64(v) => v.fmt(f),
+            ReadValue::F32(v) => v.fmt(f),
+            ReadValue::F64(v) => v.fmt(f),
+        }
+    }
 }
 
 pub trait EndianedPrimitive {

@@ -547,9 +547,19 @@ impl App {
     pub(crate) fn diff_with_file(&mut self, path: PathBuf, gui: &mut Gui) -> anyhow::Result<()> {
         let file_data = read_source_to_buf(&path, &self.args.src)?;
         let mut offs = Vec::new();
+        let mut skip = 0;
         for ((offset, &my_byte), &file_byte) in self.data.iter().enumerate().zip(file_data.iter()) {
+            if skip > 0 {
+                skip -= 1;
+                continue;
+            }
             if my_byte != file_byte {
                 offs.push(offset);
+            }
+            if let Some((_, bm)) =
+                Meta::bookmark_for_offset(&self.meta_state.meta.bookmarks, offset)
+            {
+                skip = bm.value_type.byte_len() - 1;
             }
         }
         gui.file_diff_result_window.offsets = offs;
