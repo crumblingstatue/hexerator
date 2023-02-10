@@ -183,7 +183,7 @@ pub fn do_egui(
             "Layouts",                 layouts_window,              LayoutsWindow: gui app;
             "Views",                   views_window,                ViewsWindow: gui app font;
             "Perspectives",            perspectives_window,         PerspectivesWindow: gui app;
-            "File Diff results",       file_diff_result_window,     FileDiffResultWindow: gui app;
+            "File Diff results",       file_diff_result_window,     FileDiffResultWindow: gui app font events;
             "Diff against clean meta", meta_diff_window,            MetaDiffWindow: app;
             "Open process",            open_process_window,         OpenProcessWindow: gui app font events;
             "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font events;

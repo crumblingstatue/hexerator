@@ -8,6 +8,8 @@
 - Value edit input in detail view for bookmarks
 - Update egui to 0.21
 - "Highlight all" button in file diff window to highlight all differences
+- Add "Open this" and "Diff with..." buttons to file diff window to speed up diffing
+  subsequent versions of a file
 
 ### Changed
 

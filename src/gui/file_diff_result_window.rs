@@ -1,6 +1,7 @@
 use {
     crate::{
         app::read_source_to_buf,
+        event::EventQueue,
         gui::window_open::WindowOpen,
         meta::{
             find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta, RegionKey,
@@ -10,6 +11,7 @@ use {
         Gui,
     },
     egui_extras::Column,
+    egui_sfml::sfml::graphics::Font,
     std::{path::PathBuf, time::Instant},
 };
 
@@ -37,12 +39,52 @@ impl Default for FileDiffResultWindow {
     }
 }
 impl FileDiffResultWindow {
-    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut crate::app::App) {
+    pub(crate) fn ui(
+        ui: &mut egui::Ui,
+        gui: &mut Gui,
+        app: &mut crate::app::App,
+        font: &Font,
+        events: &mut EventQueue,
+    ) {
         if gui.file_diff_result_window.offsets.is_empty() {
             ui.label("No difference");
             return;
         }
-        ui.label(gui.file_diff_result_window.path.display().to_string());
+        ui.horizontal(|ui| {
+            ui.label(gui.file_diff_result_window.path.display().to_string());
+            if ui
+                .button("🗁 Open this")
+                .on_hover_text("Open the diffed-against file Hexerator")
+                .clicked()
+            {
+                let prev_pref = app.preferences.keep_meta;
+                app.preferences.keep_meta = true;
+                let result = app.load_file(
+                    gui.file_diff_result_window.path.clone(),
+                    false,
+                    font,
+                    &mut gui.msg_dialog,
+                    events,
+                );
+                app.preferences.keep_meta = prev_pref;
+                msg_if_fail(result, "Failed to load file", &mut gui.msg_dialog);
+            }
+            if ui
+                .button("🖹 Diff with...")
+                .on_hover_text("Diff with another file")
+                .clicked()
+            {
+                if let Some(path) =
+                    crate::shell::open_dialog_same_dir(app.source_file()).pick_file()
+                {
+                    msg_if_fail(
+                        app.diff_with_file(path, gui),
+                        "Failed to diff",
+                        &mut gui.msg_dialog,
+                    );
+                }
+            }
+        });
         ui.horizontal(|ui| {
             if ui
                 .button("Filter unchanged")
