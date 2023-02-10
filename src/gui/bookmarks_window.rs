@@ -226,6 +226,21 @@ impl BookmarksWindow {
                         mark.value_type = val;
                     }
                 });
+            ui.horizontal(|ui| {
+                ui.label("Value");
+                let result = value_ui(
+                    mark,
+                    &mut app.data,
+                    &mut app.edit_state,
+                    ui,
+                    &mut app.clipboard,
+                    &mut gui.msg_dialog,
+                );
+                match result {
+                    Ok(act) => action = act,
+                    Err(e) => msg_fail(&e, "Value ui error", &mut gui.msg_dialog),
+                }
+            });
             #[expect(clippy::single_match, reason = "Want to add more variants in future")]
             match &mut mark.value_type {
                 ValueType::StringMap(list) => {

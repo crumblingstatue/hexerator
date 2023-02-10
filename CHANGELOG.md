@@ -5,6 +5,7 @@
 ### Added
 - Context menu option to copy a bookmark's offset
 - Jump-to button in detail view for bookmarks
+- Value edit input in detail view for bookmarks
 
 
 ### Changed
