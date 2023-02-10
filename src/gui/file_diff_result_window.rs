@@ -58,6 +58,7 @@ impl FileDiffResultWindow {
                 .clicked()
             {
                 let prev_pref = app.preferences.keep_meta;
+                let prev_path = app.args.src.file.clone();
                 app.preferences.keep_meta = true;
                 let result = app.load_file(
                     gui.file_diff_result_window.path.clone(),
@@ -67,7 +68,15 @@ impl FileDiffResultWindow {
                     events,
                 );
                 app.preferences.keep_meta = prev_pref;
-                msg_if_fail(result, "Failed to load file", &mut gui.msg_dialog);
+                if msg_if_fail(result, "Failed to load file", &mut gui.msg_dialog).is_none() {
+                    if let Some(path) = prev_path {
+                        msg_if_fail(
+                            app.diff_with_file(path, gui),
+                            "Failed to diff",
+                            &mut gui.msg_dialog,
+                        );
+                    }
+                }
             }
             if ui
                 .button("🖹 Diff with...")
