@@ -50,8 +50,8 @@ impl FileDiffResultWindow {
             ui.label("No difference");
             return;
         }
+        ui.label(gui.file_diff_result_window.path.display().to_string());
         ui.horizontal(|ui| {
-            ui.label(gui.file_diff_result_window.path.display().to_string());
             if ui
                 .button("🗁 Open this")
                 .on_hover_text("Open the diffed-against file Hexerator")
@@ -94,6 +94,7 @@ impl FileDiffResultWindow {
                 }
             }
         });
+        ui.separator();
         ui.horizontal(|ui| {
             if ui
                 .button("Filter unchanged")
