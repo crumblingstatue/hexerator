@@ -546,16 +546,14 @@ impl App {
 
     pub(crate) fn diff_with_file(&mut self, path: PathBuf, gui: &mut Gui) -> anyhow::Result<()> {
         let file_data = read_source_to_buf(&path, &self.args.src)?;
-        let mut diff_entries = Vec::new();
+        let mut offs = Vec::new();
         for ((offset, &my_byte), &file_byte) in self.data.iter().enumerate().zip(file_data.iter()) {
             if my_byte != file_byte {
-                diff_entries.push(FileDiffEntry {
-                    file_val: file_byte,
-                    offset,
-                });
+                offs.push(offset);
             }
         }
-        gui.file_diff_result_window.diff_entries = diff_entries;
+        gui.file_diff_result_window.offsets = offs;
+        gui.file_diff_result_window.file_data = file_data;
         gui.file_diff_result_window.path = path;
         gui.file_diff_result_window.open.set(true);
         Ok(())
@@ -736,11 +734,6 @@ pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, any
     let mut buf = vec![0; len];
     f.read_exact(&mut buf)?;
     Ok(buf)
-}
-
-pub struct FileDiffEntry {
-    pub file_val: u8,
-    pub offset: usize,
 }
 
 pub fn temp_metafile_backup_path() -> PathBuf {

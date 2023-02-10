@@ -1,6 +1,6 @@
 use {
     crate::{
-        app::{read_source_to_buf, FileDiffEntry},
+        app::read_source_to_buf,
         gui::window_open::WindowOpen,
         meta::{find_most_specific_region_for_offset, value_type::ValueType, Bookmark, RegionKey},
         region_context_menu,
@@ -12,7 +12,8 @@ use {
 };
 
 pub struct FileDiffResultWindow {
-    pub diff_entries: Vec<FileDiffEntry>,
+    pub file_data: Vec<u8>,
+    pub offsets: Vec<usize>,
     pub open: WindowOpen,
     pub path: PathBuf,
     pub auto_refresh: bool,
@@ -23,18 +24,19 @@ pub struct FileDiffResultWindow {
 impl Default for FileDiffResultWindow {
     fn default() -> Self {
         Self {
-            diff_entries: Default::default(),
+            offsets: Default::default(),
             open: Default::default(),
             path: Default::default(),
             auto_refresh: Default::default(),
             auto_refresh_interval_ms: Default::default(),
             last_refresh: Instant::now(),
+            file_data: Vec::new(),
         }
     }
 }
 impl FileDiffResultWindow {
     pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut crate::app::App) {
-        if gui.file_diff_result_window.diff_entries.is_empty() {
+        if gui.file_diff_result_window.offsets.is_empty() {
             ui.label("No difference");
             return;
         }
@@ -48,9 +50,9 @@ impl FileDiffResultWindow {
                 let result: anyhow::Result<()> = try {
                     let file_data =
                         read_source_to_buf(&gui.file_diff_result_window.path, &app.args.src)?;
-                    gui.file_diff_result_window
-                        .diff_entries
-                        .retain(|en| en.file_val == file_data[en.offset]);
+                    gui.file_diff_result_window.offsets.retain(|&offs| {
+                        gui.file_diff_result_window.file_data[offs] == file_data[offs]
+                    });
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
@@ -62,9 +64,9 @@ impl FileDiffResultWindow {
                 let result: anyhow::Result<()> = try {
                     let file_data =
                         read_source_to_buf(&gui.file_diff_result_window.path, &app.args.src)?;
-                    gui.file_diff_result_window
-                        .diff_entries
-                        .retain(|en| en.file_val != file_data[en.offset]);
+                    gui.file_diff_result_window.offsets.retain(|&offs| {
+                        gui.file_diff_result_window.file_data[offs] != file_data[offs]
+                    });
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
@@ -81,11 +83,8 @@ impl FileDiffResultWindow {
             {
                 gui.file_diff_result_window.last_refresh = Instant::now();
                 let result: anyhow::Result<()> = try {
-                    let file_data =
+                    gui.file_diff_result_window.file_data =
                         read_source_to_buf(&gui.file_diff_result_window.path, &app.args.src)?;
-                    for en in &mut gui.file_diff_result_window.diff_entries {
-                        en.file_val = file_data[en.offset];
-                    }
                 };
                 msg_if_fail(result, "Refresh failed", &mut gui.msg_dialog);
             }
@@ -125,23 +124,23 @@ impl FileDiffResultWindow {
             .body(|body| {
                 body.rows(
                     20.0,
-                    gui.file_diff_result_window.diff_entries.len(),
+                    gui.file_diff_result_window.offsets.len(),
                     |idx, mut row| {
-                        let entry = &gui.file_diff_result_window.diff_entries[idx];
+                        let offs = gui.file_diff_result_window.offsets[idx];
                         row.col(|ui| {
-                            ui.label(app.data[entry.offset].to_string());
+                            ui.label(app.data[offs].to_string());
                         });
                         row.col(|ui| {
-                            ui.label(entry.file_val.to_string());
+                            ui.label(gui.file_diff_result_window.file_data[offs].to_string());
                         });
                         row.col(|ui| {
                             if ui
-                                .link(entry.offset.to_string())
+                                .link(offs.to_string())
                                 .context_menu(|ui| {
                                     if ui.button("Add bookmark").clicked() {
                                         let idx = app.meta_state.meta.bookmarks.len();
                                         app.meta_state.meta.bookmarks.push(Bookmark {
-                                            offset: entry.offset,
+                                            offset: offs,
                                             label: "New bookmark".into(),
                                             desc: String::new(),
                                             value_type: ValueType::None,
@@ -152,13 +151,13 @@ impl FileDiffResultWindow {
                                 })
                                 .clicked()
                             {
-                                action = Action::Goto(entry.offset);
+                                action = Action::Goto(offs);
                             }
                         });
                         row.col(|ui| {
                             match find_most_specific_region_for_offset(
                                 &app.meta_state.meta.low.regions,
-                                entry.offset,
+                                offs,
                             ) {
                                 Some(reg_key) => {
                                     let reg = &app.meta_state.meta.low.regions[reg_key];
@@ -183,7 +182,7 @@ impl FileDiffResultWindow {
                                 .bookmarks
                                 .iter()
                                 .enumerate()
-                                .find(|(_i, b)| b.offset == entry.offset)
+                                .find(|(_i, b)| b.offset == offs)
                             {
                                 Some((idx, bookmark)) => {
                                     if ui
@@ -210,11 +209,9 @@ impl FileDiffResultWindow {
                 app.edit_state.set_cursor(off);
                 app.hex_ui.flash_cursor();
             }
-            Action::RemoveRegion(key) => gui.file_diff_result_window.diff_entries.retain(|en| {
-                let reg = find_most_specific_region_for_offset(
-                    &app.meta_state.meta.low.regions,
-                    en.offset,
-                );
+            Action::RemoveRegion(key) => gui.file_diff_result_window.offsets.retain(|&offs| {
+                let reg =
+                    find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, offs);
                 reg != Some(key)
             }),
         }
