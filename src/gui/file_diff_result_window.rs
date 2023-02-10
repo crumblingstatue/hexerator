@@ -232,6 +232,7 @@ impl FileDiffResultWindow {
                                         });
                                         gui.bookmarks_window.open.set(true);
                                         gui.bookmarks_window.selected = Some(idx);
+                                        ui.close_menu();
                                     }
                                 })
                                 .clicked()
