@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Context menu option to copy a bookmark's offset
+- Jump-to button in detail view for bookmarks
+
+
 ### Changed
 
 - The virtual memory map window now makes it more clear that you're no longer
