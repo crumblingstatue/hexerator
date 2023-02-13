@@ -20,6 +20,12 @@ pub struct AboutWindow {
 
 const MIB: u64 = 1_048_576;
 
+macro_rules! optenv {
+    ($name:literal) => {
+        option_env!($name).unwrap_or("<unavailable>").to_string()
+    };
+}
+
 impl AboutWindow {
     pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         let win = &mut gui.about_window;
@@ -33,11 +39,11 @@ impl AboutWindow {
                 .unwrap_or_else(|| "Unknown version".into());
             win.info = [
                 ("Hexerator", String::new()),
-                ("Version", env!("VERGEN_GIT_SEMVER").into()),
-                ("Git SHA", env!("VERGEN_GIT_SHA").into()),
+                ("Version", optenv!("CARGO_PKG_VERSION")),
+                ("Git SHA", optenv!("VERGEN_GIT_SHA")),
                 (
                     "Commit date",
-                    env!("VERGEN_GIT_COMMIT_TIMESTAMP")
+                    optenv!("VERGEN_GIT_COMMIT_TIMESTAMP")
                         .split('T')
                         .next()
                         .unwrap_or("error")
@@ -45,15 +51,15 @@ impl AboutWindow {
                 ),
                 (
                     "Build date",
-                    env!("VERGEN_BUILD_TIMESTAMP")
+                    optenv!("VERGEN_BUILD_TIMESTAMP")
                         .split('T')
                         .next()
                         .unwrap_or("error")
                         .into(),
                 ),
-                ("Target", env!("VERGEN_CARGO_TARGET_TRIPLE").into()),
-                ("Cargo profile", env!("VERGEN_CARGO_PROFILE").into()),
-                ("Built with rustc", env!("VERGEN_RUSTC_SEMVER").into()),
+                ("Target", optenv!("VERGEN_CARGO_TARGET_TRIPLE")),
+                ("Cargo profile", optenv!("VERGEN_CARGO_PROFILE")),
+                ("Built with rustc", optenv!("VERGEN_RUSTC_SEMVER")),
                 ("System", String::new()),
                 ("OS", format!("{system_name} {os_ver}")),
                 ("CPU", win.sys.global_cpu_info().brand().into()),
