@@ -2,6 +2,7 @@ use {
     crate::{
         event::{Event, EventQueue},
         gui::message_dialog::{Icon, MessageDialog},
+        shell::msg_fail,
     },
     gamedebug_core::per_dbg,
 };
@@ -851,7 +852,7 @@ fn load_file_from_src_args(
             match result {
                 Ok(()) => true,
                 Err(e) => {
-                    msg.open(Icon::Error, "Failed to open file", e.to_string());
+                    msg_fail(&e, "Failed to open file", msg);
                     false
                 }
             }
