@@ -53,7 +53,8 @@ pub enum FindType {
 #[derive(Default)]
 pub struct FindDialog {
     pub open: WindowOpen,
-    pub input: String,
+    pub find_input: String,
+    pub replace_input: String,
     /// Results, as a Bec that can be indexed. Needed because of search cursor.
     pub results_vec: Vec<usize>,
     /// Used to keep track of previous/next result to go to
@@ -76,12 +77,33 @@ impl FindDialog {
                     ui.selectable_value(&mut gui.find_dialog.find_type, type_, label);
                 }
             });
-        let re = ui.text_edit_singleline(&mut gui.find_dialog.input);
+        let re = ui
+            .add(egui::TextEdit::singleline(&mut gui.find_dialog.find_input).hint_text("🔍 Find"));
         if gui.find_dialog.open.just_now() {
             re.request_focus();
         }
         if re.lost_focus() && ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
             msg_if_fail(do_search(app, gui), "Search failed", &mut gui.msg_dialog);
+        }
+        if gui.find_dialog.find_type == FindType::Ascii {
+            ui.horizontal(|ui| {
+                ui.add(
+                    egui::TextEdit::singleline(&mut gui.find_dialog.replace_input)
+                        .hint_text("🔁 Replace"),
+                );
+                if ui
+                    .add_enabled(
+                        !gui.find_dialog.results_vec.is_empty(),
+                        egui::Button::new("Replace all"),
+                    )
+                    .clicked()
+                {
+                    let replace_data = gui.find_dialog.replace_input.as_bytes();
+                    for &offset in &gui.find_dialog.results_vec {
+                        app.data[offset..offset + replace_data.len()].copy_from_slice(replace_data);
+                    }
+                }
+            });
         }
         ui.checkbox(&mut gui.find_dialog.filter_results, "Filter results")
             .on_hover_text("Base search on existing results");
@@ -334,7 +356,7 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
         FindType::F64Le => find_num::<F64Le>(gui, app)?,
         FindType::F64Be => find_num::<F64Be>(gui, app)?,
         FindType::Ascii => {
-            for offset in memchr::memmem::find_iter(&app.data, &gui.find_dialog.input) {
+            for offset in memchr::memmem::find_iter(&app.data, &gui.find_dialog.find_input) {
                 gui.find_dialog.results_vec.push(offset);
                 gui.highlight_set.insert(offset);
             }
@@ -342,7 +364,7 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
         FindType::HexString => {
             let input_bytes: Result<Vec<u8>, _> = gui
                 .find_dialog
-                .input
+                .find_input
                 .split_whitespace()
                 .map(|s| u8::from_str_radix(s, 16))
                 .collect();
@@ -371,7 +393,7 @@ where
     [(); N::BYTE_LEN]:,
     <<N as EndianedPrimitive>::Primitive as FromStr>::Err: Error + Send + Sync,
 {
-    let n: N::Primitive = gui.find_dialog.input.parse()?;
+    let n: N::Primitive = gui.find_dialog.find_input.parse()?;
     let bytes = N::to_bytes(n);
     for offset in memchr::memmem::find_iter(&app.data, &bytes) {
         gui.find_dialog.results_vec.push(offset);
@@ -386,7 +408,7 @@ fn find_u8(
     msg: &mut MessageDialog,
     highlight: &mut HighlightSet,
 ) {
-    match dia.input.as_str() {
+    match dia.find_input.as_str() {
         "?" => {
             dia.data_snapshot = app.data.clone();
             dia.results_vec.clear();
@@ -452,7 +474,7 @@ fn find_u8(
             }
             dia.data_snapshot = app.data.clone();
         }
-        _ => match parse_guess_radix(&dia.input) {
+        _ => match parse_guess_radix(&dia.find_input) {
             Ok(needle) => {
                 if dia.filter_results {
                     let results_vec_clone = dia.results_vec.clone();
