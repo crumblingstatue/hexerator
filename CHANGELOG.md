@@ -21,6 +21,7 @@
 ### Fixed
 
 - Loading process memory on windows now correctly sets relative offset
+- When failing to load a file via command line arg, error reason is now properly displayed
 
 ## [0.2.0] - 2023-01-27
 
