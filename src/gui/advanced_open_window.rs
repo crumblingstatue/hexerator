@@ -30,7 +30,7 @@ fn opt<V: Default>(
 }
 
 impl AdvancedOpenWindow {
-    pub fn ui(
+    pub(crate) fn ui(
         ui: &mut egui::Ui,
         gui: &mut Gui,
         app: &mut App,

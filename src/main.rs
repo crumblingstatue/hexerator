@@ -25,7 +25,14 @@
 )]
 #![windows_subsystem = "windows"]
 
-use {event::EventQueue, rlua::Lua};
+use {
+    event::EventQueue,
+    rlua::Lua,
+    std::{
+        collections::VecDeque,
+        sync::{Arc, Mutex},
+    },
+};
 
 mod app;
 mod args;
@@ -110,8 +117,8 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
-    let mut event_queue = EventQueue::new();
-    let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog, &mut event_queue)?;
+    let mut event_queue = Arc::new(Mutex::new(VecDeque::new()));
+    let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog, &event_queue)?;
     let lua = Lua::default();
     crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);

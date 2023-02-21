@@ -11,6 +11,7 @@ pub struct MessageDialog {
     icon: Icon,
     /// If set, it will open modal on next call of show()
     open_modal: bool,
+    buttons_ui_fn: Option<Box<UiFn>>,
 }
 
 #[derive(Default)]
@@ -21,6 +22,8 @@ pub enum Icon {
     Warn,
     Error,
 }
+
+pub(crate) type UiFn = dyn FnMut(&mut egui::Ui, &Modal);
 
 // Colors and icon text are copied from egui-toast, for visual consistency
 // https://github.com/urholaukkarinen/egui-toast
@@ -61,6 +64,10 @@ impl MessageDialog {
         self.desc = desc.into();
         self.icon = icon;
         self.open_modal = true;
+        self.buttons_ui_fn = None;
+    }
+    pub(crate) fn custom_button_row_ui(&mut self, f: Box<UiFn>) {
+        self.buttons_ui_fn = Some(f);
     }
 
     pub(crate) fn show(&mut self, ctx: &egui::Context, cb: &mut arboard::Clipboard) {
@@ -105,8 +112,13 @@ impl MessageDialog {
                         inp.consume_key(egui::Modifiers::default(), egui::Key::Escape),
                     )
                 });
-                if ui.button("Ok").clicked() || enter_pressed || esc_pressed {
-                    modal.close();
+                match &mut self.buttons_ui_fn {
+                    Some(f) => f(ui, modal),
+                    None => {
+                        if ui.button("Ok").clicked() || enter_pressed || esc_pressed {
+                            modal.close();
+                        }
+                    }
                 }
             });
         });

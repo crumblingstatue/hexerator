@@ -38,7 +38,7 @@ mod perspectives_window;
 mod preferences_window;
 mod regions_window;
 pub mod selection_menu;
-mod top_menu;
+pub mod top_menu;
 mod top_panel;
 mod views_window;
 mod window_open;

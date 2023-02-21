@@ -2,7 +2,7 @@ use crate::{event::EventQueue, shell::msg_if_fail};
 
 mod analysis;
 mod cursor;
-mod edit;
+pub mod edit;
 mod file;
 mod help;
 mod meta;
@@ -27,7 +27,7 @@ pub fn top_menu(
 ) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| file::ui(ui, gui, app, font, events));
-        ui.menu_button("Edit", |ui| edit::ui(ui, gui, app));
+        ui.menu_button("Edit", |ui| edit::ui(ui, gui, app, events));
         ui.menu_button("Cursor", |ui| cursor::ui(ui, gui, app));
         ui.menu_button("View", |ui| view::ui(ui, gui, app));
         ui.menu_button("Perspective", |ui| perspective::ui(ui, gui, app));

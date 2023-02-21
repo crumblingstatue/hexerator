@@ -65,12 +65,12 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(
+    pub(crate) fn new(
         mut args: Args,
         cfg: Config,
         font: &Font,
         msg: &mut MessageDialog,
-        events: &mut EventQueue,
+        events: &EventQueue,
     ) -> anyhow::Result<Self> {
         if args.recent && let Some(recent) = cfg.recent.most_recent() {
             args.src = recent.clone();
@@ -465,7 +465,7 @@ impl App {
         mut args: Args,
         font: &Font,
         msg: &mut MessageDialog,
-        events: &mut EventQueue,
+        events: &EventQueue,
     ) -> anyhow::Result<()> {
         if load_file_from_src_args(
             &mut args.src,
@@ -794,7 +794,7 @@ fn load_file_from_src_args(
     source: &mut Option<Source>,
     data: &mut Vec<u8>,
     msg: &mut MessageDialog,
-    events: &mut EventQueue,
+    events: &EventQueue,
 ) -> bool {
     if let Some(file_arg) = &src_args.file {
         if file_arg.as_os_str() == "-" {
@@ -810,7 +810,10 @@ fn load_file_from_src_args(
                 },
                 state: SourceState::default(),
             });
-            events.push_back(Event::SourceChanged);
+            events
+                .lock()
+                .expect("Failed to unlock event queue")
+                .push_back(Event::SourceChanged);
             true
         } else {
             let result: Result<(), anyhow::Error> = try {
@@ -847,7 +850,10 @@ fn load_file_from_src_args(
                     },
                     state: SourceState::default(),
                 });
-                events.push_back(Event::SourceChanged);
+                events
+                    .lock()
+                    .expect("Failed to unlock event queue")
+                    .push_back(Event::SourceChanged);
             };
             match result {
                 Ok(()) => true,

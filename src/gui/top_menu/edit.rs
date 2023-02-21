@@ -1,13 +1,14 @@
 use {
     crate::{
         app::App,
-        gui::{dialogs::TruncateDialog, Gui},
+        event::{Event, EventQueue},
+        gui::{dialogs::TruncateDialog, message_dialog::Icon, Gui},
         shell::msg_if_fail,
     },
     egui::Button,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQueue) {
     if ui
         .add(Button::new("Find...").shortcut_text("Ctrl+F"))
         .clicked()
@@ -65,11 +66,45 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         if ui.button("Hex text from clipboard").clicked() {
             ui.close_menu();
             let s = crate::app::get_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog);
-            let mut cursor = app.edit_state.cursor;
+            let cursor = app.edit_state.cursor;
             let result: anyhow::Result<()> = try {
-                for hex in s.split_ascii_whitespace() {
-                    app.data[cursor] = u8::from_str_radix(hex, 16)?;
-                    cursor += 1;
+                let bytes = s
+                    .split_ascii_whitespace()
+                    .map(|s| u8::from_str_radix(s, 16))
+                    .collect::<Result<Vec<_>, _>>()?;
+                if cursor + bytes.len() < app.data.len() {
+                    event_queue
+                        .lock()
+                        .expect("Failed to unlock event queue")
+                        .push_back(Event::EditMenuEvent(EditMenuEvt::PasteBytes {
+                            at: cursor,
+                            bytes,
+                        }));
+                } else {
+                    gui.msg_dialog.open(
+                        Icon::Warn,
+                        "Prompt",
+                        "Paste overflows the document. What do do?",
+                    );
+                    let event_queue = event_queue.clone();
+                    gui.msg_dialog
+                        .custom_button_row_ui(Box::new(move |ui, modal| {
+                            if ui.button("Cancel paste").clicked() {
+                                modal.close();
+                            } else if ui.button("Extend document").clicked() {
+                                let mut evq =
+                                    event_queue.lock().expect("Failed to unlock event queue");
+                                evq.push_back(Event::EditMenuEvent(EditMenuEvt::ExtendDocument {
+                                    new_len: cursor + bytes.len(),
+                                }));
+                                evq.push_back(Event::EditMenuEvent(EditMenuEvt::PasteBytes {
+                                    at: cursor,
+                                    bytes: bytes.clone(),
+                                }));
+                                modal.close();
+                            } else if ui.button("Shorten paste").clicked() {
+                            }
+                        }));
                 }
             };
             msg_if_fail(result, "Hex text paste error", &mut gui.msg_dialog);
@@ -97,4 +132,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         );
         ui.close_menu();
     }
+}
+
+#[derive(Debug)]
+pub enum EditMenuEvt {
+    ExtendDocument { new_len: usize },
+    PasteBytes { at: usize, bytes: Vec<u8> },
 }
