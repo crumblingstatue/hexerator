@@ -76,7 +76,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQu
                     event_queue
                         .lock()
                         .expect("Failed to unlock event queue")
-                        .push_back(Event::EditMenuEvent(EditMenuEvt::PasteBytes {
+                        .push_back(Event::EditMenuEvt(EditMenuEvt::PasteBytes {
                             at: cursor,
                             bytes,
                         }));
@@ -94,10 +94,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQu
                             } else if ui.button("Extend document").clicked() {
                                 let mut evq =
                                     event_queue.lock().expect("Failed to unlock event queue");
-                                evq.push_back(Event::EditMenuEvent(EditMenuEvt::ExtendDocument {
+                                evq.push_back(Event::EditMenuEvt(EditMenuEvt::ExtendDocument {
                                     new_len: cursor + bytes.len(),
                                 }));
-                                evq.push_back(Event::EditMenuEvent(EditMenuEvt::PasteBytes {
+                                evq.push_back(Event::EditMenuEvt(EditMenuEvt::PasteBytes {
                                     at: cursor,
                                     bytes: bytes.clone(),
                                 }));

@@ -15,7 +15,7 @@ use {
 #[derive(Debug)]
 pub enum Event {
     SourceChanged,
-    EditMenuEvent(EditMenuEvt),
+    EditMenuEvt(EditMenuEvt),
     QuitRequested,
 }
 
@@ -36,7 +36,7 @@ pub fn handle_events(events: &EventQueue, app: &mut App, window: &mut RenderWind
                 "{} - Hexerator",
                 app.source_file().map_or("no source", path_filename_as_str)
             )),
-            Event::EditMenuEvent(ev) => match ev {
+            Event::EditMenuEvt(ev) => match ev {
                 EditMenuEvt::ExtendDocument { new_len } => {
                     app.data.resize(new_len, 0);
                 }
