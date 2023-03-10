@@ -2,7 +2,7 @@ use {
     crate::{
         app::{set_clipboard_string, App},
         args::{Args, SourceArgs},
-        event::EventQueue,
+        event::{Event, EventQueue},
         gui::{dialogs::AutoSaveReloadDialog, Gui},
         shell::msg_if_fail,
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
@@ -175,5 +175,8 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
     {
         app.close_file();
         ui.close_menu();
+    }
+    if ui.button("Quit").clicked() {
+        events.lock().unwrap().push_back(Event::QuitRequested);
     }
 }

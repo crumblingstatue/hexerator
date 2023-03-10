@@ -200,7 +200,9 @@ fn do_frame(
     events: &mut EventQueue,
 ) -> bool {
     // Handle hexerator events
-    crate::event::handle_events(events, app, window);
+    if !crate::event::handle_events(events, app, window) {
+        return false;
+    }
     // Handle window events
     handle_events(gui, app, window, sf_egui, font, events);
     update(app, sf_egui.context().wants_keyboard_input());
