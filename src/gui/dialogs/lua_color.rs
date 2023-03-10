@@ -61,26 +61,31 @@ impl Dialog for LuaColorDialog {
             .code_editor()
             .desired_width(f32::INFINITY)
             .show(ui);
-        if ui.button("Execute").clicked() || self.auto_exec {
-            lua.context(|ctx| {
-                let chunk = ctx.load(&self.script);
-                let res: rlua::Result<()> = try {
-                    let fun = chunk.eval::<Function>()?;
-                    for (i, c) in color_data.iter_mut().enumerate() {
-                        let rgb: [u8; 3] = fun.call((i,))?;
-                        *c = rgb;
+        ui.horizontal(|ui| {
+            if ui.button("Execute").clicked() || self.auto_exec {
+                lua.context(|ctx| {
+                    let chunk = ctx.load(&self.script);
+                    let res: rlua::Result<()> = try {
+                        let fun = chunk.eval::<Function>()?;
+                        for (i, c) in color_data.iter_mut().enumerate() {
+                            let rgb: [u8; 3] = fun.call((i,))?;
+                            *c = rgb;
+                        }
+                    };
+                    if let Err(e) = res {
+                        self.err_string = e.to_string();
+                    } else {
+                        self.err_string.clear();
                     }
-                };
-                if let Err(e) = res {
-                    self.err_string = e.to_string();
-                } else {
-                    self.err_string.clear();
-                }
-            });
-        }
-        ui.checkbox(&mut self.auto_exec, "Auto execute");
+                });
+            }
+            ui.checkbox(&mut self.auto_exec, "Auto execute");
+        });
         if !self.err_string.is_empty() {
             ui.label(egui::RichText::new(&self.err_string).color(egui::Color32::RED));
+        }
+        if ui.button("Close").clicked() {
+            return false;
         }
         true
     }
