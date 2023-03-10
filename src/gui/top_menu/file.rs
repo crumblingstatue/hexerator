@@ -177,6 +177,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
         ui.close_menu();
     }
     if ui.button("Quit").clicked() {
-        events.lock().unwrap().push_back(Event::QuitRequested);
+        events.lock().push_back(Event::QuitRequested);
     }
 }

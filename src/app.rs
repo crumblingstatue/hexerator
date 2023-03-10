@@ -810,10 +810,7 @@ fn load_file_from_src_args(
                 },
                 state: SourceState::default(),
             });
-            events
-                .lock()
-                .expect("Failed to unlock event queue")
-                .push_back(Event::SourceChanged);
+            events.lock().push_back(Event::SourceChanged);
             true
         } else {
             let result: Result<(), anyhow::Error> = try {
@@ -850,10 +847,7 @@ fn load_file_from_src_args(
                     },
                     state: SourceState::default(),
                 });
-                events
-                    .lock()
-                    .expect("Failed to unlock event queue")
-                    .push_back(Event::SourceChanged);
+                events.lock().push_back(Event::SourceChanged);
             };
             match result {
                 Ok(()) => true,

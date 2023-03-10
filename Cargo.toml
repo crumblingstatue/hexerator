@@ -42,6 +42,7 @@ arboard = { version = "3.2.0", default-features = false }
 paste = "1.0.12"
 iced-x86 = "1.18.0"
 strum = { version = "0.24.1", features = ["derive"] }
+parking_lot = "0.12.1"
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.45.0"

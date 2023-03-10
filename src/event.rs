@@ -2,11 +2,8 @@ use {
     crate::{app::App, gui::top_menu::edit::EditMenuEvt},
     egui_sfml::sfml::graphics::RenderWindow,
     gamedebug_core::per,
-    std::{
-        collections::VecDeque,
-        path::Path,
-        sync::{Arc, Mutex},
-    },
+    parking_lot::Mutex,
+    std::{collections::VecDeque, path::Path, sync::Arc},
 };
 
 /// An event that happened in Hexerator
@@ -28,7 +25,7 @@ fn path_filename_as_str(path: &Path) -> &str {
 
 /// Returns false if application should quit
 pub fn handle_events(events: &EventQueue, app: &mut App, window: &mut RenderWindow) -> bool {
-    let mut events = events.lock().expect("Failed to unlock event queue");
+    let mut events = events.lock();
     while let Some(event) = events.pop_front() {
         per!("Incoming event: {event:?}");
         match event {

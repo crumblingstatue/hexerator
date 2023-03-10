@@ -27,11 +27,9 @@
 
 use {
     event::EventQueue,
+    parking_lot::Mutex,
     rlua::Lua,
-    std::{
-        collections::VecDeque,
-        sync::{Arc, Mutex},
-    },
+    std::{collections::VecDeque, sync::Arc},
 };
 
 mod app;

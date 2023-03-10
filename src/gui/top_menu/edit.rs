@@ -75,7 +75,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQu
                 if cursor + bytes.len() < app.data.len() {
                     event_queue
                         .lock()
-                        .expect("Failed to unlock event queue")
                         .push_back(Event::EditMenuEvt(EditMenuEvt::PasteBytes {
                             at: cursor,
                             bytes,
@@ -92,8 +91,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQu
                             if ui.button("Cancel paste").clicked() {
                                 modal.close();
                             } else if ui.button("Extend document").clicked() {
-                                let mut evq =
-                                    event_queue.lock().expect("Failed to unlock event queue");
+                                let mut evq = event_queue.lock();
                                 evq.push_back(Event::EditMenuEvt(EditMenuEvt::ExtendDocument {
                                     new_len: cursor + bytes.len(),
                                 }));

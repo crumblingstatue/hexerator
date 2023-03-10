@@ -707,6 +707,7 @@ dependencies = [
  "memchr",
  "num-traits",
  "open",
+ "parking_lot",
  "paste",
  "proc-maps",
  "rand",
