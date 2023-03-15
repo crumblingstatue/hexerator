@@ -229,6 +229,11 @@ pub fn do_egui(
                                         },
                                     }
                                     ui.separator();
+                                    if ui.button("Region properties...").clicked() {
+                                        gui.regions_window.selected_key = Some(app.region_key_for_view(view));
+                                        gui.regions_window.open.set(true);
+                                        close = true;
+                                    }
                                     if ui.button("View properties...").clicked() {
                                         gui.views_window.selected = view;
                                         gui.views_window.open.set(true);

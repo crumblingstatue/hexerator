@@ -17,7 +17,7 @@ use {
         layout::{default_margin, do_auto_layout, Layout},
         meta::{
             perspective::Perspective, region::Region, LayoutKey, Meta, NamedRegion, NamedView,
-            PerspectiveKey, PerspectiveMap, RegionMap, ViewKey,
+            PerspectiveKey, PerspectiveMap, RegionKey, RegionMap, ViewKey,
         },
         meta_state::MetaState,
         preferences::Preferences,
@@ -650,6 +650,11 @@ impl App {
             let per_key = meta.views[view_key].view.perspective;
             &meta.low.perspectives[per_key]
         })
+    }
+
+    pub(crate) fn region_key_for_view(&self, view_key: ViewKey) -> RegionKey {
+        let per_key = self.meta_state.meta.views[view_key].view.perspective;
+        self.meta_state.meta.low.perspectives[per_key].region
     }
 }
 
