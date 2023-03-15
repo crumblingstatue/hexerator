@@ -1,12 +1,3 @@
-use {
-    crate::{
-        event::{Event, EventQueue},
-        gui::message_dialog::{Icon, MessageDialog},
-        shell::msg_fail,
-    },
-    gamedebug_core::per_dbg,
-};
-
 pub mod edit_state;
 pub mod interact_mode;
 pub mod presentation;
@@ -16,7 +7,11 @@ use {
     crate::{
         args::{Args, SourceArgs},
         config::Config,
-        gui::Gui,
+        event::{Event, EventQueue},
+        gui::{
+            message_dialog::{Icon, MessageDialog},
+            Gui,
+        },
         hex_ui::HexUi,
         input::Input,
         layout::{default_margin, do_auto_layout, Layout},
@@ -26,13 +21,13 @@ use {
         },
         meta_state::MetaState,
         preferences::Preferences,
-        shell::msg_if_fail,
+        shell::{msg_fail, msg_if_fail},
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
         view::{HexData, TextData, View, ViewKind},
     },
     anyhow::{bail, Context},
     egui_sfml::sfml::graphics::Font,
-    gamedebug_core::per,
+    gamedebug_core::{per, per_dbg},
     slotmap::Key,
     std::{
         ffi::OsString,
