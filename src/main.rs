@@ -25,13 +25,6 @@
 )]
 #![windows_subsystem = "windows"]
 
-use {
-    event::EventQueue,
-    parking_lot::Mutex,
-    rlua::Lua,
-    std::{collections::VecDeque, sync::Arc},
-};
-
 mod app;
 mod args;
 mod backend;
@@ -76,6 +69,7 @@ use {
         },
         SfEgui,
     },
+    event::EventQueue,
     gamedebug_core::per,
     gui::{
         dialogs::JumpDialog,
@@ -83,11 +77,13 @@ use {
         ContextMenu, ContextMenuData, Gui,
     },
     meta::{NamedView, PerspectiveMap, RegionMap},
+    parking_lot::Mutex,
     rfd::MessageLevel,
+    rlua::Lua,
     serde::{Deserialize, Serialize},
     shell::msg_if_fail,
     slotmap::Key as _,
-    std::{fmt::Display, time::Duration},
+    std::{collections::VecDeque, fmt::Display, sync::Arc, time::Duration},
 };
 
 #[derive(Serialize, Deserialize, Debug)]
