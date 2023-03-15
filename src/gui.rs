@@ -1,24 +1,3 @@
-use {
-    self::{
-        external_command_window::ExternalCommandWindow, message_dialog::MessageDialog,
-        preferences_window::PreferencesWindow,
-    },
-    crate::{
-        config::Style, event::EventQueue, gui::windows::AboutWindow, meta::value_type::ValueType,
-    },
-    egui_sfml::{
-        egui::{FontFamily, FontId},
-        sfml::graphics::RenderWindow,
-        TextureCreateError,
-    },
-    rfd::MessageLevel,
-    rlua::Lua,
-    std::{
-        any::TypeId,
-        collections::{HashMap, HashSet},
-    },
-};
-
 mod advanced_open_window;
 mod bookmarks_window;
 mod bottom_panel;
@@ -47,26 +26,38 @@ mod windows;
 use {
     self::{
         advanced_open_window::AdvancedOpenWindow, bookmarks_window::BookmarksWindow,
+        external_command_window::ExternalCommandWindow,
         file_diff_result_window::FileDiffResultWindow, find_dialog::FindDialog,
         find_memory_pointers_window::FindMemoryPointersWindow, inspect_panel::InspectPanel,
-        layouts_window::LayoutsWindow, meta_diff_window::MetaDiffWindow,
-        open_process_window::OpenProcessWindow, perspectives_window::PerspectivesWindow,
+        layouts_window::LayoutsWindow, message_dialog::MessageDialog,
+        meta_diff_window::MetaDiffWindow, open_process_window::OpenProcessWindow,
+        perspectives_window::PerspectivesWindow, preferences_window::PreferencesWindow,
         regions_window::RegionsWindow, views_window::ViewsWindow,
     },
     crate::{
         app::App,
-        meta::{Bookmark, ViewKey},
+        config::Style,
+        event::EventQueue,
+        gui::windows::AboutWindow,
+        meta::{value_type::ValueType, Bookmark, ViewKey},
         view::{ViewportScalar, ViewportVec},
     },
     egui_sfml::{
         egui,
         egui::{
-            FontFamily::Proportional,
+            FontFamily::{self, Proportional},
+            FontId,
             TextStyle::{Body, Button, Heading, Monospace, Small},
             TopBottomPanel, Window,
         },
-        sfml::graphics::Font,
-        SfEgui,
+        sfml::graphics::{Font, RenderWindow},
+        SfEgui, TextureCreateError,
+    },
+    rfd::MessageLevel,
+    rlua::Lua,
+    std::{
+        any::TypeId,
+        collections::{HashMap, HashSet},
     },
 };
 
