@@ -93,6 +93,14 @@ impl RegionsWindow {
             } else {
                 ui.add_enabled(false, egui::Button::new("Set to selection"));
             }
+            if ui
+                .button("Reset")
+                .on_hover_text("Encompass the whole document")
+                .clicked()
+            {
+                reg.region.begin = 0;
+                reg.region.end = app.data.len() - 1;
+            }
             ui.label("Description");
             ui.text_edit_multiline(&mut reg.desc);
             if ui.button("Delete").clicked() {
