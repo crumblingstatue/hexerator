@@ -1,3 +1,5 @@
+use crate::view::ViewportScalar;
+
 pub mod edit_state;
 pub mod interact_mode;
 pub mod presentation;
@@ -418,21 +420,34 @@ impl App {
             .layouts
             .get(self.hex_ui.current_layout)?;
         for view_key in layout.iter() {
-            let view = &self.meta_state.meta.views[view_key];
-            if let Some((row, col)) = view.view.row_col_offset_of_pos(
-                x,
-                y,
-                &self.meta_state.meta.low.perspectives,
-                &self.meta_state.meta.low.regions,
-            ) {
-                return Some((
-                    self.meta_state.meta.low.perspectives[view.view.perspective]
-                        .byte_offset_of_row_col(row, col, &self.meta_state.meta.low.regions),
-                    view_key,
-                ));
+            if let Some(pos) = self.view_byte_offset_at_pos(view_key, x, y) {
+                return Some((pos, view_key));
             }
         }
         None
+    }
+    pub fn view_byte_offset_at_pos(&self, view_key: ViewKey, x: i16, y: i16) -> Option<usize> {
+        let view = &self.meta_state.meta.views[view_key].view;
+        view.row_col_offset_of_pos(
+            x,
+            y,
+            &self.meta_state.meta.low.perspectives,
+            &self.meta_state.meta.low.regions,
+        )
+        .map(|(row, col)| {
+            self.meta_state.meta.low.perspectives[view.perspective].byte_offset_of_row_col(
+                row,
+                col,
+                &self.meta_state.meta.low.regions,
+            )
+        })
+    }
+    pub fn view_at_pos(&self, x: ViewportScalar, y: ViewportScalar) -> Option<ViewKey> {
+        self.meta_state
+            .meta
+            .views
+            .iter()
+            .find_map(|(k, view)| view.view.viewport_rect.contains_pos(x, y).then_some(k))
     }
     pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<ViewKey> {
         let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];

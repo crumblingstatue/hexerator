@@ -403,18 +403,39 @@ fn handle_events(
                         gui.views_window.selected = view_idx;
                     }
                 } else if button == mouse::Button::Right {
-                    if let Some((off, view_key)) = app.byte_offset_at_pos(mp.x, mp.y) {
-                        gui.context_menu = Some(ContextMenu::new(
-                            mp.x,
-                            mp.y,
-                            ContextMenuData::ViewByte {
-                                view: view_key,
-                                byte_off: off,
-                            },
-                        ));
-                    } else {
-                        gui.context_menu =
-                            Some(ContextMenu::new(mp.x, mp.y, ContextMenuData::Empty));
+                    match app.view_at_pos(mp.x, mp.y) {
+                        Some(view_key) => match app.view_byte_offset_at_pos(view_key, mp.x, mp.y) {
+                            Some(pos) => {
+                                gui.context_menu = Some(ContextMenu::new(
+                                    mp.x,
+                                    mp.y,
+                                    ContextMenuData {
+                                        view: Some(view_key),
+                                        byte_off: Some(pos),
+                                    },
+                                ))
+                            }
+                            None => {
+                                gui.context_menu = Some(ContextMenu::new(
+                                    mp.x,
+                                    mp.y,
+                                    ContextMenuData {
+                                        view: Some(view_key),
+                                        byte_off: None,
+                                    },
+                                ))
+                            }
+                        },
+                        None => {
+                            gui.context_menu = Some(ContextMenu::new(
+                                mp.x,
+                                mp.y,
+                                ContextMenuData {
+                                    view: None,
+                                    byte_off: None,
+                                },
+                            ))
+                        }
                     }
                 }
             }

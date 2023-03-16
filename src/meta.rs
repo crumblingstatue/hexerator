@@ -206,6 +206,7 @@ pub struct NamedView {
     pub name: String,
     pub view: View,
 }
+
 impl NamedRegion {
     pub fn new_from_selection(sel: Region) -> Self {
         Self {
