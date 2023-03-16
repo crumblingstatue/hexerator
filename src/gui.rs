@@ -191,6 +191,12 @@ pub fn do_egui(
                     egui::Frame::menu(ui.style())
                         .inner_margin(2.0)
                         .show(ui, |ui| {
+                            if let Some(sel) = app.hex_ui.selection() {
+                                ui.separator();
+                                if crate::gui::selection_menu::selection_menu("Selection... ⏷", ui, app, &mut gui.dialogs, &mut gui.msg_dialog, &mut gui.regions_window, sel) {
+                                    close = true;
+                                }
+                            }
                             if let Some(view) = menu.data.view {
                                 if ui.button("Region properties...").clicked() {
                                     gui.regions_window.selected_key = Some(app.region_key_for_view(view));
@@ -221,12 +227,6 @@ pub fn do_egui(
                                 }
                             }
                             if let Some(byte_off) = menu.data.byte_off {
-                                if let Some(sel) = app.hex_ui.selection() {
-                                    if crate::gui::selection_menu::selection_menu("Selection... ⏷", ui, app, &mut gui.dialogs, &mut gui.msg_dialog, &mut gui.regions_window, sel) {
-                                        close = true;
-                                    }
-                                    ui.separator();
-                                }
                                 match app.meta_state.meta.bookmarks.iter().position(|bm| bm.offset == byte_off) {
                                     Some(pos) => {
                                         if ui.button("Open bookmark").clicked() {
