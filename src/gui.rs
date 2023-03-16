@@ -198,6 +198,7 @@ pub fn do_egui(
                                 }
                             }
                             if let Some(view) = menu.data.view {
+                                ui.separator();
                                 if ui.button("Region properties...").clicked() {
                                     gui.regions_window.selected_key = Some(app.region_key_for_view(view));
                                     gui.regions_window.open.set(true);
@@ -227,6 +228,7 @@ pub fn do_egui(
                                 }
                             }
                             if let Some(byte_off) = menu.data.byte_off {
+                                ui.separator();
                                 match app.meta_state.meta.bookmarks.iter().position(|bm| bm.offset == byte_off) {
                                     Some(pos) => {
                                         if ui.button("Open bookmark").clicked() {
