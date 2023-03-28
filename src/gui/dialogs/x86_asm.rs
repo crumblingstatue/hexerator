@@ -5,14 +5,14 @@ use {
 };
 
 pub struct X86AsmDialog {
-    asm_buf: String,
+    decoded: Vec<DecodedInstr>,
     bitness: u32,
 }
 
 impl X86AsmDialog {
     pub fn new() -> Self {
         Self {
-            asm_buf: String::new(),
+            decoded: Vec::new(),
             bitness: 64,
         }
     }
@@ -36,12 +36,25 @@ impl Dialog for X86AsmDialog {
         egui::ScrollArea::vertical()
             .max_height(320.0)
             .show(ui, |ui| {
-                ui.add(egui::TextEdit::multiline(&mut self.asm_buf).code_editor());
+                egui::Grid::new("asm_grid").num_columns(2).show(ui, |ui| {
+                    for instr in &self.decoded {
+                        let Some(sel_begin) = app.hex_ui.selection().map(|sel| sel.begin) else {
+                            ui.label("No selection");
+                            return;
+                        };
+                        let instr_off = instr.offset + sel_begin;
+                        if ui.link(instr_off.to_string()).clicked() {
+                            app.search_focus(instr_off);
+                        }
+                        ui.label(&instr.string);
+                        ui.end_row();
+                    }
+                });
             });
         match app.hex_ui.selection() {
             Some(sel) => {
                 if ui.button("Disassemble").clicked() {
-                    self.asm_buf = disasm(&app.data[sel.begin..=sel.end], self.bitness);
+                    self.decoded = disasm(&app.data[sel.begin..=sel.end], self.bitness);
                 }
             }
             None => {
@@ -59,14 +72,21 @@ impl Dialog for X86AsmDialog {
     }
 }
 
-fn disasm(data: &[u8], bitness: u32) -> String {
+struct DecodedInstr {
+    string: String,
+    offset: usize,
+}
+
+fn disasm(data: &[u8], bitness: u32) -> Vec<DecodedInstr> {
     let mut decoder = Decoder::new(bitness, data, 0);
     let mut fmt = NasmFormatter::default();
-    let mut out = String::new();
+    let mut vec = Vec::new();
     while decoder.can_decode() {
+        let offset = decoder.position();
         let instr = decoder.decode();
-        fmt.format(&instr, &mut out);
-        out.push('\n');
+        let mut string = String::new();
+        fmt.format(&instr, &mut string);
+        vec.push(DecodedInstr { string, offset });
     }
-    out
+    vec
 }
