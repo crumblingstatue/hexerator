@@ -15,7 +15,7 @@ type InfoPair = (&'static str, String);
 pub struct AboutWindow {
     pub open: WindowOpen,
     sys: System,
-    info: [InfoPair; 14],
+    info: [InfoPair; 15],
 }
 
 const MIB: u64 = 1_048_576;
@@ -58,7 +58,8 @@ impl AboutWindow {
                         .into(),
                 ),
                 ("Target", optenv!("VERGEN_CARGO_TARGET_TRIPLE")),
-                ("Cargo profile", optenv!("VERGEN_CARGO_PROFILE")),
+                ("Debug", optenv!("VERGEN_CARGO_DEBUG")),
+                ("Opt-level", optenv!("VERGEN_CARGO_OPT_LEVEL")),
                 ("Built with rustc", optenv!("VERGEN_RUSTC_SEMVER")),
                 ("System", String::new()),
                 ("OS", format!("{system_name} {os_ver}")),
