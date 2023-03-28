@@ -1,9 +1,12 @@
-use vergen::{vergen, Config};
-
 fn main() {
-    let mut vergen_cfg = Config::default();
-    *vergen_cfg.git_mut().skip_if_error_mut() = true;
-    if let Err(e) = vergen(vergen_cfg) {
+    if let Err(e) = vergen::EmitBuilder::builder()
+        .git_sha(false)
+        .git_commit_timestamp()
+        .build_timestamp()
+        .cargo_target_triple()
+        .rustc_semver()
+        .emit()
+    {
         println!("cargo:warning=Vergen failed with error: {e}");
     }
 }

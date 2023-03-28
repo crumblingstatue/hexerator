@@ -10,17 +10,17 @@ default = ["backend-sfml"]
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "4.1.8", features = ["derive"] }
-anyhow = "1.0.69"
+clap = { version = "4.1.14", features = ["derive"] }
+anyhow = "1.0.70"
 rfd = "0.11"
 rand = "0.8.5"
 rmp-serde = "1.1.1"
-serde = { version = "1.0.154", features = ["derive"] }
-directories = "4.0.1"
+serde = { version = "1.0.159", features = ["derive"] }
+directories = "5.0.0"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 memchr = "2.5.0"
 glu-sys = "0.1.4"
-thiserror = "1.0.39"
+thiserror = "1.0.40"
 either = "1.8.1"
 tree_magic_mini = { version = "3.0.3", features = ["tree_magic_db"] }
 bytemuck = "1.13.1"
@@ -34,10 +34,10 @@ egui = "0.21.0"
 egui_extras = { version = "0.21.0", default-features = false }
 rlua = "0.19.4"
 itertools = "0.10.5"
-sysinfo = { version = "0.28.2", default-features = false }
+sysinfo = { version = "0.28.4", default-features = false }
 proc-maps = "0.3.0"
-open = "4.0.0"
-egui-modal = "0.2.1"
+open = "4.0.1"
+egui-modal = "0.2.2"
 arboard = { version = "3.2.0", default-features = false }
 paste = "1.0.12"
 iced-x86 = "1.18.0"
@@ -59,4 +59,4 @@ panic = "abort"
 lto = "thin"
 
 [build-dependencies]
-vergen = { version = "7.5.1", default-features = false, features = ["build", "cargo", "git", "rustc"] }
+vergen = { version = "8.0.0", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
