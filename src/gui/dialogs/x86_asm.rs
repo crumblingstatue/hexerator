@@ -51,6 +51,7 @@ impl Dialog for X86AsmDialog {
                     }
                 });
             });
+        ui.separator();
         match app.hex_ui.selection() {
             Some(sel) => {
                 if ui.button("Disassemble").clicked() {
@@ -61,10 +62,12 @@ impl Dialog for X86AsmDialog {
                 ui.add_enabled(false, Button::new("Disassemble"));
             }
         }
-        ui.label("Bitness");
-        ui.radio_value(&mut self.bitness, 16, "16");
-        ui.radio_value(&mut self.bitness, 32, "32");
-        ui.radio_value(&mut self.bitness, 64, "64");
+        ui.horizontal(|ui| {
+            ui.label("Bitness");
+            ui.radio_value(&mut self.bitness, 16, "16");
+            ui.radio_value(&mut self.bitness, 32, "32");
+            ui.radio_value(&mut self.bitness, 64, "64");
+        });
         if ui.button("Close").clicked() {
             retain = false;
         }
