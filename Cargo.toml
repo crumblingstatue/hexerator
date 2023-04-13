@@ -10,12 +10,12 @@ default = ["backend-sfml"]
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "4.1.14", features = ["derive"] }
+clap = { version = "4.2.2", features = ["derive"] }
 anyhow = "1.0.70"
 rfd = "0.11"
 rand = "0.8.5"
 rmp-serde = "1.1.1"
-serde = { version = "1.0.159", features = ["derive"] }
+serde = { version = "1.0.160", features = ["derive"] }
 directories = "5.0.0"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 memchr = "2.5.0"
@@ -45,7 +45,7 @@ strum = { version = "0.24.1", features = ["derive"] }
 parking_lot = "0.12.1"
 
 [target."cfg(windows)".dependencies.windows-sys]
- version = "0.45.0"
+ version = "0.48.0"
  features = ["Win32_System_Diagnostics_Debug", "Win32_Foundation", "Win32_System_Threading"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -59,4 +59,4 @@ panic = "abort"
 lto = "thin"
 
 [build-dependencies]
-vergen = { version = "8.0.0", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
+vergen = { version = "8.1.1", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
