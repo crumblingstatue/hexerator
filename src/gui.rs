@@ -1,3 +1,5 @@
+use gamedebug_core::{IMMEDIATE, PERSISTENT};
+
 mod advanced_open_window;
 mod bookmarks_window;
 mod bottom_panel;
@@ -145,13 +147,14 @@ pub fn do_egui(
     events: &mut EventQueue,
 ) -> bool {
     let result = sf_egui.do_frame(|ctx| {
-        let mut open = gamedebug_core::enabled();
+        let mut open = IMMEDIATE.enabled() || PERSISTENT.enabled();
         let was_open = open;
         Window::new("Debug")
             .open(&mut open)
             .show(ctx, debug_window::ui);
         if was_open && !open {
-            gamedebug_core::toggle();
+            IMMEDIATE.toggle();
+            PERSISTENT.toggle();
         }
         gui.msg_dialog.show(ctx, &mut app.clipboard);
         macro_rules! windows {

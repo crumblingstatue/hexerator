@@ -1,6 +1,7 @@
 use {
     crate::{gui::Gui, shell::msg_if_fail},
     egui::{Button, Ui},
+    gamedebug_core::{IMMEDIATE, PERSISTENT},
 };
 
 pub fn ui(ui: &mut Ui, gui: &mut Gui) {
@@ -17,7 +18,8 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui) {
         .clicked()
     {
         ui.close_menu();
-        gamedebug_core::toggle();
+        IMMEDIATE.toggle();
+        PERSISTENT.toggle();
     }
     ui.separator();
     if ui.button("About Hexerator...").clicked() {

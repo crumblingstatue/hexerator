@@ -25,6 +25,8 @@
 )]
 #![windows_subsystem = "windows"]
 
+use gamedebug_core::{IMMEDIATE, PERSISTENT};
+
 mod app;
 mod args;
 mod backend;
@@ -521,7 +523,8 @@ fn handle_key_pressed(
     events: &mut EventQueue,
 ) {
     if code == Key::F12 && !key_mod.shift && !key_mod.ctrl && !key_mod.alt {
-        gamedebug_core::toggle();
+        IMMEDIATE.toggle();
+        PERSISTENT.toggle();
     }
     if app.data.is_empty() || egui_wants_kb {
         return;
