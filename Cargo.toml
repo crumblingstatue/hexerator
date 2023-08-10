@@ -10,37 +10,37 @@ default = ["backend-sfml"]
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "4.3.5", features = ["derive"] }
-anyhow = "1.0.71"
+clap = { version = "4.3.21", features = ["derive"] }
+anyhow = "1.0.72"
 rfd = "0.11"
 rand = "0.8.5"
-rmp-serde = "1.1.1"
-serde = { version = "1.0.164", features = ["derive"] }
+rmp-serde = "1.1.2"
+serde = { version = "1.0.183", features = ["derive"] }
 directories = "5.0.1"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 memchr = "2.5.0"
 glu-sys = "0.1.4"
-thiserror = "1.0.40"
-either = "1.8.1"
+thiserror = "1.0.44"
+either = "1.9.0"
 tree_magic_mini = { version = "3.0.3", features = ["tree_magic_db"] }
 bytemuck = "1.13.1"
 egui_easy_mark_standalone = { git = "https://github.com/crumblingstatue/egui-easymark-standalone.git", version = "0.1.0" }
 index_many = "0.6.1"
 slotmap = { version = "1.0.6", features = ["serde"] }
 egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
-num-traits = "0.2.15"
+num-traits = "0.2.16"
 serde-big-array = "0.5.1"
 egui = "0.22.0"
 egui_extras = { version = "0.22.0", default-features = false }
-rlua = "0.19.5"
-itertools = "0.10.5"
-sysinfo = { version = "0.29.2", default-features = false }
+rlua = "0.19.7"
+itertools = "0.11.0"
+sysinfo = { version = "0.29.7", default-features = false }
 proc-maps = "0.3.1"
-open = "4.2.0"
+open = "5.0.0"
 egui-modal = "0.2.4"
 arboard = { version = "3.2.0", default-features = false }
-paste = "1.0.12"
-iced-x86 = "1.19.0"
+paste = "1.0.14"
+iced-x86 = "1.20.0"
 strum = { version = "0.25.0", features = ["derive"] }
 parking_lot = "0.12.1"
 
@@ -59,4 +59,4 @@ panic = "abort"
 lto = "thin"
 
 [build-dependencies]
-vergen = { version = "8.2.1", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
+vergen = { version = "8.2.4", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
