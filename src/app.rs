@@ -180,6 +180,10 @@ impl App {
                     // TODO: See below, same +1 stuff
                     (region.end - region.begin) + 1,
                 );
+                #[expect(
+                    clippy::cast_possible_wrap,
+                    reason = "Files bigger than i64::MAX aren't supported"
+                )]
                 file.seek(SeekFrom::Current(region.begin as _))?;
                 // TODO: We're assuming here that end of the region is the same position as the last dirty byte
                 // Make sure to enforce this invariant.
@@ -754,6 +758,10 @@ fn load_proc_memory_macos(
 pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, anyhow::Error> {
     let mut f = std::fs::File::open(path)?;
     if let &Some(to) = &args.hard_seek {
+        #[expect(
+            clippy::cast_possible_wrap,
+            reason = "Files bigger than i64::MAX aren't supported"
+        )]
         f.seek(std::io::SeekFrom::Current(to as i64))?;
     }
     #[expect(
