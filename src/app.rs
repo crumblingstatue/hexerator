@@ -357,7 +357,9 @@ impl App {
         if !src.attr.stream {
             return;
         };
-        let Some(view_key) = self.hex_ui.focused_view else { return };
+        let Some(view_key) = self.hex_ui.focused_view else {
+            return;
+        };
         let view = &self.meta_state.meta.views[view_key].view;
         let view_byte_offset = view
             .offsets(

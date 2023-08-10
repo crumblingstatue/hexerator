@@ -14,7 +14,9 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         gui.perspectives_window.open.toggle();
         ui.close_menu();
     }
-    let Some(view_key) = app.hex_ui.focused_view else { return };
+    let Some(view_key) = app.hex_ui.focused_view else {
+        return;
+    };
     let view = &mut app.meta_state.meta.views[view_key].view;
     if ui.button("Set offset to cursor").clicked() {
         app.meta_state.meta.low.regions

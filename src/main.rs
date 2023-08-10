@@ -266,7 +266,9 @@ fn update(app: &mut App, egui_wants_kb: bool) {
         && app.hex_ui.interact_mode == InteractMode::View
         && !app.input.key_down(Key::LControl)
     {
-        let Some(key) = app.hex_ui.focused_view else { return };
+        let Some(key) = app.hex_ui.focused_view else {
+            return;
+        };
         let spd = if app.input.key_down(Key::LShift) {
             10
         } else {
@@ -486,7 +488,7 @@ fn handle_text_entered(app: &mut App, unicode: char, msg: &mut MessageDialog) {
     match app.hex_ui.interact_mode {
         InteractMode::Edit => {
             let Some(focused) = app.hex_ui.focused_view else {
-                return
+                return;
             };
             let view = &mut app.meta_state.meta.views[focused].view;
             view.handle_text_entered(
