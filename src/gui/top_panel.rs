@@ -13,7 +13,7 @@ use {
     },
 };
 
-pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &mut EventQueue) {
+pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &EventQueue) {
     top_menu(ui, gui, app, font, events);
     ui.horizontal(|ui| {
         if app.hex_ui.select_a.is_some() || app.hex_ui.select_b.is_some() {

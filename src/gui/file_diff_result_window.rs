@@ -44,7 +44,7 @@ impl FileDiffResultWindow {
         gui: &mut Gui,
         app: &mut crate::app::App,
         font: &Font,
-        events: &mut EventQueue,
+        events: &EventQueue,
     ) {
         if gui.file_diff_result_window.offsets.is_empty() {
             ui.label("No difference");

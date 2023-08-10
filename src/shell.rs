@@ -16,7 +16,7 @@ pub fn open_dialog_same_dir(src_path: Option<&Path>) -> rfd::FileDialog {
     file_dialog
 }
 
-pub fn open_file(app: &mut App, font: &Font, msg: &mut MessageDialog, events: &mut EventQueue) {
+pub fn open_file(app: &mut App, font: &Font, msg: &mut MessageDialog, events: &EventQueue) {
     if let Some(path) = open_dialog_same_dir(app.source_file()).pick_file() {
         let write = OpenOptions::new().write(true).open(&path).is_ok();
         msg_if_fail(
@@ -27,7 +27,7 @@ pub fn open_file(app: &mut App, font: &Font, msg: &mut MessageDialog, events: &m
     }
 }
 
-pub fn open_previous(app: &mut App, load: &mut Option<crate::args::SourceArgs>) {
+pub fn open_previous(app: &App, load: &mut Option<crate::args::SourceArgs>) {
     if let Some(src_args) = app.cfg.recent.iter().nth(1) {
         *load = Some(src_args.clone());
     }

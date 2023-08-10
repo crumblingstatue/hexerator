@@ -18,13 +18,7 @@ struct PtrEntry {
 }
 
 impl FindMemoryPointersWindow {
-    pub fn ui(
-        ui: &mut egui::Ui,
-        gui: &mut Gui,
-        app: &mut App,
-        font: &Font,
-        events: &mut EventQueue,
-    ) {
+    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &EventQueue) {
         let Some(pid) = gui.open_process_window.selected_pid else {
             ui.label("No selected pid.");
             return;

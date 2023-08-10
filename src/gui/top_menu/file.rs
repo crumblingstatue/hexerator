@@ -12,7 +12,7 @@ use {
     std::io::Write,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &mut EventQueue) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &EventQueue) {
     if ui
         .add(Button::new("Open...").shortcut_text("Ctrl+O"))
         .clicked()

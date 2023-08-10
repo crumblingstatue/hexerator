@@ -23,7 +23,7 @@ pub fn top_menu(
     gui: &mut crate::gui::Gui,
     app: &mut App,
     font: &Font,
-    events: &mut EventQueue,
+    events: &EventQueue,
 ) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| file::ui(ui, gui, app, font, events));

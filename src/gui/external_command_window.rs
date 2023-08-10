@@ -28,7 +28,7 @@ enum Arg<'src> {
 }
 
 impl ExternalCommandWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
+    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
         let win = &mut gui.external_command_window;
         ui.add(
             egui::TextEdit::multiline(&mut win.cmd_str)

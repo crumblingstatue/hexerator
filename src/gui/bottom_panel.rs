@@ -110,7 +110,7 @@ fn region_label(ui: &mut Ui, name: &str) -> egui::Response {
 }
 
 /// A key "box" and then some text. Like `[F1] View`
-fn key_label(ui: &mut Ui, key_text: &str, label_text: &str) -> LayoutJob {
+fn key_label(ui: &Ui, key_text: &str, label_text: &str) -> LayoutJob {
     let mut job = LayoutJob::default();
     let style = ui.style();
     let body_font = TextStyle::Body.resolve(style);

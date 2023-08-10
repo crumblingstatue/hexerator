@@ -86,7 +86,7 @@ impl MetaLow {
         self.regions[p.region].region.begin
     }
 
-    pub(crate) fn end_offset_of_view(&self, view: &mut View) -> usize {
+    pub(crate) fn end_offset_of_view(&self, view: &View) -> usize {
         let p = &self.perspectives[view.perspective];
         self.regions[p.region].region.end
     }

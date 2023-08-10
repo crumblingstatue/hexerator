@@ -385,10 +385,7 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn find_num<N: EndianedPrimitive>(
-    gui: &mut crate::gui::Gui,
-    app: &mut App,
-) -> Result<(), anyhow::Error>
+fn find_num<N: EndianedPrimitive>(gui: &mut crate::gui::Gui, app: &App) -> Result<(), anyhow::Error>
 where
     [(); N::BYTE_LEN]:,
     <<N as EndianedPrimitive>::Primitive as FromStr>::Err: Error + Send + Sync,
@@ -402,12 +399,7 @@ where
     Ok(())
 }
 
-fn find_u8(
-    dia: &mut FindDialog,
-    app: &mut App,
-    msg: &mut MessageDialog,
-    highlight: &mut HighlightSet,
-) {
+fn find_u8(dia: &mut FindDialog, app: &App, msg: &mut MessageDialog, highlight: &mut HighlightSet) {
     match dia.find_input.as_str() {
         "?" => {
             dia.data_snapshot = app.data.clone();

@@ -62,6 +62,10 @@ fn draw_view(
     };
     'rows: for row in row_range {
         let y = row * usize::from(view.row_h);
+        #[expect(
+            clippy::cast_possible_wrap,
+            reason = "Files bigger than i64::MAX aren't supported"
+        )]
         let viewport_y = (i64::from(view.viewport_rect.y) + y as i64)
             - ((view.scroll_offset.row as i64 * i64::from(view.row_h)) + i64::from(pix_yoff));
         let start_col = view.scroll_offset.col;
@@ -71,6 +75,10 @@ fn draw_view(
         idx += start_col * usize::from(view.bytes_per_block);
         for col in start_col..perspective.cols {
             let x = col * usize::from(view.col_w);
+            #[expect(
+                clippy::cast_possible_wrap,
+                reason = "Files bigger than i64::MAX aren't supported"
+            )]
             let viewport_x = (i64::from(view.viewport_rect.x) + x as i64)
                 - ((view.scroll_offset.col as i64 * i64::from(view.col_w))
                     + i64::from(view.scroll_offset.pix_xoff));

@@ -35,7 +35,7 @@ impl AdvancedOpenWindow {
         gui: &mut Gui,
         app: &mut App,
         font: &Font,
-        events: &mut EventQueue,
+        events: &EventQueue,
     ) {
         let win = &mut gui.advanced_open_window;
         let args = &mut win.args;

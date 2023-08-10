@@ -274,7 +274,7 @@ impl App {
         read_only: bool,
         font: &Font,
         msg: &mut MessageDialog,
-        events: &mut EventQueue,
+        events: &EventQueue,
     ) -> Result<(), anyhow::Error> {
         self.load_file_args(
             Args {
@@ -640,7 +640,7 @@ impl App {
         is_write: bool,
         font: &Font,
         msg: &mut MessageDialog,
-        events: &mut EventQueue,
+        events: &EventQueue,
     ) -> anyhow::Result<()> {
         #[cfg(target_os = "linux")]
         return load_proc_memory_linux(self, pid, start, size, is_write, font, msg, events);
@@ -706,7 +706,7 @@ fn load_proc_memory_linux(
     is_write: bool,
     font: &Font,
     msg: &mut MessageDialog,
-    events: &mut EventQueue,
+    events: &EventQueue,
 ) -> anyhow::Result<()> {
     app.load_file_args(
         Args {

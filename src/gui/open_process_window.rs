@@ -76,7 +76,7 @@ impl OpenProcessWindow {
         gui: &mut crate::gui::Gui,
         app: &mut crate::app::App,
         font: &Font,
-        events: &mut EventQueue,
+        events: &EventQueue,
     ) {
         let win = &mut gui.open_process_window;
         if win.open.just_now() || ui.button("Refresh").clicked() {

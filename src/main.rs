@@ -354,7 +354,7 @@ fn handle_events(
     window: &mut RenderWindow,
     sf_egui: &mut SfEgui,
     font: &Font,
-    events: &mut EventQueue,
+    events: &EventQueue,
 ) {
     while let Some(event) = window.poll_event() {
         app.input.update_from_event(&event);
@@ -522,7 +522,7 @@ fn handle_key_pressed(
     key_mod: KeyMod,
     font: &Font,
     egui_wants_kb: bool,
-    events: &mut EventQueue,
+    events: &EventQueue,
 ) {
     if code == Key::F12 && !key_mod.shift && !key_mod.ctrl && !key_mod.alt {
         IMMEDIATE.toggle();
