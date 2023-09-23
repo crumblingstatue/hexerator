@@ -3,6 +3,7 @@ use {
     anyhow::Context,
     directories::ProjectDirs,
     recently_used_list::RecentlyUsedList,
+    rfd::MessageDialogResult,
     serde::{Deserialize, Serialize},
     std::{collections::HashMap, path::PathBuf},
 };
@@ -87,7 +88,7 @@ impl Config {
                 Ok(cfg) => Ok(cfg),
                 Err(e) => if rfd::MessageDialog::new().set_buttons(
                     rfd::MessageButtons::OkCancelCustom("Overwrite".into(), "Quit".into()),
-                ).set_description(&format!("Failed to load config: {e:?}\n Create a new default config and overwrite, or quit?")).show() {
+                ).set_description(format!("Failed to load config: {e:?}\n Create a new default config and overwrite, or quit?")).show() == MessageDialogResult::Custom("Overwrite".into()) {
                     Ok(Config::default())
                 } else {
                     anyhow::bail!("Couldn't create config");

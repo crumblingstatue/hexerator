@@ -319,7 +319,7 @@ pub fn do_egui(
             egui_sfml::DoFrameError::TextureCreateError(TextureCreateError { width, height }) => {
                 rfd::MessageDialog::new()
                     .set_level(MessageLevel::Error)
-                    .set_description(&format!(
+                    .set_description(format!(
                         "Failed to create texture of {width}x{height}. Application has to close."
                     ))
                     .show();

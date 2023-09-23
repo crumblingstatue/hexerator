@@ -163,7 +163,7 @@ fn main() {
         let bkpath = bkpath.display();
         rfd::MessageDialog::new()
             .set_title("Hexerator panic")
-            .set_description(&format!(
+            .set_description(format!(
                 "\
                 {msg}\n\n\
                 Location:\n\
@@ -178,7 +178,7 @@ fn main() {
     if let Err(e) = try_main() {
         rfd::MessageDialog::new()
             .set_title("Fatal error")
-            .set_description(&e.to_string())
+            .set_description(e.to_string())
             .set_level(MessageLevel::Error)
             .show();
     }

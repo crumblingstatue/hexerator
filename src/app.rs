@@ -1,4 +1,4 @@
-use crate::view::ViewportScalar;
+use {crate::view::ViewportScalar, rfd::MessageDialogResult};
 
 pub mod edit_state;
 pub mod interact_mode;
@@ -151,7 +151,7 @@ impl App {
         };
         // If the file was truncated, we completely save over it
         if self.data.len() != self.orig_data_len {
-            if !rfd::MessageDialog::new()
+            if rfd::MessageDialog::new()
                 .set_title("File truncated/extended")
                 .set_description("Data is truncated/extended. Are you sure you want to save?")
                 .set_buttons(rfd::MessageButtons::OkCancelCustom(
@@ -159,6 +159,7 @@ impl App {
                     "Cancel".into(),
                 ))
                 .show()
+                == MessageDialogResult::Custom("Cancel".into())
             {
                 bail!("Save of truncated/extended data cancelled");
             }
