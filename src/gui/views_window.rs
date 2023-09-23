@@ -23,10 +23,10 @@ pub struct ViewsWindow {
 }
 
 impl ViewKind {
-    const HEX_NAME: &str = "Hex";
-    const DEC_NAME: &str = "Decimal";
-    const TEXT_NAME: &str = "Text";
-    const BLOCK_NAME: &str = "Block";
+    const HEX_NAME: &'static str = "Hex";
+    const DEC_NAME: &'static str = "Decimal";
+    const TEXT_NAME: &'static str = "Text";
+    const BLOCK_NAME: &'static str = "Block";
     fn name(&self) -> &'static str {
         match *self {
             ViewKind::Hex(_) => Self::HEX_NAME,
