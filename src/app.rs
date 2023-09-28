@@ -1,4 +1,4 @@
-use {crate::view::ViewportScalar, rfd::MessageDialogResult};
+use {crate::view::ViewportScalar, egui_commonmark::CommonMarkCache, rfd::MessageDialogResult};
 
 pub mod edit_state;
 pub mod interact_mode;
@@ -59,6 +59,7 @@ pub struct App {
     pub hex_ui: HexUi,
     pub meta_state: MetaState,
     pub clipboard: arboard::Clipboard,
+    pub md_cache: CommonMarkCache,
 }
 
 impl App {
@@ -87,6 +88,7 @@ impl App {
             hex_ui: HexUi::default(),
             meta_state: MetaState::default(),
             clipboard: arboard::Clipboard::new()?,
+            md_cache: CommonMarkCache::default(),
         };
         // Set a clean meta, for an empty document
         this.set_new_clean_meta(font);

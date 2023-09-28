@@ -7,7 +7,7 @@ use {
         shell::msg_fail,
     },
     egui,
-    egui_easy_mark_standalone::easy_mark,
+    egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
     rlua::Lua,
 };
@@ -45,8 +45,9 @@ impl Dialog for JumpDialog {
             }
         });
         self.just_opened = false;
-        easy_mark(
+        CommonMarkViewer::new("viewer").show(
             ui,
+            &mut app.md_cache,
             "Accepts both decimal and hexadecimal.\nPrefix with `0x` to force hex.\n\
              Prefix with `+` to add to current offset, `-` to subtract",
         );

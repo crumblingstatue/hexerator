@@ -9,7 +9,7 @@ use {
         slice_ext::SliceExt,
     },
     egui,
-    egui_easy_mark_standalone::easy_mark,
+    egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
     rlua::{ExternalError, Function, Lua, UserData},
     std::time::Instant,
@@ -176,7 +176,11 @@ impl Dialog for LuaExecuteDialog {
                     .code(),
             );
         }
-        easy_mark(ui, "`ctrl+enter` to execute, `ctrl+s` to save file");
+        CommonMarkViewer::new("viewer").show(
+            ui,
+            &mut app.md_cache,
+            "`ctrl+enter` to execute, `ctrl+s` to save file",
+        );
         if !self.result_info_string.is_empty() {
             if self.err {
                 ui.label(egui::RichText::new(&self.result_info_string).color(egui::Color32::RED));
