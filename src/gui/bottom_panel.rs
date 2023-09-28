@@ -125,6 +125,7 @@ fn key_label(ui: &Ui, key_text: &str, label_text: &str) -> LayoutJob {
             underline: Stroke::NONE,
             strikethrough: Stroke::NONE,
             valign: Align::Center,
+            ..Default::default()
         },
     );
     job.append(

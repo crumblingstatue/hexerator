@@ -30,14 +30,14 @@ slotmap = { version = "1.0.6", features = ["serde"] }
 egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
 num-traits = "0.2.16"
 serde-big-array = "0.5.1"
-egui = "0.22.0"
-egui_extras = { version = "0.22.0", default-features = false }
+egui = "0.23.0"
+egui_extras = { version = "0.23.0", default-features = false }
 rlua = "0.19.7"
 itertools = "0.11.0"
 sysinfo = { version = "0.29.10", default-features = false }
 proc-maps = "0.3.1"
 open = "5.0.0"
-egui-modal = "0.2.4"
+egui-modal = { git = "https://github.com/crumblingstatue/egui-modal.git" }
 arboard = { version = "3.2.1", default-features = false }
 paste = "1.0.14"
 iced-x86 = "1.20.0"
