@@ -452,11 +452,16 @@ impl App {
         })
     }
     pub fn view_at_pos(&self, x: ViewportScalar, y: ViewportScalar) -> Option<ViewKey> {
-        self.meta_state
-            .meta
-            .views
-            .iter()
-            .find_map(|(k, view)| view.view.viewport_rect.contains_pos(x, y).then_some(k))
+        let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
+        for row in &layout.view_grid {
+            for key in row {
+                let view = &self.meta_state.meta.views[*key];
+                if view.view.viewport_rect.contains_pos(x, y) {
+                    return Some(*key);
+                }
+            }
+        }
+        None
     }
     pub fn view_idx_at_pos(&self, x: i16, y: i16) -> Option<ViewKey> {
         let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
