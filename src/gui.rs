@@ -226,6 +226,10 @@ pub fn do_egui(
                                 if ui.button("Remove from layout").clicked() {
                                     if let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) {
                                         layout.remove_view(view);
+                                        if app.hex_ui.focused_view == Some(view) {
+                                            let first_view = layout.view_grid.get(0).and_then(|row| row.get(0));
+                                            app.hex_ui.focused_view = first_view.cloned();
+                                        }
                                         close = true;
                                     }
                                 }
