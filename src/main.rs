@@ -10,6 +10,7 @@
 #![warn(
     trivial_casts,
     trivial_numeric_casts,
+    unsafe_op_in_unsafe_fn,
     clippy::unwrap_used,
     clippy::cast_lossless,
     clippy::cast_possible_truncation,
