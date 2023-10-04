@@ -410,6 +410,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui_code_editor"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a4af239b55c5593ae4ec6ed706ee06e8d03016b5f806cc7ec2090463eec1ace"
+dependencies = [
+ "egui",
+]
+
+[[package]]
 name = "egui_commonmark"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -692,6 +701,7 @@ dependencies = [
  "egui",
  "egui-modal",
  "egui-sfml",
+ "egui_code_editor",
  "egui_commonmark",
  "egui_extras",
  "either",

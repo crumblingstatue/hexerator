@@ -43,6 +43,7 @@ paste = "1.0.14"
 iced-x86 = "1.20.0"
 strum = { version = "0.25.0", features = ["derive"] }
 parking_lot = "0.12.1"
+egui_code_editor = "0.1.8"
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.48.0"
