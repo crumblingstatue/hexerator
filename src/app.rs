@@ -655,7 +655,7 @@ impl App {
         #[cfg(windows)]
         return crate::windows::load_proc_memory(self, pid, start, size, is_write, font);
         #[cfg(target_os = "macos")]
-        return load_proc_memory_macos(self, pid, start, size, is_write, font, msg);
+        return load_proc_memory_macos(self, pid, start, size, is_write, font, msg, events);
     }
 
     pub fn consume_meta_from_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
@@ -744,6 +744,7 @@ fn load_proc_memory_macos(
     is_write: bool,
     font: &Font,
     msg: &mut MessageDialog,
+    events: &EventQueue,
 ) -> anyhow::Result<()> {
     app.load_file_args(
         Args {
@@ -760,6 +761,7 @@ fn load_proc_memory_macos(
         },
         font,
         msg,
+        events,
     )
 }
 
