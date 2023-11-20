@@ -15,7 +15,7 @@ use {
 #[derive(Debug, Default)]
 pub struct JumpDialog {
     string_buf: String,
-    relative: bool,
+    absolute: bool,
     just_opened: bool,
 }
 
@@ -51,14 +51,18 @@ impl Dialog for JumpDialog {
             "Accepts both decimal and hexadecimal.\nPrefix with `0x` to force hex.\n\
              Prefix with `+` to add to current offset, `-` to subtract",
         );
-        ui.checkbox(&mut self.relative, "Relative")
-            .on_hover_text("Relative to --hard-seek");
+        if let Some(hard_seek) = app.args.src.hard_seek {
+            ui.checkbox(&mut self.absolute, "Absolute")
+                .on_hover_text("Subtract the offset from hard-seek");
+            let label = format!("hard-seek is at {hard_seek} (0x{hard_seek:X})");
+            ui.text_edit_multiline(&mut &label[..]);
+        }
         if ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
             match parse_offset_maybe_relative(&self.string_buf) {
                 Ok((offset, relativity)) => {
                     let offset = match relativity {
                         Relativity::Absolute => {
-                            if let Some(hard_seek) = app.args.src.hard_seek {
+                            if let Some(hard_seek) = app.args.src.hard_seek && self.absolute {
                                 offset.saturating_sub(hard_seek)
                             } else {
                                 offset
