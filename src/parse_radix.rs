@@ -21,10 +21,10 @@ pub fn parse_offset_maybe_relative(
     input: &str,
 ) -> Result<(usize, Relativity), <usize as Num>::FromStrRadixErr> {
     Ok(if let Some(stripped) = input.strip_prefix('-') {
-        (parse_guess_radix(stripped)?, Relativity::RelSub)
+        (parse_guess_radix(stripped.trim_end())?, Relativity::RelSub)
     } else if let Some(stripped) = input.strip_prefix('+') {
-        (parse_guess_radix(stripped)?, Relativity::RelAdd)
+        (parse_guess_radix(stripped.trim_end())?, Relativity::RelAdd)
     } else {
-        (parse_guess_radix(input)?, Relativity::Absolute)
+        (parse_guess_radix(input.trim_end())?, Relativity::Absolute)
     })
 }
