@@ -237,7 +237,18 @@ impl BookmarksWindow {
                     &mut gui.msg_dialog,
                 );
                 match result {
-                    Ok(act) => action = act,
+                    Ok(act) => match (&act, &action) {
+                        (Action::None, Action::None) => {}
+                        (Action::None, Action::Goto(_)) => {}
+                        (Action::Goto(_), Action::None) => action = act,
+                        (Action::Goto(_), Action::Goto(_)) => {
+                            msg_fail(
+                                &"Conflicting goto action",
+                                "Ui Action error",
+                                &mut gui.msg_dialog,
+                            );
+                        }
+                    },
                     Err(e) => msg_fail(&e, "Value ui error", &mut gui.msg_dialog),
                 }
             });
