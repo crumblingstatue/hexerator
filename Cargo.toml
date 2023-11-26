@@ -10,43 +10,43 @@ default = ["backend-sfml"]
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "4.4.4", features = ["derive"] }
+clap = { version = "4.4.8", features = ["derive"] }
 anyhow = "1.0.75"
 rfd = "0.12"
 rand = "0.8.5"
 rmp-serde = "1.1.2"
-serde = { version = "1.0.188", features = ["derive"] }
+serde = { version = "1.0.193", features = ["derive"] }
 directories = "5.0.1"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
-memchr = "2.6.3"
+memchr = "2.6.4"
 glu-sys = "0.1.4"
-thiserror = "1.0.48"
+thiserror = "1.0.50"
 either = "1.9.0"
 tree_magic_mini = { version = "3.0.3", features = ["tree_magic_db"] }
 bytemuck = "1.14.0"
-egui_commonmark = "0.8.0"
+egui_commonmark = "0.10.0"
 index_many = "0.6.1"
 slotmap = { version = "1.0.6", features = ["serde"] }
 egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
-num-traits = "0.2.16"
+num-traits = "0.2.17"
 serde-big-array = "0.5.1"
-egui = "0.23.0"
-egui_extras = { version = "0.23.0", default-features = false }
+egui = "0.24.0"
+egui_extras = { version = "0.24.0", default-features = false }
 rlua = "0.19.7"
-itertools = "0.11.0"
+itertools = "0.12.0"
 sysinfo = { version = "0.29.10", default-features = false }
-proc-maps = "0.3.1"
-open = "5.0.0"
-egui-modal = { git = "https://github.com/crumblingstatue/egui-modal.git" }
-arboard = { version = "3.2.1", default-features = false }
+proc-maps = "0.3.2"
+open = "5.0.1"
+egui-modal = { git = "https://github.com/n00kii/egui-modal.git" }
+arboard = { version = "3.3.0", default-features = false }
 paste = "1.0.14"
 iced-x86 = "1.20.0"
 strum = { version = "0.25.0", features = ["derive"] }
 parking_lot = "0.12.1"
-egui_code_editor = "0.1.8"
+egui_code_editor = {git = "https://github.com/W-Mai/fork_egui_code_editor.git"}
 
 [target."cfg(windows)".dependencies.windows-sys]
- version = "0.48.0"
+ version = "0.52.0"
  features = ["Win32_System_Diagnostics_Debug", "Win32_Foundation", "Win32_System_Threading"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -60,4 +60,4 @@ panic = "abort"
 lto = "thin"
 
 [build-dependencies]
-vergen = { version = "8.2.5", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
+vergen = { version = "8.2.6", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
