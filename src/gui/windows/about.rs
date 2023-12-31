@@ -6,16 +6,29 @@ use {
     },
     egui_extras::{Column, TableBuilder},
     std::fmt::Write,
-    sysinfo::{CpuExt, System, SystemExt},
+    sysinfo::System,
 };
 
 type InfoPair = (&'static str, String);
 
-#[derive(Default)]
 pub struct AboutWindow {
     pub open: WindowOpen,
     sys: System,
-    info: [InfoPair; 15],
+    info: [InfoPair; 14],
+    os_name: String,
+    os_ver: String,
+}
+
+impl Default for AboutWindow {
+    fn default() -> Self {
+        Self {
+            open: Default::default(),
+            sys: Default::default(),
+            info: Default::default(),
+            os_name: sysinfo::System::name().unwrap_or_else(|| "Unknown".into()),
+            os_ver: sysinfo::System::os_version().unwrap_or_else(|| "Unknown version".into()),
+        }
+    }
 }
 
 const MIB: u64 = 1_048_576;
@@ -32,11 +45,6 @@ impl AboutWindow {
         if win.open.just_now() {
             win.sys.refresh_cpu();
             win.sys.refresh_memory();
-            let system_name = win.sys.name().unwrap_or_else(|| "Unknown".into());
-            let os_ver = win
-                .sys
-                .os_version()
-                .unwrap_or_else(|| "Unknown version".into());
             win.info = [
                 ("Hexerator", String::new()),
                 ("Version", optenv!("CARGO_PKG_VERSION")),
@@ -62,8 +70,7 @@ impl AboutWindow {
                 ("Opt-level", optenv!("VERGEN_CARGO_OPT_LEVEL")),
                 ("Built with rustc", optenv!("VERGEN_RUSTC_SEMVER")),
                 ("System", String::new()),
-                ("OS", format!("{system_name} {os_ver}")),
-                ("CPU", win.sys.global_cpu_info().brand().into()),
+                ("OS", format!("{} {}", win.os_name, win.os_ver)),
                 (
                     "Total memory",
                     format!("{} MiB", win.sys.total_memory() / MIB),

@@ -6,7 +6,7 @@ use {
     },
     egui_extras::{Column, TableBuilder},
     egui_sfml::{egui, sfml::graphics::Font},
-    sysinfo::{ProcessExt, Signal, SystemExt},
+    sysinfo::Signal,
 };
 
 #[derive(Default)]
