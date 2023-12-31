@@ -59,6 +59,12 @@ pub fn selection_menu(
             ui.close_menu();
             clicked = true;
         }
+        if ui.button("Copy as utf-8 text").clicked() {
+            let s = String::from_utf8_lossy(&app.data[sel.begin..=sel.end]);
+            crate::app::set_clipboard_string(&mut app.clipboard, gui_msg_dialog, &s);
+            ui.close_menu();
+            clicked = true;
+        }
         if ui.button("Add as region").clicked() {
             crate::gui::ops::add_region_from_selection(
                 sel,
