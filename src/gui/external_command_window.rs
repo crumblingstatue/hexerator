@@ -42,7 +42,9 @@ impl ExternalCommandWindow {
                 "Use this for large amounts of data that could block child processes, like music players, etc."
             );
         let exec_enabled = win.child.is_none();
-
+        if ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
+            win.open.set(false);
+        }
         if ui
             .add_enabled(exec_enabled, egui::Button::new("Execute (ctrl+E)"))
             .clicked()
