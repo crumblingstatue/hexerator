@@ -37,7 +37,6 @@ impl ExternalCommandWindow {
         if win.open.just_now() {
             re.request_focus();
         }
-        win.open.post_ui();
         ui.checkbox(&mut win.inherited_streams, "Inherited stdout/stderr")
             .on_hover_text(
                 "Use this for large amounts of data that could block child processes, like music players, etc."
@@ -48,8 +47,9 @@ impl ExternalCommandWindow {
             .add_enabled(exec_enabled, egui::Button::new("Execute (ctrl+E)"))
             .clicked()
             || (exec_enabled
-                && ((ui.input(|inp| inp.key_pressed(egui::Key::E) && inp.modifiers.ctrl))
-                    || win.auto_exec))
+                && ((ui.input(|inp| {
+                    inp.key_pressed(egui::Key::E) && inp.modifiers.ctrl && !win.open.just_now()
+                })) || win.auto_exec))
         {
             let res: anyhow::Result<()> = try {
                 // Parse args
@@ -130,6 +130,7 @@ impl ExternalCommandWindow {
                     ui.text_edit_multiline(&mut &win.stderr[..]);
                 });
         }
+        win.open.post_ui();
     }
 }
 

@@ -717,6 +717,9 @@ fn handle_key_pressed(
         Key::A if key_mod.ctrl => {
             app.focused_view_select_all();
         }
+        Key::E if key_mod.ctrl => {
+            gui.external_command_window.open.set(true);
+        }
         Key::F if key_mod.ctrl => {
             gui.find_dialog.open.toggle();
         }

@@ -57,7 +57,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQu
         ui.close_menu();
     }
     ui.separator();
-    if ui.button("External command...").clicked() {
+    if ui
+        .add(Button::new("External command...").shortcut_text("Ctrl+E"))
+        .clicked()
+    {
         gui.external_command_window.open.toggle();
         ui.close_menu();
     }
