@@ -30,10 +30,14 @@ enum Arg<'src> {
 impl ExternalCommandWindow {
     pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
         let win = &mut gui.external_command_window;
-        ui.add(
+        let re = ui.add(
             egui::TextEdit::multiline(&mut win.cmd_str)
                 .hint_text("Use {} to substitute filename.\nExample: aplay {} -f s16_le"),
         );
+        if win.open.just_now() {
+            re.request_focus();
+        }
+        win.open.post_ui();
         ui.checkbox(&mut win.inherited_streams, "Inherited stdout/stderr")
             .on_hover_text(
                 "Use this for large amounts of data that could block child processes, like music players, etc."
