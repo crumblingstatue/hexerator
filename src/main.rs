@@ -693,6 +693,8 @@ fn handle_key_pressed(
         }
         Key::Delete => if let Some(sel) = app.hex_ui.selection() {
             app.data[sel.begin..=sel.end].fill(0);
+        } else {
+            app.data[app.edit_state.cursor] = 0;
         }
         Key::F1 => app.hex_ui.interact_mode = InteractMode::View,
         Key::F2 => app.hex_ui.interact_mode = InteractMode::Edit,
