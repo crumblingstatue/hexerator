@@ -9,7 +9,6 @@ use {
     },
 };
 
-#[derive(Default)]
 pub struct ExternalCommandWindow {
     pub open: WindowOpen,
     cmd_str: String,
@@ -20,6 +19,24 @@ pub struct ExternalCommandWindow {
     stderr: String,
     auto_exec: bool,
     inherited_streams: bool,
+    selection_only: bool,
+}
+
+impl Default for ExternalCommandWindow {
+    fn default() -> Self {
+        Self {
+            open: Default::default(),
+            cmd_str: Default::default(),
+            child: Default::default(),
+            exit_status: Default::default(),
+            err_msg: Default::default(),
+            stdout: Default::default(),
+            stderr: Default::default(),
+            auto_exec: Default::default(),
+            inherited_streams: Default::default(),
+            selection_only: true,
+        }
+    }
 }
 
 enum Arg<'src> {
@@ -37,6 +54,10 @@ impl ExternalCommandWindow {
         if win.open.just_now() {
             re.request_focus();
         }
+        ui.add_enabled(
+            app.hex_ui.selection().is_some(),
+            egui::Checkbox::new(&mut win.selection_only, "Selection only"),
+        );
         ui.checkbox(&mut win.inherited_streams, "Inherited stdout/stderr")
             .on_hover_text(
                 "Use this for large amounts of data that could block child processes, like music players, etc."
@@ -57,7 +78,7 @@ impl ExternalCommandWindow {
                 // Parse args
                 let (cmd, args) = parse(&win.cmd_str)?;
                 // Generate temp file
-                let range = if let Some(sel) = app.hex_ui.selection() {
+                let range = if win.selection_only && let Some(sel) = app.hex_ui.selection() {
                     sel.begin..=sel.end
                 } else {
                     0..=app.data.len() - 1
