@@ -5,6 +5,7 @@ use {
         shell::msg_if_fail,
     },
     egui,
+    egui_code_editor::{CodeEditor, Syntax},
     egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
     rlua::{Function, Lua},
@@ -48,10 +49,9 @@ impl Dialog for LuaFillDialog {
             // beyond window height
             .max_height(ui.available_height() - 100.0)
             .show(ui, |ui| {
-                egui::TextEdit::multiline(&mut app.meta_state.meta.misc.fill_lua_script)
-                    .code_editor()
-                    .desired_width(f32::INFINITY)
-                    .show(ui);
+                CodeEditor::default()
+                    .with_syntax(Syntax::lua())
+                    .show(ui, &mut app.meta_state.meta.misc.fill_lua_script);
             });
         if ui.button("Execute").clicked() || ctrl_enter {
             let start_time = Instant::now();
