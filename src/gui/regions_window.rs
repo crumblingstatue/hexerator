@@ -71,9 +71,21 @@ impl RegionsWindow {
             });
             ui.horizontal(|ui| {
                 ui.label("First byte");
-                ui.add(egui::DragValue::new(&mut reg.region.begin));
+                ui.add(egui::DragValue::new(&mut reg.region.begin))
+                    .context_menu(|ui| {
+                        if ui.button("Set to cursor").clicked() {
+                            reg.region.begin = app.edit_state.cursor;
+                            ui.close_menu();
+                        }
+                    });
                 ui.label("Last byte");
-                ui.add(egui::DragValue::new(&mut reg.region.end));
+                ui.add(egui::DragValue::new(&mut reg.region.end))
+                    .context_menu(|ui| {
+                        if ui.button("Set to cursor").clicked() {
+                            reg.region.end = app.edit_state.cursor;
+                            ui.close_menu();
+                        }
+                    });
             });
             if gui.regions_window.select_active {
                 app.hex_ui.select_a = Some(reg.region.begin);
@@ -153,12 +165,32 @@ impl RegionsWindow {
                             }
                         });
                         row.col(|ui| {
-                            if ui.link(reg.region.begin.to_string()).clicked() {
+                            let mut re = ui.link(reg.region.begin.to_string());
+                            re = re.context_menu(|ui| {
+                                if ui.button("Set to cursor").clicked() {
+                                    action = Action::SetRegionBegin {
+                                        key: k,
+                                        begin: app.edit_state.cursor,
+                                    };
+                                    ui.close_menu();
+                                }
+                            });
+                            if re.clicked() {
                                 action = Action::Goto(reg.region.begin);
                             }
                         });
                         row.col(|ui| {
-                            if ui.link(reg.region.end.to_string()).clicked() {
+                            let mut re = ui.link(reg.region.end.to_string());
+                            re = re.context_menu(|ui| {
+                                if ui.button("Set to cursor").clicked() {
+                                    action = Action::SetRegionEnd {
+                                        key: k,
+                                        end: app.edit_state.cursor,
+                                    };
+                                    ui.close_menu();
+                                }
+                            });
+                            if re.clicked() {
                                 action = Action::Goto(reg.region.end);
                             }
                         });
@@ -181,6 +213,12 @@ impl RegionsWindow {
                         app.edit_state.set_cursor(off);
                         app.hex_ui.flash_cursor();
                     }
+                    Action::SetRegionBegin { key, begin } => {
+                        app.meta_state.meta.low.regions[key].region.begin = begin
+                    }
+                    Action::SetRegionEnd { key, end } => {
+                        app.meta_state.meta.low.regions[key].region.end = end
+                    }
                 }
             });
     }
@@ -189,4 +227,6 @@ impl RegionsWindow {
 enum Action {
     None,
     Goto(usize),
+    SetRegionBegin { key: RegionKey, begin: usize },
+    SetRegionEnd { key: RegionKey, end: usize },
 }
