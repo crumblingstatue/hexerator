@@ -47,6 +47,7 @@ pub enum FindType {
     F64Le,
     F64Be,
     Ascii,
+    StringDiff,
     HexString,
 }
 
@@ -171,6 +172,7 @@ impl FindDialog {
                                     FindType::F64Be => data_value_label::<F64Be>(ui, app, off),
                                     FindType::Ascii => data_value_label::<U8>(ui, app, off),
                                     FindType::HexString => data_value_label::<U8>(ui, app, off),
+                                    FindType::StringDiff => data_value_label::<U8>(ui, app, off),
                                 };
                             });
                             row.col(|ui| {
@@ -378,11 +380,72 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
                 Err(e) => msg_fail(&e, "Hex string search error", &mut gui.msg_dialog),
             }
         }
+        FindType::StringDiff => {
+            let diff = ascii_to_diff_pattern(gui.find_dialog.find_input.as_bytes());
+            let mut off = 0;
+            while let Some(offset) = find_diff_pattern(&app.data[off..], &diff) {
+                off += offset;
+                gui.find_dialog.results_vec.push(off);
+                gui.highlight_set.insert(off);
+                off += diff.len();
+            }
+        }
     }
     if let Some(&off) = gui.find_dialog.results_vec.first() {
         app.search_focus(off);
     }
     Ok(())
+}
+
+#[allow(clippy::cast_possible_wrap)]
+fn ascii_to_diff_pattern(ascii: &[u8]) -> Vec<i8> {
+    ascii
+        .array_windows()
+        .map(|[a, b]| *b as i8 - *a as i8)
+        .collect()
+}
+
+#[allow(clippy::cast_possible_wrap)]
+fn find_diff_pattern(haystack: &[u8], pat: &[i8]) -> Option<usize> {
+    assert!(pat.len() <= haystack.len());
+    let mut pat_cur = 0;
+    for (i, [a, b]) in haystack.array_windows().enumerate() {
+        let Some(diff) = (*b as i8).checked_sub(*a as i8) else {
+            pat_cur = 0;
+            continue;
+        };
+        if diff == pat[pat_cur] {
+            pat_cur += 1;
+        } else {
+            pat_cur = 0;
+        }
+        if pat_cur == pat.len() {
+            return Some((i + 1) - pat.len());
+        }
+    }
+    None
+}
+
+#[test]
+fn test_ascii_to_diff_pattern() {
+    assert_eq!(
+        ascii_to_diff_pattern(b"jonathan"),
+        vec![5, -1, -13, 19, -12, -7, 13]
+    );
+}
+
+#[test]
+#[allow(clippy::unwrap_used)]
+fn test_find_diff_pattern() {
+    let key = "jonathan";
+    let pat = ascii_to_diff_pattern(key.as_bytes());
+    let s = "I handed the key to jonathan. He didn't like the way I said jonathan to him.";
+    let mut off = 0;
+    off += find_diff_pattern(&s.as_bytes()[off..], &pat).unwrap();
+    assert_eq!(&s[off..off + key.len()], key);
+    off += pat.len();
+    off += find_diff_pattern(&s.as_bytes()[off..], &pat).unwrap();
+    assert_eq!(&s[off..off + key.len()], key);
 }
 
 fn find_num<N: EndianedPrimitive>(gui: &mut crate::gui::Gui, app: &App) -> Result<(), anyhow::Error>
