@@ -353,7 +353,11 @@ impl View {
                     }
                 }
                 ViewKind::Text(text) => {
-                    if text.edit_buf.enter_byte(unicode as u8) || preferences.quick_edit {
+                    if text
+                        .edit_buf
+                        .enter_byte((unicode as u8).wrapping_add_signed(-text.offset))
+                        || preferences.quick_edit
+                    {
                         self.finish_editing(edit_state, data, preferences, msg);
                     }
                 }
@@ -638,6 +642,9 @@ pub struct TextData {
     #[serde(skip)]
     pub edit_buf: EditBuffer,
     pub font_size: u16,
+    /// Offset from regular ascii offsets. Useful to see custom (single byte) text encodings
+    #[serde(default)]
+    pub offset: i8,
 }
 
 impl PartialEq for TextData {
@@ -686,6 +693,7 @@ impl TextData {
             line_spacing: per_dbg!(font.line_spacing(u32::from(font_size)) as u16),
             edit_buf: EditBuffer::default(),
             font_size,
+            offset: 0,
         }
     }
 }

@@ -240,6 +240,8 @@ impl ViewsWindow {
                             if changed {
                                 view.view.bytes_per_block = text.text_kind.bytes_needed();
                             }
+                            ui.label("Ascii offset");
+                            ui.add(egui::DragValue::new(&mut text.offset));
                         }
                     }
                     ViewKind::Block => {}

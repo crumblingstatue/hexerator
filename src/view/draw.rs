@@ -491,7 +491,9 @@ impl View {
                             )
                         }
                         let raw_data = match text.text_kind {
-                            crate::view::TextKind::Ascii => u32::from(data[0]),
+                            crate::view::TextKind::Ascii => {
+                                u32::from(data[0].wrapping_add_signed(text.offset))
+                            }
                             crate::view::TextKind::Utf16Le => {
                                 u32::from(u16::from_le_bytes([data[0], data[1]]))
                             }
