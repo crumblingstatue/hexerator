@@ -703,6 +703,7 @@ fn handle_key_pressed(
         Key::F7 => gui.perspectives_window.open.toggle(),
         Key::F8 => gui.regions_window.open.toggle(),
         Key::F9 => gui.bookmarks_window.open.toggle(),
+        Key::F10 => gui.vars_window.open.toggle(),
         Key::Escape => {
             gui.context_menu = None;
             if let Some(view_key) = app.hex_ui.focused_view {

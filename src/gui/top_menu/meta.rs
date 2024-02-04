@@ -19,7 +19,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         gui.bookmarks_window.open.toggle();
         ui.close_menu();
     }
-    if ui.button("Variables").clicked() {
+    if ui
+        .add(Button::new("Variables").shortcut_text("F10"))
+        .clicked()
+    {
         gui.vars_window.open.toggle();
         ui.close_menu();
     }
