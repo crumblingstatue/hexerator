@@ -36,10 +36,33 @@ pub struct InspectPanel {
     changed_one: bool,
     big_endian: bool,
     format: Format,
-    /// If true, go to offset action is relative to the hard seek argument
-    offset_relative: bool,
+    seek_relativity: SeekRelativity,
+    /// Edit buffer for user value for seek relative offset
+    seek_user_buf: String,
+    /// Computed user offset for seek relative offset
+    seek_user_offs: usize,
     /// The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
+}
+
+/// Relativity of seeking to an offset
+#[derive(Clone, Copy, PartialEq)]
+enum SeekRelativity {
+    /// Absolute offset in the file
+    Absolute,
+    /// Relative to hard-seek
+    HardSeek,
+    /// Relative to a user-defined offset
+    User,
+}
+impl SeekRelativity {
+    fn label(&self) -> &'static str {
+        match self {
+            SeekRelativity::Absolute => "Absolute",
+            SeekRelativity::HardSeek => "Hard seek",
+            SeekRelativity::User => "User",
+        }
+    }
 }
 
 impl std::fmt::Debug for InspectPanel {
@@ -67,8 +90,10 @@ impl Default for InspectPanel {
             changed_one: false,
             big_endian: false,
             format: Format::Decimal,
-            offset_relative: false,
+            seek_relativity: SeekRelativity::Absolute,
             prev_frame_inspect_offset: 0,
+            seek_user_buf: String::new(),
+            seek_user_offs: 0,
         }
     }
 }
@@ -426,8 +451,14 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
         InteractMode::View if !ui.ctx().wants_pointer_input() => {
             if let Some((off, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
                 let mut add = 0;
-                if gui.inspect_panel.offset_relative {
-                    add = app.args.src.hard_seek.unwrap_or(0);
+                match gui.inspect_panel.seek_relativity {
+                    SeekRelativity::Absolute => {}
+                    SeekRelativity::HardSeek => {
+                        add = app.args.src.hard_seek.unwrap_or(0);
+                    }
+                    SeekRelativity::User => {
+                        add = gui.inspect_panel.seek_user_offs;
+                    }
                 }
                 ui.link(format!("offset: {} (0x{:x})", off + add, off + add))
                     .context_menu(|ui| {
@@ -447,8 +478,34 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
         }
         _ => edit_offset(app, gui, ui),
     };
-    ui.checkbox(&mut gui.inspect_panel.offset_relative, "Relative offset")
-        .on_hover_text("Offset relative to --hard-seek");
+    egui::ComboBox::new("seek_rela_cb", "Seek relativity")
+        .selected_text(gui.inspect_panel.seek_relativity.label())
+        .show_ui(ui, |ui| {
+            ui.selectable_value(
+                &mut gui.inspect_panel.seek_relativity,
+                SeekRelativity::Absolute,
+                SeekRelativity::Absolute.label(),
+            );
+            ui.selectable_value(
+                &mut gui.inspect_panel.seek_relativity,
+                SeekRelativity::HardSeek,
+                SeekRelativity::HardSeek.label(),
+            );
+            ui.selectable_value(
+                &mut gui.inspect_panel.seek_relativity,
+                SeekRelativity::User,
+                SeekRelativity::User.label(),
+            );
+        });
+    let re = ui.add_enabled(
+        gui.inspect_panel.seek_relativity == SeekRelativity::User,
+        egui::TextEdit::singleline(&mut gui.inspect_panel.seek_user_buf),
+    );
+    if re.changed() {
+        if let Ok(num) = gui.inspect_panel.seek_user_buf.parse() {
+            gui.inspect_panel.seek_user_offs = num;
+        }
+    }
     if app.data.is_empty() {
         return;
     }
@@ -553,11 +610,17 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
     for action in actions {
         match action {
             Action::GoToOffset(offset) => {
-                if gui.inspect_panel.offset_relative {
-                    app.edit_state
-                        .set_cursor(offset - app.args.src.hard_seek.unwrap_or(0));
-                } else {
-                    app.edit_state.set_cursor(offset);
+                match gui.inspect_panel.seek_relativity {
+                    SeekRelativity::Absolute => {
+                        app.edit_state.set_cursor(offset);
+                    }
+                    SeekRelativity::HardSeek => {
+                        app.edit_state
+                            .set_cursor(offset - app.args.src.hard_seek.unwrap_or(0));
+                    }
+                    SeekRelativity::User => app
+                        .edit_state
+                        .set_cursor(offset - gui.inspect_panel.seek_user_offs),
                 }
                 app.center_view_on_offset(app.edit_state.cursor);
                 app.hex_ui.flash_cursor();
@@ -575,8 +638,14 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
 
 fn edit_offset(app: &mut App, gui: &mut crate::gui::Gui, ui: &mut Ui) -> usize {
     let mut off = app.edit_state.cursor;
-    if gui.inspect_panel.offset_relative {
-        off += app.args.src.hard_seek.unwrap_or(0);
+    match gui.inspect_panel.seek_relativity {
+        SeekRelativity::Absolute => {}
+        SeekRelativity::HardSeek => {
+            off += app.args.src.hard_seek.unwrap_or(0);
+        }
+        SeekRelativity::User => {
+            off += gui.inspect_panel.seek_user_offs;
+        }
     }
     ui.link(format!("offset: {off} ({off:x}h)"))
         .context_menu(|ui| {
