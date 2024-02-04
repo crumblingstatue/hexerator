@@ -1,3 +1,4 @@
-mod about;
+pub use {about::AboutWindow, vars::VarsWindow};
 
-pub use about::AboutWindow;
+mod about;
+mod vars;

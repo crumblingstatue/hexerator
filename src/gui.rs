@@ -1,4 +1,7 @@
-use gamedebug_core::{IMMEDIATE, PERSISTENT};
+use {
+    self::windows::VarsWindow,
+    gamedebug_core::{IMMEDIATE, PERSISTENT},
+};
 
 mod advanced_open_window;
 mod bookmarks_window;
@@ -89,6 +92,7 @@ pub struct Gui {
     pub preferences_window: PreferencesWindow,
     pub msg_dialog: MessageDialog,
     pub about_window: AboutWindow,
+    pub vars_window: VarsWindow,
     /// What to highlight in addition to selection. Can be updated by various actions that want to highlight stuff
     pub highlight_set: HighlightSet,
 }
@@ -174,6 +178,7 @@ pub fn do_egui(
             "Bookmarks",               bookmarks_window,            BookmarksWindow: gui app;
             "Layouts",                 layouts_window,              LayoutsWindow: gui app;
             "Views",                   views_window,                ViewsWindow: gui app font;
+            "Variables",               vars_window,                 VarsWindow: gui app;
             "Perspectives",            perspectives_window,         PerspectivesWindow: gui app;
             "File Diff results",       file_diff_result_window,     FileDiffResultWindow: gui app font events;
             "Diff against clean meta", meta_diff_window,            MetaDiffWindow: app;

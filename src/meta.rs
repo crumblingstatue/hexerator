@@ -1,15 +1,17 @@
-use std::io::{ErrorKind, Write};
-
-pub mod perspective;
-pub mod region;
-pub mod value_type;
-
 use {
     self::{perspective::Perspective, region::Region, value_type::ValueType},
     crate::{layout::Layout, view::View},
     serde::{Deserialize, Serialize},
     slotmap::{new_key_type, SlotMap},
+    std::{
+        collections::HashMap,
+        io::{ErrorKind, Write},
+    },
 };
+
+pub mod perspective;
+pub mod region;
+pub mod value_type;
 
 new_key_type! {
     pub struct PerspectiveKey;
@@ -100,6 +102,20 @@ pub struct Meta {
     pub layouts: LayoutMap,
     pub bookmarks: Bookmarks,
     pub misc: Misc,
+    #[serde(default)]
+    pub vars: HashMap<String, VarEntry>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct VarEntry {
+    pub val: VarVal,
+    pub desc: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
+pub enum VarVal {
+    I64(i64),
+    U64(u64),
 }
 
 pub(crate) fn find_most_specific_region_for_offset(

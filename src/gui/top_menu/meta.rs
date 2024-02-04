@@ -19,6 +19,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         gui.bookmarks_window.open.toggle();
         ui.close_menu();
     }
+    if ui.button("Variables").clicked() {
+        gui.vars_window.open.toggle();
+        ui.close_menu();
+    }
     ui.separator();
     if ui
         .button("Diff with clean meta")
