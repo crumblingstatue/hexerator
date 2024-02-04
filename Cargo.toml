@@ -51,6 +51,9 @@ egui_code_editor = {git = "https://github.com/W-Mai/fork_egui_code_editor.git"}
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.dev]
+incremental = false # Buggy rustc is breaking code with incremental compilation
+
 # Compile deps with optimizations in dev mode
 [profile.dev.package."*"]
 opt-level = 2
