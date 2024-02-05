@@ -60,8 +60,8 @@ impl FindMemoryPointersWindow {
                 });
             })
             .body(|body| {
-                body.rows(20.0, win.pointers.len(), |idx, mut row| {
-                    let en = &win.pointers[idx];
+                body.rows(20.0, win.pointers.len(), |mut row| {
+                    let en = &win.pointers[row.index()];
                     row.col(|ui| {
                         if ui.link(format!("{:X}", en.src_idx)).clicked() {
                             action = Action::Goto(en.src_idx);

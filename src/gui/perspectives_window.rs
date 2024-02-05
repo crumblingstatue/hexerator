@@ -38,7 +38,8 @@ impl PerspectivesWindow {
             .body(|body| {
                 let keys: Vec<_> = app.meta_state.meta.low.perspectives.keys().collect();
                 let mut action = Action::None;
-                body.rows(20.0, keys.len(), |idx, mut row| {
+                body.rows(20.0, keys.len(), |mut row| {
+                    let idx = row.index();
                     row.col(|ui| {
                         if gui.perspectives_window.rename_idx == keys[idx] {
                             let re = ui.text_edit_singleline(
@@ -68,12 +69,9 @@ impl PerspectivesWindow {
                     row.col(|ui| {
                         let per = &app.meta_state.meta.low.perspectives[keys[idx]];
                         let reg = &app.meta_state.meta.low.regions[per.region];
-                        if ui
-                            .link(&reg.name)
-                            .on_hover_text(&reg.desc)
-                            .context_menu(|ui| region_context_menu!(ui, app, reg, action))
-                            .clicked()
-                        {
+                        let re = ui.link(&reg.name).on_hover_text(&reg.desc);
+                        re.context_menu(|ui| region_context_menu!(ui, app, reg, action));
+                        if re.clicked() {
                             action = Action::OpenRegion(per.region);
                         }
                     });

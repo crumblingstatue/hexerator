@@ -194,8 +194,8 @@ impl OpenProcessWindow {
                             Sort::Descending => range1.start().cmp(&range2.start()).reverse(),
                         },
                     });
-                    body.rows(20.0, filtered.len(), |idx, mut row| {
-                        let map_range = filtered[idx].clone();
+                    body.rows(20.0, filtered.len(), |mut row| {
+                        let map_range = filtered[row.index()].clone();
                         row.col(|ui| {
                             let txt = format!("{:X}", map_range.start());
                             let mut is_button = false;
@@ -205,20 +205,17 @@ impl OpenProcessWindow {
                             } else {
                                 ui.add(egui::Label::new(&txt).sense(egui::Sense::click()))
                             };
-                            if re
-                                .context_menu(|ui| {
-                                    if ui.button("📋 Copy to clipboard").clicked() {
-                                        crate::app::set_clipboard_string(
-                                            &mut app.clipboard,
-                                            &mut gui.msg_dialog,
-                                            &txt,
-                                        );
-                                        ui.close_menu();
-                                    }
-                                })
-                                .clicked()
-                                && is_button
-                            {
+                            re.context_menu(|ui| {
+                                if ui.button("📋 Copy to clipboard").clicked() {
+                                    crate::app::set_clipboard_string(
+                                        &mut app.clipboard,
+                                        &mut gui.msg_dialog,
+                                        &txt,
+                                    );
+                                    ui.close_menu();
+                                }
+                            });
+                            if re.clicked() && is_button {
                                 msg_if_fail(
                                     app.load_proc_memory(
                                         pid,
@@ -312,8 +309,8 @@ impl OpenProcessWindow {
                         Sort::Ascending => pid1.cmp(pid2),
                         Sort::Descending => pid1.cmp(pid2).reverse(),
                     });
-                    body.rows(20.0, pids.len(), |idx, mut row| {
-                        let pid = pids[idx];
+                    body.rows(20.0, pids.len(), |mut row| {
+                        let pid = pids[row.index()];
                         row.col(|ui| {
                             if ui
                                 .selectable_label(Some(*pid) == win.selected_pid, pid.to_string())

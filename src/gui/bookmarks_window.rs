@@ -80,26 +80,24 @@ impl BookmarksWindow {
                                 .to_ascii_lowercase()
                                 .contains(&win.name_filter_string.to_ascii_lowercase())
                     });
-                    body.rows(20.0, keys.len(), |idx, mut row| {
-                        let idx = keys[idx];
+                    body.rows(20.0, keys.len(), |mut row| {
+                        let idx = keys[row.index()];
                         row.col(|ui| {
-                            if ui
-                                .selectable_label(
-                                    win.selected == Some(idx),
-                                    &app.meta_state.meta.bookmarks[idx].label,
-                                )
-                                .context_menu(|ui| {
-                                    if ui.button("Copy name to clipboard").clicked() {
-                                        set_clipboard_string(
-                                            &mut app.clipboard,
-                                            &mut gui.msg_dialog,
-                                            &app.meta_state.meta.bookmarks[idx].label,
-                                        );
-                                        ui.close_menu();
-                                    }
-                                })
-                                .clicked()
-                            {
+                            let re = ui.selectable_label(
+                                win.selected == Some(idx),
+                                &app.meta_state.meta.bookmarks[idx].label,
+                            );
+                            re.context_menu(|ui| {
+                                if ui.button("Copy name to clipboard").clicked() {
+                                    set_clipboard_string(
+                                        &mut app.clipboard,
+                                        &mut gui.msg_dialog,
+                                        &app.meta_state.meta.bookmarks[idx].label,
+                                    );
+                                    ui.close_menu();
+                                }
+                            });
+                            if re.clicked() {
                                 win.selected = Some(idx);
                             }
                         });
@@ -115,7 +113,9 @@ impl BookmarksWindow {
                                     ui.close_menu();
                                 }
                             };
-                            if ui.link(offset.to_string()).context_menu(ctx_menu).clicked() {
+                            let re = ui.link(offset.to_string());
+                            re.context_menu(ctx_menu);
+                            if re.clicked() {
                                 action = Action::Goto(offset);
                             }
                         });
@@ -149,12 +149,9 @@ impl BookmarksWindow {
                                 let ctx_menu = |ui: &mut egui::Ui| {
                                     region_context_menu!(ui, app, region, action)
                                 };
-                                if ui
-                                    .link(&region.name)
-                                    .on_hover_text(&region.desc)
-                                    .context_menu(ctx_menu)
-                                    .clicked()
-                                {
+                                let re = ui.link(&region.name).on_hover_text(&region.desc);
+                                re.context_menu(ctx_menu);
+                                if re.clicked() {
                                     gui.regions_window.open.set(true);
                                     gui.regions_window.selected_key = Some(region_key);
                                 }
@@ -436,11 +433,9 @@ impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
                 *act_mut = UiAction::Goto(val);
             }
         };
-        let changed = if ui
-            .add(egui::DragValue::new(&mut val))
-            .context_menu(ctx_menu)
-            .changed()
-        {
+        let re = ui.add(egui::DragValue::new(&mut val));
+        re.context_menu(ctx_menu);
+        let changed = if re.changed() {
             bytes.copy_from_slice(&Self::to_bytes(val));
             true
         } else {

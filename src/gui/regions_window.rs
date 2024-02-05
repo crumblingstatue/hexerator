@@ -152,21 +152,20 @@ impl RegionsWindow {
                         row.col(|ui| {
                             let ctx_menu =
                                 |ui: &mut egui::Ui| region_context_menu!(ui, app, reg, action);
-                            if ui
+                            let re = ui
                                 .selectable_label(
                                     gui.regions_window.selected_key == Some(k),
                                     &reg.name,
                                 )
-                                .on_hover_text(&reg.desc)
-                                .context_menu(ctx_menu)
-                                .clicked()
-                            {
+                                .on_hover_text(&reg.desc);
+                            re.context_menu(ctx_menu);
+                            if re.clicked() {
                                 gui.regions_window.selected_key = Some(k);
                             }
                         });
                         row.col(|ui| {
-                            let mut re = ui.link(reg.region.begin.to_string());
-                            re = re.context_menu(|ui| {
+                            let re = ui.link(reg.region.begin.to_string());
+                            re.context_menu(|ui| {
                                 if ui.button("Set to cursor").clicked() {
                                     action = Action::SetRegionBegin {
                                         key: k,
@@ -180,8 +179,8 @@ impl RegionsWindow {
                             }
                         });
                         row.col(|ui| {
-                            let mut re = ui.link(reg.region.end.to_string());
-                            re = re.context_menu(|ui| {
+                            let re = ui.link(reg.region.end.to_string());
+                            re.context_menu(|ui| {
                                 if ui.button("Set to cursor").clicked() {
                                     action = Action::SetRegionEnd {
                                         key: k,

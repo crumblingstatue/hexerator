@@ -69,12 +69,10 @@ pub fn top_menu(
                                             ui.close_menu();
                                         }
                                     };
-                                    if ui
-                                        .add(egui::Label::new(&s).sense(egui::Sense::click()))
-                                        .context_menu(ctx_menu)
-                                        .on_hover_text("Right click for context menu")
-                                        .clicked()
-                                    {
+                                    let re =
+                                        ui.add(egui::Label::new(&s).sense(egui::Sense::click()));
+                                    re.context_menu(ctx_menu);
+                                    if re.on_hover_text("Right click for context menu").clicked() {
                                         try_open_file(file, gui);
                                     }
                                 }

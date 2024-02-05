@@ -134,18 +134,21 @@ impl FindDialog {
                     body.rows(
                         20.0,
                         gui.find_dialog.results_vec.len(),
-                        |i, mut row| {
+                        |mut row| {
+                            let i = row.index();
                             let off = gui.find_dialog.results_vec[i];
                             let (_, col1_re) = row.col(|ui| {
-                                if ui.selectable_label(
+                                let re = ui.selectable_label(
                                     gui.find_dialog.result_cursor == i,
                                     off.to_string(),
-                                ).context_menu(|ui| {
+                                );
+                                re.context_menu(|ui| {
                                     if ui.button("Remove from results").clicked() {
                                         action = Action::RemoveIdxFromResults(i);
                                         ui.close_menu();
                                     }
-                                }).clicked() {
+                                });
+                                if re.clicked() {
                                     app.search_focus(off);
                                     gui.find_dialog.result_cursor = i;
                                 }
@@ -187,7 +190,9 @@ impl FindDialog {
                                                 ui.close_menu();
                                             }
                                         };
-                                        if ui.link(&reg.name).context_menu(ctx_menu).clicked() {
+                                        let re = ui.link(&reg.name);
+                                        re.context_menu(ctx_menu);
+                                        if re.clicked() {
                                             gui.regions_window.open.set(true);
                                             gui.regions_window.selected_key = Some(key);
                                         }

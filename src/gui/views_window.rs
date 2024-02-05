@@ -80,8 +80,8 @@ impl ViewsWindow {
             .body(|body| {
                 let keys: Vec<ViewKey> = app.meta_state.meta.views.keys().collect();
                 let mut action = Action::None;
-                body.rows(20.0, keys.len(), |idx, mut row| {
-                    let view_key = keys[idx];
+                body.rows(20.0, keys.len(), |mut row| {
+                    let view_key = keys[row.index()];
                     let view = &app.meta_state.meta.views[view_key];
                     row.col(|ui| {
                         let ctx_menu = |ui: &mut egui::Ui| {
@@ -101,11 +101,10 @@ impl ViewsWindow {
                                 }
                             });
                         };
-                        if ui
-                            .selectable_label(view_key == gui.views_window.selected, &view.name)
-                            .context_menu(ctx_menu)
-                            .clicked()
-                        {
+                        let re =
+                            ui.selectable_label(view_key == gui.views_window.selected, &view.name);
+                        re.context_menu(ctx_menu);
+                        if re.clicked() {
                             gui.views_window.selected = view_key;
                         }
                     });
@@ -125,12 +124,9 @@ impl ViewsWindow {
                         let reg = &app.meta_state.meta.low.regions[per.region];
                         let ctx_menu =
                             |ui: &mut egui::Ui| region_context_menu!(ui, app, reg, action);
-                        if ui
-                            .link(&reg.name)
-                            .on_hover_text(&reg.desc)
-                            .context_menu(ctx_menu)
-                            .clicked()
-                        {
+                        let re = ui.link(&reg.name).on_hover_text(&reg.desc);
+                        re.context_menu(ctx_menu);
+                        if re.clicked() {
                             gui.regions_window.open.set(true);
                             gui.regions_window.selected_key = Some(per.region);
                         }

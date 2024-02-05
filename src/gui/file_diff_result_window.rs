@@ -192,8 +192,8 @@ impl FileDiffResultWindow {
                 body.rows(
                     20.0,
                     gui.file_diff_result_window.offsets.len(),
-                    |idx, mut row| {
-                        let offs = gui.file_diff_result_window.offsets[idx];
+                    |mut row| {
+                        let offs = gui.file_diff_result_window.offsets[row.index()];
                         let bm = Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
                             .map(|(_, bm)| bm);
                         row.col(|ui| {
@@ -219,24 +219,22 @@ impl FileDiffResultWindow {
                             ui.label(s);
                         });
                         row.col(|ui| {
-                            if ui
-                                .link(offs.to_string())
-                                .context_menu(|ui| {
-                                    if ui.button("Add bookmark").clicked() {
-                                        let idx = app.meta_state.meta.bookmarks.len();
-                                        app.meta_state.meta.bookmarks.push(Bookmark {
-                                            offset: offs,
-                                            label: "New bookmark".into(),
-                                            desc: String::new(),
-                                            value_type: ValueType::None,
-                                        });
-                                        gui.bookmarks_window.open.set(true);
-                                        gui.bookmarks_window.selected = Some(idx);
-                                        ui.close_menu();
-                                    }
-                                })
-                                .clicked()
-                            {
+                            let re = ui.link(offs.to_string());
+                            re.context_menu(|ui| {
+                                if ui.button("Add bookmark").clicked() {
+                                    let idx = app.meta_state.meta.bookmarks.len();
+                                    app.meta_state.meta.bookmarks.push(Bookmark {
+                                        offset: offs,
+                                        label: "New bookmark".into(),
+                                        desc: String::new(),
+                                        value_type: ValueType::None,
+                                    });
+                                    gui.bookmarks_window.open.set(true);
+                                    gui.bookmarks_window.selected = Some(idx);
+                                    ui.close_menu();
+                                }
+                            });
+                            if re.clicked() {
                                 action = Action::Goto(offs);
                             }
                         });
