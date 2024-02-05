@@ -47,7 +47,7 @@ impl Default for FontSizes {
             small: 10,
             body: 14,
             button: 14,
-            heading: 20,
+            heading: 16,
             monospace: 14,
         }
     }
