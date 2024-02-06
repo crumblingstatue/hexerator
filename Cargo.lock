@@ -733,7 +733,6 @@ dependencies = [
  "gamedebug_core",
  "glu-sys",
  "iced-x86",
- "index_many",
  "itertools",
  "memchr",
  "num-traits",
@@ -786,12 +785,6 @@ dependencies = [
  "color_quant",
  "num-traits",
 ]
-
-[[package]]
-name = "index_many"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13534ee00cae5569fef863f9954fc24e0d5e47e1817edd93d351c2f1be8408c0"
 
 [[package]]
 name = "indexmap"

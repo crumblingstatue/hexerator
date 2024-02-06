@@ -25,7 +25,6 @@ either = "1.9.0"
 tree_magic_mini = { version = "3.0.3", features = ["tree_magic_db"] }
 bytemuck = "1.14.0"
 egui_commonmark = "0.12.0"
-index_many = "0.6.1"
 slotmap = { version = "1.0.7", features = ["serde"] }
 egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
 num-traits = "0.2.17"
