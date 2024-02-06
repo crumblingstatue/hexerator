@@ -49,7 +49,6 @@ impl PreferencesWindow {
 }
 
 fn video_ui(ui: &mut egui::Ui, app: &mut App, rwin: &mut RenderWindow) {
-    ui.heading("Video");
     if ui.checkbox(&mut app.cfg.vsync, "Vsync").clicked() {
         rwin.set_vertical_sync_enabled(app.cfg.vsync);
     }
@@ -63,44 +62,46 @@ fn video_ui(ui: &mut egui::Ui, app: &mut App, rwin: &mut RenderWindow) {
 }
 
 fn style_ui(app: &mut App, ui: &mut egui::Ui) {
-    let style = &mut app.cfg.style;
-    ui.heading("Font sizes");
-    let mut any_changed = false;
-    ui.horizontal(|ui| {
-        ui.label("heading");
-        any_changed |= ui
-            .add(egui::DragValue::new(&mut style.font_sizes.heading))
-            .changed();
+    ui.group(|ui| {
+        let style = &mut app.cfg.style;
+        ui.heading("Font sizes");
+        let mut any_changed = false;
+        ui.horizontal(|ui| {
+            ui.label("heading");
+            any_changed |= ui
+                .add(egui::DragValue::new(&mut style.font_sizes.heading))
+                .changed();
+        });
+        ui.horizontal(|ui| {
+            ui.label("body");
+            any_changed |= ui
+                .add(egui::DragValue::new(&mut style.font_sizes.body))
+                .changed();
+        });
+        ui.horizontal(|ui| {
+            ui.label("monospace");
+            any_changed |= ui
+                .add(egui::DragValue::new(&mut style.font_sizes.monospace))
+                .changed();
+        });
+        ui.horizontal(|ui| {
+            ui.label("button");
+            any_changed |= ui
+                .add(egui::DragValue::new(&mut style.font_sizes.button))
+                .changed();
+        });
+        ui.horizontal(|ui| {
+            ui.label("small");
+            any_changed |= ui
+                .add(egui::DragValue::new(&mut style.font_sizes.small))
+                .changed();
+        });
+        if ui.button("Reset default").clicked() {
+            *style = config::Style::default();
+            any_changed = true;
+        }
+        if any_changed {
+            crate::gui::set_font_sizes_ctx(ui.ctx(), style);
+        }
     });
-    ui.horizontal(|ui| {
-        ui.label("body");
-        any_changed |= ui
-            .add(egui::DragValue::new(&mut style.font_sizes.body))
-            .changed();
-    });
-    ui.horizontal(|ui| {
-        ui.label("monospace");
-        any_changed |= ui
-            .add(egui::DragValue::new(&mut style.font_sizes.monospace))
-            .changed();
-    });
-    ui.horizontal(|ui| {
-        ui.label("button");
-        any_changed |= ui
-            .add(egui::DragValue::new(&mut style.font_sizes.button))
-            .changed();
-    });
-    ui.horizontal(|ui| {
-        ui.label("small");
-        any_changed |= ui
-            .add(egui::DragValue::new(&mut style.font_sizes.small))
-            .changed();
-    });
-    if ui.button("Reset default").clicked() {
-        *style = config::Style::default();
-        any_changed = true;
-    }
-    if any_changed {
-        crate::gui::set_font_sizes_ctx(ui.ctx(), style);
-    }
 }
