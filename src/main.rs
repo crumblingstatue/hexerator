@@ -94,8 +94,22 @@ struct InstanceRequest {
     args: Args,
 }
 
+fn print_version_info() {
+    eprintln!(
+        "Hexerator {} ({} {}), built on {}",
+        env!("CARGO_PKG_VERSION"),
+        env!("VERGEN_GIT_SHA"),
+        env!("VERGEN_GIT_COMMIT_TIMESTAMP"),
+        env!("VERGEN_BUILD_TIMESTAMP")
+    );
+}
+
 fn try_main() -> anyhow::Result<()> {
     let args = Args::parse();
+    if args.version {
+        print_version_info();
+        return Ok(());
+    }
     let desktop_mode = VideoMode::desktop_mode();
     let mut window = RenderWindow::new(
         desktop_mode,
@@ -747,7 +761,7 @@ fn handle_key_pressed(
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(Args{ src: args, recent: false, meta: None },font, &mut gui.msg_dialog, events),
+                    app.load_file_args(Args{ src: args, recent: false, meta: None, version: false },font, &mut gui.msg_dialog, events),
                     "Failed to load file",
                     &mut gui.msg_dialog
                 );

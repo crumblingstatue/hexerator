@@ -79,6 +79,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
                     src: args,
                     recent: false,
                     meta: None,
+                    version: false,
                 },
                 font,
                 &mut gui.msg_dialog,

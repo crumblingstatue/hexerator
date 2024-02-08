@@ -16,6 +16,9 @@ pub struct Args {
     /// Load this metafile
     #[arg(long)]
     pub meta: Option<PathBuf>,
+    /// Show version information and exit
+    #[arg(long)]
+    pub version: bool,
 }
 
 #[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Default)]
