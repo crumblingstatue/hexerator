@@ -73,6 +73,9 @@ impl LayoutsWindow {
                                         ui.close_menu();
                                     }
                                 }
+                                if unused_views.is_empty() {
+                                    ui.label(egui::RichText::new("No unused views").italics());
+                                }
                             })
                             .response
                             .context_menu(|ui| {
