@@ -6,7 +6,7 @@ use {
     },
     egui,
     egui_sfml::sfml::graphics::Font,
-    rlua::Lua,
+    mlua::Lua,
 };
 
 #[derive(Debug)]

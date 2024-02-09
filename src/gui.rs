@@ -58,8 +58,8 @@ use {
         sfml::graphics::{Font, RenderWindow},
         SfEgui, TextureCreateError,
     },
+    mlua::Lua,
     rfd::MessageLevel,
-    rlua::Lua,
     std::{
         any::TypeId,
         collections::{HashMap, HashSet},

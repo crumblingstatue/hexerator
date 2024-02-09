@@ -8,7 +8,7 @@ use {
     egui_code_editor::{CodeEditor, Syntax},
     egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
-    rlua::{Function, Lua},
+    mlua::{Function, Lua},
     std::time::Instant,
 };
 
@@ -55,24 +55,22 @@ impl Dialog for LuaFillDialog {
             });
         if ui.button("Execute").clicked() || ctrl_enter {
             let start_time = Instant::now();
-            lua.context(|ctx| {
-                let chunk = ctx.load(&app.meta_state.meta.misc.fill_lua_script);
-                let res: rlua::Result<()> = try {
-                    let f = chunk.eval::<Function>()?;
-                    for (i, b) in app.data[sel.begin..=sel.end].iter_mut().enumerate() {
-                        *b = f.call((i, *b))?;
-                    }
-                    app.edit_state.dirty_region = Some(sel);
-                };
-                if let Err(e) = res {
-                    self.result_info_string = e.to_string();
-                    self.err = true;
-                } else {
-                    self.result_info_string =
-                        format!("Script took {} ms", start_time.elapsed().as_millis());
-                    self.err = false;
+            let chunk = lua.load(&app.meta_state.meta.misc.fill_lua_script);
+            let res: mlua::Result<()> = try {
+                let f = chunk.eval::<Function>()?;
+                for (i, b) in app.data[sel.begin..=sel.end].iter_mut().enumerate() {
+                    *b = f.call((i, *b))?;
                 }
-            });
+                app.edit_state.dirty_region = Some(sel);
+            };
+            if let Err(e) = res {
+                self.result_info_string = e.to_string();
+                self.err = true;
+            } else {
+                self.result_info_string =
+                    format!("Script took {} ms", start_time.elapsed().as_millis());
+                self.err = false;
+            }
         }
         let close = ui.button("Close").clicked();
         if app.edit_state.dirty_region.is_some() {

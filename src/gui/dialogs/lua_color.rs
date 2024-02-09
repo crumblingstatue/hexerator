@@ -6,7 +6,7 @@ use {
     },
     egui,
     egui_sfml::sfml::graphics::Font,
-    rlua::{Function, Lua},
+    mlua::{Function, Lua},
 };
 
 pub struct LuaColorDialog {
@@ -63,21 +63,19 @@ impl Dialog for LuaColorDialog {
             .show(ui);
         ui.horizontal(|ui| {
             if ui.button("Execute").clicked() || self.auto_exec {
-                lua.context(|ctx| {
-                    let chunk = ctx.load(&self.script);
-                    let res: rlua::Result<()> = try {
-                        let fun = chunk.eval::<Function>()?;
-                        for (i, c) in color_data.iter_mut().enumerate() {
-                            let rgb: [u8; 3] = fun.call((i,))?;
-                            *c = rgb;
-                        }
-                    };
-                    if let Err(e) = res {
-                        self.err_string = e.to_string();
-                    } else {
-                        self.err_string.clear();
+                let chunk = lua.load(&self.script);
+                let res: mlua::Result<()> = try {
+                    let fun = chunk.eval::<Function>()?;
+                    for (i, c) in color_data.iter_mut().enumerate() {
+                        let rgb: [u8; 3] = fun.call((i,))?;
+                        *c = rgb;
                     }
-                });
+                };
+                if let Err(e) = res {
+                    self.err_string = e.to_string();
+                } else {
+                    self.err_string.clear();
+                }
             }
             ui.checkbox(&mut self.auto_exec, "Auto execute");
         });

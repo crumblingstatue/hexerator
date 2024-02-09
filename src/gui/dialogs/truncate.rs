@@ -28,7 +28,7 @@ impl Dialog for TruncateDialog {
         ui: &mut egui::Ui,
         app: &mut crate::app::App,
         _msg: &mut crate::gui::message_dialog::MessageDialog,
-        _lua: &rlua::Lua,
+        _lua: &mlua::Lua,
         _font: &egui_sfml::sfml::graphics::Font,
         _events: &mut crate::event::EventQueue,
     ) -> bool {

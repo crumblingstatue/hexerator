@@ -31,7 +31,6 @@ num-traits = "0.2.17"
 serde-big-array = "0.5.1"
 egui = "0.26.0"
 egui_extras = { version = "0.26.0", default-features = false }
-rlua = "0.19.7"
 itertools = "0.12.0"
 sysinfo = { version = "0.30.3", default-features = false }
 proc-maps = "0.3.2"
@@ -43,6 +42,7 @@ iced-x86 = "1.20.0"
 strum = { version = "0.25.0", features = ["derive"] }
 parking_lot = "0.12.1"
 egui_code_editor = {git = "https://github.com/crumblingstatue/egui_code_editor.git"}
+mlua = { version = "0.9.5", features = ["luajit"] }
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.52.0"

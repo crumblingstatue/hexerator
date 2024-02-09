@@ -9,7 +9,7 @@ use {
     egui,
     egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
-    rlua::Lua,
+    mlua::Lua,
 };
 
 #[derive(Debug, Default)]

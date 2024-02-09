@@ -12,7 +12,7 @@ use {
     egui_code_editor::{CodeEditor, Syntax},
     egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
-    rlua::{ExternalError, Function, Lua, UserData},
+    mlua::{ExternalError, Function, Lua, UserData},
     std::time::Instant,
 };
 
@@ -30,7 +30,7 @@ struct LuaExecContext<'app, 'msg, 'font, 'events> {
 }
 
 impl<'app, 'msg, 'font, 'events> UserData for LuaExecContext<'app, 'msg, 'font, 'events> {
-    fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+    fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_method_mut(
             "add_region",
             |_ctx, exec, (name, begin, end): (String, usize, usize)| {
@@ -45,7 +45,7 @@ impl<'app, 'msg, 'font, 'events> UserData for LuaExecContext<'app, 'msg, 'font, 
         methods.add_method_mut("load_file", |_ctx, exec, (path,): (String,)| {
             exec.app
                 .load_file(path.into(), true, exec.font, exec.msg, exec.events)
-                .map_err(|e| e.to_lua_err())?;
+                .map_err(|e| e.into_lua_err())?;
             Ok(())
         });
         methods.add_method_mut(
@@ -56,9 +56,9 @@ impl<'app, 'msg, 'font, 'events> UserData for LuaExecContext<'app, 'msg, 'font, 
                     .meta_state
                     .meta
                     .bookmark_by_name_mut(&name)
-                    .ok_or("no such bookmark".to_lua_err())?;
+                    .ok_or("no such bookmark".into_lua_err())?;
                 bm.write_int(&mut exec.app.data[bm.offset..], val)
-                    .map_err(|e| e.to_lua_err())?;
+                    .map_err(|e| e.into_lua_err())?;
                 Ok(())
             },
         );
@@ -70,8 +70,8 @@ impl<'app, 'msg, 'font, 'events> UserData for LuaExecContext<'app, 'msg, 'font, 
                     .meta_state
                     .meta
                     .region_by_name_mut(&name)
-                    .ok_or("no such region".to_lua_err())?;
-                let pat = parse_pattern_string(&pattern).map_err(|e| e.to_lua_err())?;
+                    .ok_or("no such region".into_lua_err())?;
+                let pat = parse_pattern_string(&pattern).map_err(|e| e.into_lua_err())?;
                 exec.app.data[reg.region.begin..=reg.region.end].pattern_fill(&pat);
                 Ok(())
             },
@@ -112,34 +112,34 @@ impl Dialog for LuaExecuteDialog {
         if ui.button("Execute").clicked() || ctrl_enter {
             let start_time = Instant::now();
             let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
-            lua.context(|ctx| {
-                ctx.scope(|scope| {
-                    let res: rlua::Result<()> = try {
-                        /*let add_region = scope.create_function_mut(
-                            ,
-                        )?;
-                        ctx.globals().set("add_region", add_region)?;*/
-                        let chunk = ctx.load(&lua_script);
-                        let f = chunk.eval::<Function>()?;
-                        let app = scope.create_nonstatic_userdata(LuaExecContext {
-                            app: &mut *app,
-                            msg,
-                            font,
-                            events: &mut *events,
-                        })?;
-                        f.call(app)?;
-                        //chunk.exec()?;
-                    };
-                    if let Err(e) = res {
-                        self.result_info_string = e.to_string();
-                        self.err = true;
-                    } else {
-                        self.result_info_string =
-                            format!("Script took {} ms", start_time.elapsed().as_millis());
-                        self.err = false;
-                    }
-                });
+            let result = lua.scope(|scope| {
+                let res: mlua::Result<()> = try {
+                    /*let add_region = scope.create_function_mut(
+                        ,
+                    )?;
+                    ctx.globals().set("add_region", add_region)?;*/
+                    let chunk = lua.load(&lua_script);
+                    let f = chunk.eval::<Function>()?;
+                    let app = scope.create_nonstatic_userdata(LuaExecContext {
+                        app: &mut *app,
+                        msg,
+                        font,
+                        events: &mut *events,
+                    })?;
+                    f.call(app)?;
+                    //chunk.exec()?;
+                };
+                if let Err(e) = res {
+                    self.result_info_string = e.to_string();
+                    self.err = true;
+                } else {
+                    self.result_info_string =
+                        format!("Script took {} ms", start_time.elapsed().as_millis());
+                    self.err = false;
+                }
+                Ok(())
             });
+            msg_if_fail(result, "Lua exec error", msg);
         }
         ui.horizontal(|ui| {
             if ui.button("Load script...").clicked() {
