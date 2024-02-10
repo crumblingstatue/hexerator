@@ -15,7 +15,7 @@ pub struct RegionsWindow {
 
 #[macro_export]
 macro_rules! region_context_menu {
-    ($ui:expr, $app:expr, $reg:expr, $action:expr) => {{
+    ($ui:expr, $app:expr, $key:expr, $reg:expr, $action:expr) => {{
         $ui.menu_button("Containing layouts", |ui| {
             for (key, layout) in $app.meta_state.meta.layouts.iter() {
                 if let Some(v) = layout.view_containing_region(&$reg.region, &$app.meta_state.meta)
@@ -32,6 +32,13 @@ macro_rules! region_context_menu {
         if $ui.button("Select").clicked() {
             $app.hex_ui.select_a = Some($reg.region.begin);
             $app.hex_ui.select_b = Some($reg.region.end);
+            $ui.close_menu();
+        }
+        if $ui.button("Create perspective").clicked() {
+            $action = Action::CreatePerspective {
+                region_key: $key,
+                name: $reg.name.clone(),
+            };
             $ui.close_menu();
         }
     }};
@@ -151,7 +158,7 @@ impl RegionsWindow {
                         let reg = &app.meta_state.meta.low.regions[k];
                         row.col(|ui| {
                             let ctx_menu =
-                                |ui: &mut egui::Ui| region_context_menu!(ui, app, reg, action);
+                                |ui: &mut egui::Ui| region_context_menu!(ui, app, k, reg, action);
                             let re = ui
                                 .selectable_label(
                                     gui.regions_window.selected_key == Some(k),
@@ -218,6 +225,9 @@ impl RegionsWindow {
                     Action::SetRegionEnd { key, end } => {
                         app.meta_state.meta.low.regions[key].region.end = end
                     }
+                    Action::CreatePerspective { region_key, name } => {
+                        app.add_perspective_from_region(region_key, name)
+                    }
                 }
             });
     }
@@ -228,4 +238,5 @@ enum Action {
     Goto(usize),
     SetRegionBegin { key: RegionKey, begin: usize },
     SetRegionEnd { key: RegionKey, end: usize },
+    CreatePerspective { region_key: RegionKey, name: String },
 }

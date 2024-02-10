@@ -9,7 +9,7 @@ use {
                 EndianedPrimitive, F32Be, F32Le, F64Be, F64Le, I16Be, I16Le, I32Be, I32Le, I64Be,
                 I64Le, StringMap, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8, U8,
             },
-            Bookmark,
+            Bookmark, RegionKey,
         },
         region_context_menu,
         shell::{msg_fail, msg_if_fail},
@@ -135,6 +135,9 @@ impl BookmarksWindow {
                                 Ok(action) => match action {
                                     Action::None => {}
                                     Action::Goto(offset) => app.search_focus(offset),
+                                    Action::CreatePerspective { region_key, name } => {
+                                        app.add_perspective_from_region(region_key, name)
+                                    }
                                 },
                                 Err(e) => msg_fail(&e, "Value ui error", &mut gui.msg_dialog),
                             }
@@ -147,7 +150,7 @@ impl BookmarksWindow {
                             ) {
                                 let region = &app.meta_state.meta.low.regions[region_key];
                                 let ctx_menu = |ui: &mut egui::Ui| {
-                                    region_context_menu!(ui, app, region, action)
+                                    region_context_menu!(ui, app, region_key, region, action)
                                 };
                                 let re = ui.link(&region.name).on_hover_text(&region.desc);
                                 re.context_menu(ctx_menu);
@@ -236,10 +239,10 @@ impl BookmarksWindow {
                     &mut gui.msg_dialog,
                 );
                 match result {
-                    Ok(act) => match (&act, &action) {
+                    Ok(value_ui_action) => match (&value_ui_action, &action) {
                         (Action::None, Action::None) => {}
                         (Action::None, Action::Goto(_)) => {}
-                        (Action::Goto(_), Action::None) => action = act,
+                        (Action::Goto(_), Action::None) => action = value_ui_action,
                         (Action::Goto(_), Action::Goto(_)) => {
                             msg_fail(
                                 &"Conflicting goto action",
@@ -247,6 +250,22 @@ impl BookmarksWindow {
                                 &mut gui.msg_dialog,
                             );
                         }
+                        // TODO: Fix this mess ASAP
+                        (Action::None, Action::CreatePerspective { region_key, name }) => todo!(),
+                        (Action::Goto(_), Action::CreatePerspective { region_key, name }) => {
+                            todo!()
+                        }
+                        (Action::CreatePerspective { region_key, name }, Action::None) => todo!(),
+                        (Action::CreatePerspective { region_key, name }, Action::Goto(_)) => {
+                            todo!()
+                        }
+                        (
+                            Action::CreatePerspective { region_key, name },
+                            Action::CreatePerspective {
+                                region_key: region_key_2,
+                                name: name_2,
+                            },
+                        ) => todo!(),
                     },
                     Err(e) => msg_fail(&e, "Value ui error", &mut gui.msg_dialog),
                 }
@@ -306,6 +325,9 @@ impl BookmarksWindow {
                 app.edit_state.cursor = off;
                 app.center_view_on_offset(off);
                 app.hex_ui.flash_cursor();
+            }
+            Action::CreatePerspective { region_key, name } => {
+                app.add_perspective_from_region(region_key, name)
             }
         }
     }
@@ -499,6 +521,7 @@ impl ValueTrait for StringMap {
 enum Action {
     None,
     Goto(usize),
+    CreatePerspective { region_key: RegionKey, name: String },
 }
 
 enum UiAction<T> {

@@ -252,7 +252,9 @@ impl FileDiffResultWindow {
                                         }
                                     })
                                     .response
-                                    .context_menu(|ui| region_context_menu!(ui, app, reg, action));
+                                    .context_menu(|ui| {
+                                        region_context_menu!(ui, app, reg_key, reg, action)
+                                    });
                                 }
                                 None => {
                                     ui.label("[no region]");
@@ -298,6 +300,9 @@ impl FileDiffResultWindow {
                     find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, offs);
                 reg != Some(key)
             }),
+            Action::CreatePerspective { region_key, name } => {
+                app.add_perspective_from_region(region_key, name)
+            }
         }
     }
 }
@@ -306,4 +311,5 @@ enum Action {
     None,
     Goto(usize),
     RemoveRegion(RegionKey),
+    CreatePerspective { region_key: RegionKey, name: String },
 }

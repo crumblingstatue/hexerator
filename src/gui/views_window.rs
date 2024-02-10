@@ -2,7 +2,7 @@ use {
     super::window_open::WindowOpen,
     crate::{
         app::App,
-        meta::{NamedView, ViewKey},
+        meta::{NamedView, RegionKey, ViewKey},
         region_context_menu,
         view::{HexData, TextData, TextKind, View, ViewKind},
     },
@@ -123,8 +123,9 @@ impl ViewsWindow {
                     row.col(|ui| {
                         let per = &app.meta_state.meta.low.perspectives[view.view.perspective];
                         let reg = &app.meta_state.meta.low.regions[per.region];
-                        let ctx_menu =
-                            |ui: &mut egui::Ui| region_context_menu!(ui, app, reg, action);
+                        let ctx_menu = |ui: &mut egui::Ui| {
+                            region_context_menu!(ui, app, per.region, reg, action)
+                        };
                         let re = ui.link(&reg.name).on_hover_text(&reg.desc);
                         re.context_menu(ctx_menu);
                         if re.clicked() {
@@ -139,6 +140,9 @@ impl ViewsWindow {
                         app.edit_state.cursor = off;
                         app.center_view_on_offset(off);
                         app.hex_ui.flash_cursor();
+                    }
+                    Action::CreatePerspective { region_key, name } => {
+                        app.add_perspective_from_region(region_key, name)
                     }
                 }
             });
@@ -340,4 +344,5 @@ fn labelled_drag<T: Numeric>(
 enum Action {
     None,
     Goto(usize),
+    CreatePerspective { region_key: RegionKey, name: String },
 }

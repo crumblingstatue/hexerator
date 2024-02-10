@@ -12,7 +12,7 @@ use {
                 EndianedPrimitive, F32Be, F32Le, F64Be, F64Le, I16Be, I16Le, I32Be, I32Le, I64Be,
                 I64Le, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8, U8,
             },
-            Bookmark, Meta,
+            Bookmark, Meta, RegionKey,
         },
         parse_radix::parse_guess_radix,
         region_context_menu,
@@ -189,7 +189,7 @@ impl FindDialog {
                                         Some(key) => {
                                             let reg = &app.meta_state.meta.low.regions[key];
                                             let ctx_menu = |ui: &mut egui::Ui| {
-                                                region_context_menu!(ui, app, reg, action);
+                                                region_context_menu!(ui, app, key, reg, action);
                                                 ui.separator();
                                                 if ui.button("Remove region from results").clicked()
                                                 {
@@ -268,6 +268,9 @@ impl FindDialog {
                         Action::RemoveIdxFromResults(idx) => {
                             gui.find_dialog.results_vec.remove(idx);
                             gui.highlight_set.remove(&idx);
+                        }
+                        Action::CreatePerspective { region_key, name } => {
+                            app.add_perspective_from_region(region_key, name)
                         }
                     }
                 });
@@ -363,6 +366,7 @@ enum Action {
     None,
     RemoveRegionFromResults(crate::meta::RegionKey),
     RemoveIdxFromResults(usize),
+    CreatePerspective { region_key: RegionKey, name: String },
 }
 
 fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {

@@ -69,7 +69,9 @@ impl PerspectivesWindow {
                         let per = &app.meta_state.meta.low.perspectives[keys[idx]];
                         let reg = &app.meta_state.meta.low.regions[per.region];
                         let re = ui.link(&reg.name).on_hover_text(&reg.desc);
-                        re.context_menu(|ui| region_context_menu!(ui, app, reg, action));
+                        re.context_menu(|ui| {
+                            region_context_menu!(ui, app, per.region, reg, action)
+                        });
                         if re.clicked() {
                             action = Action::OpenRegion(per.region);
                         }
