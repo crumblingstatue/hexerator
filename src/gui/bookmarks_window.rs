@@ -147,7 +147,7 @@ impl BookmarksWindow {
                             ) {
                                 let region = &app.meta_state.meta.low.regions[region_key];
                                 let ctx_menu = |ui: &mut egui::Ui| {
-                                    region_context_menu!(ui, app, region_key, region, action)
+                                    region_context_menu!(ui, app, region_key, region)
                                 };
                                 let re = ui.link(&region.name).on_hover_text(&region.desc);
                                 re.context_menu(ctx_menu);

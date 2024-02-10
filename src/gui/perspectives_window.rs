@@ -69,9 +69,7 @@ impl PerspectivesWindow {
                         let per = &app.meta_state.meta.low.perspectives[keys[idx]];
                         let reg = &app.meta_state.meta.low.regions[per.region];
                         let re = ui.link(&reg.name).on_hover_text(&reg.desc);
-                        re.context_menu(|ui| {
-                            region_context_menu!(ui, app, per.region, reg, action)
-                        });
+                        re.context_menu(|ui| region_context_menu!(ui, app, per.region, reg));
                         if re.clicked() {
                             action = Action::OpenRegion(per.region);
                         }
@@ -111,11 +109,6 @@ impl PerspectivesWindow {
                 gui.regions_window.open.set(true);
                 gui.regions_window.selected_key = Some(key);
             }
-            Action::Goto(off) => {
-                app.center_view_on_offset(off);
-                app.edit_state.set_cursor(off);
-                app.hex_ui.flash_cursor();
-            }
             Action::CreatePerspective { region_key, name } => {
                 app.add_perspective_from_region(region_key, name);
             }
@@ -127,6 +120,5 @@ enum Action {
     None,
     Remove(PerspectiveKey),
     OpenRegion(RegionKey),
-    Goto(usize),
     CreatePerspective { region_key: RegionKey, name: String },
 }

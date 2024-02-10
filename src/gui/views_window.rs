@@ -80,7 +80,6 @@ impl ViewsWindow {
             })
             .body(|body| {
                 let keys: Vec<ViewKey> = app.meta_state.meta.views.keys().collect();
-                let mut action = Action::None;
                 body.rows(20.0, keys.len(), |mut row| {
                     let view_key = keys[row.index()];
                     let view = &app.meta_state.meta.views[view_key];
@@ -123,9 +122,8 @@ impl ViewsWindow {
                     row.col(|ui| {
                         let per = &app.meta_state.meta.low.perspectives[view.view.perspective];
                         let reg = &app.meta_state.meta.low.regions[per.region];
-                        let ctx_menu = |ui: &mut egui::Ui| {
-                            region_context_menu!(ui, app, per.region, reg, action)
-                        };
+                        let ctx_menu =
+                            |ui: &mut egui::Ui| region_context_menu!(ui, app, per.region, reg);
                         let re = ui.link(&reg.name).on_hover_text(&reg.desc);
                         re.context_menu(ctx_menu);
                         if re.clicked() {
@@ -134,14 +132,6 @@ impl ViewsWindow {
                         }
                     });
                 });
-                match action {
-                    Action::None => {}
-                    Action::Goto(off) => {
-                        app.edit_state.cursor = off;
-                        app.center_view_on_offset(off);
-                        app.hex_ui.flash_cursor();
-                    }
-                }
             });
         ui.separator();
         ui.menu_button("New from perspective", |ui| {
@@ -336,9 +326,4 @@ fn labelled_drag<T: Numeric>(
         ui.add(dv)
     })
     .inner
-}
-
-enum Action {
-    None,
-    Goto(usize),
 }

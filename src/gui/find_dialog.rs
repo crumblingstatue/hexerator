@@ -189,7 +189,7 @@ impl FindDialog {
                                         Some(key) => {
                                             let reg = &app.meta_state.meta.low.regions[key];
                                             let ctx_menu = |ui: &mut egui::Ui| {
-                                                region_context_menu!(ui, app, key, reg, action);
+                                                region_context_menu!(ui, app, key, reg);
                                                 ui.separator();
                                                 if ui.button("Remove region from results").clicked()
                                                 {
@@ -252,11 +252,6 @@ impl FindDialog {
                             });
                         });
                     match action {
-                        Action::Goto(off) => {
-                            app.center_view_on_offset(off);
-                            app.edit_state.set_cursor(off);
-                            app.hex_ui.flash_cursor();
-                        }
                         Action::None => {}
                         Action::RemoveRegionFromResults(key) => {
                             let reg = &app.meta_state.meta.low.regions[key];
@@ -359,7 +354,6 @@ where
 }
 
 enum Action {
-    Goto(usize),
     None,
     RemoveRegionFromResults(crate::meta::RegionKey),
     RemoveIdxFromResults(usize),

@@ -12,6 +12,7 @@ use {super::App, crate::meta::RegionKey, std::collections::VecDeque};
 pub enum Cmd {
     CreatePerspective { region_key: RegionKey, name: String },
     SetSelection(usize, usize),
+    SetAndFocusCursor(usize),
 }
 
 /// Application command queue.
@@ -51,6 +52,11 @@ fn perform_command(app: &mut App, cmd: Cmd) {
         Cmd::SetSelection(a, b) => {
             app.hex_ui.select_a = Some(a);
             app.hex_ui.select_b = Some(b);
+        }
+        Cmd::SetAndFocusCursor(off) => {
+            app.edit_state.cursor = off;
+            app.center_view_on_offset(off);
+            app.hex_ui.flash_cursor();
         }
     }
 }

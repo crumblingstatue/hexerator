@@ -15,7 +15,7 @@ pub struct RegionsWindow {
 
 #[macro_export]
 macro_rules! region_context_menu {
-    ($ui:expr, $app:expr, $key:expr, $reg:expr, $action:expr) => {{
+    ($ui:expr, $app:expr, $key:expr, $reg:expr) => {{
         $ui.menu_button("Containing layouts", |ui| {
             for (key, layout) in $app.meta_state.meta.layouts.iter() {
                 if let Some(v) = layout.view_containing_region(&$reg.region, &$app.meta_state.meta)
@@ -23,7 +23,9 @@ macro_rules! region_context_menu {
                     if ui.button(&layout.name).clicked() {
                         $app.hex_ui.current_layout = key;
                         $app.hex_ui.focused_view = Some(v);
-                        $action = Action::Goto($reg.region.begin);
+                        $app.cmd.push($crate::app::command::Cmd::SetAndFocusCursor(
+                            $reg.region.begin,
+                        ));
                         ui.close_menu();
                     }
                 }
@@ -160,7 +162,7 @@ impl RegionsWindow {
                         let reg = &app.meta_state.meta.low.regions[k];
                         row.col(|ui| {
                             let ctx_menu =
-                                |ui: &mut egui::Ui| region_context_menu!(ui, app, k, reg, action);
+                                |ui: &mut egui::Ui| region_context_menu!(ui, app, k, reg);
                             let re = ui
                                 .selectable_label(
                                     gui.regions_window.selected_key == Some(k),

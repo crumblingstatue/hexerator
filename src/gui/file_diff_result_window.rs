@@ -252,9 +252,7 @@ impl FileDiffResultWindow {
                                         }
                                     })
                                     .response
-                                    .context_menu(|ui| {
-                                        region_context_menu!(ui, app, reg_key, reg, action)
-                                    });
+                                    .context_menu(|ui| region_context_menu!(ui, app, reg_key, reg));
                                 }
                                 None => {
                                     ui.label("[no region]");
