@@ -1,6 +1,7 @@
 use {
     super::{
         message_dialog::{Icon, MessageDialog},
+        regions_window::region_context_menu,
         window_open::WindowOpen,
         HighlightSet,
     },
@@ -15,7 +16,6 @@ use {
             Bookmark, Meta,
         },
         parse_radix::parse_guess_radix,
-        region_context_menu,
         shell::{msg_fail, msg_if_fail},
     },
     egui::{self, Align, Ui},
@@ -189,7 +189,13 @@ impl FindDialog {
                                         Some(key) => {
                                             let reg = &app.meta_state.meta.low.regions[key];
                                             let ctx_menu = |ui: &mut egui::Ui| {
-                                                region_context_menu!(ui, app, key, reg);
+                                                region_context_menu(
+                                                    ui,
+                                                    reg,
+                                                    key,
+                                                    &app.meta_state.meta,
+                                                    &mut app.cmd,
+                                                );
                                                 ui.separator();
                                                 if ui.button("Remove region from results").clicked()
                                                 {

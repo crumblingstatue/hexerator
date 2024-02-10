@@ -1,5 +1,8 @@
 use {
-    super::{message_dialog::MessageDialog, window_open::WindowOpen, Gui},
+    super::{
+        message_dialog::MessageDialog, regions_window::region_context_menu,
+        window_open::WindowOpen, Gui,
+    },
     crate::{
         app::{edit_state::EditState, set_clipboard_string, App},
         damage_region::DamageRegion,
@@ -11,7 +14,6 @@ use {
             },
             Bookmark,
         },
-        region_context_menu,
         shell::{msg_fail, msg_if_fail},
     },
     anyhow::Context,
@@ -147,7 +149,13 @@ impl BookmarksWindow {
                             ) {
                                 let region = &app.meta_state.meta.low.regions[region_key];
                                 let ctx_menu = |ui: &mut egui::Ui| {
-                                    region_context_menu!(ui, app, region_key, region)
+                                    region_context_menu(
+                                        ui,
+                                        region,
+                                        region_key,
+                                        &app.meta_state.meta,
+                                        &mut app.cmd,
+                                    );
                                 };
                                 let re = ui.link(&region.name).on_hover_text(&region.desc);
                                 re.context_menu(ctx_menu);

@@ -1,6 +1,12 @@
 use {
     super::window_open::WindowOpen,
-    crate::{app::App, meta::RegionKey},
+    crate::{
+        app::{
+            command::{Cmd, CommandQueue},
+            App,
+        },
+        meta::{Meta, NamedRegion, RegionKey},
+    },
     egui::{self, Ui},
     egui_extras::{Column, TableBuilder},
 };
@@ -13,39 +19,36 @@ pub struct RegionsWindow {
     rename_active: bool,
 }
 
-#[macro_export]
-macro_rules! region_context_menu {
-    ($ui:expr, $app:expr, $key:expr, $reg:expr) => {{
-        $ui.menu_button("Containing layouts", |ui| {
-            for (key, layout) in $app.meta_state.meta.layouts.iter() {
-                if let Some(v) = layout.view_containing_region(&$reg.region, &$app.meta_state.meta)
-                {
-                    if ui.button(&layout.name).clicked() {
-                        $app.hex_ui.current_layout = key;
-                        $app.hex_ui.focused_view = Some(v);
-                        $app.cmd.push($crate::app::command::Cmd::SetAndFocusCursor(
-                            $reg.region.begin,
-                        ));
-                        ui.close_menu();
-                    }
+pub fn region_context_menu(
+    ui: &mut egui::Ui,
+    reg: &NamedRegion,
+    key: RegionKey,
+    meta: &Meta,
+    cmd: &mut CommandQueue,
+) {
+    ui.menu_button("Containing layouts", |ui| {
+        for (key, layout) in meta.layouts.iter() {
+            if let Some(v) = layout.view_containing_region(&reg.region, meta) {
+                if ui.button(&layout.name).clicked() {
+                    cmd.push(Cmd::SetLayout(key));
+                    cmd.push(Cmd::FocusView(v));
+                    cmd.push(Cmd::SetAndFocusCursor(reg.region.begin));
+                    ui.close_menu();
                 }
             }
+        }
+    });
+    if ui.button("Select").clicked() {
+        cmd.push(Cmd::SetSelection(reg.region.begin, reg.region.end));
+        ui.close_menu();
+    }
+    if ui.button("Create perspective").clicked() {
+        cmd.push(Cmd::CreatePerspective {
+            region_key: key,
+            name: reg.name.clone(),
         });
-        if $ui.button("Select").clicked() {
-            $app.cmd.push($crate::app::command::Cmd::SetSelection(
-                $reg.region.begin,
-                $reg.region.end,
-            ));
-            $ui.close_menu();
-        }
-        if $ui.button("Create perspective").clicked() {
-            $app.cmd.push($crate::app::command::Cmd::CreatePerspective {
-                region_key: $key,
-                name: $reg.name.clone(),
-            });
-            $ui.close_menu();
-        }
-    }};
+        ui.close_menu();
+    }
 }
 
 impl RegionsWindow {
@@ -161,8 +164,9 @@ impl RegionsWindow {
                     body.row(20.0, |mut row| {
                         let reg = &app.meta_state.meta.low.regions[k];
                         row.col(|ui| {
-                            let ctx_menu =
-                                |ui: &mut egui::Ui| region_context_menu!(ui, app, k, reg);
+                            let ctx_menu = |ui: &mut egui::Ui| {
+                                region_context_menu(ui, reg, k, &app.meta_state.meta, &mut app.cmd)
+                            };
                             let re = ui
                                 .selectable_label(
                                     gui.regions_window.selected_key == Some(k),

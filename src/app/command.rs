@@ -13,6 +13,8 @@ pub enum Cmd {
     CreatePerspective { region_key: RegionKey, name: String },
     SetSelection(usize, usize),
     SetAndFocusCursor(usize),
+    SetLayout(crate::meta::LayoutKey),
+    FocusView(crate::meta::ViewKey),
 }
 
 /// Application command queue.
@@ -58,5 +60,7 @@ fn perform_command(app: &mut App, cmd: Cmd) {
             app.center_view_on_offset(off);
             app.hex_ui.flash_cursor();
         }
+        Cmd::SetLayout(key) => app.hex_ui.current_layout = key,
+        Cmd::FocusView(key) => app.hex_ui.focused_view = Some(key),
     }
 }

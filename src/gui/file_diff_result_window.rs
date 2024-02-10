@@ -1,4 +1,5 @@
 use {
+    super::regions_window::region_context_menu,
     crate::{
         app::read_source_to_buf,
         event::EventQueue,
@@ -6,7 +7,6 @@ use {
         meta::{
             find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta, RegionKey,
         },
-        region_context_menu,
         shell::msg_if_fail,
         Gui,
     },
@@ -252,7 +252,15 @@ impl FileDiffResultWindow {
                                         }
                                     })
                                     .response
-                                    .context_menu(|ui| region_context_menu!(ui, app, reg_key, reg));
+                                    .context_menu(|ui| {
+                                        region_context_menu(
+                                            ui,
+                                            reg,
+                                            reg_key,
+                                            &app.meta_state.meta,
+                                            &mut app.cmd,
+                                        )
+                                    });
                                 }
                                 None => {
                                     ui.label("[no region]");

@@ -1,9 +1,8 @@
 use {
-    super::window_open::WindowOpen,
+    super::{regions_window::region_context_menu, window_open::WindowOpen},
     crate::{
         app::App,
         meta::{NamedView, ViewKey},
-        region_context_menu,
         view::{HexData, TextData, TextKind, View, ViewKind},
     },
     egui_extras::{Column, TableBuilder},
@@ -122,8 +121,15 @@ impl ViewsWindow {
                     row.col(|ui| {
                         let per = &app.meta_state.meta.low.perspectives[view.view.perspective];
                         let reg = &app.meta_state.meta.low.regions[per.region];
-                        let ctx_menu =
-                            |ui: &mut egui::Ui| region_context_menu!(ui, app, per.region, reg);
+                        let ctx_menu = |ui: &mut egui::Ui| {
+                            region_context_menu(
+                                ui,
+                                reg,
+                                per.region,
+                                &app.meta_state.meta,
+                                &mut app.cmd,
+                            )
+                        };
                         let re = ui.link(&reg.name).on_hover_text(&reg.desc);
                         re.context_menu(ctx_menu);
                         if re.clicked() {
