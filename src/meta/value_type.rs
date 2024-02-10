@@ -88,9 +88,11 @@ impl ValueType {
     }
 
     pub fn read(&self, data: &[u8]) -> anyhow::Result<ReadValue> {
-        macro r($t:ident $($en:ident)?) {
-            paste::paste! {
-                ReadValue::$t(read::<[<$t $($en)?>]>(data)?)
+        macro_rules! r {
+            ($t:ident $($en:ident)?) => {
+                paste::paste! {
+                    ReadValue::$t(read::<[<$t $($en)?>]>(data)?)
+                }
             }
         }
         Ok(match self {
