@@ -50,8 +50,9 @@ mlua = { version = "0.9.5", features = ["luajit"] }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[profile.dev]
-incremental = false # Buggy rustc is breaking code with incremental compilation
+# Uncomment in case incremental compilation breaks things
+#[profile.dev]
+#incremental = false # Buggy rustc is breaking code with incremental compilation
 
 # Compile deps with optimizations in dev mode
 [profile.dev.package."*"]
