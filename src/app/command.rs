@@ -11,6 +11,7 @@ use {super::App, crate::meta::RegionKey, std::collections::VecDeque};
 
 pub enum Cmd {
     CreatePerspective { region_key: RegionKey, name: String },
+    SetSelection(usize, usize),
 }
 
 /// Application command queue.
@@ -46,6 +47,10 @@ fn perform_command(app: &mut App, cmd: Cmd) {
     match cmd {
         Cmd::CreatePerspective { region_key, name } => {
             app.add_perspective_from_region(region_key, name)
+        }
+        Cmd::SetSelection(a, b) => {
+            app.hex_ui.select_a = Some(a);
+            app.hex_ui.select_b = Some(b);
         }
     }
 }

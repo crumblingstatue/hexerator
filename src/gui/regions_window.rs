@@ -30,8 +30,10 @@ macro_rules! region_context_menu {
             }
         });
         if $ui.button("Select").clicked() {
-            $app.hex_ui.select_a = Some($reg.region.begin);
-            $app.hex_ui.select_b = Some($reg.region.end);
+            $app.cmd.push($crate::app::command::Cmd::SetSelection(
+                $reg.region.begin,
+                $reg.region.end,
+            ));
             $ui.close_menu();
         }
         if $ui.button("Create perspective").clicked() {
