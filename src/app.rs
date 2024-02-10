@@ -686,6 +686,14 @@ impl App {
         let per_key = self.meta_state.meta.views[view_key].view.perspective;
         self.meta_state.meta.low.perspectives[per_key].region
     }
+
+    pub fn add_perspective_from_region(&mut self, region_key: RegionKey, name: String) {
+        let mut per = Perspective::from_region(region_key, name);
+        if let Some(focused_per) = App::focused_perspective(&self.hex_ui, &self.meta_state.meta) {
+            per.cols = focused_per.cols;
+        }
+        self.meta_state.meta.low.perspectives.insert(per);
+    }
 }
 
 pub fn get_clipboard_string(cb: &mut arboard::Clipboard, msg: &mut MessageDialog) -> String {

@@ -1,8 +1,7 @@
 use {
     super::window_open::WindowOpen,
     crate::{
-        app::App,
-        meta::{perspective::Perspective, PerspectiveKey, RegionKey},
+        meta::{PerspectiveKey, RegionKey},
         region_context_menu,
     },
     egui_extras::{Column, TableBuilder},
@@ -16,6 +15,7 @@ pub struct PerspectivesWindow {
 }
 impl PerspectivesWindow {
     pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut crate::app::App) {
+        let mut action = Action::None;
         TableBuilder::new(ui)
             .columns(Column::auto(), 3)
             .column(Column::remainder())
@@ -37,7 +37,6 @@ impl PerspectivesWindow {
             })
             .body(|body| {
                 let keys: Vec<_> = app.meta_state.meta.low.perspectives.keys().collect();
-                let mut action = Action::None;
                 body.rows(20.0, keys.len(), |mut row| {
                     let idx = row.index();
                     row.col(|ui| {
@@ -87,38 +86,38 @@ impl PerspectivesWindow {
                         );
                     });
                 });
-                match action {
-                    Action::None => {}
-                    Action::Remove(key) => {
-                        app.meta_state.meta.low.perspectives.remove(key);
-                    }
-                    Action::OpenRegion(key) => {
-                        gui.regions_window.open.set(true);
-                        gui.regions_window.selected_key = Some(key);
-                    }
-                    Action::Goto(off) => {
-                        app.center_view_on_offset(off);
-                        app.edit_state.set_cursor(off);
-                        app.hex_ui.flash_cursor();
-                    }
-                }
             });
         ui.separator();
         ui.menu_button("New from region", |ui| {
             for (key, region) in app.meta_state.meta.low.regions.iter() {
                 if ui.button(&region.name).clicked() {
-                    let mut per = Perspective::from_region(key, region.name.clone());
-                    if let Some(focused_per) =
-                        App::focused_perspective(&app.hex_ui, &app.meta_state.meta)
-                    {
-                        per.cols = focused_per.cols;
-                    }
-                    app.meta_state.meta.low.perspectives.insert(per);
+                    action = Action::CreatePerspective {
+                        region_key: key,
+                        name: region.name.clone(),
+                    };
                     ui.close_menu();
                     return;
                 }
             }
         });
+        match action {
+            Action::None => {}
+            Action::Remove(key) => {
+                app.meta_state.meta.low.perspectives.remove(key);
+            }
+            Action::OpenRegion(key) => {
+                gui.regions_window.open.set(true);
+                gui.regions_window.selected_key = Some(key);
+            }
+            Action::Goto(off) => {
+                app.center_view_on_offset(off);
+                app.edit_state.set_cursor(off);
+                app.hex_ui.flash_cursor();
+            }
+            Action::CreatePerspective { region_key, name } => {
+                app.add_perspective_from_region(region_key, name);
+            }
+        }
     }
 }
 
@@ -127,4 +126,5 @@ enum Action {
     Remove(PerspectiveKey),
     OpenRegion(RegionKey),
     Goto(usize),
+    CreatePerspective { region_key: RegionKey, name: String },
 }
