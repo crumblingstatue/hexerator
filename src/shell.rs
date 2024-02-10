@@ -10,7 +10,9 @@ use {
 
 pub fn open_dialog_same_dir(src_path: Option<&Path>) -> rfd::FileDialog {
     let mut file_dialog = rfd::FileDialog::new();
-    if let Some(src_path) = src_path && let Some(parent) = src_path.parent() {
+    if let Some(src_path) = src_path
+        && let Some(parent) = src_path.parent()
+    {
         file_dialog = file_dialog.set_directory(parent);
     }
     file_dialog

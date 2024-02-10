@@ -62,7 +62,9 @@ impl Dialog for JumpDialog {
                 Ok((offset, relativity)) => {
                     let offset = match relativity {
                         Relativity::Absolute => {
-                            if let Some(hard_seek) = app.args.src.hard_seek && self.absolute {
+                            if let Some(hard_seek) = app.args.src.hard_seek
+                                && self.absolute
+                            {
                                 offset.saturating_sub(hard_seek)
                             } else {
                                 offset

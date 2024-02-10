@@ -70,7 +70,9 @@ impl App {
         msg: &mut MessageDialog,
         events: &EventQueue,
     ) -> anyhow::Result<Self> {
-        if args.recent && let Some(recent) = cfg.recent.most_recent() {
+        if args.recent
+            && let Some(recent) = cfg.recent.most_recent()
+        {
             args.src = recent.clone();
         }
         let mut this = Self {
@@ -506,13 +508,19 @@ impl App {
             if !self.preferences.keep_meta {
                 if let Some(meta_path) = &args.meta {
                     self.consume_meta_from_file(meta_path.clone())?;
-                } else if let Some(src_path) = per_dbg!(&args.src.file) && let Some(meta_path) = per_dbg!(self.cfg.meta_assocs.get(src_path)) {
-                        // We only load if the new meta path is not the same as the old.
-                        // Keep the current metafile otherwise
-                        if self.meta_state.current_meta_path != *meta_path {
-                            per!("Mismatch: {:?} vs. {:?}", self.meta_state.current_meta_path.display(), meta_path.display());
-                            self.consume_meta_from_file(meta_path.clone())?;
-                        }
+                } else if let Some(src_path) = per_dbg!(&args.src.file)
+                    && let Some(meta_path) = per_dbg!(self.cfg.meta_assocs.get(src_path))
+                {
+                    // We only load if the new meta path is not the same as the old.
+                    // Keep the current metafile otherwise
+                    if self.meta_state.current_meta_path != *meta_path {
+                        per!(
+                            "Mismatch: {:?} vs. {:?}",
+                            self.meta_state.current_meta_path.display(),
+                            meta_path.display()
+                        );
+                        self.consume_meta_from_file(meta_path.clone())?;
+                    }
                 } else {
                     // We didn't load any meta, but we're loading a new file.
                     // Set up a new clean meta for it.

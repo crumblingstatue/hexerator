@@ -548,9 +548,13 @@ fn handle_key_pressed(
     match code {
         Key::Up => match app.hex_ui.interact_mode {
             InteractMode::View => {
-                if key_mod.ctrl && let Some(view_key) = app.hex_ui.focused_view {
+                if key_mod.ctrl
+                    && let Some(view_key) = app.hex_ui.focused_view
+                {
                     let key = app.meta_state.meta.views[view_key].view.perspective;
-                    let reg = &mut app.meta_state.meta.low.regions[app.meta_state.meta.low.perspectives[key].region].region;
+                    let reg = &mut app.meta_state.meta.low.regions
+                        [app.meta_state.meta.low.perspectives[key].region]
+                        .region;
                     reg.begin = reg.begin.saturating_sub(1);
                 }
             }
@@ -558,28 +562,49 @@ fn handle_key_pressed(
                 if let Some(view_key) = app.hex_ui.focused_view {
                     let view = &mut app.meta_state.meta.views[view_key].view;
                     view.undirty_edit_buffer();
-                    app.edit_state.set_cursor_no_history(
-                        app.edit_state.cursor.saturating_sub(app.meta_state.meta.low.perspectives[view.perspective].cols),
+                    app.edit_state
+                        .set_cursor_no_history(app.edit_state.cursor.saturating_sub(
+                            app.meta_state.meta.low.perspectives[view.perspective].cols,
+                        ));
+                    keep_cursor_in_view(
+                        view,
+                        &app.meta_state.meta.low.perspectives,
+                        &app.meta_state.meta.low.regions,
+                        app.edit_state.cursor,
                     );
-                    keep_cursor_in_view(view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
                 }
             }
         },
         Key::Down => match app.hex_ui.interact_mode {
             InteractMode::View => {
-                if key_mod.ctrl && let Some(view_key) = app.hex_ui.focused_view {
+                if key_mod.ctrl
+                    && let Some(view_key) = app.hex_ui.focused_view
+                {
                     let key = app.meta_state.meta.views[view_key].view.perspective;
-                    app.meta_state.meta.low.regions[app.meta_state.meta.low.perspectives[key].region].region.begin += 1;
+                    app.meta_state.meta.low.regions
+                        [app.meta_state.meta.low.perspectives[key].region]
+                        .region
+                        .begin += 1;
                 }
             }
             InteractMode::Edit => {
                 if let Some(view_key) = app.hex_ui.focused_view {
                     let view = &mut app.meta_state.meta.views[view_key].view;
                     view.undirty_edit_buffer();
-                    if app.edit_state.cursor + app.meta_state.meta.low.perspectives[view.perspective].cols < app.data.len() {
-                        app.edit_state.offset_cursor(app.meta_state.meta.low.perspectives[view.perspective].cols);
+                    if app.edit_state.cursor
+                        + app.meta_state.meta.low.perspectives[view.perspective].cols
+                        < app.data.len()
+                    {
+                        app.edit_state.offset_cursor(
+                            app.meta_state.meta.low.perspectives[view.perspective].cols,
+                        );
                     }
-                    keep_cursor_in_view(view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
+                    keep_cursor_in_view(
+                        view,
+                        &app.meta_state.meta.low.perspectives,
+                        &app.meta_state.meta.low.regions,
+                        app.edit_state.cursor,
+                    );
                 }
             }
         },
@@ -591,9 +616,9 @@ fn handle_key_pressed(
             if app.hex_ui.interact_mode == InteractMode::Edit {
                 let move_edit = (app.preferences.move_edit_cursor && !key_mod.ctrl)
                     || (!app.preferences.move_edit_cursor && key_mod.ctrl);
-                    if let Some(view_key) = app.hex_ui.focused_view {
-                        let view = &mut app.meta_state.meta.views[view_key];
-                if move_edit {
+                if let Some(view_key) = app.hex_ui.focused_view {
+                    let view = &mut app.meta_state.meta.views[view_key];
+                    if move_edit {
                         if let Some(edit_buf) = view.view.edit_buffer_mut() {
                             if !edit_buf.move_cursor_back() {
                                 edit_buf.move_cursor_end();
@@ -601,11 +626,16 @@ fn handle_key_pressed(
                                 app.edit_state.step_cursor_back();
                             }
                         }
-                } else {
-                    app.edit_state.step_cursor_back();
-                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
+                    } else {
+                        app.edit_state.step_cursor_back();
+                        keep_cursor_in_view(
+                            &mut view.view,
+                            &app.meta_state.meta.low.perspectives,
+                            &app.meta_state.meta.low.regions,
+                            app.edit_state.cursor,
+                        );
+                    }
                 }
-            }
             } else if key_mod.ctrl {
                 if key_mod.shift {
                     app.halve_cols();
@@ -619,13 +649,14 @@ fn handle_key_pressed(
                 app.cursor_history_forward();
                 break 'block;
             }
-            if app.hex_ui.interact_mode == InteractMode::Edit && app.edit_state.cursor + 1 < app.data.len()
+            if app.hex_ui.interact_mode == InteractMode::Edit
+                && app.edit_state.cursor + 1 < app.data.len()
             {
                 let move_edit = (app.preferences.move_edit_cursor && !key_mod.ctrl)
                     || (!app.preferences.move_edit_cursor && key_mod.ctrl);
-                    if let Some(view_key) = app.hex_ui.focused_view {
-                        let view = &mut app.meta_state.meta.views[view_key];
-                if move_edit {
+                if let Some(view_key) = app.hex_ui.focused_view {
+                    let view = &mut app.meta_state.meta.views[view_key];
+                    if move_edit {
                         if let Some(edit_buf) = &mut view.view.edit_buffer_mut() {
                             if !edit_buf.move_cursor_forward() {
                                 edit_buf.move_cursor_begin();
@@ -633,11 +664,16 @@ fn handle_key_pressed(
                                 app.edit_state.step_cursor_forward();
                             }
                         }
-                } else {
-                    app.edit_state.step_cursor_forward();
-                    keep_cursor_in_view(&mut view.view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
+                    } else {
+                        app.edit_state.step_cursor_forward();
+                        keep_cursor_in_view(
+                            &mut view.view,
+                            &app.meta_state.meta.low.perspectives,
+                            &app.meta_state.meta.low.regions,
+                            app.edit_state.cursor,
+                        );
+                    }
                 }
-            }
             } else if key_mod.ctrl {
                 if key_mod.shift {
                     app.double_cols();
@@ -646,38 +682,58 @@ fn handle_key_pressed(
                 }
             }
         }
-        Key::PageUp => if let Some(key) = app.hex_ui.focused_view {
-            let view = &mut app.meta_state.meta.views[key].view;
-            let per = &app.meta_state.meta.low.perspectives[view.perspective];
-            match app.hex_ui.interact_mode {
-                InteractMode::View => {
-                    view.scroll_page_up();
-                }
-                InteractMode::Edit => {
-                    #[expect(clippy::cast_sign_loss, reason = "view::rows is never negative")]
-                    {
-                        app.edit_state.cursor = app.edit_state.cursor.saturating_sub(view.rows() as usize * per.cols);
+        Key::PageUp => {
+            if let Some(key) = app.hex_ui.focused_view {
+                let view = &mut app.meta_state.meta.views[key].view;
+                let per = &app.meta_state.meta.low.perspectives[view.perspective];
+                match app.hex_ui.interact_mode {
+                    InteractMode::View => {
+                        view.scroll_page_up();
                     }
-                    keep_cursor_in_view(view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
+                    InteractMode::Edit => {
+                        #[expect(clippy::cast_sign_loss, reason = "view::rows is never negative")]
+                        {
+                            app.edit_state.cursor = app
+                                .edit_state
+                                .cursor
+                                .saturating_sub(view.rows() as usize * per.cols);
+                        }
+                        keep_cursor_in_view(
+                            view,
+                            &app.meta_state.meta.low.perspectives,
+                            &app.meta_state.meta.low.regions,
+                            app.edit_state.cursor,
+                        );
+                    }
                 }
             }
-        },
-        Key::PageDown => if let Some(key) = app.hex_ui.focused_view {
-            let view = &mut app.meta_state.meta.views[key].view;
-            let per = &app.meta_state.meta.low.perspectives[view.perspective];
-            match app.hex_ui.interact_mode {
-                InteractMode::View => {
-                    app.meta_state.meta.views[key].view.scroll_page_down();
-                }
-                InteractMode::Edit => {
-                    #[expect(clippy::cast_sign_loss, reason = "view::rows is never negative")]
-                    {
-                        app.edit_state.cursor = app.edit_state.cursor.saturating_add(view.rows() as usize * per.cols);
+        }
+        Key::PageDown => {
+            if let Some(key) = app.hex_ui.focused_view {
+                let view = &mut app.meta_state.meta.views[key].view;
+                let per = &app.meta_state.meta.low.perspectives[view.perspective];
+                match app.hex_ui.interact_mode {
+                    InteractMode::View => {
+                        app.meta_state.meta.views[key].view.scroll_page_down();
                     }
-                    keep_cursor_in_view(view, &app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions, app.edit_state.cursor);
+                    InteractMode::Edit => {
+                        #[expect(clippy::cast_sign_loss, reason = "view::rows is never negative")]
+                        {
+                            app.edit_state.cursor = app
+                                .edit_state
+                                .cursor
+                                .saturating_add(view.rows() as usize * per.cols);
+                        }
+                        keep_cursor_in_view(
+                            view,
+                            &app.meta_state.meta.low.perspectives,
+                            &app.meta_state.meta.low.regions,
+                            app.edit_state.cursor,
+                        );
+                    }
                 }
             }
-        },
+        }
         Key::Home => {
             if let Some(key) = app.hex_ui.focused_view {
                 let view = &mut app.meta_state.meta.views[key].view;
@@ -691,23 +747,30 @@ fn handle_key_pressed(
                     }
                 }
             }
-        },
-        Key::End => if let Some(key) = app.hex_ui.focused_view {
-            let view = &mut app.meta_state.meta.views[key].view;
-            match app.hex_ui.interact_mode {
-                InteractMode::View => {
-                    app.meta_state.meta.views[key].view.scroll_to_end(&app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions);
-                }
-                InteractMode::Edit => {
-                    app.edit_state.cursor = app.meta_state.meta.low.end_offset_of_view(view);
-                    app.center_view_on_offset(app.edit_state.cursor);
+        }
+        Key::End => {
+            if let Some(key) = app.hex_ui.focused_view {
+                let view = &mut app.meta_state.meta.views[key].view;
+                match app.hex_ui.interact_mode {
+                    InteractMode::View => {
+                        app.meta_state.meta.views[key].view.scroll_to_end(
+                            &app.meta_state.meta.low.perspectives,
+                            &app.meta_state.meta.low.regions,
+                        );
+                    }
+                    InteractMode::Edit => {
+                        app.edit_state.cursor = app.meta_state.meta.low.end_offset_of_view(view);
+                        app.center_view_on_offset(app.edit_state.cursor);
+                    }
                 }
             }
         }
-        Key::Delete => if let Some(sel) = app.hex_ui.selection() {
-            app.data[sel.begin..=sel.end].fill(0);
-        } else {
-            app.data[app.edit_state.cursor] = 0;
+        Key::Delete => {
+            if let Some(sel) = app.hex_ui.selection() {
+                app.data[sel.begin..=sel.end].fill(0);
+            } else {
+                app.data[app.edit_state.cursor] = 0;
+            }
         }
         Key::F1 => app.hex_ui.interact_mode = InteractMode::View,
         Key::F2 => app.hex_ui.interact_mode = InteractMode::Edit,
@@ -727,7 +790,12 @@ fn handle_key_pressed(
         }
         Key::Enter => {
             if let Some(view_key) = app.hex_ui.focused_view {
-                app.meta_state.meta.views[view_key].view.finish_editing(&mut app.edit_state, &mut app.data, &app.preferences, &mut gui.msg_dialog);
+                app.meta_state.meta.views[view_key].view.finish_editing(
+                    &mut app.edit_state,
+                    &mut app.data,
+                    &app.preferences,
+                    &mut gui.msg_dialog,
+                );
             }
         }
         Key::A if key_mod.ctrl => {
@@ -742,12 +810,18 @@ fn handle_key_pressed(
         Key::S if key_mod.ctrl => match &mut app.source {
             Some(source) => {
                 if !source.attr.permissions.write {
-                    gui.msg_dialog.open(Icon::Warn, "Cannot save", "This source cannot be written to.");
+                    gui.msg_dialog.open(
+                        Icon::Warn,
+                        "Cannot save",
+                        "This source cannot be written to.",
+                    );
                 } else {
                     msg_if_fail(app.save(), "Failed to save", &mut gui.msg_dialog);
                 }
             }
-            None => gui.msg_dialog.open(Icon::Warn, "Cannot save", "No source opened"),
+            None => gui
+                .msg_dialog
+                .open(Icon::Warn, "Cannot save", "No source opened"),
         },
         Key::R if key_mod.ctrl => {
             msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
@@ -760,9 +834,19 @@ fn handle_key_pressed(
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(Args{ src: args, recent: false, meta: None, version: false },font, &mut gui.msg_dialog, events),
+                    app.load_file_args(
+                        Args {
+                            src: args,
+                            recent: false,
+                            meta: None,
+                            version: false,
+                        },
+                        font,
+                        &mut gui.msg_dialog,
+                        events,
+                    ),
                     "Failed to load file",
-                    &mut gui.msg_dialog
+                    &mut gui.msg_dialog,
                 );
             }
         }

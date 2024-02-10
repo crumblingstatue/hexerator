@@ -31,7 +31,13 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
         if data_len != 0 {
             if let Some(view_key) = app.hex_ui.focused_view {
                 let view = &app.meta_state.meta.views[view_key].view;
-                let per = match app.meta_state.meta.low.perspectives.get_mut(view.perspective) {
+                let per = match app
+                    .meta_state
+                    .meta
+                    .low
+                    .perspectives
+                    .get_mut(view.perspective)
+                {
                     Some(per) => per,
                     None => {
                         ui.label("Invalid perspective key");
@@ -39,10 +45,15 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
                     }
                 };
                 ui.label("offset");
-                ui.add(DragValue::new(&mut app.meta_state.meta.low.regions[per.region].region.begin));
+                ui.add(DragValue::new(
+                    &mut app.meta_state.meta.low.regions[per.region].region.begin,
+                ));
                 ui.label("columns");
                 ui.add(DragValue::new(&mut per.cols));
-                let offsets = view.offsets(&app.meta_state.meta.low.perspectives, &app.meta_state.meta.low.regions);
+                let offsets = view.offsets(
+                    &app.meta_state.meta.low.perspectives,
+                    &app.meta_state.meta.low.regions,
+                );
                 #[expect(
                     clippy::cast_precision_loss,
                     reason = "Precision is good until 52 bits (more than reasonable)"
@@ -59,15 +70,21 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
         ui.separator();
         ui.label(format!(
             "cursor: {} ({:x})",
-            app.edit_state.cursor,
-            app.edit_state.cursor,
+            app.edit_state.cursor, app.edit_state.cursor,
         ));
-        if let Some(label) = app.meta_state.meta.bookmarks
-                                .iter()
-                                .find_map(|bm| (bm.offset == app.edit_state.cursor).then_some(bm.label.as_str())) {
+        if let Some(label) = app
+            .meta_state
+            .meta
+            .bookmarks
+            .iter()
+            .find_map(|bm| (bm.offset == app.edit_state.cursor).then_some(bm.label.as_str()))
+        {
             ui.label(egui::RichText::new(label).color(Color32::from_rgb(150, 170, 40)));
         }
-        if let Some(region) = find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, app.edit_state.cursor) {
+        if let Some(region) = find_most_specific_region_for_offset(
+            &app.meta_state.meta.low.regions,
+            app.edit_state.cursor,
+        ) {
             let reg = &app.meta_state.meta.low.regions[region];
             region_label(ui, &reg.name).context_menu(|ui| {
                 if ui.button("Select").clicked() {
@@ -77,9 +94,13 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
                 }
             });
         }
-        if !app.hex_ui.current_layout.is_null() && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
+        if !app.hex_ui.current_layout.is_null()
+            && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y)
+        {
             ui.label(format!("mouse: {offset} ({offset:x})"));
-            if let Some(region) = find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, offset) {
+            if let Some(region) =
+                find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, offset)
+            {
                 region_label(ui, &app.meta_state.meta.low.regions[region].name);
             }
         }
@@ -89,14 +110,18 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
             if truncated {
                 txt = txt.color(egui::Color32::RED);
             }
-            let label = egui::Label::new(txt)
-                .sense(egui::Sense::click());
+            let label = egui::Label::new(txt).sense(egui::Sense::click());
             let mut label_re = ui.add(label).on_hover_text("Click to copy");
             if truncated {
-                label_re = label_re.on_hover_text(format!("Length changed, orig.: {}", app.orig_data_len));
+                label_re =
+                    label_re.on_hover_text(format!("Length changed, orig.: {}", app.orig_data_len));
             }
             if label_re.clicked() {
-                crate::app::set_clipboard_string(&mut app.clipboard, msg, &app.data.len().to_string());
+                crate::app::set_clipboard_string(
+                    &mut app.clipboard,
+                    msg,
+                    &app.data.len().to_string(),
+                );
             }
         });
     });

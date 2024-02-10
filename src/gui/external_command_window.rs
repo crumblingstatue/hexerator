@@ -78,7 +78,9 @@ impl ExternalCommandWindow {
                 // Parse args
                 let (cmd, args) = parse(&win.cmd_str)?;
                 // Generate temp file
-                let range = if win.selection_only && let Some(sel) = app.hex_ui.selection() {
+                let range = if win.selection_only
+                    && let Some(sel) = app.hex_ui.selection()
+                {
                     sel.begin..=sel.end
                 } else {
                     0..=app.data.len() - 1

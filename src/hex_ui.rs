@@ -31,7 +31,9 @@ pub struct HexUi {
 
 impl HexUi {
     pub fn selection(&self) -> Option<Region> {
-        if let Some(a) = self.select_a && let Some(b) = self.select_b {
+        if let Some(a) = self.select_a
+            && let Some(b) = self.select_b
+        {
             Some(Region {
                 begin: a.min(b),
                 end: a.max(b),

@@ -25,9 +25,12 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
         if let Some(b) = app.hex_ui.select_b {
             ui.label(format!("b: {b}"));
         }
-        if let Some(sel) = app.hex_ui.selection() && let Some(view_key) = app.hex_ui.focused_view {
+        if let Some(sel) = app.hex_ui.selection()
+            && let Some(view_key) = app.hex_ui.focused_view
+        {
             let view = &app.meta_state.meta.views[view_key].view;
-            let (rows, rem) = app.meta_state.meta.low.perspectives[view.perspective].region_row_span(sel);
+            let (rows, rem) =
+                app.meta_state.meta.low.perspectives[view.perspective].region_row_span(sel);
             ui.label(format!(
                 "{rows} rows * {} cols + {rem} = {}",
                 app.meta_state.meta.low.perspectives[view.perspective].cols,
@@ -95,7 +98,9 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                 ui.color_edit_button_rgb(&mut app.preferences.bg_color);
                 ui.label("Bg color");
                 if let ColorMethod::Custom(arr) = &mut presentation.color_method {
-                    let Some(&byte) = app.data.get(app.edit_state.cursor) else { return };
+                    let Some(&byte) = app.data.get(app.edit_state.cursor) else {
+                        return;
+                    };
                     let col = &mut arr.0[byte as usize];
                     ui.color_edit_button_srgb(col);
                     ui.label("Byte color");
@@ -104,9 +109,15 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                         .on_hover_text("From hex code on clipboard")
                         .clicked()
                     {
-                        match color_from_hexcode(&crate::app::get_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog)) {
+                        match color_from_hexcode(&crate::app::get_clipboard_string(
+                            &mut app.clipboard,
+                            &mut gui.msg_dialog,
+                        )) {
                             Ok(new) => *col = new,
-                            Err(e) => gui.msg_dialog.open(Icon::Error, "Color parse error", e.to_string()),
+                            Err(e) => {
+                                gui.msg_dialog
+                                    .open(Icon::Error, "Color parse error", e.to_string())
+                            }
                         }
                     }
                     if ui.button("Lua").on_hover_text("From lua script").clicked() {
@@ -114,7 +125,11 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                     }
                     if ui.button("Save").clicked() {
                         if let Some(path) = rfd::FileDialog::new().save_file() {
-                            msg_if_fail(value_color::save_palette(arr, &path), "Failed to save pal", &mut gui.msg_dialog);
+                            msg_if_fail(
+                                value_color::save_palette(arr, &path),
+                                "Failed to save pal",
+                                &mut gui.msg_dialog,
+                            );
                         }
                     }
                     if ui.button("Load").clicked() {
@@ -131,14 +146,13 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                     Pixel by pixel, the image's colors will become the byte colors.
                     ";
                     if ui
-                        .add_enabled(
-                            app.hex_ui.selection().is_some(),
-                            egui::Button::new("img"),
-                        )
+                        .add_enabled(app.hex_ui.selection().is_some(), egui::Button::new("img"))
                         .on_hover_text(tooltip)
                         .clicked()
                     {
-                        let Some(img_path) = rfd::FileDialog::new().pick_file() else { return };
+                        let Some(img_path) = rfd::FileDialog::new().pick_file() else {
+                            return;
+                        };
                         let result: anyhow::Result<()> = try {
                             let img = Image::from_file(
                                 img_path
@@ -147,8 +161,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                             )
                             .context("Failed to load image")?;
                             let size = img.size();
-                            let sel = app.hex_ui.selection()
-                                .context("Missing app selection")?;
+                            let sel = app.hex_ui.selection().context("Missing app selection")?;
                             let mut i = 0;
                             for y in 0..size.y {
                                 for x in 0..size.x {
@@ -159,7 +172,11 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                                 }
                             }
                         };
-                        msg_if_fail(result, "Failed to load palette from reference image", &mut gui.msg_dialog);
+                        msg_if_fail(
+                            result,
+                            "Failed to load palette from reference image",
+                            &mut gui.msg_dialog,
+                        );
                     }
                 }
             });
