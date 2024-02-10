@@ -1,6 +1,7 @@
 use {
     super::window_open::WindowOpen,
     crate::{
+        app::command::Cmd,
         meta::{PerspectiveKey, RegionKey},
         region_context_menu,
     },
@@ -91,10 +92,10 @@ impl PerspectivesWindow {
         ui.menu_button("New from region", |ui| {
             for (key, region) in app.meta_state.meta.low.regions.iter() {
                 if ui.button(&region.name).clicked() {
-                    action = Action::CreatePerspective {
+                    app.cmd.push(Cmd::CreatePerspective {
                         region_key: key,
                         name: region.name.clone(),
-                    };
+                    });
                     ui.close_menu();
                     return;
                 }
@@ -109,9 +110,6 @@ impl PerspectivesWindow {
                 gui.regions_window.open.set(true);
                 gui.regions_window.selected_key = Some(key);
             }
-            Action::CreatePerspective { region_key, name } => {
-                app.add_perspective_from_region(region_key, name);
-            }
         }
     }
 }
@@ -120,5 +118,4 @@ enum Action {
     None,
     Remove(PerspectiveKey),
     OpenRegion(RegionKey),
-    CreatePerspective { region_key: RegionKey, name: String },
 }
