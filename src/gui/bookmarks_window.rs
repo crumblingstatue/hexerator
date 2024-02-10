@@ -317,9 +317,11 @@ fn value_ui(
     cb: &mut arboard::Clipboard,
     msg: &mut MessageDialog,
 ) -> anyhow::Result<Action> {
-    macro val_ui_dispatch($i:ident) {
-        $i.value_ui_for_self(bm, data, edit_state, ui, cb, msg)
-            .to_action()
+    macro_rules! val_ui_dispatch {
+        ($i:ident) => {
+            $i.value_ui_for_self(bm, data, edit_state, ui, cb, msg)
+                .to_action()
+        };
     }
     Ok(match &bm.value_type {
         ValueType::None => Action::None,
