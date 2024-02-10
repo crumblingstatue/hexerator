@@ -330,6 +330,7 @@ impl FindDialog {
 }
 
 trait SliceExt<T> {
+    #[expect(dead_code, reason = "Could be useful in the future")]
     fn get_array<const N: usize>(&self, offset: usize) -> Option<&[T; N]>;
     fn get_array_mut<const N: usize>(&mut self, offset: usize) -> Option<&mut [T; N]>;
 }
