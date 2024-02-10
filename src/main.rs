@@ -4,7 +4,6 @@
     array_chunks,
     let_chains,
     array_windows,
-    decl_macro,
     generic_const_exprs
 )]
 #![warn(
