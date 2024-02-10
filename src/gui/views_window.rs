@@ -2,7 +2,7 @@ use {
     super::window_open::WindowOpen,
     crate::{
         app::App,
-        meta::{NamedView, RegionKey, ViewKey},
+        meta::{NamedView, ViewKey},
         region_context_menu,
         view::{HexData, TextData, TextKind, View, ViewKind},
     },
@@ -140,9 +140,6 @@ impl ViewsWindow {
                         app.edit_state.cursor = off;
                         app.center_view_on_offset(off);
                         app.hex_ui.flash_cursor();
-                    }
-                    Action::CreatePerspective { region_key, name } => {
-                        app.add_perspective_from_region(region_key, name)
                     }
                 }
             });
@@ -344,5 +341,4 @@ fn labelled_drag<T: Numeric>(
 enum Action {
     None,
     Goto(usize),
-    CreatePerspective { region_key: RegionKey, name: String },
 }

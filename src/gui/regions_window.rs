@@ -35,10 +35,10 @@ macro_rules! region_context_menu {
             $ui.close_menu();
         }
         if $ui.button("Create perspective").clicked() {
-            $action = Action::CreatePerspective {
+            $app.cmd.push($crate::app::command::Cmd::CreatePerspective {
                 region_key: $key,
                 name: $reg.name.clone(),
-            };
+            });
             $ui.close_menu();
         }
     }};
@@ -225,9 +225,6 @@ impl RegionsWindow {
                     Action::SetRegionEnd { key, end } => {
                         app.meta_state.meta.low.regions[key].region.end = end
                     }
-                    Action::CreatePerspective { region_key, name } => {
-                        app.add_perspective_from_region(region_key, name)
-                    }
                 }
             });
     }
@@ -238,5 +235,4 @@ enum Action {
     Goto(usize),
     SetRegionBegin { key: RegionKey, begin: usize },
     SetRegionEnd { key: RegionKey, end: usize },
-    CreatePerspective { region_key: RegionKey, name: String },
 }

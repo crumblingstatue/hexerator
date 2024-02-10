@@ -1,5 +1,9 @@
-use {crate::view::ViewportScalar, egui_commonmark::CommonMarkCache, rfd::MessageDialogResult};
+use {
+    self::command::CommandQueue, crate::view::ViewportScalar, egui_commonmark::CommonMarkCache,
+    rfd::MessageDialogResult,
+};
 
+pub mod command;
 pub mod edit_state;
 pub mod interact_mode;
 pub mod presentation;
@@ -60,6 +64,8 @@ pub struct App {
     pub meta_state: MetaState,
     pub clipboard: arboard::Clipboard,
     pub md_cache: CommonMarkCache,
+    /// Command queue for queuing up operations to perform on the application state.
+    pub cmd: CommandQueue,
 }
 
 impl App {
@@ -91,6 +97,7 @@ impl App {
             meta_state: MetaState::default(),
             clipboard: arboard::Clipboard::new()?,
             md_cache: CommonMarkCache::default(),
+            cmd: Default::default(),
         };
         // Set a clean meta, for an empty document
         this.set_new_clean_meta(font);
@@ -562,6 +569,8 @@ impl App {
             }
             self.last_reload = Instant::now();
         }
+        // Here we perform all queued up `Command`s.
+        self.flush_command_queue();
     }
     pub(crate) fn focused_view_select_all(&mut self) {
         if let Some(view) = self.hex_ui.focused_view {
