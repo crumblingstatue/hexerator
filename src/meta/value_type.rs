@@ -203,6 +203,33 @@ impl EndianedPrimitive for U8 {
     }
 }
 
+macro_rules! impl_for_num {
+    ($($wrap:ident => $prim:ident $en:ident,)*) => {
+        $(
+            #[derive(Serialize, Deserialize, Clone)]
+            pub struct $wrap;
+
+            impl EndianedPrimitive for $wrap {
+                type Primitive = $prim;
+
+                paste::paste! {
+                    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+                        $prim::[<from_ $en _bytes>](bytes)
+                    }
+
+                    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+                        prim.[<to_ $en _bytes>]()
+                    }
+
+                    fn label(&self) -> &'static str {
+                        concat!(stringify!($prim), "-", stringify!($en))
+                    }
+                }
+            }
+        )*
+    }
+}
+
 impl_for_num! {
     I16Le => i16 le,
     U16Le => u16 le,
@@ -220,29 +247,4 @@ impl_for_num! {
     F32Be => f32 be,
     F64Le => f64 le,
     F64Be => f64 be,
-}
-
-macro impl_for_num($($wrap:ident => $prim:ident $en:ident,)*) {
-    $(
-        #[derive(Serialize, Deserialize, Clone)]
-        pub struct $wrap;
-
-        impl EndianedPrimitive for $wrap {
-            type Primitive = $prim;
-
-            paste::paste! {
-                fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
-                    $prim::[<from_ $en _bytes>](bytes)
-                }
-
-                fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
-                    prim.[<to_ $en _bytes>]()
-                }
-
-                fn label(&self) -> &'static str {
-                    concat!(stringify!($prim), "-", stringify!($en))
-                }
-            }
-        }
-    )*
 }
