@@ -610,8 +610,8 @@ impl App {
         // Set focused view to the first available view in the layout
         if let Some(view_key) = app_meta.layouts[k]
             .view_grid
-            .get(0)
-            .and_then(|row| row.get(0))
+            .first()
+            .and_then(|row| row.first())
         {
             app_hex_ui.focused_view = Some(*view_key);
         }
