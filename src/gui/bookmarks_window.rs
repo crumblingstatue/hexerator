@@ -191,14 +191,16 @@ impl BookmarksWindow {
             egui::ComboBox::new("type_combo", "value type")
                 .selected_text(mark.value_type.label())
                 .show_ui(ui, |ui| {
-                    macro int_sel_vals($($t:ident,)*) {
-                        $(
-                            ui.selectable_value(
-                                &mut mark.value_type,
-                                ValueType::$t($t),
-                                ValueType::$t($t).label(),
-                            );
-                        )*
+                    macro_rules! int_sel_vals {
+                        ($($t:ident,)*) => {
+                            $(
+                                ui.selectable_value(
+                                    &mut mark.value_type,
+                                    ValueType::$t($t),
+                                    ValueType::$t($t).label(),
+                                );
+                            )*
+                        }
                     }
                     ui.selectable_value(
                         &mut mark.value_type,
