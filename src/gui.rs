@@ -276,6 +276,15 @@ pub fn do_egui(
                                 gui.layouts_window.open.toggle();
                                 close = true;
                             }
+                            ui.menu_button("Layouts ->", |ui| {
+                                for (key, layout) in app.meta_state.meta.layouts.iter() {
+                                    if ui.button(&layout.name).clicked() {
+                                        App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, key);
+                                        ui.close_menu();
+                                        close = true;
+                                    }
+                                }
+                            });
                         });
                 });
             if close {
