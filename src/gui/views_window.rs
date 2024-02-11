@@ -1,9 +1,9 @@
 use {
     super::{regions_window::region_context_menu, window_open::WindowOpen},
     crate::{
-        app::App,
-        meta::{NamedView, ViewKey},
-        view::{HexData, TextData, TextKind, View, ViewKind},
+        app::{command::Cmd, App},
+        meta::ViewKey,
+        view::{HexData, TextData, TextKind, ViewKind},
     },
     egui_extras::{Column, TableBuilder},
     egui_sfml::{
@@ -144,8 +144,8 @@ impl ViewsWindow {
             for (key, perspective) in app.meta_state.meta.low.perspectives.iter() {
                 if ui.button(&perspective.name).clicked() {
                     ui.close_menu();
-                    app.meta_state.meta.views.insert(NamedView {
-                        view: View::new(ViewKind::Hex(HexData::default()), key),
+                    app.cmd.push(Cmd::CreateView {
+                        perspective_key: key,
                         name: perspective.name.to_owned(),
                     });
                 }

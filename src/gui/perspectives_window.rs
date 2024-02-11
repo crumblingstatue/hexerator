@@ -46,19 +46,23 @@ impl PerspectivesWindow {
                                 re.request_focus();
                             }
                         } else {
-                            ui.menu_button(
-                                &app.meta_state.meta.low.perspectives[keys[idx]].name,
-                                |ui| {
-                                    if ui.button("✏ Rename").clicked() {
-                                        gui.perspectives_window.rename_idx = keys[idx];
-                                        ui.close_menu();
-                                    }
-                                    if ui.button("🗑 Delete").clicked() {
-                                        app.cmd.push(Cmd::RemovePerspective(keys[idx]));
-                                        ui.close_menu();
-                                    }
-                                },
-                            );
+                            let name = &app.meta_state.meta.low.perspectives[keys[idx]].name;
+                            ui.menu_button(name, |ui| {
+                                if ui.button("✏ Rename").clicked() {
+                                    gui.perspectives_window.rename_idx = keys[idx];
+                                    ui.close_menu();
+                                }
+                                if ui.button("🗑 Delete").clicked() {
+                                    app.cmd.push(Cmd::RemovePerspective(keys[idx]));
+                                    ui.close_menu();
+                                }
+                                if ui.button("Create view").clicked() {
+                                    app.cmd.push(Cmd::CreateView {
+                                        perspective_key: keys[idx],
+                                        name: name.to_owned(),
+                                    });
+                                }
+                            });
                         }
                     });
                     row.col(|ui| {

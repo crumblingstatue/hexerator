@@ -7,15 +7,29 @@
 //! One possible way to do this is to encode whatever data an operation requires, and save it until
 //! we have exclusive access, and then perform it.
 
-use {super::App, crate::meta::RegionKey, std::collections::VecDeque};
+use {
+    super::App,
+    crate::{
+        meta::{NamedView, PerspectiveKey, RegionKey},
+        view::{HexData, View, ViewKind},
+    },
+    std::collections::VecDeque,
+};
 
 pub enum Cmd {
-    CreatePerspective { region_key: RegionKey, name: String },
-    RemovePerspective(crate::meta::PerspectiveKey),
+    CreatePerspective {
+        region_key: RegionKey,
+        name: String,
+    },
+    RemovePerspective(PerspectiveKey),
     SetSelection(usize, usize),
     SetAndFocusCursor(usize),
     SetLayout(crate::meta::LayoutKey),
     FocusView(crate::meta::ViewKey),
+    CreateView {
+        perspective_key: PerspectiveKey,
+        name: String,
+    },
 }
 
 /// Application command queue.
@@ -68,6 +82,15 @@ fn perform_command(app: &mut App, cmd: Cmd) {
             // TODO: Should probably handle dangling keys somehow.
             // either by not allowing removal in that case, or being robust against dangling keys
             // or removing everything that uses a dangling key.
+        }
+        Cmd::CreateView {
+            perspective_key,
+            name,
+        } => {
+            app.meta_state.meta.views.insert(NamedView {
+                view: View::new(ViewKind::Hex(HexData::default()), perspective_key),
+                name,
+            });
         }
     }
 }
