@@ -221,6 +221,8 @@ fn do_frame(
     if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window, events) {
         return false;
     }
+    // Here we flush GUI command queue every frame
+    gui.flush_command_queue();
     let [r, g, b] = app.preferences.bg_color;
     #[expect(
         clippy::cast_possible_truncation,

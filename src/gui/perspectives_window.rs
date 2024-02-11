@@ -76,6 +76,7 @@ impl PerspectivesWindow {
                                 per.region,
                                 &app.meta_state.meta,
                                 &mut app.cmd,
+                                &mut gui.cmd,
                             )
                         });
                         if re.clicked() {

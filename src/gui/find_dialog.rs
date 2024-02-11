@@ -195,6 +195,7 @@ impl FindDialog {
                                                     key,
                                                     &app.meta_state.meta,
                                                     &mut app.cmd,
+                                                    &mut gui.cmd,
                                                 );
                                                 ui.separator();
                                                 if ui.button("Remove region from results").clicked()

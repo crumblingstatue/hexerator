@@ -128,6 +128,7 @@ impl ViewsWindow {
                                 per.region,
                                 &app.meta_state.meta,
                                 &mut app.cmd,
+                                &mut gui.cmd,
                             )
                         };
                         let re = ui.link(&reg.name).on_hover_text(&reg.desc);

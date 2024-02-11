@@ -155,6 +155,7 @@ impl BookmarksWindow {
                                         region_key,
                                         &app.meta_state.meta,
                                         &mut app.cmd,
+                                        &mut gui.cmd,
                                     );
                                 };
                                 let re = ui.link(&region.name).on_hover_text(&region.desc);

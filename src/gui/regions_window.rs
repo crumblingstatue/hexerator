@@ -1,5 +1,8 @@
 use {
-    super::window_open::WindowOpen,
+    super::{
+        command::{GCmd, GCommandQueue},
+        window_open::WindowOpen,
+    },
     crate::{
         app::{
             command::{Cmd, CommandQueue},
@@ -25,6 +28,7 @@ pub fn region_context_menu(
     key: RegionKey,
     meta: &Meta,
     cmd: &mut CommandQueue,
+    gcmd: &mut GCommandQueue,
 ) {
     ui.menu_button("Containing layouts", |ui| {
         for (key, layout) in meta.layouts.iter() {
@@ -35,6 +39,13 @@ pub fn region_context_menu(
                     cmd.push(Cmd::SetAndFocusCursor(reg.region.begin));
                     ui.close_menu();
                 }
+            }
+        }
+    });
+    ui.menu_button("Containing perspectives", |ui| {
+        for (_per_key, per) in meta.low.perspectives.iter() {
+            if per.region == key && ui.button(&per.name).clicked() {
+                gcmd.push(GCmd::OpenPerspectiveWindow);
             }
         }
     });
@@ -165,7 +176,14 @@ impl RegionsWindow {
                         let reg = &app.meta_state.meta.low.regions[k];
                         row.col(|ui| {
                             let ctx_menu = |ui: &mut egui::Ui| {
-                                region_context_menu(ui, reg, k, &app.meta_state.meta, &mut app.cmd)
+                                region_context_menu(
+                                    ui,
+                                    reg,
+                                    k,
+                                    &app.meta_state.meta,
+                                    &mut app.cmd,
+                                    &mut gui.cmd,
+                                )
                             };
                             let re = ui
                                 .selectable_label(

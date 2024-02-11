@@ -259,6 +259,7 @@ impl FileDiffResultWindow {
                                             reg_key,
                                             &app.meta_state.meta,
                                             &mut app.cmd,
+                                            &mut gui.cmd,
                                         )
                                     });
                                 }

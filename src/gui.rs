@@ -1,11 +1,12 @@
 use {
-    self::windows::VarsWindow,
+    self::{command::GCommandQueue, windows::VarsWindow},
     gamedebug_core::{IMMEDIATE, PERSISTENT},
 };
 
 mod advanced_open_window;
 mod bookmarks_window;
 mod bottom_panel;
+pub mod command;
 mod debug_window;
 pub mod dialogs;
 mod external_command_window;
@@ -95,6 +96,7 @@ pub struct Gui {
     pub vars_window: VarsWindow,
     /// What to highlight in addition to selection. Can be updated by various actions that want to highlight stuff
     pub highlight_set: HighlightSet,
+    pub cmd: GCommandQueue,
 }
 
 pub struct ContextMenu {
