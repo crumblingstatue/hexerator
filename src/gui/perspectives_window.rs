@@ -1,9 +1,6 @@
 use {
     super::{regions_window::region_context_menu, window_open::WindowOpen},
-    crate::{
-        app::command::Cmd,
-        meta::{PerspectiveKey, RegionKey},
-    },
+    crate::{app::command::Cmd, meta::PerspectiveKey},
     egui_extras::{Column, TableBuilder},
     slotmap::Key,
 };
@@ -15,7 +12,6 @@ pub struct PerspectivesWindow {
 }
 impl PerspectivesWindow {
     pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut crate::app::App) {
-        let mut action = Action::None;
         TableBuilder::new(ui)
             .columns(Column::auto(), 3)
             .column(Column::remainder())
@@ -79,7 +75,8 @@ impl PerspectivesWindow {
                             )
                         });
                         if re.clicked() {
-                            action = Action::OpenRegion(per.region);
+                            gui.regions_window.open.set(true);
+                            gui.regions_window.selected_key = Some(per.region);
                         }
                     });
                     row.col(|ui| {
@@ -108,17 +105,5 @@ impl PerspectivesWindow {
                 }
             }
         });
-        match action {
-            Action::None => {}
-            Action::OpenRegion(key) => {
-                gui.regions_window.open.set(true);
-                gui.regions_window.selected_key = Some(key);
-            }
-        }
     }
-}
-
-enum Action {
-    None,
-    OpenRegion(RegionKey),
 }
