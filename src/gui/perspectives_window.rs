@@ -58,7 +58,7 @@ impl PerspectivesWindow {
                                         ui.close_menu();
                                     }
                                     if ui.button("🗑 Delete").clicked() {
-                                        action = Action::Remove(keys[idx]);
+                                        app.cmd.push(Cmd::RemovePerspective(keys[idx]));
                                         ui.close_menu();
                                     }
                                 },
@@ -110,9 +110,6 @@ impl PerspectivesWindow {
         });
         match action {
             Action::None => {}
-            Action::Remove(key) => {
-                app.meta_state.meta.low.perspectives.remove(key);
-            }
             Action::OpenRegion(key) => {
                 gui.regions_window.open.set(true);
                 gui.regions_window.selected_key = Some(key);
@@ -123,6 +120,5 @@ impl PerspectivesWindow {
 
 enum Action {
     None,
-    Remove(PerspectiveKey),
     OpenRegion(RegionKey),
 }

@@ -11,6 +11,7 @@ use {super::App, crate::meta::RegionKey, std::collections::VecDeque};
 
 pub enum Cmd {
     CreatePerspective { region_key: RegionKey, name: String },
+    RemovePerspective(crate::meta::PerspectiveKey),
     SetSelection(usize, usize),
     SetAndFocusCursor(usize),
     SetLayout(crate::meta::LayoutKey),
@@ -62,5 +63,11 @@ fn perform_command(app: &mut App, cmd: Cmd) {
         }
         Cmd::SetLayout(key) => app.hex_ui.current_layout = key,
         Cmd::FocusView(key) => app.hex_ui.focused_view = Some(key),
+        Cmd::RemovePerspective(key) => {
+            app.meta_state.meta.low.perspectives.remove(key);
+            // TODO: Should probably handle dangling keys somehow.
+            // either by not allowing removal in that case, or being robust against dangling keys
+            // or removing everything that uses a dangling key.
+        }
     }
 }
