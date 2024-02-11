@@ -61,6 +61,7 @@ impl PerspectivesWindow {
                                         perspective_key: keys[idx],
                                         name: name.to_owned(),
                                     });
+                                    ui.close_menu();
                                 }
                                 ui.menu_button("Containing views", |ui| {
                                     for (view_key, view) in app.meta_state.meta.views.iter() {
