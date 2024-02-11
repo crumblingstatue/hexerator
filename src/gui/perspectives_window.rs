@@ -62,6 +62,17 @@ impl PerspectivesWindow {
                                         name: name.to_owned(),
                                     });
                                 }
+                                ui.menu_button("Containing views", |ui| {
+                                    for (view_key, view) in app.meta_state.meta.views.iter() {
+                                        if view.view.perspective == keys[idx]
+                                            && ui.button(&view.name).clicked()
+                                        {
+                                            gui.views_window.open.set(true);
+                                            gui.views_window.selected = view_key;
+                                            ui.close_menu();
+                                        }
+                                    }
+                                });
                             });
                         }
                     });
