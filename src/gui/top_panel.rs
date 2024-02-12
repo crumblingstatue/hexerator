@@ -57,6 +57,11 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                         );
                         ui.selectable_value(
                             &mut presentation.color_method,
+                            ColorMethod::Pure,
+                            ColorMethod::Pure.name(),
+                        );
+                        ui.selectable_value(
+                            &mut presentation.color_method,
                             ColorMethod::Mono,
                             ColorMethod::Mono.name(),
                         );

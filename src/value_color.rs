@@ -9,6 +9,7 @@ use {
 pub enum ColorMethod {
     Mono,
     Default,
+    Pure,
     Rgb332,
     Vga13h,
     Grayscale,
@@ -41,6 +42,7 @@ impl ColorMethod {
         let color = match self {
             ColorMethod::Mono => RgbColor::WHITE,
             ColorMethod::Default => default_color(byte),
+            ColorMethod::Pure => hue_color(byte),
             ColorMethod::Rgb332 => rgb332_color(byte),
             ColorMethod::Vga13h => vga_13h_color(byte),
             ColorMethod::Grayscale => rgb(byte, byte, byte),
@@ -60,6 +62,7 @@ impl ColorMethod {
         match self {
             ColorMethod::Mono => "monochrome (white)",
             ColorMethod::Default => "default",
+            ColorMethod::Pure => "pure hue",
             ColorMethod::Rgb332 => "rgb 3-3-2",
             ColorMethod::Vga13h => "VGA 13h",
             ColorMethod::Grayscale => "grayscale",
@@ -120,20 +123,28 @@ const VGA_13H_PALETTE: [u32; 256] = [
 ];
 
 pub fn default_color(byte: u8) -> RgbColor {
-    /*if byte == 0 {
-        Color::rgb(100, 100, 100)
-    } else if byte == 255 {
-        Color::rgb(210, 210, 210)
-    } else {
-        let [r, g, b] = egui::color::rgb_from_hsv((f32::from(byte) / 288.0, 1.0, 1.0));
-        #[expect(
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss,
-            reason = "Ranges are in 0-1, they will never be multiplied above 255"
-        )]
-        Color::rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
-    }*/
     DEFAULT_COLOR_ARRAY[usize::from(byte)]
+}
+
+fn hue_color(byte: u8) -> RgbColor {
+    let [r, g, b] = egui::ecolor::rgb_from_hsv((f32::from(byte) / 288.0, 1.0, 1.0));
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "Ranges are in 0-1, they will never be multiplied above 255"
+    )]
+    rgb((r * 255.0) as u8, (g * 255.0) as u8, (b * 255.0) as u8)
+}
+
+#[expect(dead_code, reason = "DEFAULT_COLOR_ARRAY is generated based on this")]
+fn hue_color_tweaked(byte: u8) -> RgbColor {
+    if byte == 0 {
+        rgb(100, 100, 100)
+    } else if byte == 255 {
+        rgb(210, 210, 210)
+    } else {
+        hue_color(byte)
+    }
 }
 
 /// Color table for default_color. This is used for performance purposes, as it is
