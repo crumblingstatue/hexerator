@@ -165,16 +165,18 @@ dependencies = [
 
 [[package]]
 name = "async-executor"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17ae5ebefcc48e7452b4987947920dac9450be1110cadf34d1b8c116bdbaf97c"
+checksum = "601848938f6e24595d8f63bd4c4e98ed905a3bfa832743c7b8298a73d1b0517b"
 dependencies = [
  "async-lock 3.3.0",
  "async-task",
+ "atomic-waker",
  "concurrent-queue",
  "fastrand",
  "futures-lite",
  "slab",
+ "thread_local",
 ]
 
 [[package]]
@@ -392,9 +394,9 @@ dependencies = [
 
 [[package]]
 name = "bumpalo"
-version = "3.15.0"
+version = "3.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d32a994c2b3ca201d9b263612a374263f05e7adde37c4707f693dcd375076d1f"
+checksum = "a3b1be7772ee4501dba05acbe66bb1e8760f6a6c474a36035631638e4415f130"
 
 [[package]]
 name = "bytecount"
@@ -448,12 +450,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.0.83"
+version = "1.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1174fb0b6ec23863f8b971027804a42614e347eafb0a95bf0b12cdae21fc4d0"
-dependencies = [
- "libc",
-]
+checksum = "7f9fa1897e4325be0d68d48df6aa1a71ac2ed4d27723887e7754192705350730"
 
 [[package]]
 name = "cexpr"
@@ -523,9 +522,9 @@ checksum = "98cc8fbded0c607b7ba9dd60cd98df59af97e84d24e49c8557331cfc26d301ce"
 
 [[package]]
 name = "clipboard-win"
-version = "5.1.0"
+version = "5.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ec832972fefb8cf9313b45a0d1945e29c9c251f1d4c6eafc5fe2124c02d2e81"
+checksum = "12f9a0700e0127ba15d1d52dd742097f821cd9c65939303a44d970465040a297"
 dependencies = [
  "error-code",
 ]
@@ -663,8 +662,8 @@ dependencies = [
 
 [[package]]
 name = "egui-modal"
-version = "0.3.2"
-source = "git+https://github.com/crumblingstatue/egui-modal.git#f0aa7510b45beecb23c3147df54d45e2d7d95d53"
+version = "0.3.4"
+source = "git+https://github.com/n00kii/egui-modal.git#f3067eac8a441de641e52920f9be372db0fa5cd1"
 dependencies = [
  "egui",
 ]
@@ -681,8 +680,8 @@ dependencies = [
 
 [[package]]
 name = "egui_code_editor"
-version = "0.2.3"
-source = "git+https://github.com/crumblingstatue/egui_code_editor.git#4f5020e3b3c8f98d3a30f0ab30526c9f9dbba06c"
+version = "0.2.5"
+source = "git+https://github.com/p4ymak/egui_code_editor.git#aadae61a1ea8d10dad710917db3c28f32f8c78a5"
 dependencies = [
  "egui",
 ]
@@ -1902,7 +1901,7 @@ dependencies = [
 [[package]]
 name = "sfml"
 version = "0.21.0"
-source = "git+https://github.com/jeremyletang/rust-sfml.git#22ebe6cdca2135404742369ad1459414994bc05b"
+source = "git+https://github.com/jeremyletang/rust-sfml.git#3e275e06f408343c63133108e65009d1f4e6295c"
 dependencies = [
  "bitflags 2.4.2",
  "cc",
@@ -2063,6 +2062,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.50",
+]
+
+[[package]]
+name = "thread_local"
+version = "1.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b9ef9bad013ada3808854ceac7b46812a6465ba368859a37e2100283d2d719c"
+dependencies = [
+ "cfg-if",
+ "once_cell",
 ]
 
 [[package]]
@@ -2228,9 +2237,9 @@ checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
 
 [[package]]
 name = "unicode-normalization"
-version = "0.1.22"
+version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c5713f0fc4b5db668a2ac63cdb7bb4469d8c9fed047b1d0292cc7b0ce2ba921"
+checksum = "a56d1686db2308d901306f92a263857ef59ea39678a5458e7cb17f01415101f5"
 dependencies = [
  "tinyvec",
 ]

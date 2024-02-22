@@ -35,13 +35,13 @@ itertools = "0.12.1"
 sysinfo = { version = "0.30.5", default-features = false }
 proc-maps = "0.3.2"
 open = "5.0.1"
-egui-modal = { git = "https://github.com/crumblingstatue/egui-modal.git" }
+egui-modal = { git = "https://github.com/n00kii/egui-modal.git" }
 arboard = { version = "3.3.1", default-features = false }
 paste = "1.0.14"
 iced-x86 = "1.21.0"
 strum = { version = "0.26.1", features = ["derive"] }
 parking_lot = "0.12.1"
-egui_code_editor = {git = "https://github.com/crumblingstatue/egui_code_editor.git"}
+egui_code_editor = {git = "https://github.com/p4ymak/egui_code_editor.git"}
 mlua = { version = "0.9.5", features = ["luajit"] }
 
 [target."cfg(windows)".dependencies.windows-sys]

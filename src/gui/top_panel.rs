@@ -170,7 +170,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                             let mut i = 0;
                             for y in 0..size.y {
                                 for x in 0..size.x {
-                                    let color = unsafe { img.pixel_at(x, y) };
+                                    let color = unsafe { img.pixel_at_unchecked(x, y) };
                                     let byte = app.data[sel.begin + i];
                                     arr.0[byte as usize] = [color.r, color.g, color.b];
                                     i += 1;
