@@ -1,5 +1,7 @@
 use {
-    self::command::CommandQueue, crate::view::ViewportScalar, egui_commonmark::CommonMarkCache,
+    self::command::CommandQueue,
+    crate::{gui::file_diff_result_window::FileDiffResultWindow, view::ViewportScalar},
+    egui_commonmark::CommonMarkCache,
     rfd::MessageDialogResult,
 };
 
@@ -14,10 +16,7 @@ use {
         args::{Args, SourceArgs},
         config::Config,
         event::{Event, EventQueue},
-        gui::{
-            message_dialog::{Icon, MessageDialog},
-            Gui,
-        },
+        gui::message_dialog::{Icon, MessageDialog},
         hex_ui::HexUi,
         input::Input,
         layout::{default_margin, do_auto_layout, Layout},
@@ -587,7 +586,11 @@ impl App {
         self.args.src.file.as_deref()
     }
 
-    pub(crate) fn diff_with_file(&mut self, path: PathBuf, gui: &mut Gui) -> anyhow::Result<()> {
+    pub(crate) fn diff_with_file(
+        &mut self,
+        path: PathBuf,
+        file_diff_result_window: &mut FileDiffResultWindow,
+    ) -> anyhow::Result<()> {
         // FIXME: Skipping ignores changes to bookmarked values that happen later than the first
         // byte.
         let file_data = read_source_to_buf(&path, &self.args.src)?;
@@ -607,10 +610,10 @@ impl App {
                 skip = bm.value_type.byte_len() - 1;
             }
         }
-        gui.file_diff_result_window.offsets = offs;
-        gui.file_diff_result_window.file_data = file_data;
-        gui.file_diff_result_window.path = path;
-        gui.file_diff_result_window.open.set(true);
+        file_diff_result_window.offsets = offs;
+        file_diff_result_window.file_data = file_data;
+        file_diff_result_window.path = path;
+        file_diff_result_window.open.set(true);
         Ok(())
     }
 

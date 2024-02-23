@@ -49,9 +49,7 @@ impl AdvancedOpenWindow {
             }
         }
         if ui.button("Select file...").clicked() {
-            if let Some(path) = rfd::FileDialog::new().pick_file() {
-                args.src.file = Some(path);
-            }
+            gui.fileops.advanced_open_pick_file();
         }
         opt(
             ui,
@@ -102,9 +100,7 @@ impl AdvancedOpenWindow {
             }
         }
         if ui.button("Select file...").clicked() {
-            if let Some(path) = rfd::FileDialog::new().pick_file() {
-                args.meta = Some(path);
-            }
+            gui.fileops.advanced_open_pick_metafile();
         }
         ui.separator();
         if ui

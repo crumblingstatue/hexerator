@@ -4,7 +4,7 @@ use {
         damage_region::DamageRegion,
         gui::{
             message_dialog::{Icon, MessageDialog},
-            Dialog,
+            Dialog, FileOps,
         },
         slice_ext::SliceExt,
     },
@@ -36,6 +36,7 @@ impl Dialog for PatternFillDialog {
         _lua: &Lua,
         _font: &Font,
         _events: &mut crate::event::EventQueue,
+        _file_ops: &mut FileOps,
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");

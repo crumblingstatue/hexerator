@@ -3,13 +3,12 @@ use {
     crate::{
         app::App,
         event::EventQueue,
-        shell::{msg_fail, msg_if_fail},
-        value_color::{self, ColorMethod, Palette},
+        value_color::{ColorMethod, Palette},
     },
     anyhow::Context,
     egui_sfml::{
         egui::{self, ComboBox, Layout, Ui},
-        sfml::graphics::{Font, Image},
+        sfml::graphics::Font,
     },
 };
 
@@ -129,21 +128,10 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                         Gui::add_dialog(&mut gui.dialogs, LuaColorDialog::default());
                     }
                     if ui.button("Save").clicked() {
-                        if let Some(path) = rfd::FileDialog::new().save_file() {
-                            msg_if_fail(
-                                value_color::save_palette(arr, &path),
-                                "Failed to save pal",
-                                &mut gui.msg_dialog,
-                            );
-                        }
+                        gui.fileops.save_palette_for_view(view_key);
                     }
                     if ui.button("Load").clicked() {
-                        if let Some(path) = rfd::FileDialog::new().pick_file() {
-                            match value_color::load_palette(&path) {
-                                Ok(pal) => *arr = Box::new(pal),
-                                Err(e) => msg_fail(&e, "Failed to load pal", &mut gui.msg_dialog),
-                            }
-                        }
+                        gui.fileops.load_palette_for_view(view_key);
                     }
                     let tooltip = "\
                     From image file.\n\
@@ -155,33 +143,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &Event
                         .on_hover_text(tooltip)
                         .clicked()
                     {
-                        let Some(img_path) = rfd::FileDialog::new().pick_file() else {
-                            return;
-                        };
-                        let result: anyhow::Result<()> = try {
-                            let img = Image::from_file(
-                                img_path
-                                    .to_str()
-                                    .context("Failed to convert path to utf-8")?,
-                            )
-                            .context("Failed to load image")?;
-                            let size = img.size();
-                            let sel = app.hex_ui.selection().context("Missing app selection")?;
-                            let mut i = 0;
-                            for y in 0..size.y {
-                                for x in 0..size.x {
-                                    let color = unsafe { img.pixel_at_unchecked(x, y) };
-                                    let byte = app.data[sel.begin + i];
-                                    arr.0[byte as usize] = [color.r, color.g, color.b];
-                                    i += 1;
-                                }
-                            }
-                        };
-                        msg_if_fail(
-                            result,
-                            "Failed to load palette from reference image",
-                            &mut gui.msg_dialog,
-                        );
+                        gui.fileops.load_palette_from_image_for_view(view_key);
                     }
                 }
             });

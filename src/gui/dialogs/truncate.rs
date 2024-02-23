@@ -1,5 +1,8 @@
 use {
-    crate::{gui::Dialog, meta::region::Region},
+    crate::{
+        gui::{Dialog, FileOps},
+        meta::region::Region,
+    },
     egui::{Button, DragValue},
 };
 
@@ -31,6 +34,7 @@ impl Dialog for TruncateDialog {
         _lua: &mlua::Lua,
         _font: &egui_sfml::sfml::graphics::Font,
         _events: &mut crate::event::EventQueue,
+        _file_ops: &mut FileOps,
     ) -> bool {
         ui.horizontal(|ui| {
             ui.label("Begin");

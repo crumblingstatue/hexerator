@@ -71,7 +71,7 @@ impl FileDiffResultWindow {
                 if msg_if_fail(result, "Failed to load file", &mut gui.msg_dialog).is_none() {
                     if let Some(path) = prev_path {
                         msg_if_fail(
-                            app.diff_with_file(path, gui),
+                            app.diff_with_file(path, &mut gui.file_diff_result_window),
                             "Failed to diff",
                             &mut gui.msg_dialog,
                         );
@@ -83,15 +83,7 @@ impl FileDiffResultWindow {
                 .on_hover_text("Diff with another file")
                 .clicked()
             {
-                if let Some(path) =
-                    crate::shell::open_dialog_same_dir(app.source_file()).pick_file()
-                {
-                    msg_if_fail(
-                        app.diff_with_file(path, gui),
-                        "Failed to diff",
-                        &mut gui.msg_dialog,
-                    );
-                }
+                gui.fileops.diff_with_file(app.source_file());
             }
         });
         ui.separator();

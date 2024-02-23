@@ -661,6 +661,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui-file-dialog"
+version = "0.3.1"
+source = "git+https://github.com/fluxxcode/egui-file-dialog.git?branch=develop#97512bfef59f05fb5746483d96e09930e99008f1"
+dependencies = [
+ "directories",
+ "egui",
+ "sysinfo",
+]
+
+[[package]]
 name = "egui-modal"
 version = "0.3.4"
 source = "git+https://github.com/n00kii/egui-modal.git#f3067eac8a441de641e52920f9be372db0fa5cd1"
@@ -1050,6 +1060,7 @@ dependencies = [
  "clap",
  "directories",
  "egui",
+ "egui-file-dialog",
  "egui-modal",
  "egui-sfml",
  "egui_code_editor",

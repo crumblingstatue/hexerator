@@ -27,6 +27,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQu
                 &mut gui.msg_dialog,
                 &mut gui.regions_window,
                 sel,
+                &mut gui.fileops,
             ) {
                 ui.close_menu();
             }

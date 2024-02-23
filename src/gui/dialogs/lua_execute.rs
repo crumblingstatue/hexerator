@@ -3,7 +3,7 @@ use {
     crate::{
         app::App,
         event::EventQueue,
-        gui::{message_dialog::MessageDialog, Dialog},
+        gui::{message_dialog::MessageDialog, Dialog, FileOps},
         meta::{region::Region, NamedRegion},
         shell::msg_if_fail,
         slice_ext::SliceExt,
@@ -92,6 +92,7 @@ impl Dialog for LuaExecuteDialog {
         lua: &Lua,
         font: &Font,
         events: &mut EventQueue,
+        file_ops: &mut FileOps,
     ) -> bool {
         let ctrl_enter =
             ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::Enter));
@@ -143,21 +144,10 @@ impl Dialog for LuaExecuteDialog {
         }
         ui.horizontal(|ui| {
             if ui.button("Load script...").clicked() {
-                if let Some(path) = rfd::FileDialog::new().pick_file() {
-                    let res: anyhow::Result<()> = try {
-                        app.meta_state.meta.misc.exec_lua_script = std::fs::read_to_string(path)?;
-                    };
-                    msg_if_fail(res, "Failed to load script", msg);
-                }
+                file_ops.load_lua_script();
             }
             if ui.button("Save script...").clicked() {
-                if let Some(path) = rfd::FileDialog::new().save_file() {
-                    msg_if_fail(
-                        std::fs::write(path, &app.meta_state.meta.misc.exec_lua_script),
-                        "Failed to save script",
-                        msg,
-                    );
-                }
+                file_ops.save_lua_script();
             }
         });
         ui.separator();

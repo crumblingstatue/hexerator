@@ -1,15 +1,13 @@
 use {
     crate::{
         app::{set_clipboard_string, App},
-        args::{Args, SourceArgs},
+        args::Args,
         event::{Event, EventQueue},
         gui::{dialogs::AutoSaveReloadDialog, Gui},
         shell::msg_if_fail,
-        source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     },
     egui::Button,
     egui_sfml::{egui, sfml::graphics::Font},
-    std::io::Write,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &EventQueue) {
@@ -17,7 +15,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
         .add(Button::new("Open...").shortcut_text("Ctrl+O"))
         .clicked()
     {
-        crate::shell::open_file(app, font, &mut gui.msg_dialog, events);
+        gui.fileops.load_file(app.source_file());
         ui.close_menu();
     }
     if ui.button("Advanced open...").clicked() {
@@ -102,39 +100,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
         ui.close_menu();
     }
     if ui.button("Save as...").clicked() {
-        if let Some(path) = rfd::FileDialog::new().save_file() {
-            let result: anyhow::Result<()> = try {
-                let mut f = std::fs::OpenOptions::new()
-                    .create(true)
-                    .truncate(true)
-                    .read(true)
-                    .write(true)
-                    .open(&path)?;
-                f.write_all(&app.data)?;
-                app.source = Some(Source {
-                    provider: SourceProvider::File(f),
-                    attr: SourceAttributes {
-                        seekable: true,
-                        stream: false,
-                        permissions: SourcePermissions {
-                            read: true,
-                            write: true,
-                        },
-                    },
-                    state: SourceState::default(),
-                });
-                app.args.src.file = Some(path);
-                app.cfg.recent.use_(SourceArgs {
-                    file: app.args.src.file.clone(),
-                    jump: None,
-                    hard_seek: None,
-                    take: None,
-                    read_only: false,
-                    stream: false,
-                });
-            };
-            msg_if_fail(result, "Failed to save as", &mut gui.msg_dialog);
-        }
+        gui.fileops.save_file_as();
     }
     if ui
         .add(Button::new("Reload").shortcut_text("Ctrl+R"))

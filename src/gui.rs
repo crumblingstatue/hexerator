@@ -1,5 +1,5 @@
 use {
-    self::{command::GCommandQueue, windows::VarsWindow},
+    self::{command::GCommandQueue, file_ops::FileOps, windows::VarsWindow},
     gamedebug_core::{IMMEDIATE, PERSISTENT},
 };
 
@@ -10,7 +10,8 @@ pub mod command;
 mod debug_window;
 pub mod dialogs;
 mod external_command_window;
-mod file_diff_result_window;
+pub mod file_diff_result_window;
+pub mod file_ops;
 mod find_dialog;
 mod find_memory_pointers_window;
 pub mod inspect_panel;
@@ -97,6 +98,7 @@ pub struct Gui {
     /// What to highlight in addition to selection. Can be updated by various actions that want to highlight stuff
     pub highlight_set: HighlightSet,
     pub cmd: GCommandQueue,
+    pub fileops: FileOps,
 }
 
 pub struct ContextMenu {
@@ -129,6 +131,7 @@ pub trait Dialog {
         lua: &Lua,
         font: &Font,
         events: &mut EventQueue,
+        file_ops: &mut FileOps,
     ) -> bool;
     /// Called when dialog is opened. Can be used to set just-opened flag, etc.
     fn on_open(&mut self) {}
@@ -203,7 +206,7 @@ pub fn do_egui(
                         .show(ui, |ui| {
                             if let Some(sel) = app.hex_ui.selection() {
                                 ui.separator();
-                                if crate::gui::selection_menu::selection_menu("Selection... ⏷", ui, app, &mut gui.dialogs, &mut gui.msg_dialog, &mut gui.regions_window, sel) {
+                                if crate::gui::selection_menu::selection_menu("Selection... ⏷", ui, app, &mut gui.dialogs, &mut gui.msg_dialog, &mut gui.regions_window, sel, &mut gui.fileops) {
                                     close = true;
                                 }
                             }
@@ -328,11 +331,13 @@ pub fn do_egui(
         dialogs.retain(|_k, dialog| {
             let mut retain = true;
             Window::new(dialog.title()).show(ctx, |ui| {
-                retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua, font, events);
+                retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua, font, events, &mut gui.fileops);
             });
             retain
         });
         gui.dialogs = dialogs;
+        // File dialog
+        gui.fileops.update(ctx, app, &mut gui.msg_dialog, &mut gui.advanced_open_window, &mut gui.file_diff_result_window, font, events);
     });
     if let Err(e) = result {
         match e {

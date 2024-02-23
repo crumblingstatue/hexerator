@@ -829,7 +829,7 @@ fn handle_key_pressed(
             msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
         }
         Key::O if key_mod.ctrl => {
-            shell::open_file(app, font, &mut gui.msg_dialog, events);
+            gui.fileops.load_file(app.source_file());
         }
         Key::P if key_mod.ctrl => {
             let mut load = None;

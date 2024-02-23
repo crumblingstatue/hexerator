@@ -1,7 +1,7 @@
 use crate::{
     app::App,
     gui::{message_dialog::Icon, Gui},
-    shell::{msg_if_fail, open_dialog_same_dir},
+    shell::msg_if_fail,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
@@ -15,21 +15,15 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     }
     ui.separator();
     if ui.button("Diff with file...").clicked() {
+        gui.fileops.diff_with_file(app.source_file());
         ui.close_menu();
-        if let Some(path) = open_dialog_same_dir(app.source_file()).pick_file() {
-            msg_if_fail(
-                app.diff_with_file(path, gui),
-                "Failed to diff",
-                &mut gui.msg_dialog,
-            );
-        }
     }
     if ui.button("Diff with source file").clicked() {
         ui.close_menu();
         if let Some(path) = app.source_file() {
             let path = path.to_owned();
             msg_if_fail(
-                app.diff_with_file(path, gui),
+                app.diff_with_file(path, &mut gui.file_diff_result_window),
                 "Failed to diff",
                 &mut gui.msg_dialog,
             );
@@ -40,7 +34,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
             if ui.button("Diff with backup").clicked() {
                 ui.close_menu();
                 msg_if_fail(
-                    app.diff_with_file(path, gui),
+                    app.diff_with_file(path, &mut gui.file_diff_result_window),
                     "Failed to diff",
                     &mut gui.msg_dialog,
                 );

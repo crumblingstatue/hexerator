@@ -55,13 +55,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         ui.close_menu();
     }
     if ui.button("Load from file...").clicked() {
-        if let Some(path) = rfd::FileDialog::default().pick_file() {
-            msg_if_fail(
-                app.consume_meta_from_file(path),
-                "Failed to load metafile",
-                &mut gui.msg_dialog,
-            );
-        }
+        gui.fileops.load_meta_file();
         ui.close_menu();
     }
     if ui
@@ -104,13 +98,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         ui.close_menu();
     }
     if ui.button("Save as...").clicked() {
-        if let Some(path) = rfd::FileDialog::default().save_file() {
-            msg_if_fail(
-                app.save_meta_to_file(path, false),
-                "Failed to save metafile",
-                &mut gui.msg_dialog,
-            );
-        }
+        gui.fileops.save_metafile_as();
         ui.close_menu();
     }
     ui.separator();

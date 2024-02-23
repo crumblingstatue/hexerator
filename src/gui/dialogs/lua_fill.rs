@@ -1,7 +1,7 @@
 use {
     crate::{
         app::App,
-        gui::{message_dialog::MessageDialog, Dialog},
+        gui::{message_dialog::MessageDialog, Dialog, FileOps},
         shell::msg_if_fail,
     },
     egui,
@@ -31,6 +31,7 @@ impl Dialog for LuaFillDialog {
         lua: &Lua,
         _font: &Font,
         _events: &mut crate::event::EventQueue,
+        _file_ops: &mut FileOps,
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");

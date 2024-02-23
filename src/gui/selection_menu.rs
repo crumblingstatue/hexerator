@@ -1,11 +1,12 @@
 use {
     super::{
         dialogs::{LuaFillDialog, PatternFillDialog, X86AsmDialog},
+        file_ops::FileOps,
         message_dialog::MessageDialog,
         regions_window::RegionsWindow,
         Gui,
     },
-    crate::{app::App, damage_region::DamageRegion, shell::msg_if_fail},
+    crate::{app::App, damage_region::DamageRegion},
     egui::Button,
     rand::RngCore,
     std::fmt::Write,
@@ -20,6 +21,7 @@ pub fn selection_menu(
     gui_msg_dialog: &mut MessageDialog,
     gui_regions_window: &mut RegionsWindow,
     sel: crate::meta::region::Region,
+    file_ops: &mut FileOps,
 ) -> bool {
     let mut clicked = false;
     ui.menu_button(title, |ui| {
@@ -81,10 +83,7 @@ pub fn selection_menu(
             clicked = true;
         }
         if ui.button("Save to file").clicked() {
-            if let Some(file_path) = rfd::FileDialog::new().save_file() {
-                let result = std::fs::write(file_path, &app.data[sel.begin..=sel.end]);
-                msg_if_fail(result, "Failed to save selection to file", gui_msg_dialog);
-            }
+            file_ops.save_selection_to_file(sel);
             ui.close_menu();
             clicked = true;
         }

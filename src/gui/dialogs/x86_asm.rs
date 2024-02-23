@@ -1,5 +1,5 @@
 use {
-    crate::gui::Dialog,
+    crate::gui::{Dialog, FileOps},
     egui::Button,
     iced_x86::{Decoder, Formatter, NasmFormatter},
 };
@@ -31,6 +31,7 @@ impl Dialog for X86AsmDialog {
         _lua: &mlua::Lua,
         _font: &egui_sfml::sfml::graphics::Font,
         _events: &mut crate::event::EventQueue,
+        _file_ops: &mut FileOps,
     ) -> bool {
         let mut retain = true;
         egui::ScrollArea::vertical()

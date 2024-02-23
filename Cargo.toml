@@ -43,6 +43,7 @@ strum = { version = "0.26.1", features = ["derive"] }
 parking_lot = "0.12.1"
 egui_code_editor = {git = "https://github.com/p4ymak/egui_code_editor.git"}
 mlua = { version = "0.9.5", features = ["luajit"] }
+egui-file-dialog = { git = "https://github.com/fluxxcode/egui-file-dialog.git", branch = "develop" }
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.52.0"
