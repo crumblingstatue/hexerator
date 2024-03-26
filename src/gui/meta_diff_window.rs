@@ -136,7 +136,7 @@ fn diff_slotmap<I: SlotmapDiffItem>(
     }
     if any_changed {
         if ui.button("Restore").clicked() {
-            *this = clean.clone();
+            this.clone_from(clean);
         }
     } else {
         ui.label("No changes");

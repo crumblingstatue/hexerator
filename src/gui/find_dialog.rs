@@ -503,7 +503,7 @@ where
 fn find_u8(dia: &mut FindDialog, app: &App, msg: &mut MessageDialog, highlight: &mut HighlightSet) {
     match dia.find_input.as_str() {
         "?" => {
-            dia.data_snapshot = app.data.clone();
+            dia.data_snapshot.clone_from(&app.data);
             dia.results_vec.clear();
             highlight.clear();
             for i in 0..app.data.len() {
@@ -523,7 +523,7 @@ fn find_u8(dia: &mut FindDialog, app: &App, msg: &mut MessageDialog, highlight: 
                     }
                 }
             }
-            dia.data_snapshot = app.data.clone();
+            dia.data_snapshot.clone_from(&app.data);
         }
         "=" => {
             if dia.filter_results {
@@ -537,7 +537,7 @@ fn find_u8(dia: &mut FindDialog, app: &App, msg: &mut MessageDialog, highlight: 
                     }
                 }
             }
-            dia.data_snapshot = app.data.clone();
+            dia.data_snapshot.clone_from(&app.data);
         }
         "!=" => {
             if dia.filter_results {
@@ -551,7 +551,7 @@ fn find_u8(dia: &mut FindDialog, app: &App, msg: &mut MessageDialog, highlight: 
                     }
                 }
             }
-            dia.data_snapshot = app.data.clone();
+            dia.data_snapshot.clone_from(&app.data);
         }
         "<" => {
             if dia.filter_results {
@@ -565,7 +565,7 @@ fn find_u8(dia: &mut FindDialog, app: &App, msg: &mut MessageDialog, highlight: 
                     }
                 }
             }
-            dia.data_snapshot = app.data.clone();
+            dia.data_snapshot.clone_from(&app.data);
         }
         _ => match parse_guess_radix(&dia.find_input) {
             Ok(needle) => {
