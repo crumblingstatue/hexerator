@@ -866,7 +866,6 @@ fn load_file_from_src_args(
             *source = Some(Source {
                 provider: SourceProvider::Stdin(std::io::stdin()),
                 attr: SourceAttributes {
-                    seekable: false,
                     stream: true,
                     permissions: SourcePermissions {
                         read: true,
@@ -903,7 +902,6 @@ fn load_file_from_src_args(
                 *source = Some(Source {
                     provider: SourceProvider::File(file),
                     attr: SourceAttributes {
-                        seekable: true,
                         stream: src_args.stream,
                         permissions: SourcePermissions {
                             read: true,

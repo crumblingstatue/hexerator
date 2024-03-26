@@ -146,7 +146,6 @@ impl FileOps {
                         app.source = Some(Source {
                             provider: SourceProvider::File(f),
                             attr: SourceAttributes {
-                                seekable: true,
                                 stream: false,
                                 permissions: SourcePermissions {
                                     read: true,

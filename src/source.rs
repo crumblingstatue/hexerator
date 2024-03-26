@@ -24,8 +24,6 @@ pub struct Source {
 
 #[derive(Debug)]
 pub struct SourceAttributes {
-    /// Whether it's possible to seek
-    pub seekable: bool,
     /// Whether reading should be done by streaming
     pub stream: bool,
     pub permissions: SourcePermissions,
