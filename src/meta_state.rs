@@ -9,8 +9,6 @@ pub struct MetaState {
     /// Clean copy of the metadata from last load/save
     pub clean_meta: Meta,
     pub meta: Meta,
-    /// Whether metafile needs saving
-    pub meta_dirty: bool,
 }
 
 impl Default for MetaState {
@@ -20,7 +18,6 @@ impl Default for MetaState {
             clean_meta: Meta::default(),
             last_meta_backup: Cell::new(Instant::now()),
             current_meta_path: PathBuf::new(),
-            meta_dirty: false,
         }
     }
 }
