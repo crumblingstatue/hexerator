@@ -867,10 +867,7 @@ fn load_file_from_src_args(
                 provider: SourceProvider::Stdin(std::io::stdin()),
                 attr: SourceAttributes {
                     stream: true,
-                    permissions: SourcePermissions {
-                        read: true,
-                        write: false,
-                    },
+                    permissions: SourcePermissions { write: false },
                 },
                 state: SourceState::default(),
             });
@@ -904,7 +901,6 @@ fn load_file_from_src_args(
                     attr: SourceAttributes {
                         stream: src_args.stream,
                         permissions: SourcePermissions {
-                            read: true,
                             write: !src_args.read_only,
                         },
                     },

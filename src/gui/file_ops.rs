@@ -147,10 +147,7 @@ impl FileOps {
                             provider: SourceProvider::File(f),
                             attr: SourceAttributes {
                                 stream: false,
-                                permissions: SourcePermissions {
-                                    read: true,
-                                    write: true,
-                                },
+                                permissions: SourcePermissions { write: true },
                             },
                             state: SourceState::default(),
                         });

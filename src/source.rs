@@ -37,7 +37,6 @@ pub struct SourceState {
 
 #[derive(Debug)]
 pub struct SourcePermissions {
-    pub read: bool,
     pub write: bool,
 }
 
