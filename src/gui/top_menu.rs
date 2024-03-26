@@ -12,10 +12,7 @@ mod view;
 
 use {
     crate::{app::App, source::SourceProvider},
-    egui_sfml::{
-        egui::{self, Layout},
-        sfml::graphics::Font,
-    },
+    egui_sfml::{egui::Layout, sfml::graphics::Font},
 };
 
 pub fn top_menu(

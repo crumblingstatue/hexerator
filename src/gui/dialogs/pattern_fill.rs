@@ -8,7 +8,6 @@ use {
         },
         slice_ext::SliceExt,
     },
-    egui,
     egui_sfml::sfml::graphics::Font,
     mlua::Lua,
 };

@@ -7,7 +7,7 @@ use {
         view::ViewportVec,
     },
     anyhow::bail,
-    egui::{self, Ui},
+    egui::Ui,
     slotmap::Key,
     std::{array::TryFromSliceError, marker::PhantomData},
     thiserror::Error,

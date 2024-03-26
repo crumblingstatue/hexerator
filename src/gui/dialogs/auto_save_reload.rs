@@ -4,7 +4,6 @@ use {
         event::EventQueue,
         gui::{message_dialog::MessageDialog, Dialog, FileOps},
     },
-    egui,
     egui_sfml::sfml::graphics::Font,
     mlua::Lua,
 };

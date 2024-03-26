@@ -6,7 +6,6 @@ use {
         parse_radix::{parse_offset_maybe_relative, Relativity},
         shell::msg_fail,
     },
-    egui,
     egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
     mlua::Lua,

@@ -10,7 +10,7 @@ use {
         },
         meta::{Meta, NamedRegion, RegionKey},
     },
-    egui::{self, Ui},
+    egui::Ui,
     egui_extras::{Column, TableBuilder},
 };
 

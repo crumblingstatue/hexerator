@@ -1,7 +1,4 @@
-use {
-    egui_modal::Modal,
-    egui_sfml::{egui, egui::Color32},
-};
+use {egui_modal::Modal, egui_sfml::egui::Color32};
 
 #[derive(Default)]
 pub struct MessageDialog {

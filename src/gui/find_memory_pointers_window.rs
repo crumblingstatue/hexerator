@@ -2,7 +2,7 @@ use {
     super::{window_open::WindowOpen, Gui},
     crate::{app::App, event::EventQueue, shell::msg_fail},
     egui_extras::{Column, TableBuilder},
-    egui_sfml::{egui, sfml::graphics::Font},
+    egui_sfml::sfml::graphics::Font,
 };
 
 #[derive(Default)]

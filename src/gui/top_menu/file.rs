@@ -7,7 +7,7 @@ use {
         shell::msg_if_fail,
     },
     egui::Button,
-    egui_sfml::{egui, sfml::graphics::Font},
+    egui_sfml::sfml::graphics::Font,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &EventQueue) {

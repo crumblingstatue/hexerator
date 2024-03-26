@@ -50,7 +50,6 @@ use {
         view::{ViewportScalar, ViewportVec},
     },
     egui_sfml::{
-        egui,
         egui::{
             FontFamily::{self, Proportional},
             FontId,

@@ -1,5 +1,5 @@
 use {
-    egui::{self, Ui},
+    egui::Ui,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
 };
 

@@ -1,7 +1,7 @@
 use {
     super::{window_open::WindowOpen, Gui},
     crate::{app::App, args::Args, event::EventQueue, shell::msg_if_fail},
-    egui_sfml::{egui, sfml::graphics::Font},
+    egui_sfml::sfml::graphics::Font,
 };
 
 #[derive(Default)]

@@ -17,7 +17,7 @@ use {
         shell::{msg_fail, msg_if_fail},
     },
     anyhow::Context,
-    egui::{self, ScrollArea, Ui},
+    egui::{ScrollArea, Ui},
     egui_extras::{Column, TableBuilder},
     gamedebug_core::per,
     num_traits::AsPrimitive,

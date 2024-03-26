@@ -5,7 +5,7 @@ use {
         shell::{msg_fail, msg_if_fail},
     },
     egui_extras::{Column, TableBuilder},
-    egui_sfml::{egui, sfml::graphics::Font},
+    egui_sfml::sfml::graphics::Font,
     sysinfo::Signal,
 };
 

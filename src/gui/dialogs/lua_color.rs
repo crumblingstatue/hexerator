@@ -4,7 +4,6 @@ use {
         gui::{message_dialog::MessageDialog, Dialog, FileOps},
         value_color::ColorMethod,
     },
-    egui,
     egui_sfml::sfml::graphics::Font,
     mlua::{Function, Lua},
 };

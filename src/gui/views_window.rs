@@ -6,10 +6,7 @@ use {
         view::{HexData, TextData, TextKind, ViewKind},
     },
     egui_extras::{Column, TableBuilder},
-    egui_sfml::{
-        egui::{self, emath::Numeric},
-        sfml::graphics::Font,
-    },
+    egui_sfml::{egui::emath::Numeric, sfml::graphics::Font},
     slotmap::Key,
     std::{hash::Hash, ops::RangeInclusive},
 };

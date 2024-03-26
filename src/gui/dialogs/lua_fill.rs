@@ -4,7 +4,6 @@ use {
         gui::{message_dialog::MessageDialog, Dialog, FileOps},
         shell::msg_if_fail,
     },
-    egui,
     egui_code_editor::{CodeEditor, Syntax},
     egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,

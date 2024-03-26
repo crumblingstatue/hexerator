@@ -18,7 +18,7 @@ use {
         parse_radix::parse_guess_radix,
         shell::{msg_fail, msg_if_fail},
     },
-    egui::{self, Align, Ui},
+    egui::{Align, Ui},
     egui_extras::{Column, Size, StripBuilder, TableBuilder},
     itertools::Itertools,
     std::{error::Error, str::FromStr},

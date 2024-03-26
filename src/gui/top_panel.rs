@@ -7,7 +7,7 @@ use {
     },
     anyhow::Context,
     egui_sfml::{
-        egui::{self, ComboBox, Layout, Ui},
+        egui::{ComboBox, Layout, Ui},
         sfml::graphics::Font,
     },
 };

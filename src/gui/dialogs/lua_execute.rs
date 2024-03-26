@@ -8,7 +8,6 @@ use {
         shell::msg_if_fail,
         slice_ext::SliceExt,
     },
-    egui,
     egui_code_editor::{CodeEditor, Syntax},
     egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
