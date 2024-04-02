@@ -152,18 +152,20 @@ pub fn do_egui(
     rwin: &mut RenderWindow,
     events: &mut EventQueue,
 ) -> bool {
-    let result = sf_egui.do_frame(|ctx| {
-        let mut open = IMMEDIATE.enabled() || PERSISTENT.enabled();
-        let was_open = open;
-        Window::new("Debug")
-            .open(&mut open)
-            .show(ctx, debug_window::ui);
-        if was_open && !open {
-            IMMEDIATE.toggle();
-            PERSISTENT.toggle();
-        }
-        gui.msg_dialog.show(ctx, &mut app.clipboard);
-        macro_rules! windows {
+    sf_egui.begin_frame();
+    let ctx = sf_egui.context();
+
+    let mut open = IMMEDIATE.enabled() || PERSISTENT.enabled();
+    let was_open = open;
+    Window::new("Debug")
+        .open(&mut open)
+        .show(ctx, debug_window::ui);
+    if was_open && !open {
+        IMMEDIATE.toggle();
+        PERSISTENT.toggle();
+    }
+    gui.msg_dialog.show(ctx, &mut app.clipboard);
+    macro_rules! windows {
             ($($title:expr, $field:ident, $ty:ty: $($arg:ident)*;)*) => {
                 $(
                     open = gui.$field.open.is();
@@ -174,88 +176,120 @@ pub fn do_egui(
                 )*
             };
         }
-        windows! {
-            "Find",                    find_dialog,                 FindDialog: gui app;
-            "Regions",                 regions_window,              RegionsWindow: gui app;
-            "Bookmarks",               bookmarks_window,            BookmarksWindow: gui app;
-            "Layouts",                 layouts_window,              LayoutsWindow: gui app;
-            "Views",                   views_window,                ViewsWindow: gui app font;
-            "Variables",               vars_window,                 VarsWindow: gui app;
-            "Perspectives",            perspectives_window,         PerspectivesWindow: gui app;
-            "File Diff results",       file_diff_result_window,     FileDiffResultWindow: gui app font events;
-            "Diff against clean meta", meta_diff_window,            MetaDiffWindow: app;
-            "Open process",            open_process_window,         OpenProcessWindow: gui app font events;
-            "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font events;
-            "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font events;
-            "External command",        external_command_window,     ExternalCommandWindow: gui app;
-            "Preferences",             preferences_window,          PreferencesWindow: gui app rwin;
-            "About Hexerator",         about_window,                AboutWindow: gui app;
-        }
-        // Context menu
-        if let Some(menu) = &gui.context_menu {
-            let mut close = false;
-            egui::Area::new("rootless_ctx_menu")
-                .fixed_pos(menu.pos)
-                .show(ctx, |ui| {
-                    ui.set_max_width(180.0);
-                    egui::Frame::menu(ui.style())
-                        .inner_margin(2.0)
-                        .show(ui, |ui| {
-                            if let Some(sel) = app.hex_ui.selection() {
-                                ui.separator();
-                                if crate::gui::selection_menu::selection_menu("Selection... ⏷", ui, app, &mut gui.dialogs, &mut gui.msg_dialog, &mut gui.regions_window, sel, &mut gui.fileops) {
+    windows! {
+        "Find",                    find_dialog,                 FindDialog: gui app;
+        "Regions",                 regions_window,              RegionsWindow: gui app;
+        "Bookmarks",               bookmarks_window,            BookmarksWindow: gui app;
+        "Layouts",                 layouts_window,              LayoutsWindow: gui app;
+        "Views",                   views_window,                ViewsWindow: gui app font;
+        "Variables",               vars_window,                 VarsWindow: gui app;
+        "Perspectives",            perspectives_window,         PerspectivesWindow: gui app;
+        "File Diff results",       file_diff_result_window,     FileDiffResultWindow: gui app font events;
+        "Diff against clean meta", meta_diff_window,            MetaDiffWindow: app;
+        "Open process",            open_process_window,         OpenProcessWindow: gui app font events;
+        "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font events;
+        "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font events;
+        "External command",        external_command_window,     ExternalCommandWindow: gui app;
+        "Preferences",             preferences_window,          PreferencesWindow: gui app rwin;
+        "About Hexerator",         about_window,                AboutWindow: gui app;
+    }
+    // Context menu
+    if let Some(menu) = &gui.context_menu {
+        let mut close = false;
+        egui::Area::new("rootless_ctx_menu".into())
+            .fixed_pos(menu.pos)
+            .show(ctx, |ui| {
+                ui.set_max_width(180.0);
+                egui::Frame::menu(ui.style())
+                    .inner_margin(2.0)
+                    .show(ui, |ui| {
+                        if let Some(sel) = app.hex_ui.selection() {
+                            ui.separator();
+                            if crate::gui::selection_menu::selection_menu(
+                                "Selection... ⏷",
+                                ui,
+                                app,
+                                &mut gui.dialogs,
+                                &mut gui.msg_dialog,
+                                &mut gui.regions_window,
+                                sel,
+                                &mut gui.fileops,
+                            ) {
+                                close = true;
+                            }
+                        }
+                        if let Some(view) = menu.data.view {
+                            ui.separator();
+                            if ui.button("Region properties...").clicked() {
+                                gui.regions_window.selected_key =
+                                    Some(app.region_key_for_view(view));
+                                gui.regions_window.open.set(true);
+                                close = true;
+                            }
+                            if ui.button("View properties...").clicked() {
+                                gui.views_window.selected = view;
+                                gui.views_window.open.set(true);
+                                close = true;
+                            }
+                            ui.menu_button("Change this view to", |ui| {
+                                let Some(layout) = app
+                                    .meta_state
+                                    .meta
+                                    .layouts
+                                    .get_mut(app.hex_ui.current_layout)
+                                else {
+                                    return;
+                                };
+                                for (k, v) in app
+                                    .meta_state
+                                    .meta
+                                    .views
+                                    .iter()
+                                    .filter(|(k, _)| !layout.contains_view(*k))
+                                {
+                                    if ui.button(&v.name).clicked() {
+                                        layout.change_view_type(view, k);
+                                        ui.close_menu();
+                                        close = true;
+                                        return;
+                                    }
+                                }
+                            });
+                            if ui.button("Remove from layout").clicked() {
+                                if let Some(layout) = app
+                                    .meta_state
+                                    .meta
+                                    .layouts
+                                    .get_mut(app.hex_ui.current_layout)
+                                {
+                                    layout.remove_view(view);
+                                    if app.hex_ui.focused_view == Some(view) {
+                                        let first_view =
+                                            layout.view_grid.first().and_then(|row| row.first());
+                                        app.hex_ui.focused_view = first_view.cloned();
+                                    }
                                     close = true;
                                 }
                             }
-                            if let Some(view) = menu.data.view {
-                                ui.separator();
-                                if ui.button("Region properties...").clicked() {
-                                    gui.regions_window.selected_key = Some(app.region_key_for_view(view));
-                                    gui.regions_window.open.set(true);
-                                    close = true;
-                                }
-                                if ui.button("View properties...").clicked() {
-                                    gui.views_window.selected = view;
-                                    gui.views_window.open.set(true);
-                                    close = true;
-                                }
-                                ui.menu_button("Change this view to", |ui| {
-                                    let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) else  { return };
-                                    for (k, v) in app.meta_state.meta.views.iter().filter(|(k, _)| !layout.contains_view(*k)) {
-                                        if ui.button(&v.name).clicked() {
-                                            layout.change_view_type(view, k);
-                                            ui.close_menu();
-                                            close = true;
-                                            return;
-                                        }
-                                    }
-                                });
-                                if ui.button("Remove from layout").clicked() {
-                                    if let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) {
-                                        layout.remove_view(view);
-                                        if app.hex_ui.focused_view == Some(view) {
-                                            let first_view = layout.view_grid.first().and_then(|row| row.first());
-                                            app.hex_ui.focused_view = first_view.cloned();
-                                        }
+                        }
+                        if let Some(byte_off) = menu.data.byte_off {
+                            ui.separator();
+                            match app
+                                .meta_state
+                                .meta
+                                .bookmarks
+                                .iter()
+                                .position(|bm| bm.offset == byte_off)
+                            {
+                                Some(pos) => {
+                                    if ui.button("Open bookmark").clicked() {
+                                        gui.bookmarks_window.open.set(true);
+                                        gui.bookmarks_window.selected = Some(pos);
                                         close = true;
                                     }
                                 }
-                            }
-                            if let Some(byte_off) = menu.data.byte_off {
-                                ui.separator();
-                                match app.meta_state.meta.bookmarks.iter().position(|bm| bm.offset == byte_off) {
-                                    Some(pos) => {
-                                        if ui.button("Open bookmark").clicked() {
-                                            gui.bookmarks_window.open.set(true);
-                                            gui.bookmarks_window.selected = Some(pos);
-                                            close = true;
-                                        }
-                                    },
-                                    None => {
-                                        if ui
-                                        .button("Add bookmark")
-                                        .clicked()
-                                    {
+                                None => {
+                                    if ui.button("Add bookmark").clicked() {
                                         let bms = &mut app.meta_state.meta.bookmarks;
                                         let idx = bms.len();
                                         bms.push(Bookmark {
@@ -268,75 +302,91 @@ pub fn do_egui(
                                         gui.bookmarks_window.selected = Some(idx);
                                         close = true;
                                     }
-                                    },
                                 }
                             }
-                            ui.separator();
-                            if ui.button("Layout properties...").clicked() {
-                                gui.layouts_window.open.toggle();
-                                close = true;
-                            }
-                            ui.menu_button("Layouts ->", |ui| {
-                                for (key, layout) in app.meta_state.meta.layouts.iter() {
-                                    if ui.button(&layout.name).clicked() {
-                                        App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, key);
-                                        ui.close_menu();
-                                        close = true;
-                                    }
+                        }
+                        ui.separator();
+                        if ui.button("Layout properties...").clicked() {
+                            gui.layouts_window.open.toggle();
+                            close = true;
+                        }
+                        ui.menu_button("Layouts ->", |ui| {
+                            for (key, layout) in app.meta_state.meta.layouts.iter() {
+                                if ui.button(&layout.name).clicked() {
+                                    App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, key);
+                                    ui.close_menu();
+                                    close = true;
                                 }
-                            });
+                            }
                         });
-                });
-            if close {
-                gui.context_menu = None;
-            }
-        }
-        // Panels
-        let top_re =
-            TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, gui, app, font, events));
-        let bot_re = TopBottomPanel::bottom("bottom_panel")
-            .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos, &mut gui.msg_dialog));
-        let right_re = egui::SidePanel::right("right_panel")
-            .show(ctx, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
-            .response;
-        let padding = 2;
-        app.hex_ui.hex_iface_rect.x = padding;
-        #[expect(
-            clippy::cast_possible_truncation,
-            reason = "Window size can't exceed i16"
-        )]
-        {
-            app.hex_ui.hex_iface_rect.y = top_re.response.rect.bottom() as ViewportScalar + padding;
-        }
-        #[expect(
-            clippy::cast_possible_truncation,
-            reason = "Window size can't exceed i16"
-        )]
-        {
-            app.hex_ui.hex_iface_rect.w = right_re.rect.left() as ViewportScalar - padding * 2;
-        }
-        #[expect(
-            clippy::cast_possible_truncation,
-            reason = "Window size can't exceed i16"
-        )]
-        {
-            app.hex_ui.hex_iface_rect.h = (bot_re.response.rect.top() as ViewportScalar
-                - app.hex_ui.hex_iface_rect.y)
-                - padding * 2;
-        }
-        let mut dialogs = std::mem::take(&mut gui.dialogs);
-        dialogs.retain(|_k, dialog| {
-            let mut retain = true;
-            Window::new(dialog.title()).show(ctx, |ui| {
-                retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua, font, events, &mut gui.fileops);
+                    });
             });
-            retain
-        });
-        gui.dialogs = dialogs;
-        // File dialog
-        gui.fileops.update(ctx, app, &mut gui.msg_dialog, &mut gui.advanced_open_window, &mut gui.file_diff_result_window, font, events);
+        if close {
+            gui.context_menu = None;
+        }
+    }
+    // Panels
+    let top_re =
+        TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, gui, app, font, events));
+    let bot_re = TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
+        bottom_panel::ui(ui, app, mouse_pos, &mut gui.msg_dialog)
     });
-    if let Err(e) = result {
+    let right_re = egui::SidePanel::right("right_panel")
+        .show(ctx, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
+        .response;
+    let padding = 2;
+    app.hex_ui.hex_iface_rect.x = padding;
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "Window size can't exceed i16"
+    )]
+    {
+        app.hex_ui.hex_iface_rect.y = top_re.response.rect.bottom() as ViewportScalar + padding;
+    }
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "Window size can't exceed i16"
+    )]
+    {
+        app.hex_ui.hex_iface_rect.w = right_re.rect.left() as ViewportScalar - padding * 2;
+    }
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "Window size can't exceed i16"
+    )]
+    {
+        app.hex_ui.hex_iface_rect.h = (bot_re.response.rect.top() as ViewportScalar
+            - app.hex_ui.hex_iface_rect.y)
+            - padding * 2;
+    }
+    let mut dialogs = std::mem::take(&mut gui.dialogs);
+    dialogs.retain(|_k, dialog| {
+        let mut retain = true;
+        Window::new(dialog.title()).show(ctx, |ui| {
+            retain = dialog.ui(
+                ui,
+                app,
+                &mut gui.msg_dialog,
+                lua,
+                font,
+                events,
+                &mut gui.fileops,
+            );
+        });
+        retain
+    });
+    gui.dialogs = dialogs;
+    // File dialog
+    gui.fileops.update(
+        ctx,
+        app,
+        &mut gui.msg_dialog,
+        &mut gui.advanced_open_window,
+        &mut gui.file_diff_result_window,
+        font,
+        events,
+    );
+    if let Err(e) = sf_egui.end_frame(rwin) {
         match e {
             egui_sfml::DoFrameError::TextureCreateError(TextureCreateError { width, height }) => {
                 rfd::MessageDialog::new()
