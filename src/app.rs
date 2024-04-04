@@ -55,7 +55,7 @@ pub struct App {
     pub args: Args,
     pub source: Option<Source>,
     pub just_reloaded: bool,
-    pub stream_read_recv: Option<Receiver<Vec<u8>>>,
+    stream_read_recv: Option<Receiver<Vec<u8>>>,
     pub cfg: Config,
     last_reload: Instant,
     pub preferences: Preferences,
