@@ -25,7 +25,10 @@
 )]
 #![windows_subsystem = "windows"]
 
-use gamedebug_core::{IMMEDIATE, PERSISTENT};
+use {
+    egui_file_dialog::DialogState,
+    gamedebug_core::{IMMEDIATE, PERSISTENT},
+};
 
 mod app;
 mod args;
@@ -373,10 +376,10 @@ fn handle_events(
     events: &EventQueue,
 ) {
     while let Some(event) = window.poll_event() {
-        app.input.update_from_event(&event);
         let egui_ctx = sf_egui.context();
         let wants_pointer = egui_ctx.wants_pointer_input();
-        let wants_kb = egui_ctx.wants_keyboard_input();
+        let wants_kb = egui_ctx.wants_keyboard_input()
+            || matches!(dbg!(gui.fileops.dialog.state()), DialogState::Open);
         let block_event_from_egui = (matches!(event, Event::KeyPressed { code: Key::Tab, .. })
             && !(wants_kb || wants_pointer));
         if !block_event_from_egui {
@@ -386,8 +389,10 @@ fn handle_events(
             if event == Event::Closed {
                 window.close();
             }
+            app.input.clear();
             continue;
         }
+        app.input.update_from_event(&event);
         match event {
             Event::Closed => window.close(),
             Event::KeyPressed {

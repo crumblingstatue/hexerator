@@ -20,8 +20,8 @@ use {
 
 #[derive(Default)]
 pub struct FileOps {
-    dialog: FileDialog,
-    op: Option<FileOp>,
+    pub dialog: FileDialog,
+    pub op: Option<FileOp>,
 }
 
 #[derive(Debug)]
