@@ -85,7 +85,6 @@ use {
     meta::{NamedView, PerspectiveMap, RegionMap},
     mlua::Lua,
     parking_lot::Mutex,
-    rfd::MessageLevel,
     serde::{Deserialize, Serialize},
     shell::msg_if_fail,
     slotmap::Key as _,
@@ -199,26 +198,46 @@ fn main() {
         };
         let bkpath = app::temp_metafile_backup_path();
         let bkpath = bkpath.display();
-        rfd::MessageDialog::new()
-            .set_title("Hexerator panic")
-            .set_description(format!(
+        do_fatal_error_report(
+            "Hexerator panic",
+            &format!(
                 "\
-                {msg}\n\n\
-                Location:\n\
-                {file}:{line}:{column}\n\n\
-                Meta Backup path:\n\
-                {bkpath}\n\n\
-                Terminating."
-            ))
-            .set_level(MessageLevel::Error)
-            .show();
+            {msg}\n\n\
+            Location:\n\
+            {file}:{line}:{column}\n\n\
+            Meta Backup path:\n\
+            {bkpath}"
+            ),
+        );
     }));
     if let Err(e) = try_main() {
-        rfd::MessageDialog::new()
-            .set_title("Fatal error")
-            .set_description(e.to_string())
-            .set_level(MessageLevel::Error)
-            .show();
+        do_fatal_error_report("Fatal error", &e.to_string());
+    }
+}
+
+fn do_fatal_error_report(title: &str, mut desc: &str) {
+    let mut rw = RenderWindow::new((640, 480), title, Style::CLOSE, &ContextSettings::default());
+    rw.set_vertical_sync_enabled(true);
+    let mut sf_egui = SfEgui::new(&rw);
+    while rw.is_open() {
+        while let Some(ev) = rw.poll_event() {
+            sf_egui.add_event(&ev);
+            if ev == Event::Closed {
+                rw.close()
+            }
+        }
+        rw.clear(Color::BLACK);
+        let _ = sf_egui.do_frame(&mut rw, |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                ui.heading(title);
+                ui.separator();
+                ui.add(egui::TextEdit::multiline(&mut desc).code_editor());
+                ui.separator();
+                ui.heading("Close this window to exit");
+            });
+        });
+        sf_egui.draw(&mut rw, None);
+        rw.display();
     }
 }
 
