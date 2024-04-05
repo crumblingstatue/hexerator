@@ -62,13 +62,22 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
             retain
         });
         ui.separator();
-        let mut cap = app.cfg.recent.capacity();
-        if ui
-            .add(egui::DragValue::new(&mut cap).prefix("list capacity: "))
-            .changed()
-        {
-            app.cfg.recent.set_capacity(cap);
-        }
+        ui.horizontal(|ui| {
+            let mut cap = app.cfg.recent.capacity();
+            if ui
+                .add(egui::DragValue::new(&mut cap).prefix("list capacity: "))
+                .changed()
+            {
+                app.cfg.recent.set_capacity(cap);
+            }
+            ui.separator();
+            if ui
+                .add_enabled(!app.cfg.recent.is_empty(), egui::Button::new("🗑 Clear all"))
+                .clicked()
+            {
+                app.cfg.recent.clear();
+            }
+        });
     });
     if let Some(args) = load {
         msg_if_fail(

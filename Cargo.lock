@@ -1736,7 +1736,7 @@ checksum = "42a9830a0e1b9fb145ebb365b8bc4ccd75f290f98c0247deafbbe2c75cefb544"
 [[package]]
 name = "recently_used_list"
 version = "0.1.0"
-source = "git+https://github.com/crumblingstatue/recently_used_list.git#59dc29f08f1b4572eb85fca057c4f45aa0674218"
+source = "git+https://github.com/crumblingstatue/recently_used_list.git#94c3e15150dc755a81973aa3354b8eebeaf961ba"
 dependencies = [
  "serde",
 ]
