@@ -544,9 +544,20 @@ fn handle_key_pressed(
         IMMEDIATE.toggle();
         PERSISTENT.toggle();
     }
-    if app.data.is_empty() || egui_wants_kb {
+    if egui_wants_kb {
         return;
     }
+    // Key bindings that should work without any file open
+    match code {
+        Key::O if key_mod.ctrl => {
+            gui.fileops.load_file(app.source_file());
+        }
+        _ => {}
+    }
+    if app.data.is_empty() {
+        return;
+    }
+    // Key bindings that should only work with a file open
     match code {
         Key::Up => match app.hex_ui.interact_mode {
             InteractMode::View => {
@@ -827,9 +838,6 @@ fn handle_key_pressed(
         },
         Key::R if key_mod.ctrl => {
             msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
-        }
-        Key::O if key_mod.ctrl => {
-            gui.fileops.load_file(app.source_file());
         }
         Key::P if key_mod.ctrl => {
             let mut load = None;
