@@ -10,20 +10,20 @@ default = ["backend-sfml"]
 
 [dependencies]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
-clap = { version = "4.5.1", features = ["derive"] }
-anyhow = "1.0.80"
+clap = { version = "4.5.4", features = ["derive"] }
+anyhow = "1.0.81"
 rand = "0.8.5"
 rmp-serde = "1.1.2"
 serde = { version = "1.0.197", features = ["derive"] }
 directories = "5.0.1"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
-memchr = "2.7.1"
+memchr = "2.7.2"
 glu-sys = "0.1.4"
-thiserror = "1.0.57"
+thiserror = "1.0.58"
 either = "1.10.0"
-tree_magic_mini = { version = "3.0.3", features = ["tree_magic_db"] }
-bytemuck = "1.14.3"
-egui_commonmark = "0.14.0"
+tree_magic_mini = { version = "3.1.4", features = ["tree_magic_db"] }
+bytemuck = "1.15.0"
+egui_commonmark = "0.15.0"
 slotmap = { version = "1.0.7", features = ["serde"] }
 egui-sfml = { git = "https://github.com/crumblingstatue/egui-sfml.git", optional = true }
 num-traits = "0.2.18"
@@ -31,17 +31,17 @@ serde-big-array = "0.5.1"
 egui = "0.27.2"
 egui_extras = { version = "0.27.2", default-features = false }
 itertools = "0.12.1"
-sysinfo = { version = "0.30.5", default-features = false }
+sysinfo = { version = "0.30.8", default-features = false }
 proc-maps = "0.3.2"
-open = "5.0.1"
+open = "5.1.2"
 egui-modal = { git = "https://github.com/n00kii/egui-modal.git" }
-arboard = { version = "3.3.1", default-features = false }
+arboard = { version = "3.3.2", default-features = false }
 paste = "1.0.14"
 iced-x86 = "1.21.0"
-strum = { version = "0.26.1", features = ["derive"] }
+strum = { version = "0.26.2", features = ["derive"] }
 parking_lot = "0.12.1"
 egui_code_editor = {git = "https://github.com/p4ymak/egui_code_editor.git"}
-mlua = { version = "0.9.5", features = ["luajit"] }
+mlua = { version = "0.9.7", features = ["luajit"] }
 egui-file-dialog = { git = "https://github.com/crumblingstatue/egui-file-dialog.git", branch = "hexerator" }
 
 [target."cfg(windows)".dependencies.windows-sys]
