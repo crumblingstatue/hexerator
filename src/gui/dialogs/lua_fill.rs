@@ -41,7 +41,7 @@ impl Dialog for LuaFillDialog {
 
         let ctrl_s = ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::S));
         if ctrl_s {
-            msg_if_fail(app.save(), "Failed to save", msg);
+            msg_if_fail(app.save(msg), "Failed to save", msg);
         }
         egui::ScrollArea::vertical()
             // 100.0 is an estimation of ui size below.

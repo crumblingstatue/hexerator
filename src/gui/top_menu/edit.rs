@@ -106,6 +106,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQu
                                 modal.close();
                             } else if ui.button("Shorten paste").clicked() {
                             }
+                            None
                         }));
                 }
             };

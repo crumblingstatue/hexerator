@@ -834,7 +834,11 @@ fn handle_key_pressed(
                         "This source cannot be written to.",
                     );
                 } else {
-                    msg_if_fail(app.save(), "Failed to save", &mut gui.msg_dialog);
+                    msg_if_fail(
+                        app.save(&mut gui.msg_dialog),
+                        "Failed to save",
+                        &mut gui.msg_dialog,
+                    );
                 }
             }
             None => gui

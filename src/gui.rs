@@ -1,5 +1,6 @@
 use {
     self::{command::GCommandQueue, file_ops::FileOps, windows::VarsWindow},
+    crate::app::command::perform_command,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
 };
 
@@ -164,7 +165,9 @@ pub fn do_egui(
         IMMEDIATE.toggle();
         PERSISTENT.toggle();
     }
-    gui.msg_dialog.show(ctx, &mut app.clipboard);
+    if let Some(cmd) = gui.msg_dialog.show(ctx, &mut app.clipboard) {
+        perform_command(app, cmd, &mut gui.msg_dialog);
+    }
     macro_rules! windows {
             ($($title:expr, $field:ident, $ty:ty: $($arg:ident)*;)*) => {
                 $(

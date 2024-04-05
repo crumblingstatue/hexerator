@@ -1,8 +1,7 @@
 use {
-    self::command::CommandQueue,
+    self::command::{Cmd, CommandQueue},
     crate::{gui::file_diff_result_window::FileDiffResultWindow, view::ViewportScalar},
     egui_commonmark::CommonMarkCache,
-    rfd::MessageDialogResult,
 };
 
 pub mod command;
@@ -131,7 +130,7 @@ impl App {
         self.just_reloaded = true;
         Ok(())
     }
-    pub fn save(&mut self) -> anyhow::Result<()> {
+    pub fn save(&mut self, msg: &mut MessageDialog) -> anyhow::Result<()> {
         let file = match &mut self.source {
             Some(src) => match &mut src.provider {
                 SourceProvider::File(file) => file,
@@ -161,23 +160,24 @@ impl App {
         };
         // If the file was truncated, we completely save over it
         if self.data.len() != self.orig_data_len {
-            if rfd::MessageDialog::new()
-                .set_title("File truncated/extended")
-                .set_description("Data is truncated/extended. Are you sure you want to save?")
-                .set_buttons(rfd::MessageButtons::OkCancelCustom(
-                    "Overwrite".into(),
-                    "Cancel".into(),
-                ))
-                .show()
-                == MessageDialogResult::Custom("Cancel".into())
-            {
-                bail!("Save of truncated/extended data cancelled");
-            }
-            file.set_len(self.data.len() as u64)?;
-            file.rewind()?;
-            file.write_all(&self.data)?;
-            self.edit_state.dirty_region = None;
-            self.orig_data_len = self.data.len();
+            msg.open(
+                Icon::Warn,
+                "File truncated/extended",
+                "Data is truncated/extended. Are you sure you want to save?",
+            );
+            msg.custom_button_row_ui(Box::new(|ui, modal| {
+                if ui
+                    .button(egui::RichText::new("Save & Truncate").color(egui::Color32::RED))
+                    .clicked()
+                {
+                    modal.close();
+                    return Some(Cmd::SaveTruncateFinish);
+                }
+                if ui.button("Cancel").clicked() {
+                    modal.close();
+                }
+                None
+            }));
             return Ok(());
         }
         let offset = self.args.src.hard_seek.unwrap_or(0);
@@ -208,6 +208,20 @@ impl App {
         if let Err(e) = self.save_temp_metafile_backup() {
             per!("Failed to save metafile backup: {}", e);
         }
+        Ok(())
+    }
+    pub fn save_truncated_file_finish(&mut self) -> anyhow::Result<()> {
+        let Some(source) = &mut self.source else {
+            bail!("There is no source");
+        };
+        let SourceProvider::File(file) = &mut source.provider else {
+            bail!("Source is not a file");
+        };
+        file.set_len(self.data.len() as u64)?;
+        file.rewind()?;
+        file.write_all(&self.data)?;
+        self.edit_state.dirty_region = None;
+        self.orig_data_len = self.data.len();
         Ok(())
     }
     pub fn save_temp_metafile_backup(&mut self) -> anyhow::Result<()> {
@@ -555,7 +569,7 @@ impl App {
             );
         }
         if self.preferences.auto_save && self.edit_state.dirty_region.is_some() {
-            if let Err(e) = self.save() {
+            if let Err(e) = self.save(msg) {
                 per!("Save fail: {}", e);
             }
         }
@@ -569,7 +583,7 @@ impl App {
             self.last_reload = Instant::now();
         }
         // Here we perform all queued up `Command`s.
-        self.flush_command_queue();
+        self.flush_command_queue(msg);
     }
     pub(crate) fn focused_view_select_all(&mut self) {
         if let Some(view) = self.hex_ui.focused_view {

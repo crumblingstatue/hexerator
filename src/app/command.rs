@@ -10,7 +10,9 @@
 use {
     super::App,
     crate::{
+        gui::message_dialog::MessageDialog,
         meta::{NamedView, PerspectiveKey, RegionKey},
+        shell::msg_if_fail,
         view::{HexData, View, ViewKind},
     },
     std::collections::VecDeque,
@@ -30,6 +32,8 @@ pub enum Cmd {
         perspective_key: PerspectiveKey,
         name: String,
     },
+    /// Finish saving a truncated file
+    SaveTruncateFinish,
 }
 
 /// Application command queue.
@@ -54,14 +58,16 @@ impl App {
     ///
     /// Automatically called every frame, but can be called manually if operations need to be
     /// performed sooner.
-    pub fn flush_command_queue(&mut self) {
+    pub fn flush_command_queue(&mut self, msg: &mut MessageDialog) {
         while let Some(cmd) = self.cmd.inner.pop_front() {
-            perform_command(self, cmd);
+            perform_command(self, cmd, msg);
         }
     }
 }
 
-fn perform_command(app: &mut App, cmd: Cmd) {
+/// Perform a command. Called by `App::flush_command_queue`, but can be called manually if you
+/// have a `Cmd` you would like you perform.
+pub fn perform_command(app: &mut App, cmd: Cmd, msg: &mut MessageDialog) {
     match cmd {
         Cmd::CreatePerspective { region_key, name } => {
             app.add_perspective_from_region(region_key, name)
@@ -91,6 +97,9 @@ fn perform_command(app: &mut App, cmd: Cmd) {
                 view: View::new(ViewKind::Hex(HexData::default()), perspective_key),
                 name,
             });
+        }
+        Cmd::SaveTruncateFinish => {
+            msg_if_fail(app.save_truncated_file_finish(), "Save error", msg);
         }
     }
 }

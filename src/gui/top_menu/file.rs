@@ -105,7 +105,11 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
         )
         .clicked()
     {
-        msg_if_fail(app.save(), "Failed to save", &mut gui.msg_dialog);
+        msg_if_fail(
+            app.save(&mut gui.msg_dialog),
+            "Failed to save",
+            &mut gui.msg_dialog,
+        );
         ui.close_menu();
     }
     if ui.button("Save as...").clicked() {
