@@ -58,10 +58,9 @@ use {
             TopBottomPanel, Window,
         },
         sfml::graphics::{Font, RenderWindow},
-        SfEgui, TextureCreateError,
+        SfEgui,
     },
     mlua::Lua,
-    rfd::MessageLevel,
     std::{
         any::TypeId,
         collections::{HashMap, HashSet},
@@ -152,7 +151,7 @@ pub fn do_egui(
     lua: &Lua,
     rwin: &mut RenderWindow,
     events: &mut EventQueue,
-) -> bool {
+) -> anyhow::Result<bool> {
     sf_egui.begin_frame();
     let ctx = sf_egui.context();
 
@@ -389,28 +388,8 @@ pub fn do_egui(
         font,
         events,
     );
-    if let Err(e) = sf_egui.end_frame(rwin) {
-        match e {
-            egui_sfml::DoFrameError::TextureCreateError(TextureCreateError { width, height }) => {
-                rfd::MessageDialog::new()
-                    .set_level(MessageLevel::Error)
-                    .set_description(format!(
-                        "Failed to create texture of {width}x{height}. Application has to close."
-                    ))
-                    .show();
-            }
-            _ => {
-                rfd::MessageDialog::new()
-                    .set_level(MessageLevel::Error)
-                    .set_description(
-                        "Unknown error happened while doing egui frame. Application has to close.",
-                    )
-                    .show();
-            }
-        }
-        return false;
-    }
-    true
+    sf_egui.end_frame(rwin)?;
+    Ok(true)
 }
 
 pub fn set_font_sizes_ctx(ctx: &egui::Context, style: &Style) {

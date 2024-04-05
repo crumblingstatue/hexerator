@@ -147,7 +147,7 @@ fn try_main() -> anyhow::Result<()> {
             &mut vertex_buffer,
             &lua,
             &mut event_queue,
-        ) {
+        )? {
             return Ok(());
         }
         // Save a metafile backup every so often
@@ -211,18 +211,18 @@ fn do_frame(
     vertex_buffer: &mut Vec<Vertex>,
     lua: &Lua,
     events: &mut EventQueue,
-) -> bool {
+) -> anyhow::Result<bool> {
     // Handle hexerator events
     if !crate::event::handle_events(events, app, window) {
-        return false;
+        return Ok(false);
     }
     // Handle window events
     handle_events(gui, app, window, sf_egui, font, events);
     update(app, sf_egui.context().wants_keyboard_input());
     app.update(&mut gui.msg_dialog);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
-    if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window, events) {
-        return false;
+    if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window, events)? {
+        return Ok(false);
     }
     // Here we flush GUI command queue every frame
     gui.flush_command_queue();
@@ -256,7 +256,7 @@ fn do_frame(
     // Should only be true on the frame right after reloading
     app.just_reloaded = false;
     gamedebug_core::inc_frame();
-    true
+    Ok(true)
 }
 
 /// Try to convert mouse position to ViewportVec.
