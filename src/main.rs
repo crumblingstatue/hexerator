@@ -379,7 +379,7 @@ fn handle_events(
         let egui_ctx = sf_egui.context();
         let wants_pointer = egui_ctx.wants_pointer_input();
         let wants_kb = egui_ctx.wants_keyboard_input()
-            || matches!(dbg!(gui.fileops.dialog.state()), DialogState::Open);
+            || matches!(gui.fileops.dialog.state(), DialogState::Open);
         let block_event_from_egui = (matches!(event, Event::KeyPressed { code: Key::Tab, .. })
             && !(wants_kb || wants_pointer));
         if !block_event_from_egui {

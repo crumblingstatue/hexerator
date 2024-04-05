@@ -56,7 +56,6 @@ impl FileOps {
         if let Some(path) = self.dialog.take_selected()
             && let Some(op) = self.op.take()
         {
-            dbg!(&path, &op);
             match op {
                 FileOp::LoadMetaFile => {
                     msg_if_fail(
