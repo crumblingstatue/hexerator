@@ -3,7 +3,6 @@ use {
     anyhow::Context,
     directories::ProjectDirs,
     recently_used_list::RecentlyUsedList,
-    rfd::MessageDialogResult,
     serde::{Deserialize, Serialize},
     std::{collections::HashMap, path::PathBuf},
 };
@@ -69,8 +68,14 @@ impl Default for Config {
     }
 }
 
+pub struct LoadedConfig {
+    pub config: Config,
+    /// If `Some`, saving this config file will overwrite an old one that couldn't be loaded
+    pub old_config_err: Option<anyhow::Error>,
+}
+
 impl Config {
-    pub fn load_or_default() -> anyhow::Result<Self> {
+    pub fn load_or_default() -> anyhow::Result<LoadedConfig> {
         let proj_dirs = project_dirs().context("Failed to get project dirs")?;
         let cfg_dir = proj_dirs.config_dir();
         if !cfg_dir.exists() {
@@ -78,21 +83,24 @@ impl Config {
         }
         let cfg_file = cfg_dir.join(FILENAME);
         if !cfg_file.exists() {
-            Ok(Config::default())
+            Ok(LoadedConfig {
+                config: Config::default(),
+                old_config_err: None,
+            })
         } else {
             let result: anyhow::Result<Self> = try {
                 let cfg_bytes = std::fs::read(cfg_file)?;
                 rmp_serde::from_slice(&cfg_bytes)?
             };
             match result {
-                Ok(cfg) => Ok(cfg),
-                Err(e) => if rfd::MessageDialog::new().set_buttons(
-                    rfd::MessageButtons::OkCancelCustom("Overwrite".into(), "Quit".into()),
-                ).set_description(format!("Failed to load config: {e:?}\n Create a new default config and overwrite, or quit?")).show() == MessageDialogResult::Custom("Overwrite".into()) {
-                    Ok(Config::default())
-                } else {
-                    anyhow::bail!("Couldn't create config");
-                },
+                Ok(cfg) => Ok(LoadedConfig {
+                    config: cfg,
+                    old_config_err: None,
+                }),
+                Err(e) => Ok(LoadedConfig {
+                    config: Config::default(),
+                    old_config_err: Some(e),
+                }),
             }
         }
     }

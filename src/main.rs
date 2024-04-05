@@ -26,6 +26,7 @@
 #![windows_subsystem = "windows"]
 
 use {
+    config::LoadedConfig,
     egui_file_dialog::DialogState,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
 };
@@ -119,7 +120,10 @@ fn try_main() -> anyhow::Result<()> {
         Style::RESIZE | Style::CLOSE,
         &ContextSettings::default(),
     );
-    let cfg = Config::load_or_default()?;
+    let LoadedConfig {
+        config: cfg,
+        old_config_err,
+    } = Config::load_or_default()?;
     window.set_vertical_sync_enabled(cfg.vsync);
     window.set_framerate_limit(cfg.fps_limit);
     window.set_position(Vector2::new(0, 0));
@@ -130,6 +134,23 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
+    if let Some(e) = old_config_err {
+        gui.msg_dialog.open(
+            Icon::Error,
+            "Failed to load old config",
+            format!("Old config failed to load with error: {e}.\n\
+                     If you don't want to overwrite the old config, you should probably not continue."),
+        );
+        gui.msg_dialog.custom_button_row_ui(Box::new(|ui, modal| {
+            if ui.button("⚠️ Continue").clicked() {
+                modal.close();
+            }
+            if ui.button("Abort").clicked() {
+                std::process::abort();
+            }
+            None
+        }));
+    }
     let mut event_queue = Arc::new(Mutex::new(VecDeque::new()));
     let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog, &event_queue)?;
     let lua = Lua::default();
