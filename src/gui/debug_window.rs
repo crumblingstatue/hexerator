@@ -4,6 +4,12 @@ use {
 };
 
 pub fn ui(ui: &mut Ui) {
+    ui.horizontal(|ui| {
+        if ui.button("Clear persistent").clicked() {
+            PERSISTENT.clear();
+        }
+    });
+    ui.separator();
     egui::ScrollArea::vertical()
         .max_height(500.)
         .auto_shrink([false, true])
