@@ -108,6 +108,10 @@ fn print_version_info() {
 
 fn try_main() -> anyhow::Result<()> {
     let args = Args::parse();
+    if args.debug {
+        IMMEDIATE.set_enabled(true);
+        PERSISTENT.set_enabled(true);
+    }
     if args.version {
         print_version_info();
         return Ok(());

@@ -20,6 +20,9 @@ pub struct Args {
     /// Show version information and exit
     #[arg(long)]
     pub version: bool,
+    /// Start with debug logging enabled
+    #[arg(long)]
+    pub debug: bool,
 }
 
 /// Arguments for opening a source (file/stream/process/etc)
