@@ -51,7 +51,7 @@ impl Dialog for JumpDialog {
             "Accepts both decimal and hexadecimal.\nPrefix with `0x` to force hex.\n\
              Prefix with `+` to add to current offset, `-` to subtract",
         );
-        if let Some(hard_seek) = app.args.src.hard_seek {
+        if let Some(hard_seek) = app.src_args.hard_seek {
             ui.checkbox(&mut self.absolute, "Absolute")
                 .on_hover_text("Subtract the offset from hard-seek");
             let label = format!("hard-seek is at {hard_seek} (0x{hard_seek:X})");
@@ -62,7 +62,7 @@ impl Dialog for JumpDialog {
                 Ok((offset, relativity)) => {
                     let offset = match relativity {
                         Relativity::Absolute => {
-                            if let Some(hard_seek) = app.args.src.hard_seek
+                            if let Some(hard_seek) = app.src_args.hard_seek
                                 && self.absolute
                             {
                                 offset.saturating_sub(hard_seek)

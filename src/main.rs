@@ -893,17 +893,7 @@ fn handle_key_pressed(
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(
-                        Args {
-                            src: args,
-                            recent: false,
-                            meta: None,
-                            version: false,
-                        },
-                        font,
-                        &mut gui.msg_dialog,
-                        events,
-                    ),
+                    app.load_file_args(args, None, font, &mut gui.msg_dialog, events),
                     "Failed to load file",
                     &mut gui.msg_dialog,
                 );

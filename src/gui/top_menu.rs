@@ -38,7 +38,7 @@ pub fn top_menu(
                 Some(src) => {
                     match src.provider {
                         SourceProvider::File(_) => {
-                            match &app.args.src.file {
+                            match &app.src_args.file {
                                 Some(file) => {
                                     let s = file.display().to_string();
                                     let ctx_menu = |ui: &mut egui::Ui| {

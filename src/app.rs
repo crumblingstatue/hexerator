@@ -51,7 +51,7 @@ pub struct App {
     pub orig_data_len: usize,
     pub edit_state: EditState,
     pub input: Input,
-    pub args: Args,
+    pub src_args: SourceArgs,
     pub source: Option<Source>,
     pub just_reloaded: bool,
     stream_read_recv: Option<Receiver<Vec<u8>>>,
@@ -84,7 +84,7 @@ impl App {
             data: Vec::new(),
             edit_state: EditState::default(),
             input: Input::default(),
-            args: Args::default(),
+            src_args: SourceArgs::default(),
             source: None,
             just_reloaded: true,
             stream_read_recv: None,
@@ -100,7 +100,7 @@ impl App {
         // Set a clean meta, for an empty document
         this.set_new_clean_meta(font);
         msg_if_fail(
-            this.load_file_args(args, font, msg, events),
+            this.load_file_args(args.src, args.meta, font, msg, events),
             "Failed to load file",
             msg,
         );
@@ -110,7 +110,7 @@ impl App {
         match &mut self.source {
             Some(src) => match &mut src.provider {
                 SourceProvider::File(file) => {
-                    self.data = read_contents(&self.args.src, file)?;
+                    self.data = read_contents(&self.src_args, file)?;
                     self.edit_state.dirty_region = None;
                 }
                 SourceProvider::Stdin(_) => {
@@ -180,7 +180,7 @@ impl App {
             }));
             return Ok(());
         }
-        let offset = self.args.src.hard_seek.unwrap_or(0);
+        let offset = self.src_args.hard_seek.unwrap_or(0);
         file.seek(SeekFrom::Start(offset as u64))?;
         let data_to_write = match self.edit_state.dirty_region {
             Some(region) => {
@@ -249,7 +249,7 @@ impl App {
     }
 
     pub(crate) fn backup_path(&self) -> Option<PathBuf> {
-        self.args.src.file.as_ref().map(|file| {
+        self.src_args.file.as_ref().map(|file| {
             let mut os_string = OsString::from(file);
             os_string.push(".hexerator_bak");
             os_string.into()
@@ -302,19 +302,15 @@ impl App {
         events: &EventQueue,
     ) -> Result<(), anyhow::Error> {
         self.load_file_args(
-            Args {
-                src: SourceArgs {
-                    file: Some(path),
-                    jump: None,
-                    hard_seek: None,
-                    take: None,
-                    read_only,
-                    stream: false,
-                },
-                recent: false,
-                meta: None,
-                version: false,
+            SourceArgs {
+                file: Some(path),
+                jump: None,
+                hard_seek: None,
+                take: None,
+                read_only,
+                stream: false,
             },
+            None,
             font,
             msg,
             events,
@@ -356,28 +352,28 @@ impl App {
     pub fn close_file(&mut self) {
         // We potentially had large data, free it instead of clearing the Vec
         self.data = Vec::new();
-        self.args.src.file = None;
+        self.src_args.file = None;
         self.source = None;
     }
 
     pub(crate) fn restore_backup(&mut self) -> Result<(), anyhow::Error> {
         std::fs::copy(
             self.backup_path().context("Failed to get backup path")?,
-            self.args.src.file.as_ref().context("No file open")?,
+            self.src_args.file.as_ref().context("No file open")?,
         )?;
         self.reload()
     }
 
     pub(crate) fn create_backup(&self) -> Result<(), anyhow::Error> {
         std::fs::copy(
-            self.args.src.file.as_ref().context("No file open")?,
+            self.src_args.file.as_ref().context("No file open")?,
             self.backup_path().context("Failed to get backup path")?,
         )?;
         Ok(())
     }
 
     pub(crate) fn set_cursor_init(&mut self) {
-        self.edit_state.cursor = self.args.src.jump.unwrap_or(0);
+        self.edit_state.cursor = self.src_args.jump.unwrap_or(0);
         self.center_view_on_offset(self.edit_state.cursor);
         self.hex_ui.flash_cursor();
     }
@@ -509,13 +505,14 @@ impl App {
 
     pub(crate) fn load_file_args(
         &mut self,
-        mut args: Args,
+        mut src_args: SourceArgs,
+        meta_path: Option<PathBuf>,
         font: &Font,
         msg: &mut MessageDialog,
         events: &EventQueue,
     ) -> anyhow::Result<()> {
         if load_file_from_src_args(
-            &mut args.src,
+            &mut src_args,
             &mut self.cfg,
             &mut self.source,
             &mut self.data,
@@ -526,9 +523,9 @@ impl App {
             self.orig_data_len = self.data.len();
             // Set up meta
             if !self.preferences.keep_meta {
-                if let Some(meta_path) = &args.meta {
+                if let Some(meta_path) = meta_path {
                     self.consume_meta_from_file(meta_path.clone())?;
-                } else if let Some(src_path) = per_dbg!(&args.src.file)
+                } else if let Some(src_path) = per_dbg!(&src_args.file)
                     && let Some(meta_path) = per_dbg!(self.cfg.meta_assocs.get(src_path))
                 {
                     // We only load if the new meta path is not the same as the old.
@@ -547,8 +544,8 @@ impl App {
                     self.set_new_clean_meta(font);
                 }
             }
-            self.args = args;
-            if let Some(offset) = self.args.src.jump {
+            self.src_args = src_args;
+            if let Some(offset) = self.src_args.jump {
                 self.center_view_on_offset(offset);
                 self.edit_state.cursor = offset;
                 self.hex_ui.flash_cursor();
@@ -597,7 +594,7 @@ impl App {
     }
 
     pub(crate) fn source_file(&self) -> Option<&Path> {
-        self.args.src.file.as_deref()
+        self.src_args.file.as_deref()
     }
 
     pub(crate) fn diff_with_file(
@@ -607,7 +604,7 @@ impl App {
     ) -> anyhow::Result<()> {
         // FIXME: Skipping ignores changes to bookmarked values that happen later than the first
         // byte.
-        let file_data = read_source_to_buf(&path, &self.args.src)?;
+        let file_data = read_source_to_buf(&path, &self.src_args)?;
         let mut offs = Vec::new();
         let mut skip = 0;
         for ((offset, &my_byte), &file_byte) in self.data.iter().enumerate().zip(file_data.iter()) {
@@ -760,19 +757,15 @@ fn load_proc_memory_linux(
     events: &EventQueue,
 ) -> anyhow::Result<()> {
     app.load_file_args(
-        Args {
-            src: SourceArgs {
-                file: Some(Path::new("/proc/").join(pid.to_string()).join("mem")),
-                jump: None,
-                hard_seek: Some(start),
-                take: Some(size),
-                read_only: !is_write,
-                stream: false,
-            },
-            recent: false,
-            meta: None,
-            version: false,
+        SourceArgs {
+            file: Some(Path::new("/proc/").join(pid.to_string()).join("mem")),
+            jump: None,
+            hard_seek: Some(start),
+            take: Some(size),
+            read_only: !is_write,
+            stream: false,
         },
+        None,
         font,
         msg,
         events,

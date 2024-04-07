@@ -58,7 +58,7 @@ impl FileDiffResultWindow {
                 .clicked()
             {
                 let prev_pref = app.preferences.keep_meta;
-                let prev_path = app.args.src.file.clone();
+                let prev_path = app.src_args.file.clone();
                 app.preferences.keep_meta = true;
                 let result = app.load_file(
                     gui.file_diff_result_window.path.clone(),
@@ -95,7 +95,7 @@ impl FileDiffResultWindow {
             {
                 let result: anyhow::Result<()> = try {
                     let file_data =
-                        read_source_to_buf(&gui.file_diff_result_window.path, &app.args.src)?;
+                        read_source_to_buf(&gui.file_diff_result_window.path, &app.src_args)?;
                     gui.file_diff_result_window.offsets.retain(|&offs| {
                         gui.file_diff_result_window.file_data[offs] == file_data[offs]
                     });
@@ -109,7 +109,7 @@ impl FileDiffResultWindow {
             {
                 let result: anyhow::Result<()> = try {
                     let file_data =
-                        read_source_to_buf(&gui.file_diff_result_window.path, &app.args.src)?;
+                        read_source_to_buf(&gui.file_diff_result_window.path, &app.src_args)?;
                     gui.file_diff_result_window.offsets.retain(|&offs| {
                         gui.file_diff_result_window.file_data[offs] != file_data[offs]
                     });
@@ -143,7 +143,7 @@ impl FileDiffResultWindow {
                 gui.file_diff_result_window.last_refresh = Instant::now();
                 let result: anyhow::Result<()> = try {
                     gui.file_diff_result_window.file_data =
-                        read_source_to_buf(&gui.file_diff_result_window.path, &app.args.src)?;
+                        read_source_to_buf(&gui.file_diff_result_window.path, &app.src_args)?;
                 };
                 msg_if_fail(result, "Refresh failed", &mut gui.msg_dialog);
             }

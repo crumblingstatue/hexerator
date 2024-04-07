@@ -65,10 +65,10 @@ impl FileOps {
                     );
                 }
                 FileOp::AdvancedOpenPickFile => {
-                    advanced_open_window.args.src.file = Some(path);
+                    advanced_open_window.src_args.file = Some(path);
                 }
                 FileOp::AdvancedOpenPickMetafile => {
-                    advanced_open_window.args.meta = Some(path);
+                    advanced_open_window.path_to_meta = Some(path);
                 }
                 FileOp::LoadFile => {
                     let write = OpenOptions::new().write(true).open(&path).is_ok();
@@ -150,9 +150,9 @@ impl FileOps {
                             },
                             state: SourceState::default(),
                         });
-                        app.args.src.file = Some(path);
+                        app.src_args.file = Some(path);
                         app.cfg.recent.use_(SourceArgs {
-                            file: app.args.src.file.clone(),
+                            file: app.src_args.file.clone(),
                             jump: None,
                             hard_seek: None,
                             take: None,

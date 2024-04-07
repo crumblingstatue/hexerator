@@ -1,7 +1,6 @@
 use {
     crate::{
         app::{set_clipboard_string, App},
-        args::Args,
         event::{Event, EventQueue},
         gui::{dialogs::AutoSaveReloadDialog, Gui},
         shell::msg_if_fail,
@@ -81,17 +80,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
     });
     if let Some(args) = load {
         msg_if_fail(
-            app.load_file_args(
-                Args {
-                    src: args,
-                    recent: false,
-                    meta: None,
-                    version: false,
-                },
-                font,
-                &mut gui.msg_dialog,
-                events,
-            ),
+            app.load_file_args(args, None, font, &mut gui.msg_dialog, events),
             "Failed to load file",
             &mut gui.msg_dialog,
         );

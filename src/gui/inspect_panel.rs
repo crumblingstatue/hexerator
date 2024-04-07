@@ -454,7 +454,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                 match gui.inspect_panel.seek_relativity {
                     SeekRelativity::Absolute => {}
                     SeekRelativity::HardSeek => {
-                        add = app.args.src.hard_seek.unwrap_or(0);
+                        add = app.src_args.hard_seek.unwrap_or(0);
                     }
                     SeekRelativity::User => {
                         add = gui.inspect_panel.seek_user_offs;
@@ -616,7 +616,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                     }
                     SeekRelativity::HardSeek => {
                         app.edit_state
-                            .set_cursor(offset - app.args.src.hard_seek.unwrap_or(0));
+                            .set_cursor(offset - app.src_args.hard_seek.unwrap_or(0));
                     }
                     SeekRelativity::User => app
                         .edit_state
@@ -641,7 +641,7 @@ fn edit_offset(app: &mut App, gui: &mut crate::gui::Gui, ui: &mut Ui) -> usize {
     match gui.inspect_panel.seek_relativity {
         SeekRelativity::Absolute => {}
         SeekRelativity::HardSeek => {
-            off += app.args.src.hard_seek.unwrap_or(0);
+            off += app.src_args.hard_seek.unwrap_or(0);
         }
         SeekRelativity::User => {
             off += gui.inspect_panel.seek_user_offs;

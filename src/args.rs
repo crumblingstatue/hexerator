@@ -5,6 +5,7 @@ use {
     std::path::PathBuf,
 };
 
+/// Arguments given to hexerator on startup
 #[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Default)]
 pub struct Args {
     /// Arguments relating to the source to open
@@ -21,6 +22,7 @@ pub struct Args {
     pub version: bool,
 }
 
+/// Arguments for opening a source (file/stream/process/etc)
 #[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Default)]
 pub struct SourceArgs {
     /// The file to read

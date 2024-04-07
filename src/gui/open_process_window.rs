@@ -231,7 +231,7 @@ impl OpenProcessWindow {
                                 );
                                 if let Ok(off) = usize::from_str_radix(&win.addr_filter_string, 16)
                                 {
-                                    let off = off - app.args.src.hard_seek.unwrap_or(0);
+                                    let off = off - app.src_args.hard_seek.unwrap_or(0);
                                     app.edit_state.set_cursor(off);
                                     app.center_view_on_offset(off);
                                     app.hex_ui.flash_cursor();

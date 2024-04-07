@@ -1,13 +1,15 @@
 use {
     super::{window_open::WindowOpen, Gui},
-    crate::{app::App, args::Args, event::EventQueue, shell::msg_if_fail},
+    crate::{app::App, args::SourceArgs, event::EventQueue, shell::msg_if_fail},
     egui_sfml::sfml::graphics::Font,
+    std::path::PathBuf,
 };
 
 #[derive(Default)]
 pub struct AdvancedOpenWindow {
     pub open: WindowOpen,
-    pub args: Args,
+    pub src_args: SourceArgs,
+    pub path_to_meta: Option<PathBuf>,
 }
 
 fn opt<V: Default>(
@@ -38,9 +40,9 @@ impl AdvancedOpenWindow {
         events: &EventQueue,
     ) {
         let win = &mut gui.advanced_open_window;
-        let args = &mut win.args;
+        let src_args = &mut win.src_args;
         ui.heading("Source");
-        match &args.src.file {
+        match &src_args.file {
             Some(file) => {
                 ui.label(file.display().to_string());
             }
@@ -53,7 +55,7 @@ impl AdvancedOpenWindow {
         }
         opt(
             ui,
-            &mut args.src.jump,
+            &mut src_args.jump,
             "jump",
             "Jump to offset on startup",
             |ui, jump| {
@@ -62,7 +64,7 @@ impl AdvancedOpenWindow {
         );
         opt(
             ui,
-            &mut args.src.hard_seek,
+            &mut src_args.hard_seek,
             "hard seek",
             "Seek to offset, consider it beginning of the file in the editor",
             |ui, hard_seek| {
@@ -71,27 +73,27 @@ impl AdvancedOpenWindow {
         );
         opt(
             ui,
-            &mut args.src.take,
+            &mut src_args.take,
             "take",
             "Read only this many bytes",
             |ui, take| {
                 ui.add(egui::DragValue::new(take));
             },
         );
-        ui.checkbox(&mut args.src.read_only, "read-only")
+        ui.checkbox(&mut src_args.read_only, "read-only")
             .on_hover_text("Open file as read-only");
         if ui
-            .checkbox(&mut args.src.stream, "stream")
+            .checkbox(&mut src_args.stream, "stream")
             .on_hover_text(
                 "Specify source as a streaming source (for example, standard streams).\n\
              Sets read-only attribute",
             )
             .changed()
         {
-            args.src.read_only = args.src.stream;
+            src_args.read_only = src_args.stream;
         }
         ui.heading("Meta");
-        match &args.meta {
+        match &win.path_to_meta {
             Some(file) => {
                 ui.label(file.display().to_string());
             }
@@ -104,11 +106,17 @@ impl AdvancedOpenWindow {
         }
         ui.separator();
         if ui
-            .add_enabled(args.src.file.is_some(), egui::Button::new("Load"))
+            .add_enabled(src_args.file.is_some(), egui::Button::new("Load"))
             .clicked()
         {
             msg_if_fail(
-                app.load_file_args(args.clone(), font, &mut gui.msg_dialog, events),
+                app.load_file_args(
+                    src_args.clone(),
+                    win.path_to_meta.clone(),
+                    font,
+                    &mut gui.msg_dialog,
+                    events,
+                ),
                 "Failed to load file",
                 &mut gui.msg_dialog,
             );
