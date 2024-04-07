@@ -322,30 +322,8 @@ impl App {
         per!("Setting up new clean meta");
         self.meta_state.current_meta_path.clear();
         self.meta_state.meta = Meta::default();
-        let def_region = self.meta_state.meta.low.regions.insert(NamedRegion {
-            name: "default".into(),
-            region: Region {
-                begin: 0,
-                end: self.data.len().saturating_sub(1),
-            },
-            desc: String::new(),
-        });
-        let default_perspective = self.meta_state.meta.low.perspectives.insert(Perspective {
-            region: def_region,
-            cols: 48,
-            flip_row_order: false,
-            name: "default".to_string(),
-        });
-        let mut layout = Layout {
-            name: "Default layout".into(),
-            view_grid: vec![vec![]],
-            margin: default_margin(),
-        };
-        for view in default_views(font, default_perspective) {
-            let k = self.meta_state.meta.views.insert(view);
-            layout.view_grid[0].push(k);
-        }
-        let layout_key = self.meta_state.meta.layouts.insert(layout);
+        let layout_key = setup_empty_meta(self.data.len(), font, &mut self.meta_state.meta);
+        self.meta_state.clean_meta = self.meta_state.meta.clone();
         App::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
     }
 
@@ -725,6 +703,34 @@ impl App {
         }
         self.meta_state.meta.low.perspectives.insert(per);
     }
+}
+
+/// Set up an empty meta with the defaults
+pub fn setup_empty_meta(data_len: usize, font: &Font, meta: &mut Meta) -> LayoutKey {
+    let def_region = meta.low.regions.insert(NamedRegion {
+        name: "default".into(),
+        region: Region {
+            begin: 0,
+            end: data_len.saturating_sub(1),
+        },
+        desc: String::new(),
+    });
+    let default_perspective = meta.low.perspectives.insert(Perspective {
+        region: def_region,
+        cols: 48,
+        flip_row_order: false,
+        name: "default".to_string(),
+    });
+    let mut layout = Layout {
+        name: "Default layout".into(),
+        view_grid: vec![vec![]],
+        margin: default_margin(),
+    };
+    for view in default_views(font, default_perspective) {
+        let k = meta.views.insert(view);
+        layout.view_grid[0].push(k);
+    }
+    meta.layouts.insert(layout)
 }
 
 pub fn get_clipboard_string(cb: &mut arboard::Clipboard, msg: &mut MessageDialog) -> String {
