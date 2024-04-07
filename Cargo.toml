@@ -9,7 +9,7 @@ backend-sfml = ["egui-sfml"]
 default = ["backend-sfml"]
 
 [dependencies]
-gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git", version = "0.1.0" }
+gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git" }
 clap = { version = "4.5.4", features = ["derive"] }
 anyhow = "1.0.81"
 rand = "0.8.5"

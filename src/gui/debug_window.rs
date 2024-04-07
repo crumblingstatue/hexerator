@@ -26,6 +26,16 @@ pub fn ui(ui: &mut Ui) {
         .show(ui, |ui| {
             egui::Grid::new("per_grid").striped(true).show(ui, |ui| {
                 PERSISTENT.for_each(|msg| {
+                    if let Some(src_loc) = &msg.src_loc {
+                        let txt = format!("{}:{}:{}", src_loc.file, src_loc.line, src_loc.column);
+                        if ui
+                            .link(&txt)
+                            .on_hover_text("Click to copy to clipboard")
+                            .clicked()
+                        {
+                            ui.output_mut(|out| out.copied_text = txt);
+                        }
+                    }
                     ui.label(format!("{}: {}", msg.frame, msg.info));
                     ui.end_row();
                 });
