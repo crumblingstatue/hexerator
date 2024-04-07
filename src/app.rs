@@ -168,18 +168,17 @@ impl App {
                 "File truncated/extended",
                 "Data is truncated/extended. Are you sure you want to save?",
             );
-            msg.custom_button_row_ui(Box::new(|ui, modal| {
+            msg.custom_button_row_ui(Box::new(|ui, modal, cmd| {
                 if ui
                     .button(egui::RichText::new("Save & Truncate").color(egui::Color32::RED))
                     .clicked()
                 {
                     modal.close();
-                    return Some(Cmd::SaveTruncateFinish);
+                    cmd.push(Cmd::SaveTruncateFinish);
                 }
                 if ui.button("Cancel").clicked() {
                     modal.close();
                 }
-                None
             }));
             return Ok(());
         }

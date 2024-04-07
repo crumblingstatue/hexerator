@@ -1,4 +1,4 @@
-use {crate::app::command::Cmd, egui_modal::Modal, egui_sfml::egui::Color32};
+use {crate::app::command::CommandQueue, egui_modal::Modal, egui_sfml::egui::Color32};
 
 #[derive(Default)]
 pub struct MessageDialog {
@@ -20,7 +20,7 @@ pub enum Icon {
     Error,
 }
 
-pub(crate) type UiFn = dyn FnMut(&mut egui::Ui, &Modal) -> Option<Cmd>;
+pub(crate) type UiFn = dyn FnMut(&mut egui::Ui, &Modal, &mut CommandQueue);
 
 // Colors and icon text are copied from egui-toast, for visual consistency
 // https://github.com/urholaukkarinen/egui-toast
@@ -66,9 +66,12 @@ impl MessageDialog {
     pub(crate) fn custom_button_row_ui(&mut self, f: Box<UiFn>) {
         self.buttons_ui_fn = Some(f);
     }
-    #[must_use]
-    pub(crate) fn show(&mut self, ctx: &egui::Context, cb: &mut arboard::Clipboard) -> Option<Cmd> {
-        let mut cmd = None;
+    pub(crate) fn show(
+        &mut self,
+        ctx: &egui::Context,
+        cb: &mut arboard::Clipboard,
+        cmd: &mut CommandQueue,
+    ) {
         let modal = self
             .modal
             .get_or_insert_with(|| Modal::new(ctx, "modal_message_dialog"));
@@ -110,17 +113,15 @@ impl MessageDialog {
                         inp.consume_key(egui::Modifiers::default(), egui::Key::Escape),
                     )
                 });
-                cmd = match &mut self.buttons_ui_fn {
-                    Some(f) => f(ui, modal),
+                match &mut self.buttons_ui_fn {
+                    Some(f) => f(ui, modal, cmd),
                     None => {
                         if ui.button("Ok").clicked() || enter_pressed || esc_pressed {
                             modal.close();
                         }
-                        None
                     }
                 }
             });
         });
-        cmd
     }
 }

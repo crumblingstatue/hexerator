@@ -144,15 +144,15 @@ fn try_main() -> anyhow::Result<()> {
             format!("Old config failed to load with error: {e}.\n\
                      If you don't want to overwrite the old config, you should probably not continue."),
         );
-        gui.msg_dialog.custom_button_row_ui(Box::new(|ui, modal| {
-            if ui.button("⚠️ Continue").clicked() {
-                modal.close();
-            }
-            if ui.button("Abort").clicked() {
-                std::process::abort();
-            }
-            None
-        }));
+        gui.msg_dialog
+            .custom_button_row_ui(Box::new(|ui, modal, _cmd| {
+                if ui.button("⚠️ Continue").clicked() {
+                    modal.close();
+                }
+                if ui.button("Abort").clicked() {
+                    std::process::abort();
+                }
+            }));
     }
     let mut event_queue = Arc::new(Mutex::new(VecDeque::new()));
     let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog, &event_queue)?;

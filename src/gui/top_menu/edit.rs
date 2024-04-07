@@ -1,14 +1,16 @@
 use {
     crate::{
-        app::App,
-        event::{Event, EventQueue},
+        app::{
+            command::{perform_command, Cmd},
+            App,
+        },
         gui::{dialogs::TruncateDialog, message_dialog::Icon, Gui},
         shell::msg_if_fail,
     },
     egui::Button,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQueue) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     if ui
         .add(Button::new("Find...").shortcut_text("Ctrl+F"))
         .clicked()
@@ -77,36 +79,32 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQu
                     .map(|s| u8::from_str_radix(s, 16))
                     .collect::<Result<Vec<_>, _>>()?;
                 if cursor + bytes.len() < app.data.len() {
-                    event_queue
-                        .lock()
-                        .push_back(Event::EditMenuEvt(EditMenuEvt::PasteBytes {
-                            at: cursor,
-                            bytes,
-                        }));
+                    perform_command(
+                        app,
+                        Cmd::PasteBytes { at: cursor, bytes },
+                        &mut gui.msg_dialog,
+                    );
                 } else {
                     gui.msg_dialog.open(
                         Icon::Warn,
                         "Prompt",
                         "Paste overflows the document. What do do?",
                     );
-                    let event_queue = event_queue.clone();
                     gui.msg_dialog
-                        .custom_button_row_ui(Box::new(move |ui, modal| {
+                        .custom_button_row_ui(Box::new(move |ui, modal, cmd| {
                             if ui.button("Cancel paste").clicked() {
                                 modal.close();
                             } else if ui.button("Extend document").clicked() {
-                                let mut evq = event_queue.lock();
-                                evq.push_back(Event::EditMenuEvt(EditMenuEvt::ExtendDocument {
+                                cmd.push(Cmd::ExtendDocument {
                                     new_len: cursor + bytes.len(),
-                                }));
-                                evq.push_back(Event::EditMenuEvt(EditMenuEvt::PasteBytes {
+                                });
+                                cmd.push(Cmd::PasteBytes {
                                     at: cursor,
                                     bytes: bytes.clone(),
-                                }));
+                                });
                                 modal.close();
                             } else if ui.button("Shorten paste").clicked() {
                             }
-                            None
                         }));
                 }
             };
@@ -135,10 +133,4 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, event_queue: &EventQu
         );
         ui.close_menu();
     }
-}
-
-#[derive(Debug)]
-pub enum EditMenuEvt {
-    ExtendDocument { new_len: usize },
-    PasteBytes { at: usize, bytes: Vec<u8> },
 }

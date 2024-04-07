@@ -34,6 +34,15 @@ pub enum Cmd {
     },
     /// Finish saving a truncated file
     SaveTruncateFinish,
+    /// Extend (or truncate) the data buffer to a new length
+    ExtendDocument {
+        new_len: usize,
+    },
+    /// Paste bytes at the requested index
+    PasteBytes {
+        at: usize,
+        bytes: Vec<u8>,
+    },
 }
 
 /// Application command queue.
@@ -100,6 +109,12 @@ pub fn perform_command(app: &mut App, cmd: Cmd, msg: &mut MessageDialog) {
         }
         Cmd::SaveTruncateFinish => {
             msg_if_fail(app.save_truncated_file_finish(), "Save error", msg);
+        }
+        Cmd::ExtendDocument { new_len } => {
+            app.data.resize(new_len, 0);
+        }
+        Cmd::PasteBytes { at, bytes } => {
+            app.data[at..at + bytes.len()].copy_from_slice(&bytes);
         }
     }
 }

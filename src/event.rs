@@ -1,5 +1,5 @@
 use {
-    crate::{app::App, gui::top_menu::edit::EditMenuEvt},
+    crate::app::App,
     egui_sfml::sfml::graphics::RenderWindow,
     gamedebug_core::per,
     parking_lot::Mutex,
@@ -12,7 +12,6 @@ use {
 #[derive(Debug)]
 pub enum Event {
     SourceChanged,
-    EditMenuEvt(EditMenuEvt),
 }
 
 pub type EventQueue = Arc<Mutex<VecDeque<Event>>>;
@@ -31,14 +30,6 @@ pub fn handle_events(events: &EventQueue, app: &mut App, window: &mut RenderWind
                 "{} - Hexerator",
                 app.source_file().map_or("no source", path_filename_as_str)
             )),
-            Event::EditMenuEvt(ev) => match ev {
-                EditMenuEvt::ExtendDocument { new_len } => {
-                    app.data.resize(new_len, 0);
-                }
-                EditMenuEvt::PasteBytes { at, bytes } => {
-                    app.data[at..at + bytes.len()].copy_from_slice(&bytes);
-                }
-            },
         }
     }
 }
