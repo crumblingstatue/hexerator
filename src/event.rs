@@ -13,7 +13,6 @@ use {
 pub enum Event {
     SourceChanged,
     EditMenuEvt(EditMenuEvt),
-    QuitRequested,
 }
 
 pub type EventQueue = Arc<Mutex<VecDeque<Event>>>;
@@ -23,8 +22,7 @@ fn path_filename_as_str(path: &Path) -> &str {
         .map_or("<no_filename>", |osstr| osstr.to_str().unwrap_or_default())
 }
 
-/// Returns false if application should quit
-pub fn handle_events(events: &EventQueue, app: &mut App, window: &mut RenderWindow) -> bool {
+pub fn handle_events(events: &EventQueue, app: &mut App, window: &mut RenderWindow) {
     let mut events = events.lock();
     while let Some(event) = events.pop_front() {
         per!("Incoming event: {event:?}");
@@ -41,8 +39,6 @@ pub fn handle_events(events: &EventQueue, app: &mut App, window: &mut RenderWind
                     app.data[at..at + bytes.len()].copy_from_slice(&bytes);
                 }
             },
-            Event::QuitRequested => return false,
         }
     }
-    true
 }

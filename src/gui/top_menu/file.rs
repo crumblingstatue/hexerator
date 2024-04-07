@@ -1,7 +1,7 @@
 use {
     crate::{
         app::{set_clipboard_string, App},
-        event::{Event, EventQueue},
+        event::EventQueue,
         gui::{dialogs::AutoSaveReloadDialog, Gui},
         shell::msg_if_fail,
     },
@@ -146,6 +146,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
         ui.close_menu();
     }
     if ui.button("Quit").clicked() {
-        events.lock().push_back(Event::QuitRequested);
+        app.quit_requested = true;
     }
 }

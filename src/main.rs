@@ -257,9 +257,7 @@ fn do_frame(
     events: &mut EventQueue,
 ) -> anyhow::Result<bool> {
     // Handle hexerator events
-    if !crate::event::handle_events(events, app, window) {
-        return Ok(false);
-    }
+    crate::event::handle_events(events, app, window);
     // Handle window events
     handle_events(gui, app, window, sf_egui, font, events);
     update(app, sf_egui.context().wants_keyboard_input());
@@ -300,6 +298,9 @@ fn do_frame(
     // Should only be true on the frame right after reloading
     app.just_reloaded = false;
     gamedebug_core::inc_frame();
+    if app.quit_requested {
+        return Ok(false);
+    }
     Ok(true)
 }
 

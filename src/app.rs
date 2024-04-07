@@ -64,6 +64,8 @@ pub struct App {
     pub md_cache: CommonMarkCache,
     /// Command queue for queuing up operations to perform on the application state.
     pub cmd: CommandQueue,
+    /// A quit was requested
+    pub quit_requested: bool,
 }
 
 impl App {
@@ -96,6 +98,7 @@ impl App {
             clipboard: arboard::Clipboard::new()?,
             md_cache: CommonMarkCache::default(),
             cmd: Default::default(),
+            quit_requested: false,
         };
         // Set a clean meta, for an empty document
         this.set_new_clean_meta(font);
