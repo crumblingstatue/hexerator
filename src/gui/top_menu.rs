@@ -66,6 +66,21 @@ pub fn top_menu(
                                             ui.close_menu();
                                         }
                                     };
+                                    if !app.meta_state.current_meta_path.as_os_str().is_empty() {
+                                        ui.label(
+                                            egui::RichText::new("🇲").color(egui::Color32::YELLOW),
+                                        )
+                                        .on_hover_text(
+                                            format!(
+                                                "Metafile: {}",
+                                                app.meta_state.current_meta_path.display()
+                                            ),
+                                        );
+                                    } else {
+                                        ui.label("？").on_hover_text(
+                                            "There is no metafile associated with this file",
+                                        );
+                                    }
                                     let re =
                                         ui.add(egui::Label::new(&s).sense(egui::Sense::click()));
                                     re.context_menu(ctx_menu);
