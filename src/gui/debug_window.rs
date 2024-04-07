@@ -6,6 +6,7 @@ use {
 pub fn ui(ui: &mut Ui) {
     egui::ScrollArea::vertical()
         .max_height(500.)
+        .auto_shrink([false, true])
         .show(ui, |ui| {
             IMMEDIATE.for_each(|msg| {
                 ui.label(msg);
