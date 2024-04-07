@@ -18,8 +18,11 @@ pub fn ui(ui: &mut Ui) {
         .id_source("per_scroll")
         .max_height(500.0)
         .show(ui, |ui| {
-            PERSISTENT.for_each(|msg| {
-                ui.label(format!("{}: {}", msg.frame, msg.info));
+            egui::Grid::new("per_grid").striped(true).show(ui, |ui| {
+                PERSISTENT.for_each(|msg| {
+                    ui.label(format!("{}: {}", msg.frame, msg.info));
+                    ui.end_row();
+                });
             });
         });
 }
