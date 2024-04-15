@@ -2,24 +2,15 @@ use {
     self::{
         backend_command::BackendCommandQueue,
         command::{Cmd, CommandQueue},
+        edit_state::EditState,
     },
-    crate::{gui::file_diff_result_window::FileDiffResultWindow, view::ViewportScalar},
-    egui_commonmark::CommonMarkCache,
-    egui_sfml::sfml::graphics::RenderWindow,
-};
-
-mod backend_command;
-pub mod command;
-pub mod edit_state;
-pub mod interact_mode;
-pub mod presentation;
-
-use {
-    self::edit_state::EditState,
     crate::{
         args::{Args, SourceArgs},
         config::Config,
-        gui::message_dialog::{Icon, MessageDialog},
+        gui::{
+            file_diff_result_window::FileDiffResultWindow,
+            message_dialog::{Icon, MessageDialog},
+        },
         hex_ui::HexUi,
         input::Input,
         layout::{default_margin, do_auto_layout, Layout},
@@ -31,10 +22,11 @@ use {
         preferences::Preferences,
         shell::{msg_fail, msg_if_fail},
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
-        view::{HexData, TextData, View, ViewKind},
+        view::{HexData, TextData, View, ViewKind, ViewportScalar},
     },
     anyhow::{bail, Context},
-    egui_sfml::sfml::graphics::Font,
+    egui_commonmark::CommonMarkCache,
+    egui_sfml::sfml::graphics::{Font, RenderWindow},
     gamedebug_core::{per, per_dbg},
     slotmap::Key,
     std::{
@@ -47,6 +39,12 @@ use {
         time::Instant,
     },
 };
+
+mod backend_command;
+pub mod command;
+pub mod edit_state;
+pub mod interact_mode;
+pub mod presentation;
 
 /// The hexerator application state
 pub struct App {
