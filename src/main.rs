@@ -75,7 +75,6 @@ use {
         },
         SfEgui,
     },
-    event::EventQueue,
     gamedebug_core::per,
     gui::{
         dialogs::JumpDialog,
@@ -84,11 +83,10 @@ use {
     },
     meta::{NamedView, PerspectiveMap, RegionMap},
     mlua::Lua,
-    parking_lot::Mutex,
     serde::{Deserialize, Serialize},
     shell::msg_if_fail,
     slotmap::Key as _,
-    std::{collections::VecDeque, fmt::Display, sync::Arc, time::Duration},
+    std::{fmt::Display, time::Duration},
 };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -154,8 +152,7 @@ fn try_main() -> anyhow::Result<()> {
                 }
             }));
     }
-    let mut event_queue = Arc::new(Mutex::new(VecDeque::new()));
-    let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog, &event_queue)?;
+    let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog)?;
     let lua = Lua::default();
     crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);
@@ -170,7 +167,6 @@ fn try_main() -> anyhow::Result<()> {
             &font,
             &mut vertex_buffer,
             &lua,
-            &mut event_queue,
         )? {
             return Ok(());
         }
@@ -254,16 +250,13 @@ fn do_frame(
     font: &Font,
     vertex_buffer: &mut Vec<Vertex>,
     lua: &Lua,
-    events: &mut EventQueue,
 ) -> anyhow::Result<bool> {
-    // Handle hexerator events
-    crate::event::handle_events(events, app, window);
     // Handle window events
-    handle_events(gui, app, window, sf_egui, font, events);
+    handle_events(gui, app, window, sf_egui, font);
     update(app, sf_egui.context().wants_keyboard_input());
-    app.update(&mut gui.msg_dialog);
+    app.update(&mut gui.msg_dialog, window);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
-    if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window, events)? {
+    if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window)? {
         return Ok(false);
     }
     // Here we flush GUI command queue every frame
@@ -418,7 +411,6 @@ fn handle_events(
     window: &mut RenderWindow,
     sf_egui: &mut SfEgui,
     font: &Font,
-    events: &EventQueue,
 ) {
     while let Some(event) = window.poll_event() {
         let egui_ctx = sf_egui.context();
@@ -446,15 +438,7 @@ fn handle_events(
                 ctrl,
                 alt,
                 ..
-            } => handle_key_pressed(
-                code,
-                gui,
-                app,
-                KeyMod { ctrl, shift, alt },
-                font,
-                wants_kb,
-                events,
-            ),
+            } => handle_key_pressed(code, gui, app, KeyMod { ctrl, shift, alt }, font, wants_kb),
             Event::TextEntered { unicode } => {
                 handle_text_entered(app, unicode, &mut gui.msg_dialog)
             }
@@ -588,7 +572,6 @@ fn handle_key_pressed(
     key_mod: KeyMod,
     font: &Font,
     egui_wants_kb: bool,
-    events: &EventQueue,
 ) {
     if code == Key::F12 && !key_mod.shift && !key_mod.ctrl && !key_mod.alt {
         IMMEDIATE.toggle();
@@ -898,7 +881,7 @@ fn handle_key_pressed(
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(args, None, font, &mut gui.msg_dialog, events),
+                    app.load_file_args(args, None, font, &mut gui.msg_dialog),
                     "Failed to load file",
                     &mut gui.msg_dialog,
                 );

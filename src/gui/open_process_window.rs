@@ -1,9 +1,6 @@
 use {
     super::window_open::WindowOpen,
-    crate::{
-        event::EventQueue,
-        shell::{msg_fail, msg_if_fail},
-    },
+    crate::shell::{msg_fail, msg_if_fail},
     egui_extras::{Column, TableBuilder},
     egui_sfml::sfml::graphics::Font,
     sysinfo::Signal,
@@ -76,7 +73,6 @@ impl OpenProcessWindow {
         gui: &mut crate::gui::Gui,
         app: &mut crate::app::App,
         font: &Font,
-        events: &EventQueue,
     ) {
         let win = &mut gui.open_process_window;
         if win.open.just_now() || ui.button("Refresh").clicked() {
@@ -224,7 +220,6 @@ impl OpenProcessWindow {
                                         map_range.is_write(),
                                         font,
                                         &mut gui.msg_dialog,
-                                        events,
                                     ),
                                     "Failed to load process memory",
                                     &mut gui.msg_dialog,

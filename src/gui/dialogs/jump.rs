@@ -1,7 +1,6 @@
 use {
     crate::{
         app::App,
-        event::EventQueue,
         gui::{message_dialog::MessageDialog, Dialog, FileOps},
         parse_radix::{parse_offset_maybe_relative, Relativity},
         shell::msg_fail,
@@ -34,7 +33,6 @@ impl Dialog for JumpDialog {
         msg: &mut MessageDialog,
         _lua: &Lua,
         _font: &Font,
-        _events: &mut EventQueue,
         _file_ops: &mut FileOps,
     ) -> bool {
         ui.horizontal(|ui| {

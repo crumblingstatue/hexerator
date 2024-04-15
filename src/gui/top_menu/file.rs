@@ -1,7 +1,6 @@
 use {
     crate::{
         app::{set_clipboard_string, App},
-        event::EventQueue,
         gui::{dialogs::AutoSaveReloadDialog, Gui},
         shell::msg_if_fail,
     },
@@ -9,7 +8,7 @@ use {
     egui_sfml::sfml::graphics::Font,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &EventQueue) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     if ui
         .add(Button::new("Open...").shortcut_text("Ctrl+O"))
         .clicked()
@@ -80,7 +79,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: 
     });
     if let Some(args) = load {
         msg_if_fail(
-            app.load_file_args(args, None, font, &mut gui.msg_dialog, events),
+            app.load_file_args(args, None, font, &mut gui.msg_dialog),
             "Failed to load file",
             &mut gui.msg_dialog,
         );

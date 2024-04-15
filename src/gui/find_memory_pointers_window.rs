@@ -1,6 +1,6 @@
 use {
     super::{window_open::WindowOpen, Gui},
-    crate::{app::App, event::EventQueue, shell::msg_fail},
+    crate::{app::App, shell::msg_fail},
     egui_extras::{Column, TableBuilder},
     egui_sfml::sfml::graphics::Font,
 };
@@ -18,7 +18,7 @@ struct PtrEntry {
 }
 
 impl FindMemoryPointersWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font, events: &EventQueue) {
+    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         let Some(pid) = gui.open_process_window.selected_pid else {
             ui.label("No selected pid.");
             return;
@@ -86,7 +86,6 @@ impl FindMemoryPointersWindow {
                                 range.is_write(),
                                 font,
                                 &mut gui.msg_dialog,
-                                events,
                             ) {
                                 Ok(()) => action = Action::Goto(en.ptr - range.start()),
                                 Err(e) => {

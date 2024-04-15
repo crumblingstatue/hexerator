@@ -29,7 +29,6 @@ impl Dialog for LuaFillDialog {
         msg: &mut MessageDialog,
         lua: &Lua,
         _font: &Font,
-        _events: &mut crate::event::EventQueue,
         _file_ops: &mut FileOps,
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {

@@ -33,7 +33,6 @@ impl Dialog for TruncateDialog {
         _msg: &mut crate::gui::message_dialog::MessageDialog,
         _lua: &mlua::Lua,
         _font: &egui_sfml::sfml::graphics::Font,
-        _events: &mut crate::event::EventQueue,
         _file_ops: &mut FileOps,
     ) -> bool {
         ui.horizontal(|ui| {

@@ -1,7 +1,6 @@
 use {
     crate::{
         app::App,
-        event::EventQueue,
         gui::{message_dialog::MessageDialog, Dialog, FileOps},
     },
     egui_sfml::sfml::graphics::Font,
@@ -23,7 +22,6 @@ impl Dialog for AutoSaveReloadDialog {
         _msg: &mut MessageDialog,
         _lua: &Lua,
         _font: &Font,
-        _events: &mut EventQueue,
         _file_ops: &mut FileOps,
     ) -> bool {
         ui.checkbox(&mut app.preferences.auto_reload, "Auto reload");

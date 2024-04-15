@@ -1,4 +1,4 @@
-use crate::{event::EventQueue, shell::msg_if_fail};
+use crate::shell::msg_if_fail;
 
 mod analysis;
 mod cursor;
@@ -15,15 +15,9 @@ use {
     egui_sfml::{egui::Layout, sfml::graphics::Font},
 };
 
-pub fn top_menu(
-    ui: &mut egui::Ui,
-    gui: &mut crate::gui::Gui,
-    app: &mut App,
-    font: &Font,
-    events: &EventQueue,
-) {
+pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, font: &Font) {
     ui.horizontal(|ui| {
-        ui.menu_button("File", |ui| file::ui(ui, gui, app, font, events));
+        ui.menu_button("File", |ui| file::ui(ui, gui, app, font));
         ui.menu_button("Edit", |ui| edit::ui(ui, gui, app));
         ui.menu_button("Cursor", |ui| cursor::ui(ui, gui, app));
         ui.menu_button("View", |ui| view::ui(ui, gui, app));

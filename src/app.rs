@@ -1,9 +1,14 @@
 use {
-    self::command::{Cmd, CommandQueue},
+    self::{
+        backend_command::BackendCommandQueue,
+        command::{Cmd, CommandQueue},
+    },
     crate::{gui::file_diff_result_window::FileDiffResultWindow, view::ViewportScalar},
     egui_commonmark::CommonMarkCache,
+    egui_sfml::sfml::graphics::RenderWindow,
 };
 
+mod backend_command;
 pub mod command;
 pub mod edit_state;
 pub mod interact_mode;
@@ -14,7 +19,6 @@ use {
     crate::{
         args::{Args, SourceArgs},
         config::Config,
-        event::{Event, EventQueue},
         gui::message_dialog::{Icon, MessageDialog},
         hex_ui::HexUi,
         input::Input,
@@ -64,6 +68,7 @@ pub struct App {
     pub md_cache: CommonMarkCache,
     /// Command queue for queuing up operations to perform on the application state.
     pub cmd: CommandQueue,
+    pub backend_cmd: BackendCommandQueue,
     /// A quit was requested
     pub quit_requested: bool,
 }
@@ -74,7 +79,6 @@ impl App {
         cfg: Config,
         font: &Font,
         msg: &mut MessageDialog,
-        events: &EventQueue,
     ) -> anyhow::Result<Self> {
         if args.recent
             && let Some(recent) = cfg.recent.most_recent()
@@ -98,12 +102,13 @@ impl App {
             clipboard: arboard::Clipboard::new()?,
             md_cache: CommonMarkCache::default(),
             cmd: Default::default(),
+            backend_cmd: Default::default(),
             quit_requested: false,
         };
         // Set a clean meta, for an empty document
         this.set_new_clean_meta(font);
         msg_if_fail(
-            this.load_file_args(args.src, args.meta, font, msg, events),
+            this.load_file_args(args.src, args.meta, font, msg),
             "Failed to load file",
             msg,
         );
@@ -301,7 +306,6 @@ impl App {
         read_only: bool,
         font: &Font,
         msg: &mut MessageDialog,
-        events: &EventQueue,
     ) -> Result<(), anyhow::Error> {
         self.load_file_args(
             SourceArgs {
@@ -315,7 +319,6 @@ impl App {
             None,
             font,
             msg,
-            events,
         )
     }
 
@@ -489,7 +492,6 @@ impl App {
         meta_path: Option<PathBuf>,
         font: &Font,
         msg: &mut MessageDialog,
-        events: &EventQueue,
     ) -> anyhow::Result<()> {
         if load_file_from_src_args(
             &mut src_args,
@@ -497,7 +499,7 @@ impl App {
             &mut self.source,
             &mut self.data,
             msg,
-            events,
+            &mut self.cmd,
         ) {
             // Loaded new file, set the "original" data length to this length to prepare for truncation/etc.
             self.orig_data_len = self.data.len();
@@ -534,7 +536,7 @@ impl App {
         Ok(())
     }
     /// Called every frame
-    pub(crate) fn update(&mut self, msg: &mut MessageDialog) {
+    pub(crate) fn update(&mut self, msg: &mut MessageDialog, rw: &mut RenderWindow) {
         if !self.hex_ui.current_layout.is_null() {
             let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
             do_auto_layout(
@@ -561,6 +563,7 @@ impl App {
         }
         // Here we perform all queued up `Command`s.
         self.flush_command_queue(msg);
+        self.flush_backend_command_queue(rw);
     }
     pub(crate) fn focused_view_select_all(&mut self) {
         if let Some(view) = self.hex_ui.focused_view {
@@ -660,14 +663,13 @@ impl App {
         is_write: bool,
         font: &Font,
         msg: &mut MessageDialog,
-        events: &EventQueue,
     ) -> anyhow::Result<()> {
         #[cfg(target_os = "linux")]
-        return load_proc_memory_linux(self, pid, start, size, is_write, font, msg, events);
+        return load_proc_memory_linux(self, pid, start, size, is_write, font, msg);
         #[cfg(windows)]
         return crate::windows::load_proc_memory(self, pid, start, size, is_write, font);
         #[cfg(target_os = "macos")]
-        return load_proc_memory_macos(self, pid, start, size, is_write, font, msg, events);
+        return load_proc_memory_macos(self, pid, start, size, is_write, font, msg);
     }
 
     pub fn consume_meta_from_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
@@ -762,7 +764,6 @@ fn load_proc_memory_linux(
     is_write: bool,
     font: &Font,
     msg: &mut MessageDialog,
-    events: &EventQueue,
 ) -> anyhow::Result<()> {
     app.load_file_args(
         SourceArgs {
@@ -776,7 +777,6 @@ fn load_proc_memory_linux(
         None,
         font,
         msg,
-        events,
     )
 }
 
@@ -874,7 +874,7 @@ fn load_file_from_src_args(
     source: &mut Option<Source>,
     data: &mut Vec<u8>,
     msg: &mut MessageDialog,
-    events: &EventQueue,
+    cmd: &mut CommandQueue,
 ) -> bool {
     if let Some(file_arg) = &src_args.file {
         if file_arg.as_os_str() == "-" {
@@ -886,7 +886,7 @@ fn load_file_from_src_args(
                 },
                 state: SourceState::default(),
             });
-            events.lock().push_back(Event::SourceChanged);
+            cmd.push(Cmd::ProcessSourceChange);
             true
         } else {
             let result: Result<(), anyhow::Error> = try {
@@ -921,7 +921,7 @@ fn load_file_from_src_args(
                     },
                     state: SourceState::default(),
                 });
-                events.lock().push_back(Event::SourceChanged);
+                cmd.push(Cmd::ProcessSourceChange);
             };
             match result {
                 Ok(()) => true,

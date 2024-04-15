@@ -2,7 +2,6 @@ use {
     super::regions_window::region_context_menu,
     crate::{
         app::read_source_to_buf,
-        event::EventQueue,
         gui::window_open::WindowOpen,
         meta::{
             find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta, RegionKey,
@@ -39,13 +38,7 @@ impl Default for FileDiffResultWindow {
     }
 }
 impl FileDiffResultWindow {
-    pub(crate) fn ui(
-        ui: &mut egui::Ui,
-        gui: &mut Gui,
-        app: &mut crate::app::App,
-        font: &Font,
-        events: &EventQueue,
-    ) {
+    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut crate::app::App, font: &Font) {
         if gui.file_diff_result_window.offsets.is_empty() {
             ui.label("No difference");
             return;
@@ -65,7 +58,6 @@ impl FileDiffResultWindow {
                     false,
                     font,
                     &mut gui.msg_dialog,
-                    events,
                 );
                 app.preferences.keep_meta = prev_pref;
                 if msg_if_fail(result, "Failed to load file", &mut gui.msg_dialog).is_none() {

@@ -1,6 +1,6 @@
 use {
     super::{window_open::WindowOpen, Gui},
-    crate::{app::App, args::SourceArgs, event::EventQueue, shell::msg_if_fail},
+    crate::{app::App, args::SourceArgs, shell::msg_if_fail},
     egui_sfml::sfml::graphics::Font,
     std::path::PathBuf,
 };
@@ -32,13 +32,7 @@ fn opt<V: Default>(
 }
 
 impl AdvancedOpenWindow {
-    pub(crate) fn ui(
-        ui: &mut egui::Ui,
-        gui: &mut Gui,
-        app: &mut App,
-        font: &Font,
-        events: &EventQueue,
-    ) {
+    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         let win = &mut gui.advanced_open_window;
         let src_args = &mut win.src_args;
         ui.heading("Source");
@@ -115,7 +109,6 @@ impl AdvancedOpenWindow {
                     win.path_to_meta.clone(),
                     font,
                     &mut gui.msg_dialog,
-                    events,
                 ),
                 "Failed to load file",
                 &mut gui.msg_dialog,

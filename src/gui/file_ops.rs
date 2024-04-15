@@ -6,7 +6,6 @@ use {
     crate::{
         app::App,
         args::SourceArgs,
-        event::EventQueue,
         meta::{region::Region, ViewKey},
         shell::{msg_fail, msg_if_fail},
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
@@ -50,7 +49,6 @@ impl FileOps {
         advanced_open_window: &mut AdvancedOpenWindow,
         file_diff_result_window: &mut FileDiffResultWindow,
         font: &Font,
-        events: &mut EventQueue,
     ) {
         self.dialog.update(ctx);
         if let Some(path) = self.dialog.take_selected()
@@ -73,7 +71,7 @@ impl FileOps {
                 FileOp::LoadFile => {
                     let write = OpenOptions::new().write(true).open(&path).is_ok();
                     msg_if_fail(
-                        app.load_file(path, !write, font, msg, events),
+                        app.load_file(path, !write, font, msg),
                         "Failed to load file (read-write)",
                         msg,
                     );

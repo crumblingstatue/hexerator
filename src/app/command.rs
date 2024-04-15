@@ -8,14 +8,14 @@
 //! we have exclusive access, and then perform it.
 
 use {
-    super::App,
+    super::{backend_command::BackendCmd, App},
     crate::{
         gui::message_dialog::MessageDialog,
         meta::{NamedView, PerspectiveKey, RegionKey},
         shell::msg_if_fail,
         view::{HexData, View, ViewKind},
     },
-    std::collections::VecDeque,
+    std::{collections::VecDeque, path::Path},
 };
 
 pub enum Cmd {
@@ -43,6 +43,8 @@ pub enum Cmd {
         at: usize,
         bytes: Vec<u8>,
     },
+    /// A new source was loaded, process the changes
+    ProcessSourceChange,
 }
 
 /// Application command queue.
@@ -116,5 +118,16 @@ pub fn perform_command(app: &mut App, cmd: Cmd, msg: &mut MessageDialog) {
         Cmd::PasteBytes { at, bytes } => {
             app.data[at..at + bytes.len()].copy_from_slice(&bytes);
         }
+        Cmd::ProcessSourceChange => {
+            app.backend_cmd.push(BackendCmd::SetWindowTitle(format!(
+                "{} - Hexerator",
+                app.source_file().map_or("no source", path_filename_as_str)
+            )));
+        }
     }
+}
+
+fn path_filename_as_str(path: &Path) -> &str {
+    path.file_name()
+        .map_or("<no_filename>", |osstr| osstr.to_str().unwrap_or_default())
 }
