@@ -283,10 +283,6 @@ impl View {
         reason = "block size is never greater than i16::MAX"
     )]
     pub(crate) fn cols(&self) -> i16 {
-        #[expect(
-            clippy::manual_unwrap_or_default,
-            reason = "Clippy bug, ignores side effect."
-        )]
         match self.viewport_rect.w.checked_div(self.col_w as i16) {
             Some(result) => result,
             None => {
