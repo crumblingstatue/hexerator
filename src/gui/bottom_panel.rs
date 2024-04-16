@@ -68,10 +68,28 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
             }
         }
         ui.separator();
-        ui.label(format!(
+        let mut text = egui::RichText::new(format!(
             "cursor: {} ({:x})",
             app.edit_state.cursor, app.edit_state.cursor,
         ));
+        let out_of_bounds = app.edit_state.cursor >= app.data.len();
+        let cursor_end = app.edit_state.cursor == app.data.len().saturating_sub(1);
+        let cursor_begin = app.edit_state.cursor == 0;
+        if out_of_bounds {
+            text = text.color(egui::Color32::RED);
+        } else if cursor_end {
+            text = text.color(egui::Color32::YELLOW);
+        } else if cursor_begin {
+            text = text.color(egui::Color32::GREEN);
+        }
+        let re = ui.label(text);
+        if out_of_bounds {
+            re.on_hover_text("Cursor is out of bounds");
+        } else if cursor_end {
+            re.on_hover_text("Cursor is at end of document");
+        } else if cursor_begin {
+            re.on_hover_text("Cursor is at beginning");
+        }
         if let Some(label) = app
             .meta_state
             .meta
