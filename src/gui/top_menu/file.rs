@@ -26,7 +26,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     }
     let mut load = None;
     if ui
-        .add(Button::new("Open previous").shortcut_text("Ctrl+P"))
+        .add_enabled(
+            !app.cfg.recent.is_empty(),
+            Button::new("Open previous").shortcut_text("Ctrl+P"),
+        )
         .on_hover_text("Can be used to switch between 2 files quickly for comparison")
         .clicked()
     {
