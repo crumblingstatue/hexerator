@@ -204,9 +204,12 @@ impl App {
                 // TODO: We're assuming here that end of the region is the same position as the last dirty byte
                 // Make sure to enforce this invariant.
                 // Add 1 to the end to write the dirty region even if it's 1 byte
-                &self.data[region.begin..region.end + 1]
+                self.data.get(region.begin..region.end + 1)
             }
-            None => &self.data,
+            None => Some(&self.data[..]),
+        };
+        let Some(data_to_write) = data_to_write else {
+            anyhow::bail!("No data to write (possibly out of bounds indexing)");
         };
         file.write_all(data_to_write)?;
         self.edit_state.dirty_region = None;
