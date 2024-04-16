@@ -84,7 +84,14 @@ impl FindDialog {
             re.request_focus();
         }
         if re.lost_focus() && ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
-            msg_if_fail(do_search(app, gui), "Search failed", &mut gui.msg_dialog);
+            msg_if_fail(
+                do_search(&app.data, gui),
+                "Search failed",
+                &mut gui.msg_dialog,
+            );
+            if let Some(&off) = gui.find_dialog.results_vec.first() {
+                app.search_focus(off);
+            }
         }
         if gui.find_dialog.find_type == FindType::Ascii {
             ui.horizontal(|ui| {
@@ -406,37 +413,37 @@ enum Action {
     RemoveIdxFromResults(usize),
 }
 
-fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
+fn do_search(data: &[u8], gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
     if !gui.find_dialog.filter_results {
         gui.find_dialog.results_vec.clear();
         gui.highlight_set.clear();
     }
     match gui.find_dialog.find_type {
-        FindType::I8 => find_num::<I8>(gui, &app.data)?,
+        FindType::I8 => find_num::<I8>(gui, data)?,
         FindType::U8 => find_u8(
             &mut gui.find_dialog,
-            &app.data,
+            data,
             &mut gui.msg_dialog,
             &mut gui.highlight_set,
         ),
-        FindType::I16Le => find_num::<I16Le>(gui, &app.data)?,
-        FindType::I16Be => find_num::<I16Be>(gui, &app.data)?,
-        FindType::U16Le => find_num::<U16Le>(gui, &app.data)?,
-        FindType::U16Be => find_num::<U16Be>(gui, &app.data)?,
-        FindType::I32Le => find_num::<I32Le>(gui, &app.data)?,
-        FindType::I32Be => find_num::<I32Be>(gui, &app.data)?,
-        FindType::U32Le => find_num::<U32Le>(gui, &app.data)?,
-        FindType::U32Be => find_num::<U32Be>(gui, &app.data)?,
-        FindType::I64Le => find_num::<I64Le>(gui, &app.data)?,
-        FindType::I64Be => find_num::<I64Be>(gui, &app.data)?,
-        FindType::U64Le => find_num::<U64Le>(gui, &app.data)?,
-        FindType::U64Be => find_num::<U64Be>(gui, &app.data)?,
-        FindType::F32Le => find_num::<F32Le>(gui, &app.data)?,
-        FindType::F32Be => find_num::<F32Be>(gui, &app.data)?,
-        FindType::F64Le => find_num::<F64Le>(gui, &app.data)?,
-        FindType::F64Be => find_num::<F64Be>(gui, &app.data)?,
+        FindType::I16Le => find_num::<I16Le>(gui, data)?,
+        FindType::I16Be => find_num::<I16Be>(gui, data)?,
+        FindType::U16Le => find_num::<U16Le>(gui, data)?,
+        FindType::U16Be => find_num::<U16Be>(gui, data)?,
+        FindType::I32Le => find_num::<I32Le>(gui, data)?,
+        FindType::I32Be => find_num::<I32Be>(gui, data)?,
+        FindType::U32Le => find_num::<U32Le>(gui, data)?,
+        FindType::U32Be => find_num::<U32Be>(gui, data)?,
+        FindType::I64Le => find_num::<I64Le>(gui, data)?,
+        FindType::I64Be => find_num::<I64Be>(gui, data)?,
+        FindType::U64Le => find_num::<U64Le>(gui, data)?,
+        FindType::U64Be => find_num::<U64Be>(gui, data)?,
+        FindType::F32Le => find_num::<F32Le>(gui, data)?,
+        FindType::F32Be => find_num::<F32Be>(gui, data)?,
+        FindType::F64Le => find_num::<F64Le>(gui, data)?,
+        FindType::F64Be => find_num::<F64Be>(gui, data)?,
         FindType::Ascii => {
-            for offset in memchr::memmem::find_iter(&app.data, &gui.find_dialog.find_input) {
+            for offset in memchr::memmem::find_iter(data, &gui.find_dialog.find_input) {
                 gui.find_dialog.results_vec.push(offset);
                 gui.highlight_set.insert(offset);
             }
@@ -450,7 +457,7 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
                 .collect();
             match input_bytes {
                 Ok(bytes) => {
-                    for offset in memchr::memmem::find_iter(&app.data, &bytes) {
+                    for offset in memchr::memmem::find_iter(data, &bytes) {
                         gui.find_dialog.results_vec.push(offset);
                         gui.highlight_set.insert(offset);
                     }
@@ -461,16 +468,13 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
         FindType::StringDiff => {
             let diff = ascii_to_diff_pattern(gui.find_dialog.find_input.as_bytes());
             let mut off = 0;
-            while let Some(offset) = find_diff_pattern(&app.data[off..], &diff) {
+            while let Some(offset) = find_diff_pattern(&data[off..], &diff) {
                 off += offset;
                 gui.find_dialog.results_vec.push(off);
                 gui.highlight_set.insert(off);
                 off += diff.len();
             }
         }
-    }
-    if let Some(&off) = gui.find_dialog.results_vec.first() {
-        app.search_focus(off);
     }
     Ok(())
 }
