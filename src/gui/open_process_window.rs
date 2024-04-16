@@ -259,14 +259,27 @@ impl OpenProcessWindow {
                     });
                     body.rows(20.0, filtered.len(), |mut row| {
                         let map_range = filtered[row.index()].clone();
+                        // This range is likely open in the editor (range contains hard_seek)
+                        let mut likely_open = false;
+                        if let Some(hard_seek) = app.src_args.hard_seek {
+                            if hard_seek >= map_range.start()
+                                && hard_seek < map_range.start() + map_range.size()
+                            {
+                                likely_open = true;
+                            }
+                        }
                         row.col(|ui| {
                             let txt = format!("{:X}", map_range.start());
+                            let mut rich_txt = egui::RichText::new(&txt);
+                            if likely_open {
+                                rich_txt = rich_txt.color(egui::Color32::YELLOW);
+                            }
                             let mut is_button = false;
                             let re = if map_range.is_read() {
                                 is_button = true;
-                                ui.add(egui::Button::new(&txt))
+                                ui.add(egui::Button::new(rich_txt))
                             } else {
-                                ui.add(egui::Label::new(&txt).sense(egui::Sense::click()))
+                                ui.add(egui::Label::new(rich_txt).sense(egui::Sense::click()))
                             };
                             re.context_menu(|ui| {
                                 if ui.button("📋 Copy to clipboard").clicked() {
