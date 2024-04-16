@@ -2,10 +2,16 @@
 //!
 //! See that module for more information.
 
-use {super::Gui, std::collections::VecDeque};
+use {
+    super::Gui,
+    crate::shell::msg_fail,
+    std::{collections::VecDeque, process::Command},
+};
 
 pub enum GCmd {
     OpenPerspectiveWindow,
+    /// Spawn a command with optional arguments. Must not be an empty vector.
+    SpawnCommand(Vec<String>),
 }
 
 /// Gui command queue.
@@ -40,5 +46,17 @@ impl Gui {
 fn perform_command(gui: &mut Gui, cmd: GCmd) {
     match cmd {
         GCmd::OpenPerspectiveWindow => gui.perspectives_window.open.set(true),
+        GCmd::SpawnCommand(mut cmdvec) => {
+            let cmd = cmdvec.remove(0);
+            match Command::new(cmd).args(cmdvec).spawn() {
+                Ok(child) => {
+                    gui.open_process_window.open.set(true);
+                    gui.open_process_window.selected_pid = Some(sysinfo::Pid::from_u32(child.id()));
+                }
+                Err(e) => {
+                    msg_fail(&e, "Failed to spawn command", &mut gui.msg_dialog);
+                }
+            }
+        }
     }
 }

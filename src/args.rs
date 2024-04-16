@@ -23,6 +23,9 @@ pub struct Args {
     /// Start with debug logging enabled
     #[arg(long)]
     pub debug: bool,
+    /// Spawn and open memory of a command with arguments (must be last option)
+    #[arg(long, allow_hyphen_values=true, num_args=1..)]
+    pub spawn_command: Vec<String>,
 }
 
 /// Arguments for opening a source (file/stream/process/etc)

@@ -29,6 +29,7 @@ use {
     config::LoadedConfig,
     egui_file_dialog::DialogState,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
+    gui::command::GCmd,
 };
 
 mod app;
@@ -104,7 +105,7 @@ fn print_version_info() {
 }
 
 fn try_main() -> anyhow::Result<()> {
-    let args = Args::parse();
+    let mut args = Args::parse();
     if args.debug {
         IMMEDIATE.set_enabled(true);
         PERSISTENT.set_enabled(true);
@@ -134,6 +135,10 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
+    if !args.spawn_command.is_empty() {
+        gui.cmd
+            .push(GCmd::SpawnCommand(std::mem::take(&mut args.spawn_command)));
+    }
     if let Some(e) = old_config_err {
         gui.msg_dialog.open(
             Icon::Error,
