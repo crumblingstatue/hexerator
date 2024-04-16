@@ -156,28 +156,68 @@ impl FindDialog {
                                 });
                                 row.col(|ui| {
                                     match gui.find_dialog.find_type {
-                                        FindType::I8 => data_value_label::<I8>(ui, app, off),
-                                        FindType::U8 => data_value_label::<U8>(ui, app, off),
-                                        FindType::I16Le => data_value_label::<I16Le>(ui, app, off),
-                                        FindType::I16Be => data_value_label::<I16Be>(ui, app, off),
-                                        FindType::U16Le => data_value_label::<U16Le>(ui, app, off),
-                                        FindType::U16Be => data_value_label::<U16Be>(ui, app, off),
-                                        FindType::I32Le => data_value_label::<I32Le>(ui, app, off),
-                                        FindType::I32Be => data_value_label::<I32Be>(ui, app, off),
-                                        FindType::U32Le => data_value_label::<U32Le>(ui, app, off),
-                                        FindType::U32Be => data_value_label::<U32Be>(ui, app, off),
-                                        FindType::I64Le => data_value_label::<I64Le>(ui, app, off),
-                                        FindType::I64Be => data_value_label::<I64Be>(ui, app, off),
-                                        FindType::U64Le => data_value_label::<U64Le>(ui, app, off),
-                                        FindType::U64Be => data_value_label::<U64Be>(ui, app, off),
-                                        FindType::F32Le => data_value_label::<F32Le>(ui, app, off),
-                                        FindType::F32Be => data_value_label::<F32Be>(ui, app, off),
-                                        FindType::F64Le => data_value_label::<F64Le>(ui, app, off),
-                                        FindType::F64Be => data_value_label::<F64Be>(ui, app, off),
-                                        FindType::Ascii => data_value_label::<U8>(ui, app, off),
-                                        FindType::HexString => data_value_label::<U8>(ui, app, off),
+                                        FindType::I8 => {
+                                            data_value_label::<I8>(ui, &mut app.data, off)
+                                        }
+                                        FindType::U8 => {
+                                            data_value_label::<U8>(ui, &mut app.data, off)
+                                        }
+                                        FindType::I16Le => {
+                                            data_value_label::<I16Le>(ui, &mut app.data, off)
+                                        }
+                                        FindType::I16Be => {
+                                            data_value_label::<I16Be>(ui, &mut app.data, off)
+                                        }
+                                        FindType::U16Le => {
+                                            data_value_label::<U16Le>(ui, &mut app.data, off)
+                                        }
+                                        FindType::U16Be => {
+                                            data_value_label::<U16Be>(ui, &mut app.data, off)
+                                        }
+                                        FindType::I32Le => {
+                                            data_value_label::<I32Le>(ui, &mut app.data, off)
+                                        }
+                                        FindType::I32Be => {
+                                            data_value_label::<I32Be>(ui, &mut app.data, off)
+                                        }
+                                        FindType::U32Le => {
+                                            data_value_label::<U32Le>(ui, &mut app.data, off)
+                                        }
+                                        FindType::U32Be => {
+                                            data_value_label::<U32Be>(ui, &mut app.data, off)
+                                        }
+                                        FindType::I64Le => {
+                                            data_value_label::<I64Le>(ui, &mut app.data, off)
+                                        }
+                                        FindType::I64Be => {
+                                            data_value_label::<I64Be>(ui, &mut app.data, off)
+                                        }
+                                        FindType::U64Le => {
+                                            data_value_label::<U64Le>(ui, &mut app.data, off)
+                                        }
+                                        FindType::U64Be => {
+                                            data_value_label::<U64Be>(ui, &mut app.data, off)
+                                        }
+                                        FindType::F32Le => {
+                                            data_value_label::<F32Le>(ui, &mut app.data, off)
+                                        }
+                                        FindType::F32Be => {
+                                            data_value_label::<F32Be>(ui, &mut app.data, off)
+                                        }
+                                        FindType::F64Le => {
+                                            data_value_label::<F64Le>(ui, &mut app.data, off)
+                                        }
+                                        FindType::F64Be => {
+                                            data_value_label::<F64Be>(ui, &mut app.data, off)
+                                        }
+                                        FindType::Ascii => {
+                                            data_value_label::<U8>(ui, &mut app.data, off)
+                                        }
+                                        FindType::HexString => {
+                                            data_value_label::<U8>(ui, &mut app.data, off)
+                                        }
                                         FindType::StringDiff => {
-                                            data_value_label::<U8>(ui, app, off)
+                                            data_value_label::<U8>(ui, &mut app.data, off)
                                         }
                                     };
                                 });
@@ -346,11 +386,11 @@ impl<T> SliceExt<T> for [T] {
     }
 }
 
-fn data_value_label<N: EndianedPrimitive>(ui: &mut Ui, app: &mut App, off: usize)
+fn data_value_label<N: EndianedPrimitive>(ui: &mut Ui, data: &mut Vec<u8>, off: usize)
 where
     [(); N::BYTE_LEN]:,
 {
-    let Some(data) = app.data.get_array_mut(off) else {
+    let Some(data) = data.get_array_mut(off) else {
         ui.label("!!").on_hover_text("Truncated");
         return;
     };
