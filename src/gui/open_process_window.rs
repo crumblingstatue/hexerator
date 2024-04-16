@@ -163,7 +163,9 @@ impl OpenProcessWindow {
                     }
                 });
             }
+            let mut filtered = win.map_ranges.clone();
             TableBuilder::new(ui)
+                .max_scroll_height(400.0)
                 .column(Column::auto())
                 .column(Column::auto())
                 .column(Column::auto())
@@ -214,14 +216,35 @@ impl OpenProcessWindow {
                             });
                     });
                     row.col(|ui| {
-                        ui.add(
-                            egui::TextEdit::singleline(&mut win.path_filter_string)
-                                .hint_text("🔎 Path"),
-                        );
+                        ui.horizontal(|ui| {
+                            ui.add(
+                                egui::TextEdit::singleline(&mut win.path_filter_string)
+                                    .hint_text("🔎 Path"),
+                            );
+                            if ui
+                                .button("🗑")
+                                .on_hover_text("Remove filtered paths")
+                                .clicked()
+                            {
+                                win.map_ranges.retain(|range| {
+                                    let mut retain = true;
+                                    if let Some(filename) = range.filename() {
+                                        if filename
+                                            .display()
+                                            .to_string()
+                                            .contains(&win.path_filter_string)
+                                        {
+                                            retain = false;
+                                        }
+                                    }
+                                    retain
+                                });
+                                win.path_filter_string.clear();
+                            }
+                        });
                     });
                 })
                 .body(|body| {
-                    let mut filtered = win.map_ranges.clone();
                     filtered.retain(|range| {
                         if win.perm_filters.read && !range.is_read() {
                             return false;
@@ -354,6 +377,19 @@ impl OpenProcessWindow {
                         });
                     });
                 });
+            ui.separator();
+            #[expect(
+                clippy::cast_precision_loss,
+                reason = "This is just an approximation of data size"
+            )]
+            ui.label(format!(
+                "{}/{} maps shown ({})",
+                filtered.len(),
+                win.map_ranges.len(),
+                human_bytes::human_bytes(
+                    filtered.iter().map(|range| range.size()).sum::<usize>() as f64
+                )
+            ));
         } else {
             TableBuilder::new(ui)
                 .column(Column::auto())

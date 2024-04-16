@@ -627,6 +627,7 @@ dependencies = [
  "either",
  "gamedebug_core",
  "glu-sys",
+ "human_bytes",
  "iced-x86",
  "itertools",
  "memchr",
@@ -658,6 +659,12 @@ checksum = "e3d1354bf6b7235cb4a0576c2619fd4ed18183f689b12b006a0ee7329eeff9a5"
 dependencies = [
  "windows-sys 0.52.0",
 ]
+
+[[package]]
+name = "human_bytes"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "91f255a4535024abf7640cb288260811fc14794f62b063652ed349f9a6c2348e"
 
 [[package]]
 name = "iced-x86"
