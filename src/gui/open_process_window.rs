@@ -1,17 +1,20 @@
 use {
-    super::window_open::WindowOpen,
+    super::{message_dialog::MessageDialog, window_open::WindowOpen},
     crate::shell::{msg_fail, msg_if_fail},
     egui_extras::{Column, TableBuilder},
     egui_sfml::sfml::graphics::Font,
+    std::process::Command,
     sysinfo::Signal,
 };
+
+type MapRanges = Vec<proc_maps::MapRange>;
 
 #[derive(Default)]
 pub struct OpenProcessWindow {
     pub open: WindowOpen,
     pub sys: sysinfo::System,
     pub selected_pid: Option<sysinfo::Pid>,
-    pub map_ranges: Vec<proc_maps::MapRange>,
+    pub map_ranges: MapRanges,
     proc_name_filter_string: String,
     path_filter_string: String,
     addr_filter_string: String,
@@ -20,6 +23,7 @@ pub struct OpenProcessWindow {
     size_sort: Sort,
     maps_sort_col: MapsSortColumn,
     perm_filters: PermFilters,
+    modal: Option<Modal>,
 }
 
 #[derive(Default)]
@@ -67,6 +71,24 @@ enum MapsSortColumn {
     Size,
 }
 
+enum Modal {
+    RunCommand(RunCommand),
+}
+
+impl Modal {
+    fn run_command() -> Self {
+        Self::RunCommand(RunCommand {
+            command: String::new(),
+            just_opened: true,
+        })
+    }
+}
+
+struct RunCommand {
+    command: String,
+    just_opened: bool,
+}
+
 impl OpenProcessWindow {
     pub(crate) fn ui(
         ui: &mut egui::Ui,
@@ -75,9 +97,54 @@ impl OpenProcessWindow {
         font: &Font,
     ) {
         let win = &mut gui.open_process_window;
-        if win.open.just_now() || ui.button("Refresh").clicked() {
-            win.sys.refresh_processes();
+        if let Some(modal) = &mut win.modal {
+            let mut close_modal = false;
+            ui.horizontal(|ui| match modal {
+                Modal::RunCommand(run_command) => {
+                    ui.label("Command");
+                    let re = ui.text_edit_singleline(&mut run_command.command);
+                    if run_command.just_opened {
+                        re.request_focus();
+                        run_command.just_opened = false;
+                    }
+                    let enter = ui.input(|inp| inp.key_pressed(egui::Key::Enter));
+                    if ui.button("Run").clicked() || (re.lost_focus() && enter) {
+                        match Command::new(&mut run_command.command).spawn() {
+                            Ok(child) => {
+                                let pid = child.id();
+                                win.selected_pid = Some(sysinfo::Pid::from_u32(pid));
+                                refresh_proc_maps(pid, &mut win.map_ranges, &mut gui.msg_dialog);
+                                // Make sure this process is visible for sysinfo to kill/stop/etc.
+                                win.sys.refresh_processes();
+                                close_modal = true;
+                            }
+                            Err(e) => msg_fail(&e, "Run command error", &mut gui.msg_dialog),
+                        }
+                    }
+                }
+            });
+            if close_modal {
+                win.modal = None;
+            }
+            ui.set_enabled(false);
         }
+        ui.horizontal(|ui| {
+            match win.selected_pid {
+                None => {
+                    if win.open.just_now() || ui.button("Refresh processes").clicked() {
+                        win.sys.refresh_processes();
+                    }
+                }
+                Some(pid) => {
+                    if ui.button("Refresh memory maps").clicked() {
+                        refresh_proc_maps(pid.as_u32(), &mut win.map_ranges, &mut gui.msg_dialog);
+                    }
+                }
+            }
+            if ui.button("Run command...").clicked() {
+                win.modal = Some(Modal::run_command());
+            }
+        });
         if let &Some(pid) = &win.selected_pid {
             ui.heading(format!("Virtual memory maps for pid {pid}"));
             if ui.link("Back to process list").clicked() {
@@ -313,16 +380,11 @@ impl OpenProcessWindow {
                             {
                                 win.selected_pid = Some(*pid);
                                 match pid.to_string().parse() {
-                                    Ok(pid) => match proc_maps::get_process_maps(pid) {
-                                        Ok(ranges) => {
-                                            win.map_ranges = ranges;
-                                        }
-                                        Err(e) => msg_fail(
-                                            &e,
-                                            "Failed to get map ranges for process",
-                                            &mut gui.msg_dialog,
-                                        ),
-                                    },
+                                    Ok(pid) => refresh_proc_maps(
+                                        pid,
+                                        &mut win.map_ranges,
+                                        &mut gui.msg_dialog,
+                                    ),
                                     Err(e) => msg_fail(
                                         &e,
                                         "Failed to parse pid of process",
@@ -338,5 +400,18 @@ impl OpenProcessWindow {
                 });
         }
         win.open.post_ui();
+    }
+}
+
+fn refresh_proc_maps(pid: u32, win_map_ranges: &mut MapRanges, msg: &mut MessageDialog) {
+    #[expect(
+        clippy::cast_possible_wrap,
+        reason = "Hopefully pid isn't greater than 2^31"
+    )]
+    match proc_maps::get_process_maps(pid as _) {
+        Ok(ranges) => {
+            *win_map_ranges = ranges;
+        }
+        Err(e) => msg_fail(&e, "Failed to get map ranges for process", msg),
     }
 }
