@@ -332,7 +332,10 @@ impl View {
             match &mut self.kind {
                 ViewKind::Hex(hex) => {
                     if !hex.edit_buf.dirty {
-                        let s = format!("{:02X}", data[edit_state.cursor]);
+                        let Some(byte) = data.get(edit_state.cursor) else {
+                            return;
+                        };
+                        let s = format!("{byte:02X}");
                         hex.edit_buf.update_from_string(&s);
                     }
                     if hex.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
@@ -343,7 +346,10 @@ impl View {
                 }
                 ViewKind::Dec(dec) => {
                     if !dec.edit_buf.dirty {
-                        let s = format!("{:03}", data[edit_state.cursor]);
+                        let Some(byte) = data.get(edit_state.cursor) else {
+                            return;
+                        };
+                        let s = format!("{byte:03}");
                         dec.edit_buf.update_from_string(&s);
                     }
                     if dec.edit_buf.enter_byte(unicode.to_ascii_uppercase() as u8)
@@ -422,7 +428,10 @@ impl View {
                 }
             }
             ViewKind::Text(text) => {
-                data[edit_state.cursor] = text.edit_buf.buf[0];
+                let Some(byte) = data.get_mut(edit_state.cursor) else {
+                    return;
+                };
+                *byte = text.edit_buf.buf[0];
                 edit_state.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
             }
             ViewKind::Block => {}
