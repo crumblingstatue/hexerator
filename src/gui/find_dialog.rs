@@ -372,29 +372,29 @@ fn do_search(app: &mut App, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
         gui.highlight_set.clear();
     }
     match gui.find_dialog.find_type {
-        FindType::I8 => find_num::<I8>(gui, app)?,
+        FindType::I8 => find_num::<I8>(gui, &app.data)?,
         FindType::U8 => find_u8(
             &mut gui.find_dialog,
-            app,
+            &app.data,
             &mut gui.msg_dialog,
             &mut gui.highlight_set,
         ),
-        FindType::I16Le => find_num::<I16Le>(gui, app)?,
-        FindType::I16Be => find_num::<I16Be>(gui, app)?,
-        FindType::U16Le => find_num::<U16Le>(gui, app)?,
-        FindType::U16Be => find_num::<U16Be>(gui, app)?,
-        FindType::I32Le => find_num::<I32Le>(gui, app)?,
-        FindType::I32Be => find_num::<I32Be>(gui, app)?,
-        FindType::U32Le => find_num::<U32Le>(gui, app)?,
-        FindType::U32Be => find_num::<U32Be>(gui, app)?,
-        FindType::I64Le => find_num::<I64Le>(gui, app)?,
-        FindType::I64Be => find_num::<I64Be>(gui, app)?,
-        FindType::U64Le => find_num::<U64Le>(gui, app)?,
-        FindType::U64Be => find_num::<U64Be>(gui, app)?,
-        FindType::F32Le => find_num::<F32Le>(gui, app)?,
-        FindType::F32Be => find_num::<F32Be>(gui, app)?,
-        FindType::F64Le => find_num::<F64Le>(gui, app)?,
-        FindType::F64Be => find_num::<F64Be>(gui, app)?,
+        FindType::I16Le => find_num::<I16Le>(gui, &app.data)?,
+        FindType::I16Be => find_num::<I16Be>(gui, &app.data)?,
+        FindType::U16Le => find_num::<U16Le>(gui, &app.data)?,
+        FindType::U16Be => find_num::<U16Be>(gui, &app.data)?,
+        FindType::I32Le => find_num::<I32Le>(gui, &app.data)?,
+        FindType::I32Be => find_num::<I32Be>(gui, &app.data)?,
+        FindType::U32Le => find_num::<U32Le>(gui, &app.data)?,
+        FindType::U32Be => find_num::<U32Be>(gui, &app.data)?,
+        FindType::I64Le => find_num::<I64Le>(gui, &app.data)?,
+        FindType::I64Be => find_num::<I64Be>(gui, &app.data)?,
+        FindType::U64Le => find_num::<U64Le>(gui, &app.data)?,
+        FindType::U64Be => find_num::<U64Be>(gui, &app.data)?,
+        FindType::F32Le => find_num::<F32Le>(gui, &app.data)?,
+        FindType::F32Be => find_num::<F32Be>(gui, &app.data)?,
+        FindType::F64Le => find_num::<F64Le>(gui, &app.data)?,
+        FindType::F64Be => find_num::<F64Be>(gui, &app.data)?,
         FindType::Ascii => {
             for offset in memchr::memmem::find_iter(&app.data, &gui.find_dialog.find_input) {
                 gui.find_dialog.results_vec.push(offset);
@@ -486,27 +486,35 @@ fn test_find_diff_pattern() {
     assert_eq!(&s[off..off + key.len()], key);
 }
 
-fn find_num<N: EndianedPrimitive>(gui: &mut crate::gui::Gui, app: &App) -> Result<(), anyhow::Error>
+fn find_num<N: EndianedPrimitive>(
+    gui: &mut crate::gui::Gui,
+    data: &[u8],
+) -> Result<(), anyhow::Error>
 where
     [(); N::BYTE_LEN]:,
     <<N as EndianedPrimitive>::Primitive as FromStr>::Err: Error + Send + Sync,
 {
     let n: N::Primitive = gui.find_dialog.find_input.parse()?;
     let bytes = N::to_bytes(n);
-    for offset in memchr::memmem::find_iter(&app.data, &bytes) {
+    for offset in memchr::memmem::find_iter(data, &bytes) {
         gui.find_dialog.results_vec.push(offset);
         gui.highlight_set.insert(offset);
     }
     Ok(())
 }
 
-fn find_u8(dia: &mut FindDialog, app: &App, msg: &mut MessageDialog, highlight: &mut HighlightSet) {
+fn find_u8(
+    dia: &mut FindDialog,
+    data: &[u8],
+    msg: &mut MessageDialog,
+    highlight: &mut HighlightSet,
+) {
     match dia.find_input.as_str() {
         "?" => {
-            dia.data_snapshot.clone_from(&app.data);
+            dia.data_snapshot = data.to_vec();
             dia.results_vec.clear();
             highlight.clear();
-            for i in 0..app.data.len() {
+            for i in 0..data.len() {
                 dia.results_vec.push(i);
                 highlight.insert(i);
             }
@@ -514,58 +522,58 @@ fn find_u8(dia: &mut FindDialog, app: &App, msg: &mut MessageDialog, highlight: 
         ">" => {
             if dia.filter_results {
                 dia.results_vec
-                    .retain(|&offset| app.data[offset] > dia.data_snapshot[offset]);
-                highlight.retain(|&offset| app.data[offset] > dia.data_snapshot[offset]);
+                    .retain(|&offset| data[offset] > dia.data_snapshot[offset]);
+                highlight.retain(|&offset| data[offset] > dia.data_snapshot[offset]);
             } else {
-                for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
+                for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new > old {
                         dia.results_vec.push(i);
                     }
                 }
             }
-            dia.data_snapshot.clone_from(&app.data);
+            dia.data_snapshot = data.to_vec();
         }
         "=" => {
             if dia.filter_results {
                 dia.results_vec
-                    .retain(|&offset| app.data[offset] == dia.data_snapshot[offset]);
-                highlight.retain(|&offset| app.data[offset] == dia.data_snapshot[offset]);
+                    .retain(|&offset| data[offset] == dia.data_snapshot[offset]);
+                highlight.retain(|&offset| data[offset] == dia.data_snapshot[offset]);
             } else {
-                for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
+                for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new == old {
                         dia.results_vec.push(i);
                     }
                 }
             }
-            dia.data_snapshot.clone_from(&app.data);
+            dia.data_snapshot = data.to_vec();
         }
         "!=" => {
             if dia.filter_results {
                 dia.results_vec
-                    .retain(|&offset| app.data[offset] != dia.data_snapshot[offset]);
-                highlight.retain(|&offset| app.data[offset] != dia.data_snapshot[offset]);
+                    .retain(|&offset| data[offset] != dia.data_snapshot[offset]);
+                highlight.retain(|&offset| data[offset] != dia.data_snapshot[offset]);
             } else {
-                for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
+                for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new == old {
                         dia.results_vec.push(i);
                     }
                 }
             }
-            dia.data_snapshot.clone_from(&app.data);
+            dia.data_snapshot = data.to_vec();
         }
         "<" => {
             if dia.filter_results {
                 dia.results_vec
-                    .retain(|&offset| app.data[offset] < dia.data_snapshot[offset]);
-                highlight.retain(|&offset| app.data[offset] < dia.data_snapshot[offset]);
+                    .retain(|&offset| data[offset] < dia.data_snapshot[offset]);
+                highlight.retain(|&offset| data[offset] < dia.data_snapshot[offset]);
             } else {
-                for (i, (&new, &old)) in app.data.iter().zip(dia.data_snapshot.iter()).enumerate() {
+                for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new < old {
                         dia.results_vec.push(i);
                     }
                 }
             }
-            dia.data_snapshot.clone_from(&app.data);
+            dia.data_snapshot = data.to_vec();
         }
         _ => match parse_guess_radix(&dia.find_input) {
             Ok(needle) => {
@@ -575,12 +583,12 @@ fn find_u8(dia: &mut FindDialog, app: &App, msg: &mut MessageDialog, highlight: 
                     highlight.clear();
                     u8_search(
                         dia,
-                        results_vec_clone.iter().map(|&off| (off, app.data[off])),
+                        results_vec_clone.iter().map(|&off| (off, data[off])),
                         needle,
                         highlight,
                     );
                 } else {
-                    u8_search(dia, app.data.iter().cloned().enumerate(), needle, highlight);
+                    u8_search(dia, data.iter().cloned().enumerate(), needle, highlight);
                 }
             }
             Err(e) => msg.open(Icon::Error, "Parse error", e.to_string()),
