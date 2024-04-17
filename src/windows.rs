@@ -5,7 +5,6 @@ use {
     },
     anyhow::bail,
     egui_sfml::sfml::graphics::Font,
-    sysinfo::PidExt,
     windows_sys::Win32::System::Threading::*,
 };
 
@@ -39,11 +38,7 @@ unsafe fn load_proc_memory_inner(
     read_proc_memory(handle, &mut app.data, start, size)?;
     app.source = Some(Source {
         attr: SourceAttributes {
-            permissions: SourcePermissions {
-                read: true,
-                write: true,
-            },
-            seekable: false,
+            permissions: SourcePermissions { write: true },
             stream: false,
         },
         provider: SourceProvider::WinProc {
@@ -56,8 +51,8 @@ unsafe fn load_proc_memory_inner(
     if !app.preferences.keep_meta {
         app.set_new_clean_meta(font);
     }
-    app.args.src.hard_seek = Some(start);
-    app.args.src.take = Some(size);
+    app.src_args.hard_seek = Some(start);
+    app.src_args.take = Some(size);
     Ok(())
 }
 

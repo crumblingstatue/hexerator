@@ -146,7 +146,7 @@ dependencies = [
  "rustc-hash",
  "shlex",
  "syn",
- "which",
+ "which 4.4.2",
 ]
 
 [[package]]
@@ -813,6 +813,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
+name = "lua-src"
+version = "546.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2da0daa7eee611a4c30c8f5ee31af55266e26e573971ba9336d2993e2da129b2"
+dependencies = [
+ "cc",
+]
+
+[[package]]
+name = "luajit-src"
+version = "210.5.7+d06beb0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d251fdacdabbf87704cf48ac1f8b1eb23d6e10855c3ee08e5beb25b4be2e9e4"
+dependencies = [
+ "cc",
+ "which 6.0.1",
+]
+
+[[package]]
 name = "mach2"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -879,6 +898,8 @@ checksum = "d16a9ba1dd2c6ac971b204262d434c24d65067038598f0638b64e5dca28d52b8"
 dependencies = [
  "cc",
  "cfg-if",
+ "lua-src",
+ "luajit-src",
  "pkg-config",
 ]
 
@@ -1547,6 +1568,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "which"
+version = "6.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8211e4f58a2b2805adfbefbc07bab82958fc91e3836339b1ab7ae32465dce0d7"
+dependencies = [
+ "either",
+ "home",
+ "rustix",
+ "winsafe",
+]
+
+[[package]]
 name = "widestring"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1731,6 +1764,12 @@ name = "windows_x86_64_msvc"
 version = "0.52.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bec47e5bfd1bff0eeaf6d8b485cc1074891a197ab4225d504cb7a1ab88b02bf0"
+
+[[package]]
+name = "winsafe"
+version = "0.0.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d135d17ab770252ad95e9a872d365cf3090e3be864a34ab46f48555993efc904"
 
 [[package]]
 name = "x11rb"
