@@ -7,6 +7,7 @@ use {
     },
     crate::{
         app::{get_clipboard_string, set_clipboard_string, App},
+        damage_region::DamageRegion,
         meta::{
             find_most_specific_region_for_offset,
             value_type::{
@@ -162,7 +163,7 @@ impl FindDialog {
                                     }
                                 });
                                 row.col(|ui| {
-                                    match gui.find_dialog.find_type {
+                                    let damage = match gui.find_dialog.find_type {
                                         FindType::I8 => {
                                             data_value_label::<I8>(ui, &mut app.data, off)
                                         }
@@ -227,6 +228,9 @@ impl FindDialog {
                                             data_value_label::<U8>(ui, &mut app.data, off)
                                         }
                                     };
+                                    if let Some(damage) = damage {
+                                        app.edit_state.widen_dirty_region(damage);
+                                    }
                                 });
                                 row.col(|ui| {
                                     match find_most_specific_region_for_offset(
@@ -393,18 +397,24 @@ impl<T> SliceExt<T> for [T] {
     }
 }
 
-fn data_value_label<N: EndianedPrimitive>(ui: &mut Ui, data: &mut Vec<u8>, off: usize)
+fn data_value_label<N: EndianedPrimitive>(
+    ui: &mut Ui,
+    data: &mut Vec<u8>,
+    off: usize,
+) -> Option<DamageRegion>
 where
     [(); N::BYTE_LEN]:,
 {
     let Some(data) = data.get_array_mut(off) else {
         ui.label("!!").on_hover_text("Truncated");
-        return;
+        return None;
     };
     let mut n = N::from_bytes(*data);
     if ui.add(egui::DragValue::new(&mut n)).changed() {
         *data = N::to_bytes(n);
+        return Some(DamageRegion::Range(off..off + N::BYTE_LEN));
     }
+    None
 }
 
 enum Action {
