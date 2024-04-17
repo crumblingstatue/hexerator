@@ -440,7 +440,7 @@ where
     [(); N::BYTE_LEN]:,
 {
     let Some(data) = data.get_array_mut(off) else {
-        ui.label("!!").on_hover_text("Truncated");
+        ui.label("!!").on_hover_text("Out of bounds");
         return None;
     };
     let mut n = N::from_bytes(*data);
