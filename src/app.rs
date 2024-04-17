@@ -104,6 +104,13 @@ impl App {
             backend_cmd: Default::default(),
             quit_requested: false,
         };
+        if args.autosave {
+            this.preferences.auto_save = true;
+        }
+        if let Some(interval_ms) = args.autoreload {
+            this.preferences.auto_reload = true;
+            this.preferences.auto_reload_interval_ms = interval_ms;
+        }
         // Set a clean meta, for an empty document
         this.set_new_clean_meta(font);
         msg_if_fail(
@@ -555,6 +562,7 @@ impl App {
             }
         }
         if self.preferences.auto_reload
+            && self.source.is_some()
             && self.last_reload.elapsed().as_millis()
                 >= u128::from(self.preferences.auto_reload_interval_ms)
         {

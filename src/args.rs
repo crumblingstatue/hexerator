@@ -26,6 +26,12 @@ pub struct Args {
     /// Spawn and open memory of a command with arguments (must be last option)
     #[arg(long, allow_hyphen_values=true, num_args=1..)]
     pub spawn_command: Vec<String>,
+    /// Automatically reload the source for the current buffer in millisecond intervals (default:250)
+    #[arg(long, value_name="interval", default_missing_value="250", num_args=0..=1)]
+    pub autoreload: Option<u32>,
+    /// Automatically save if there is an edited region in the file
+    #[arg(long)]
+    pub autosave: bool,
 }
 
 /// Arguments for opening a source (file/stream/process/etc)
