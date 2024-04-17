@@ -122,6 +122,7 @@ impl FindDialog {
             .size(Size::exact(20.0))
             .vertical(|mut strip| {
                 strip.cell(|ui| {
+                    ui.style_mut().wrap = Some(false);
                     let mut action = Action::None;
                     TableBuilder::new(ui)
                         .striped(true)

@@ -36,6 +36,7 @@ pub struct BookmarksWindow {
 
 impl BookmarksWindow {
     pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App) {
+        ui.style_mut().wrap = Some(false);
         let win = &mut gui.bookmarks_window;
         ui.horizontal(|ui| {
             ui.add(

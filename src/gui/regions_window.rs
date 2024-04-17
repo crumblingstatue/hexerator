@@ -64,6 +64,7 @@ pub fn region_context_menu(
 
 impl RegionsWindow {
     pub fn ui(ui: &mut Ui, gui: &mut crate::gui::Gui, app: &mut App) {
+        ui.style_mut().wrap = Some(false);
         let button = egui::Button::new("Add selection as region");
         match app.hex_ui.selection() {
             Some(sel) => {

@@ -99,6 +99,7 @@ impl OpenProcessWindow {
         app: &mut crate::app::App,
         font: &Font,
     ) {
+        ui.style_mut().wrap = Some(false);
         let win = &mut gui.open_process_window;
         if let Some(modal) = &mut win.modal {
             let mut close_modal = false;

@@ -12,6 +12,7 @@ pub struct PerspectivesWindow {
 }
 impl PerspectivesWindow {
     pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut crate::app::App) {
+        ui.style_mut().wrap = Some(false);
         TableBuilder::new(ui)
             .columns(Column::auto(), 3)
             .column(Column::remainder())
