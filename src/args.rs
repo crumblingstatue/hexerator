@@ -15,7 +15,7 @@ pub struct Args {
     #[arg(long)]
     pub recent: bool,
     /// Load this metafile
-    #[arg(long)]
+    #[arg(long, value_name = "path")]
     pub meta: Option<PathBuf>,
     /// Show version information and exit
     #[arg(long)]
@@ -24,7 +24,7 @@ pub struct Args {
     #[arg(long)]
     pub debug: bool,
     /// Spawn and open memory of a command with arguments (must be last option)
-    #[arg(long, allow_hyphen_values=true, num_args=1..)]
+    #[arg(long, value_name="command", allow_hyphen_values=true, num_args=1..)]
     pub spawn_command: Vec<String>,
     /// Automatically reload the source for the current buffer in millisecond intervals (default:250)
     #[arg(long, value_name="interval", default_missing_value="250", num_args=0..=1)]
@@ -40,13 +40,13 @@ pub struct SourceArgs {
     /// The file to read
     pub file: Option<PathBuf>,
     /// Jump to offset on startup
-    #[arg(short = 'j', value_parser = parse_guess_radix::<usize>)]
+    #[arg(short = 'j', long="jump", value_name="offset", value_parser = parse_guess_radix::<usize>)]
     pub jump: Option<usize>,
     /// Seek to offset, consider it beginning of the file in the editor
-    #[arg(long, value_parser = parse_guess_radix::<usize>)]
+    #[arg(long, value_name="offset", value_parser = parse_guess_radix::<usize>)]
     pub hard_seek: Option<usize>,
     /// Read only this many bytes
-    #[arg(long, value_parser = parse_guess_radix::<usize>)]
+    #[arg(long, value_name = "bytes", value_parser = parse_guess_radix::<usize>)]
     pub take: Option<usize>,
     /// Open file as read-only, without writing privileges
     #[arg(long)]
