@@ -414,6 +414,8 @@ enum Action {
 }
 
 fn do_search(data: &[u8], gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
+    // Reset the result cursor, so it's not out of bounds if new results_vec is smaller
+    gui.find_dialog.result_cursor = 0;
     if !gui.find_dialog.filter_results {
         gui.find_dialog.results_vec.clear();
         gui.highlight_set.clear();
