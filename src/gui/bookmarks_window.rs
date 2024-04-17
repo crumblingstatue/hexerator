@@ -115,6 +115,16 @@ impl BookmarksWindow {
                                     );
                                     ui.close_menu();
                                 }
+                                if ui
+                                    .button("Reoffset all bookmarks")
+                                    .on_hover_text("Assume that the cursor is at the correct offset for this bookmark.\n\
+                                                    Reoffset all the other bookmarks based on that assumption.").clicked() {
+                                        #[expect(clippy::cast_possible_wrap, reason = "We assume that the offset is not greater than isize")]
+                                        let difference = app.edit_state.cursor as isize - offset as isize;
+                                        for bm in &mut app.meta_state.meta.bookmarks {
+                                            bm.offset = bm.offset.saturating_add_signed(difference);
+                                        }
+                                }
                             };
                             let re = ui.link(offset.to_string());
                             re.context_menu(ctx_menu);
