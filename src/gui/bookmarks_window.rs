@@ -125,6 +125,7 @@ impl BookmarksWindow {
                                         for bm in &mut app.meta_state.meta.bookmarks {
                                             bm.offset = bm.offset.saturating_add_signed(difference);
                                         }
+                                        ui.close_menu();
                                 }
                             };
                             let re = ui.link(offset.to_string());
