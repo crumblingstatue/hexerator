@@ -9,12 +9,17 @@ use {
 pub struct FindMemoryPointersWindow {
     pub open: WindowOpen,
     pointers: Vec<PtrEntry>,
+    filter_write: bool,
+    filter_exec: bool,
 }
 
+#[derive(Clone, Copy)]
 struct PtrEntry {
     src_idx: usize,
     ptr: usize,
     range_idx: usize,
+    write: bool,
+    execute: bool,
 }
 
 impl FindMemoryPointersWindow {
@@ -35,16 +40,20 @@ impl FindMemoryPointersWindow {
                 if let Some(pos) = gui.open_process_window.map_ranges.iter().position(|range| {
                     range.is_read() && range.start() <= ptr && range.start() + range.size() >= ptr
                 }) {
+                    let range = &gui.open_process_window.map_ranges[pos];
                     win.pointers.push(PtrEntry {
                         src_idx: i,
                         ptr,
                         range_idx: pos,
+                        write: range.is_write(),
+                        execute: range.is_exec(),
                     });
                 }
             }
         }
         let mut action = Action::None;
         TableBuilder::new(ui)
+            .column(Column::auto())
             .column(Column::auto())
             .column(Column::auto())
             .column(Column::remainder())
@@ -55,15 +64,37 @@ impl FindMemoryPointersWindow {
                     ui.label("Location");
                 });
                 row.col(|ui| {
-                    ui.label("Region");
+                    if ui.button("Region").clicked() {
+                        win.pointers.sort_by_key(|p| {
+                            gui.open_process_window.map_ranges[p.range_idx].filename()
+                        });
+                    }
                 });
                 row.col(|ui| {
-                    ui.label("Pointer");
+                    ui.menu_button("w/x", |ui| {
+                        ui.checkbox(&mut win.filter_write, "Write");
+                        ui.checkbox(&mut win.filter_exec, "Execute");
+                    });
+                });
+                row.col(|ui| {
+                    if ui.button("Pointer").clicked() {
+                        win.pointers.sort_by_key(|p| p.ptr);
+                    }
                 });
             })
             .body(|body| {
-                body.rows(20.0, win.pointers.len(), |mut row| {
-                    let en = &win.pointers[row.index()];
+                let mut filtered = win.pointers.clone();
+                filtered.retain(|ptr| {
+                    if win.filter_exec && !ptr.execute {
+                        return false;
+                    }
+                    if win.filter_write && !ptr.write {
+                        return false;
+                    }
+                    true
+                });
+                body.rows(20.0, filtered.len(), |mut row| {
+                    let en = &filtered[row.index()];
                     row.col(|ui| {
                         if ui.link(format!("{:X}", en.src_idx)).clicked() {
                             action = Action::Goto(en.src_idx);
@@ -75,8 +106,18 @@ impl FindMemoryPointersWindow {
                             range
                                 .filename()
                                 .map(|p| p.display().to_string())
-                                .unwrap_or_else(|| String::from("<unnamed>")),
+                                .unwrap_or_else(|| {
+                                    format!("<anon> @ {:X} (size: {})", range.start(), range.size())
+                                }),
                         );
+                    });
+                    row.col(|ui| {
+                        let range = &gui.open_process_window.map_ranges[en.range_idx];
+                        ui.label(format!(
+                            "{}{}",
+                            if range.is_write() { "w" } else { "" },
+                            if range.is_exec() { "x" } else { "" }
+                        ));
                     });
                     row.col(|ui| {
                         let range = &gui.open_process_window.map_ranges[en.range_idx];
