@@ -52,6 +52,34 @@ pub enum FindType {
     HexString,
 }
 
+impl FindType {
+    fn to_value_type(&self) -> ValueType {
+        match self {
+            FindType::I8 => ValueType::I8(I8),
+            FindType::U8 => ValueType::U8(U8),
+            FindType::I16Le => ValueType::I16Le(I16Le),
+            FindType::I16Be => ValueType::I16Be(I16Be),
+            FindType::U16Le => ValueType::U16Le(U16Le),
+            FindType::U16Be => ValueType::U16Be(U16Be),
+            FindType::I32Le => ValueType::I32Le(I32Le),
+            FindType::I32Be => ValueType::I32Be(I32Be),
+            FindType::U32Le => ValueType::U32Le(U32Le),
+            FindType::U32Be => ValueType::U32Be(U32Be),
+            FindType::I64Le => ValueType::I64Le(I64Le),
+            FindType::I64Be => ValueType::I64Be(I64Be),
+            FindType::U64Le => ValueType::U64Le(U64Le),
+            FindType::U64Be => ValueType::U64Be(U64Be),
+            FindType::F32Le => ValueType::F32Le(F32Le),
+            FindType::F32Be => ValueType::F32Be(F32Be),
+            FindType::F64Le => ValueType::F64Le(F64Le),
+            FindType::F64Be => ValueType::F64Be(F64Be),
+            FindType::Ascii => ValueType::None,
+            FindType::StringDiff => ValueType::None,
+            FindType::HexString => ValueType::U8(U8),
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct FindDialog {
     pub open: WindowOpen,
@@ -63,8 +91,8 @@ pub struct FindDialog {
     pub result_cursor: usize,
     /// When Some, the results list should be scrolled to the offset of that result
     pub scroll_to: Option<usize>,
-    pub find_type: FindType,
     pub filter_results: bool,
+    pub find_type: FindType,
     /// Used for increased/decreased unknown value search
     pub data_snapshot: Vec<u8>,
 }
@@ -291,7 +319,10 @@ impl FindDialog {
                                                     offset: off,
                                                     label: "New bookmark".into(),
                                                     desc: String::new(),
-                                                    value_type: ValueType::None,
+                                                    value_type: gui
+                                                        .find_dialog
+                                                        .find_type
+                                                        .to_value_type(),
                                                 });
                                                 gui.bookmarks_window.open.set(true);
                                                 gui.bookmarks_window.selected = Some(idx);
