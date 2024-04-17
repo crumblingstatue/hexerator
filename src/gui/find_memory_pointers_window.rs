@@ -19,6 +19,7 @@ struct PtrEntry {
 
 impl FindMemoryPointersWindow {
     pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
+        ui.style_mut().wrap = Some(false);
         let Some(pid) = gui.open_process_window.selected_pid else {
             ui.label("No selected pid.");
             return;
@@ -48,6 +49,7 @@ impl FindMemoryPointersWindow {
             .column(Column::auto())
             .column(Column::remainder())
             .striped(true)
+            .resizable(true)
             .header(20.0, |mut row| {
                 row.col(|ui| {
                     ui.label("Location");
