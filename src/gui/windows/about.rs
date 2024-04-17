@@ -41,6 +41,7 @@ macro_rules! optenv {
 
 impl AboutWindow {
     pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
+        ui.style_mut().wrap = Some(false);
         let win = &mut gui.about_window;
         if win.open.just_now() {
             win.sys.refresh_cpu();
