@@ -209,6 +209,9 @@ impl BookmarksWindow {
                 }
                 if ui.button("✏").clicked() {
                     win.edit_name ^= true;
+                    if win.edit_name {
+                        win.focus_text_edit = true;
+                    }
                 }
                 if ui.button("⮩").on_hover_text("Jump").clicked() {
                     action = Action::Goto(mark.offset);
