@@ -121,6 +121,9 @@ impl OpenProcessWindow {
                             Err(e) => msg_fail(&e, "Run command error", &mut gui.msg_dialog),
                         }
                     }
+                    if ui.button("Cancel").clicked() {
+                        close_modal = true;
+                    }
                 }
             });
             if close_modal {
