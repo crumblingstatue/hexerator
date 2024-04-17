@@ -43,6 +43,7 @@ impl ViewsWindow {
         app: &mut crate::app::App,
         font: &Font,
     ) {
+        ui.style_mut().wrap = Some(false);
         if gui.views_window.open.just_now() &&
            // Don't override selected key if there already is one
            // For example, it could be set by the context menu "view properties".

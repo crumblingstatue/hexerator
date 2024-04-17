@@ -26,6 +26,7 @@ impl Default for VarsWindow {
 
 impl VarsWindow {
     pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
+        ui.style_mut().wrap = Some(false);
         ui.group(|ui| {
             ui.label("New");
             ui.horizontal(|ui| {
