@@ -56,7 +56,7 @@ pub struct FindDialog {
     pub open: WindowOpen,
     pub find_input: String,
     pub replace_input: String,
-    /// Results, as a Bec that can be indexed. Needed because of search cursor.
+    /// Results, as a Vec that can be indexed. Needed because of search cursor.
     pub results_vec: Vec<usize>,
     /// Used to keep track of previous/next result to go to
     pub result_cursor: usize,
