@@ -44,6 +44,7 @@ egui_code_editor = {git = "https://github.com/p4ymak/egui_code_editor.git"}
 mlua = { version = "0.9.7", features = ["luajit"] }
 egui-file-dialog = { git = "https://github.com/crumblingstatue/egui-file-dialog.git", branch = "hexerator" }
 human_bytes = "0.4.3"
+shlex = "1.3.0"
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.52.0"

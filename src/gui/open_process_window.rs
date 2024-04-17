@@ -2,6 +2,7 @@ use {
     super::{message_dialog::MessageDialog, window_open::WindowOpen},
     crate::shell::{msg_fail, msg_if_fail},
     egui_extras::{Column, TableBuilder},
+    egui_file_dialog::FileDialog,
     egui_sfml::sfml::graphics::Font,
     std::process::Command,
     sysinfo::Signal,
@@ -80,6 +81,7 @@ impl Modal {
         Self::RunCommand(RunCommand {
             command: String::new(),
             just_opened: true,
+            file_dialog: FileDialog::new(),
         })
     }
 }
@@ -87,6 +89,7 @@ impl Modal {
 struct RunCommand {
     command: String,
     just_opened: bool,
+    file_dialog: FileDialog,
 }
 
 impl OpenProcessWindow {
@@ -101,25 +104,50 @@ impl OpenProcessWindow {
             let mut close_modal = false;
             ui.horizontal(|ui| match modal {
                 Modal::RunCommand(run_command) => {
+                    run_command.file_dialog.update(ui.ctx());
                     ui.label("Command");
+                    if let Some(file_path) = run_command.file_dialog.take_selected() {
+                        run_command
+                            .command
+                            .push_str(&format!("\"{}\"", file_path.display()));
+                    }
                     let re = ui.text_edit_singleline(&mut run_command.command);
                     if run_command.just_opened {
                         re.request_focus();
                         run_command.just_opened = false;
                     }
                     let enter = ui.input(|inp| inp.key_pressed(egui::Key::Enter));
-                    if ui.button("Run").clicked() || (re.lost_focus() && enter) {
-                        match Command::new(&mut run_command.command).spawn() {
-                            Ok(child) => {
-                                let pid = child.id();
-                                win.selected_pid = Some(sysinfo::Pid::from_u32(pid));
-                                refresh_proc_maps(pid, &mut win.map_ranges, &mut gui.msg_dialog);
-                                // Make sure this process is visible for sysinfo to kill/stop/etc.
-                                win.sys.refresh_processes();
-                                close_modal = true;
+                    match shlex::split(&run_command.command) {
+                        Some(tokens) => {
+                            let mut tokens = tokens.into_iter();
+                            if ui.button("Run").clicked() || (re.lost_focus() && enter) {
+                                if let Some(first) = tokens.next() {
+                                    match Command::new(first).args(tokens).spawn() {
+                                        Ok(child) => {
+                                            let pid = child.id();
+                                            win.selected_pid = Some(sysinfo::Pid::from_u32(pid));
+                                            refresh_proc_maps(
+                                                pid,
+                                                &mut win.map_ranges,
+                                                &mut gui.msg_dialog,
+                                            );
+                                            // Make sure this process is visible for sysinfo to kill/stop/etc.
+                                            win.sys.refresh_processes();
+                                            close_modal = true;
+                                        }
+                                        Err(e) => {
+                                            msg_fail(&e, "Run command error", &mut gui.msg_dialog)
+                                        }
+                                    }
+                                }
                             }
-                            Err(e) => msg_fail(&e, "Run command error", &mut gui.msg_dialog),
                         }
+                        None => {
+                            ui.add_enabled(false, egui::Button::new("Run"));
+                        }
+                    }
+                    if ui.button("Add file...").clicked() {
+                        run_command.file_dialog.select_file();
                     }
                     if ui.button("Cancel").clicked() {
                         close_modal = true;

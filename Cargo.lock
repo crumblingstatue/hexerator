@@ -642,6 +642,7 @@ dependencies = [
  "rmp-serde",
  "serde",
  "serde-big-array",
+ "shlex",
  "slotmap",
  "strum",
  "sysinfo",
