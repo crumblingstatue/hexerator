@@ -817,7 +817,7 @@ fn handle_key_pressed(
         }
         Key::Delete => {
             if let Some(sel) = app.hex_ui.selection() {
-                app.data[sel.begin..=sel.end].fill(0);
+                app.zero_fill_region(sel);
             } else {
                 app.data[app.edit_state.cursor] = 0;
             }

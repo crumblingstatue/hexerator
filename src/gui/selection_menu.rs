@@ -38,7 +38,9 @@ pub fn selection_menu(
             .add(Button::new("Zero fill").shortcut_text("Del"))
             .clicked()
         {
-            app.data[sel.begin..=sel.end].fill(0);
+            app.zero_fill_region(sel);
+            ui.close_menu();
+            clicked = true;
         }
         if ui.button("Pattern fill...").clicked() {
             Gui::add_dialog(gui_dialogs, PatternFillDialog::default());

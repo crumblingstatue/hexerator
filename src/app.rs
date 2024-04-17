@@ -7,6 +7,7 @@ use {
     crate::{
         args::{Args, SourceArgs},
         config::Config,
+        damage_region::DamageRegion,
         gui::{
             file_diff_result_window::FileDiffResultWindow,
             message_dialog::{Icon, MessageDialog},
@@ -707,6 +708,15 @@ impl App {
             per.cols = focused_per.cols;
         }
         self.meta_state.meta.low.perspectives.insert(per);
+    }
+
+    pub(crate) fn zero_fill_region(&mut self, region: Region) {
+        let range = region.begin..=region.end;
+        if let Some(data) = self.data.get_mut(range.clone()) {
+            data.fill(0);
+            self.edit_state
+                .widen_dirty_region(DamageRegion::RangeInclusive(range));
+        }
     }
 }
 
