@@ -1,5 +1,6 @@
 use {
     self::{command::GCommandQueue, file_ops::FileOps, windows::VarsWindow},
+    crate::meta::value_type::U8,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
 };
 
@@ -293,7 +294,7 @@ pub fn do_egui(
                                             offset: byte_off,
                                             label: format!("New @ offset {byte_off}"),
                                             desc: String::new(),
-                                            value_type: ValueType::None,
+                                            value_type: ValueType::U8(U8),
                                         });
                                         gui.bookmarks_window.open.set(true);
                                         gui.bookmarks_window.selected = Some(idx);
