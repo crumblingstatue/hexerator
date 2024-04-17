@@ -17,7 +17,7 @@ use {
         shell::{msg_fail, msg_if_fail},
     },
     anyhow::Context,
-    egui::{ScrollArea, Ui},
+    egui::{text::CursorRange, ScrollArea, Ui},
     egui_extras::{Column, TableBuilder},
     gamedebug_core::per,
     num_traits::AsPrimitive,
@@ -28,7 +28,8 @@ use {
 pub struct BookmarksWindow {
     pub open: WindowOpen,
     pub selected: Option<usize>,
-    edit_name: bool,
+    pub edit_name: bool,
+    pub focus_text_edit: bool,
     value_type_string_buf: String,
     name_filter_string: String,
 }
@@ -180,8 +181,17 @@ impl BookmarksWindow {
             ui.separator();
             ui.horizontal(|ui| {
                 if win.edit_name {
-                    if ui.text_edit_singleline(&mut mark.label).lost_focus() {
+                    let mut out = egui::TextEdit::singleline(&mut mark.label).show(ui);
+                    if out.response.lost_focus() {
                         win.edit_name = false;
+                    }
+                    if win.focus_text_edit {
+                        out.response.request_focus();
+                        out.state
+                            .cursor
+                            .set_range(Some(CursorRange::select_all(&out.galley)));
+                        out.state.store(ui.ctx(), out.response.id);
+                        win.focus_text_edit = false;
                     }
                 } else {
                     ui.heading(&mark.label);

@@ -294,6 +294,8 @@ impl FindDialog {
                                                 });
                                                 gui.bookmarks_window.open.set(true);
                                                 gui.bookmarks_window.selected = Some(idx);
+                                                gui.bookmarks_window.edit_name = true;
+                                                gui.bookmarks_window.focus_text_edit = true;
                                             }
                                         }
                                     }
