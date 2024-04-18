@@ -32,6 +32,9 @@ pub struct Args {
     /// Automatically save if there is an edited region in the file
     #[arg(long)]
     pub autosave: bool,
+    /// Open this layout on startup instead of the default
+    #[arg(long, value_name = "name")]
+    pub layout: Option<String>,
 }
 
 /// Arguments for opening a source (file/stream/process/etc)

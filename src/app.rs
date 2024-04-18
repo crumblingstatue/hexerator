@@ -118,6 +118,12 @@ impl App {
             "Failed to load file",
             msg,
         );
+        if let Some(name) = args.layout {
+            if !Self::switch_layout_by_name(&mut this.hex_ui, &this.meta_state.meta, &name) {
+                let err = anyhow::anyhow!("No layout with name '{name}' found.");
+                msg_fail(&err, "Couldn't switch layout", msg);
+            }
+        }
         Ok(this)
     }
     pub fn reload(&mut self) -> anyhow::Result<()> {
@@ -633,6 +639,21 @@ impl App {
             .and_then(|row| row.first())
         {
             app_hex_ui.focused_view = Some(*view_key);
+        }
+    }
+    /// Tries to switch to a layout with the given name. Returns `false` if a layout with that name wasn't found.
+    #[must_use]
+    pub(crate) fn switch_layout_by_name(
+        app_hex_ui: &mut HexUi,
+        app_meta: &Meta,
+        name: &str,
+    ) -> bool {
+        match app_meta.layouts.iter().find(|(_k, v)| v.name == name) {
+            Some((k, _v)) => {
+                Self::switch_layout(app_hex_ui, app_meta, k);
+                true
+            }
+            None => false,
         }
     }
 
