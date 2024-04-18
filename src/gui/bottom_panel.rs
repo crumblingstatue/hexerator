@@ -129,7 +129,13 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
                 txt = txt.color(egui::Color32::RED);
             }
             let label = egui::Label::new(txt).sense(egui::Sense::click());
-            let mut label_re = ui.add(label).on_hover_text("Click to copy");
+            let mut label_re = ui.add(label).on_hover_ui(|ui| {
+                ui.label("Click to copy");
+                ui.label(format!(
+                    "Human size: {}",
+                    crate::util::human_size(app.data.len())
+                ));
+            });
             if truncated {
                 label_re =
                     label_re.on_hover_text(format!("Length changed, orig.: {}", app.orig_data_len));

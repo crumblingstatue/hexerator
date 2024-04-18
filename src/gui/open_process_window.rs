@@ -410,17 +410,11 @@ impl OpenProcessWindow {
                     });
                 });
             ui.separator();
-            #[expect(
-                clippy::cast_precision_loss,
-                reason = "This is just an approximation of data size"
-            )]
             ui.label(format!(
                 "{}/{} maps shown ({})",
                 filtered.len(),
                 win.map_ranges.len(),
-                human_bytes::human_bytes(
-                    filtered.iter().map(|range| range.size()).sum::<usize>() as f64
-                )
+                crate::util::human_size(filtered.iter().map(|range| range.size()).sum::<usize>())
             ));
         } else {
             TableBuilder::new(ui)

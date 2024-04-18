@@ -53,6 +53,7 @@ mod shell;
 mod slice_ext;
 mod source;
 mod timer;
+mod util;
 mod value_color;
 mod view;
 #[cfg(windows)]
