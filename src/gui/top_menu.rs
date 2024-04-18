@@ -75,10 +75,19 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
                                             "There is no metafile associated with this file",
                                         );
                                     }
-                                    let re =
+                                    let mut re =
                                         ui.add(egui::Label::new(&s).sense(egui::Sense::click()));
                                     re.context_menu(ctx_menu);
-                                    if re.on_hover_text("Right click for context menu").clicked() {
+                                    re = re.on_hover_ui(|ui| {
+                                        if let Some(offset) = &app.src_args.hard_seek {
+                                            ui.label(format!("Hard seek: {offset} ({offset:X})"));
+                                        }
+                                        if let Some(len) = &app.src_args.take {
+                                            ui.label(format!("Take: {len}"));
+                                        }
+                                        ui.label("Right click for context menu");
+                                    });
+                                    if re.clicked() {
                                         try_open_file(file, gui);
                                     }
                                 }
