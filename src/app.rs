@@ -515,7 +515,10 @@ impl App {
             // Set up meta
             if !self.preferences.keep_meta {
                 if let Some(meta_path) = meta_path {
-                    self.consume_meta_from_file(meta_path.clone())?;
+                    if let Err(e) = self.consume_meta_from_file(meta_path.clone()) {
+                        self.set_new_clean_meta(font);
+                        msg_fail(&e, "Failed to load metafile", msg);
+                    }
                 } else if let Some(src_path) = per_dbg!(&src_args.file)
                     && let Some(meta_path) = per_dbg!(self.cfg.meta_assocs.get(src_path))
                 {
