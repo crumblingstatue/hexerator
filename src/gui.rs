@@ -358,15 +358,13 @@ pub fn do_egui(
             - app.hex_ui.hex_iface_rect.y)
             - padding * 2;
     }
-    let mut dialogs = std::mem::take(&mut gui.dialogs);
-    dialogs.retain(|_k, dialog| {
+    gui.dialogs.retain(|_k, dialog| {
         let mut retain = true;
         Window::new(dialog.title()).show(ctx, |ui| {
             retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua, font, &mut gui.fileops);
         });
         retain
     });
-    gui.dialogs = dialogs;
     // File dialog
     gui.fileops.update(
         ctx,
