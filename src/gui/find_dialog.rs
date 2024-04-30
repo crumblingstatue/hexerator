@@ -584,11 +584,25 @@ where
     [(); N::BYTE_LEN]:,
     <<N as EndianedPrimitive>::Primitive as FromStr>::Err: Error + Send + Sync,
 {
-    let n: N::Primitive = gui.find_dialog.find_input.parse()?;
-    let bytes = N::to_bytes(n);
-    for offset in memchr::memmem::find_iter(data, &bytes) {
+    find_num_raw::<N>(&gui.find_dialog.find_input, data, |offset| {
         gui.find_dialog.results_vec.push(offset);
         gui.highlight_set.insert(offset);
+    })
+}
+
+pub(crate) fn find_num_raw<N: EndianedPrimitive>(
+    input: &str,
+    data: &[u8],
+    mut f: impl FnMut(usize),
+) -> anyhow::Result<()>
+where
+    [(); N::BYTE_LEN]:,
+    <<N as EndianedPrimitive>::Primitive as FromStr>::Err: Error + Send + Sync,
+{
+    let n: N::Primitive = input.parse()?;
+    let bytes = N::to_bytes(n);
+    for offset in memchr::memmem::find_iter(data, &bytes) {
+        f(offset)
     }
     Ok(())
 }
