@@ -4,6 +4,7 @@ use {
     egui_extras::{Column, TableBuilder},
     egui_file_dialog::FileDialog,
     egui_sfml::sfml::graphics::Font,
+    proc_maps::MapRange,
     std::process::Command,
     sysinfo::Signal,
 };
@@ -16,15 +17,33 @@ pub struct OpenProcessWindow {
     pub sys: sysinfo::System,
     pub selected_pid: Option<sysinfo::Pid>,
     pub map_ranges: MapRanges,
-    proc_name_filter_string: String,
-    path_filter_string: String,
-    addr_filter_string: String,
     pid_sort: Sort,
     addr_sort: Sort,
     size_sort: Sort,
     maps_sort_col: MapsSortColumn,
-    perm_filters: PermFilters,
+    filters: Filters,
     modal: Option<Modal>,
+    find: FindState,
+}
+
+#[derive(Default)]
+struct Filters {
+    path: String,
+    addr: String,
+    proc_name: String,
+    perms: PermFilters,
+}
+
+#[derive(Default)]
+struct FindState {
+    open: bool,
+    input: String,
+    results: Vec<MapFindResults>,
+}
+
+struct MapFindResults {
+    map: MapRange,
+    offsets: Vec<usize>,
 }
 
 #[derive(Default)]
@@ -171,6 +190,14 @@ impl OpenProcessWindow {
                     if ui.button("Refresh memory maps").clicked() {
                         refresh_proc_maps(pid.as_u32(), &mut win.map_ranges, &mut gui.msg_dialog);
                     }
+                    if ui
+                        .selectable_label(win.find.open, "🔍 Find...")
+                        .on_hover_text("Find values across all map ranges")
+                        .clicked()
+                    {
+                        refresh_proc_maps(pid.as_u32(), &mut win.map_ranges, &mut gui.msg_dialog);
+                        win.find.open ^= true;
+                    }
                 }
             }
             if ui.button("Run command...").clicked() {
@@ -178,6 +205,130 @@ impl OpenProcessWindow {
             }
         });
         if let &Some(pid) = &win.selected_pid {
+            if win.find.open {
+                ui.text_edit_singleline(&mut win.find.input);
+                match win.find.input.parse::<u8>() {
+                    Ok(num) => {
+                        if ui.button("Find").clicked() {
+                            for range in win
+                                .map_ranges
+                                .iter()
+                                .filter(|range| should_retain_range(&win.filters, range))
+                            {
+                                match app.load_proc_memory(
+                                    pid,
+                                    range.start(),
+                                    range.size(),
+                                    range.is_write(),
+                                    font,
+                                    &mut gui.msg_dialog,
+                                ) {
+                                    Ok(()) => {
+                                        let mut offsets = Vec::new();
+                                        for offset in memchr::memchr_iter(num, &app.data) {
+                                            offsets.push(offset);
+                                        }
+                                        win.find.results.push(MapFindResults {
+                                            map: range.clone(),
+                                            offsets,
+                                        });
+                                    }
+                                    Err(e) => msg_fail(&e, "Error", &mut gui.msg_dialog),
+                                }
+                            }
+                        }
+                        if !win.find.results.is_empty() && ui.button("Retain").clicked() {
+                            win.find.results.retain_mut(|result| {
+                                match app.load_proc_memory(
+                                    pid,
+                                    result.map.start(),
+                                    result.map.size(),
+                                    result.map.is_write(),
+                                    font,
+                                    &mut gui.msg_dialog,
+                                ) {
+                                    Ok(()) => {
+                                        result.offsets.retain(|offset| {
+                                            app.data.get(*offset).is_some_and(|byte| *byte == num)
+                                        });
+                                        !result.offsets.is_empty()
+                                    }
+                                    Err(e) => {
+                                        msg_fail(&e, "Error", &mut gui.msg_dialog);
+                                        false
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    Err(e) => {
+                        ui.add_enabled(false, egui::Button::new("Find"))
+                            .on_disabled_hover_text(format!("{e}"));
+                    }
+                }
+
+                let result_count: usize =
+                    win.find.results.iter().map(|res| res.offsets.len()).sum();
+
+                if result_count < 30 {
+                    for (i, result) in win.find.results.iter().enumerate() {
+                        let label = format!(
+                            "{}..={} ({}) @ {:?}",
+                            result.map.start(),
+                            result.map.start() + result.map.size(),
+                            result.map.size(),
+                            result.map.filename(),
+                        );
+                        let map_open = app
+                            .src_args
+                            .hard_seek
+                            .is_some_and(|offset| offset == result.map.start());
+                        let _ = ui.selectable_label(map_open, label);
+                        ui.indent(egui::Id::new("result_ident").with(i), |ui| {
+                            for offset in &result.offsets {
+                                ui.horizontal(|ui| {
+                                    if ui.button(format!("{offset:X}")).clicked() {
+                                        if !map_open {
+                                            match app.load_proc_memory(
+                                                pid,
+                                                result.map.start(),
+                                                result.map.size(),
+                                                result.map.is_write(),
+                                                font,
+                                                &mut gui.msg_dialog,
+                                            ) {
+                                                Ok(()) => {
+                                                    app.search_focus(*offset);
+                                                }
+                                                Err(e) => {
+                                                    msg_fail(&e, "Error", &mut gui.msg_dialog)
+                                                }
+                                            }
+                                        } else {
+                                            app.search_focus(*offset);
+                                        }
+                                    }
+                                    if map_open {
+                                        let mut s = String::new();
+                                        ui.label(
+                                            app.data
+                                                .get(*offset)
+                                                .map(|off| {
+                                                    s = off.to_string();
+                                                    s.as_str()
+                                                })
+                                                .unwrap_or("??"),
+                                        );
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+
+                ui.label(format!("{} Results", result_count));
+                return;
+            }
             ui.heading(format!("Virtual memory maps for pid {pid}"));
             if ui.link("Back to process list").clicked() {
                 win.selected_pid = None;
@@ -219,7 +370,7 @@ impl OpenProcessWindow {
                                 win.addr_sort.flip();
                             }
                             ui.add(
-                                egui::TextEdit::singleline(&mut win.addr_filter_string)
+                                egui::TextEdit::singleline(&mut win.filters.addr)
                                     .hint_text("🔎 Addr"),
                             );
                         });
@@ -242,15 +393,15 @@ impl OpenProcessWindow {
                             .context_menu(|ui| {
                                 ui.label("Filter");
                                 ui.separator();
-                                ui.checkbox(&mut win.perm_filters.read, "Read");
-                                ui.checkbox(&mut win.perm_filters.write, "Write");
-                                ui.checkbox(&mut win.perm_filters.execute, "Execute");
+                                ui.checkbox(&mut win.filters.perms.read, "Read");
+                                ui.checkbox(&mut win.filters.perms.write, "Write");
+                                ui.checkbox(&mut win.filters.perms.execute, "Execute");
                             });
                     });
                     row.col(|ui| {
                         ui.horizontal(|ui| {
                             ui.add(
-                                egui::TextEdit::singleline(&mut win.path_filter_string)
+                                egui::TextEdit::singleline(&mut win.filters.path)
                                     .hint_text("🔎 Path"),
                             );
                             if ui
@@ -264,44 +415,20 @@ impl OpenProcessWindow {
                                         if filename
                                             .display()
                                             .to_string()
-                                            .contains(&win.path_filter_string)
+                                            .contains(&win.filters.path)
                                         {
                                             retain = false;
                                         }
                                     }
                                     retain
                                 });
-                                win.path_filter_string.clear();
+                                win.filters.path.clear();
                             }
                         });
                     });
                 })
                 .body(|body| {
-                    filtered.retain(|range| {
-                        if win.perm_filters.read && !range.is_read() {
-                            return false;
-                        }
-                        if win.perm_filters.write && !range.is_write() {
-                            return false;
-                        }
-                        if win.perm_filters.execute && !range.is_exec() {
-                            return false;
-                        }
-                        if let Ok(addr) = usize::from_str_radix(&win.addr_filter_string, 16) {
-                            if !(range.start() <= addr && range.start() + range.size() >= addr) {
-                                return false;
-                            }
-                        }
-                        if win.path_filter_string.is_empty() {
-                            return true;
-                        }
-                        match range.filename() {
-                            Some(path) => {
-                                path.display().to_string().contains(&win.path_filter_string)
-                            }
-                            None => false,
-                        }
-                    });
+                    filtered.retain(|range| should_retain_range(&win.filters, range));
                     filtered.sort_by(|range1, range2| match win.maps_sort_col {
                         MapsSortColumn::Size => match win.size_sort {
                             Sort::Ascending => range1.size().cmp(&range2.size()),
@@ -359,8 +486,7 @@ impl OpenProcessWindow {
                                     "Failed to load process memory",
                                     &mut gui.msg_dialog,
                                 );
-                                if let Ok(off) = usize::from_str_radix(&win.addr_filter_string, 16)
-                                {
+                                if let Ok(off) = usize::from_str_radix(&win.filters.addr, 16) {
                                     let off = off - app.src_args.hard_seek.unwrap_or(0);
                                     app.edit_state.set_cursor(off);
                                     app.center_view_on_offset(off);
@@ -430,14 +556,14 @@ impl OpenProcessWindow {
                     });
                     row.col(|ui| {
                         ui.add(
-                            egui::TextEdit::singleline(&mut win.proc_name_filter_string)
+                            egui::TextEdit::singleline(&mut win.filters.proc_name)
                                 .hint_text("🔎 Name"),
                         );
                     });
                 })
                 .body(|body| {
                     let procs = win.sys.processes();
-                    let filt_str = win.proc_name_filter_string.to_ascii_lowercase();
+                    let filt_str = win.filters.proc_name.to_ascii_lowercase();
                     let mut pids: Vec<&sysinfo::Pid> = procs
                         .keys()
                         .filter(|&pid| procs[pid].name().to_ascii_lowercase().contains(&filt_str))
@@ -475,6 +601,30 @@ impl OpenProcessWindow {
                 });
         }
         win.open.post_ui();
+    }
+}
+
+fn should_retain_range(filters: &Filters, range: &proc_maps::MapRange) -> bool {
+    if filters.perms.read && !range.is_read() {
+        return false;
+    }
+    if filters.perms.write && !range.is_write() {
+        return false;
+    }
+    if filters.perms.execute && !range.is_exec() {
+        return false;
+    }
+    if let Ok(addr) = usize::from_str_radix(&filters.addr, 16) {
+        if !(range.start() <= addr && range.start() + range.size() >= addr) {
+            return false;
+        }
+    }
+    if filters.path.is_empty() {
+        return true;
+    }
+    match range.filename() {
+        Some(path) => path.display().to_string().contains(&filters.path),
+        None => false,
     }
 }
 
