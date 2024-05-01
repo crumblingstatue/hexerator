@@ -209,6 +209,7 @@ impl OpenProcessWindow {
                 match win.find.input.parse::<u8>() {
                     Ok(num) => {
                         if ui.button("Find").clicked() {
+                            win.find.results.clear();
                             for range in win
                                 .map_ranges
                                 .iter()
