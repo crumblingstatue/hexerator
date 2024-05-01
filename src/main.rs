@@ -123,7 +123,7 @@ fn try_main() -> anyhow::Result<()> {
         &ContextSettings::default(),
     );
     let LoadedConfig {
-        config: cfg,
+        config: mut cfg,
         old_config_err,
     } = Config::load_or_default()?;
     window.set_vertical_sync_enabled(cfg.vsync);
@@ -136,7 +136,7 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
-    transfer_pinned_folders_to_file_dialog(&mut gui, &cfg);
+    transfer_pinned_folders_to_file_dialog(&mut gui, &mut cfg);
     if !args.spawn_command.is_empty() {
         gui.cmd
             .push(GCmd::SpawnCommand(std::mem::take(&mut args.spawn_command)));
@@ -189,13 +189,15 @@ fn try_main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn transfer_pinned_folders_to_file_dialog(gui: &mut Gui, cfg: &Config) {
+fn transfer_pinned_folders_to_file_dialog(gui: &mut Gui, cfg: &mut Config) {
     let storage = &mut gui.fileops.dialog.storage;
     let dia_cfg = &gui.fileops.dialog.config;
-    for dir in &cfg.pinned_dirs {
+    // Remove them from the config, as later it will be filled with
+    // the pinned dirs from the dialog
+    for dir in cfg.pinned_dirs.drain(..) {
         storage
             .pinned_folders
-            .push(DirectoryEntry::from_path(dia_cfg, dir));
+            .push(DirectoryEntry::from_path(dia_cfg, &dir));
     }
 }
 
