@@ -185,7 +185,8 @@ impl FileOps {
         if let Some(path) = source_file
             && let Some(parent) = path.parent()
         {
-            self.dialog = FileDialog::new().initial_directory(parent.to_owned());
+            let cfg = self.dialog.config_mut();
+            parent.clone_into(&mut cfg.initial_directory);
         }
         self.dialog.select_file();
         self.op = Some(FileOp::LoadFile);
