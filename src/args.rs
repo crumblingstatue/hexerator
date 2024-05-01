@@ -29,6 +29,9 @@ pub struct Args {
     /// Automatically reload the source for the current buffer in millisecond intervals (default:250)
     #[arg(long, value_name="interval", default_missing_value="250", num_args=0..=1)]
     pub autoreload: Option<u32>,
+    /// Only autoreload the data visible in the current layout
+    #[arg(long)]
+    pub autoreload_only_visible: bool,
     /// Automatically save if there is an edited region in the file
     #[arg(long)]
     pub autosave: bool,

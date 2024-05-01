@@ -20,7 +20,7 @@ use {
             PerspectiveKey, PerspectiveMap, RegionKey, RegionMap, ViewKey,
         },
         meta_state::MetaState,
-        preferences::Preferences,
+        preferences::{Autoreload, Preferences},
         shell::{msg_fail, msg_if_fail},
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
         view::{HexData, TextData, View, ViewKind, ViewportScalar},
@@ -108,7 +108,11 @@ impl App {
             this.preferences.auto_save = true;
         }
         if let Some(interval_ms) = args.autoreload {
-            this.preferences.auto_reload = true;
+            if args.autoreload_only_visible {
+                this.preferences.auto_reload = Autoreload::Visible;
+            } else {
+                this.preferences.auto_reload = Autoreload::All;
+            }
             this.preferences.auto_reload_interval_ms = interval_ms;
         }
         // Set a clean meta, for an empty document
@@ -570,19 +574,79 @@ impl App {
                 per!("Save fail: {}", e);
             }
         }
-        if self.preferences.auto_reload
+        if self.preferences.auto_reload.is_active()
             && self.source.is_some()
             && self.last_reload.elapsed().as_millis()
                 >= u128::from(self.preferences.auto_reload_interval_ms)
         {
-            if msg_if_fail(self.reload(), "Auto-reload fail", msg).is_some() {
-                self.preferences.auto_reload = false;
+            match &self.preferences.auto_reload {
+                Autoreload::Disabled => {}
+                Autoreload::All => {
+                    if msg_if_fail(self.reload(), "Auto-reload fail", msg).is_some() {
+                        self.preferences.auto_reload = Autoreload::Disabled;
+                    }
+                }
+                Autoreload::Visible => {
+                    if msg_if_fail(self.reload_visible(), "Auto-reload fail", msg).is_some() {
+                        self.preferences.auto_reload = Autoreload::Disabled;
+                    }
+                }
             }
             self.last_reload = Instant::now();
         }
         // Here we perform all queued up `Command`s.
         self.flush_command_queue(msg);
         self.flush_backend_command_queue(rw);
+    }
+    /// Reload only what's visible on the screen (current layout)
+    fn reload_visible(&mut self) -> anyhow::Result<()> {
+        let (lo, hi) = self.visible_byte_range();
+        self.reload_range(lo, hi)
+    }
+    fn reload_range(&mut self, lo: usize, hi: usize) -> anyhow::Result<()> {
+        let Some(src) = &self.source else {
+            anyhow::bail!("No source")
+        };
+        match &src.provider {
+            SourceProvider::File(ref file) => {
+                let mut file = file;
+                let offset = match self.src_args.hard_seek {
+                    Some(hs) => hs + lo,
+                    None => lo,
+                };
+                file.seek(SeekFrom::Start(offset as u64))?;
+                file.read_exact(&mut self.data[lo..hi])?;
+                Ok(())
+            }
+            SourceProvider::Stdin(_) => anyhow::bail!("Not implemented"),
+        }
+    }
+    /// Iterator over the views in the current layout
+    fn active_views(&self) -> impl Iterator<Item = &'_ NamedView> {
+        let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
+        layout.iter().map(|key| &self.meta_state.meta.views[key])
+    }
+    /// Largest visible byte range in the current perspective
+    fn visible_byte_range(&self) -> (usize, usize) {
+        let mut min_lo = self.data.len();
+        let mut max_hi = 0;
+        for view in self.active_views() {
+            let offsets = view.view.offsets(
+                &self.meta_state.meta.low.perspectives,
+                &self.meta_state.meta.low.regions,
+            );
+            let lo = offsets.byte;
+            min_lo = std::cmp::min(min_lo, lo);
+            let hi = lo
+                + view
+                    .view
+                    .bytes_per_page(&self.meta_state.meta.low.perspectives);
+            max_hi = std::cmp::max(max_hi, hi);
+        }
+        (
+            min_lo.clamp(0, self.data.len()),
+            max_hi.clamp(0, self.data.len()),
+        )
     }
     pub(crate) fn focused_view_select_all(&mut self) {
         if let Some(view) = self.hex_ui.focused_view {

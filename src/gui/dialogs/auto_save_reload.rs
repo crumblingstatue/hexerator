@@ -2,6 +2,7 @@ use {
     crate::{
         app::App,
         gui::{message_dialog::MessageDialog, Dialog, FileOps},
+        preferences::Autoreload,
     },
     egui_sfml::sfml::graphics::Font,
     mlua::Lua,
@@ -24,7 +25,25 @@ impl Dialog for AutoSaveReloadDialog {
         _font: &Font,
         _file_ops: &mut FileOps,
     ) -> bool {
-        ui.checkbox(&mut app.preferences.auto_reload, "Auto reload");
+        egui::ComboBox::from_label("Auto reload")
+            .selected_text(app.preferences.auto_reload.label())
+            .show_ui(ui, |ui| {
+                ui.selectable_value(
+                    &mut app.preferences.auto_reload,
+                    Autoreload::Disabled,
+                    Autoreload::Disabled.label(),
+                );
+                ui.selectable_value(
+                    &mut app.preferences.auto_reload,
+                    Autoreload::All,
+                    Autoreload::All.label(),
+                );
+                ui.selectable_value(
+                    &mut app.preferences.auto_reload,
+                    Autoreload::Visible,
+                    Autoreload::Visible.label(),
+                );
+            });
         ui.horizontal(|ui| {
             ui.label("Interval (ms)");
             ui.add(egui::DragValue::new(

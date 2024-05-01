@@ -266,7 +266,7 @@ impl View {
         reason = "View::rows() being negative is a bug, can expect positive."
     )]
     pub(crate) fn bytes_per_page(&self, perspectives: &PerspectiveMap) -> usize {
-        self.rows() as usize * perspectives[self.perspective].cols
+        (self.rows() as usize) * perspectives[self.perspective].cols
     }
 
     /// Returns the number of rows this view can display
@@ -275,7 +275,11 @@ impl View {
         reason = "block size is never greater than i16::MAX"
     )]
     pub(crate) fn rows(&self) -> i16 {
-        self.viewport_rect.h / self.row_h as i16
+        // If the viewport rect is smaller than 0, we just return 0 for the rows
+        if self.viewport_rect.h <= 0 {
+            return 0;
+        }
+        self.viewport_rect.h / (self.row_h as i16)
     }
     /// Returns the number of columns this view can display
     #[expect(

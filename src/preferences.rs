@@ -18,11 +18,36 @@ pub struct Preferences {
     /// Background color (mostly for fun)
     pub bg_color: [f32; 3],
     /// If true, auto-reload the current file at specified interval
-    pub auto_reload: bool,
+    pub auto_reload: Autoreload,
     /// Auto-reload interval in milliseconds
     pub auto_reload_interval_ms: u32,
     /// Hide the edit cursor
     pub hide_cursor: bool,
+}
+
+/// Autoreload behavior
+#[derive(Debug, PartialEq)]
+pub enum Autoreload {
+    /// No autoreload
+    Disabled,
+    /// Autoreload all data
+    All,
+    /// Only autoreload the data visible in the active layout
+    Visible,
+}
+
+impl Autoreload {
+    /// Whether any autoreload is active
+    pub fn is_active(&self) -> bool {
+        !matches!(self, Self::Disabled)
+    }
+    pub fn label(&self) -> &'static str {
+        match self {
+            Autoreload::Disabled => "disabled",
+            Autoreload::All => "all",
+            Autoreload::Visible => "visible only",
+        }
+    }
 }
 
 impl Default for Preferences {
@@ -36,7 +61,7 @@ impl Default for Preferences {
             col_change_lock_col: false,
             col_change_lock_row: true,
             bg_color: [0.0; 3],
-            auto_reload: false,
+            auto_reload: Autoreload::Disabled,
             auto_reload_interval_ms: 250,
             hide_cursor: false,
         }
