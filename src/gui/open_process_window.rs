@@ -195,7 +195,6 @@ impl OpenProcessWindow {
                         .on_hover_text("Find values across all map ranges")
                         .clicked()
                     {
-                        refresh_proc_maps(pid.as_u32(), &mut win.map_ranges, &mut gui.msg_dialog);
                         win.find.open ^= true;
                     }
                 }
