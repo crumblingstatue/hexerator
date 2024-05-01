@@ -331,6 +331,7 @@ impl OpenProcessWindow {
             }
             ui.heading(format!("Virtual memory maps for pid {pid}"));
             if ui.link("Back to process list").clicked() {
+                win.sys.refresh_processes();
                 win.selected_pid = None;
             }
             if let Some(proc) = win.sys.process(pid) {
