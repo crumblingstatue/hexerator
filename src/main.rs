@@ -27,7 +27,7 @@
 
 use {
     config::LoadedConfig,
-    egui_file_dialog::DialogState,
+    egui_file_dialog::{DialogState, DirectoryEntry},
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     gui::command::GCmd,
 };
@@ -136,6 +136,7 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
+    transfer_pinned_folders_to_file_dialog(&mut gui, &cfg);
     if !args.spawn_command.is_empty() {
         gui.cmd
             .push(GCmd::SpawnCommand(std::mem::take(&mut args.spawn_command)));
@@ -183,8 +184,26 @@ fn try_main() -> anyhow::Result<()> {
         }
     }
     app.close_file();
+    transfer_pinned_folders_to_config(gui, &mut app);
     app.cfg.save()?;
     Ok(())
+}
+
+fn transfer_pinned_folders_to_file_dialog(gui: &mut Gui, cfg: &Config) {
+    let storage = &mut gui.fileops.dialog.storage;
+    let dia_cfg = &gui.fileops.dialog.config;
+    for dir in &cfg.pinned_dirs {
+        storage
+            .pinned_folders
+            .push(DirectoryEntry::from_path(dia_cfg, dir));
+    }
+}
+
+fn transfer_pinned_folders_to_config(mut gui: Gui, app: &mut App) {
+    let storage = gui.fileops.dialog.storage_mut();
+    for entry in &storage.pinned_folders {
+        app.cfg.pinned_dirs.push(entry.to_path_buf());
+    }
 }
 
 fn main() {

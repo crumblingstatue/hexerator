@@ -18,6 +18,8 @@ pub struct Config {
     pub vsync: bool,
     #[serde(default)]
     pub fps_limit: u32,
+    #[serde(default)]
+    pub pinned_dirs: Vec<PathBuf>,
 }
 
 const fn default_vsync() -> bool {
@@ -64,6 +66,7 @@ impl Default for Config {
             meta_assocs: HashMap::default(),
             fps_limit: 0,
             vsync: default_vsync(),
+            pinned_dirs: Vec::new(),
         }
     }
 }
