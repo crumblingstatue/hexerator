@@ -607,6 +607,7 @@ impl App {
         let Some(src) = &self.source else {
             anyhow::bail!("No source")
         };
+        anyhow::ensure!(lo <= hi);
         match &src.provider {
             SourceProvider::File(ref file) => {
                 let mut file = file;
