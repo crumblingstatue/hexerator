@@ -136,6 +136,9 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
+    gui.open_process_window
+        .default_meta_path
+        .clone_from(&args.meta);
     transfer_pinned_folders_to_file_dialog(&mut gui, &mut cfg);
     if !args.spawn_command.is_empty() {
         gui.cmd

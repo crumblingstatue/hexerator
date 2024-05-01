@@ -8,7 +8,7 @@ use {
     egui_file_dialog::FileDialog,
     egui_sfml::sfml::graphics::Font,
     proc_maps::MapRange,
-    std::process::Command,
+    std::{path::PathBuf, process::Command},
     sysinfo::Signal,
 };
 
@@ -27,6 +27,8 @@ pub struct OpenProcessWindow {
     filters: Filters,
     modal: Option<Modal>,
     find: FindState,
+    pub default_meta_path: Option<PathBuf>,
+    use_default_meta_path: bool,
 }
 
 #[derive(Default)]
@@ -205,6 +207,12 @@ impl OpenProcessWindow {
             if ui.button("Run command...").clicked() {
                 win.modal = Some(Modal::run_command());
             }
+            if let Some(path) = &win.default_meta_path {
+                ui.checkbox(
+                    &mut win.use_default_meta_path,
+                    format!("Use metafile {}", path.display()),
+                );
+            }
         });
         if let &Some(pid) = &win.selected_pid {
             if win.find.open {
@@ -306,6 +314,17 @@ impl OpenProcessWindow {
                                                 Err(e) => {
                                                     msg_fail(&e, "Error", &mut gui.msg_dialog)
                                                 }
+                                            }
+                                            if let Some(path) = &win.default_meta_path
+                                                && win.use_default_meta_path
+                                            {
+                                                let result =
+                                                    app.consume_meta_from_file(path.clone());
+                                                msg_if_fail(
+                                                    result,
+                                                    "Failed to consume metafile",
+                                                    &mut gui.msg_dialog,
+                                                );
                                             }
                                         } else {
                                             app.search_focus(*offset);
@@ -490,6 +509,16 @@ impl OpenProcessWindow {
                                     "Failed to load process memory",
                                     &mut gui.msg_dialog,
                                 );
+                                if let Some(path) = &win.default_meta_path
+                                    && win.use_default_meta_path
+                                {
+                                    let result = app.consume_meta_from_file(path.clone());
+                                    msg_if_fail(
+                                        result,
+                                        "Failed to consume metafile",
+                                        &mut gui.msg_dialog,
+                                    );
+                                }
                                 if let Ok(off) = usize::from_str_radix(&win.filters.addr, 16) {
                                     let off = off - app.src_args.hard_seek.unwrap_or(0);
                                     app.edit_state.set_cursor(off);
