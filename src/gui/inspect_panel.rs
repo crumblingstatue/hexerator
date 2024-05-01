@@ -509,18 +509,13 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
     if app.data.is_empty() {
         return;
     }
-    if offset != gui.inspect_panel.prev_frame_inspect_offset
-        || app.just_reloaded
-        || gui.inspect_panel.changed_one
-    {
-        for thingy in &mut gui.inspect_panel.input_thingies {
-            thingy.update(
-                &app.data[..],
-                offset,
-                gui.inspect_panel.big_endian,
-                gui.inspect_panel.format,
-            );
-        }
+    for thingy in &mut gui.inspect_panel.input_thingies {
+        thingy.update(
+            &app.data[..],
+            offset,
+            gui.inspect_panel.big_endian,
+            gui.inspect_panel.format,
+        );
     }
     gui.inspect_panel.changed_one = false;
     let mut actions = Vec::new();
