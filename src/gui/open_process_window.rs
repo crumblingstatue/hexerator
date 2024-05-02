@@ -8,13 +8,14 @@ use {
     egui_file_dialog::FileDialog,
     egui_sfml::sfml::graphics::Font,
     proc_maps::MapRange,
+    smart_default::SmartDefault,
     std::{path::PathBuf, process::Command},
     sysinfo::Signal,
 };
 
 type MapRanges = Vec<proc_maps::MapRange>;
 
-#[derive(Default)]
+#[derive(SmartDefault)]
 pub struct OpenProcessWindow {
     pub open: WindowOpen,
     pub sys: sysinfo::System,
@@ -28,6 +29,7 @@ pub struct OpenProcessWindow {
     modal: Option<Modal>,
     find: FindState,
     pub default_meta_path: Option<PathBuf>,
+    #[default = true]
     use_default_meta_path: bool,
 }
 
