@@ -2,7 +2,7 @@ use {
     super::pattern_fill::parse_pattern_string,
     crate::{
         app::App,
-        gui::{message_dialog::MessageDialog, Dialog},
+        gui::{Dialog, Gui},
         meta::{region::Region, NamedRegion},
         shell::msg_if_fail,
         slice_ext::SliceExt,
@@ -20,13 +20,13 @@ pub struct LuaExecuteDialog {
     err: bool,
 }
 
-struct LuaExecContext<'app, 'msg, 'font> {
+struct LuaExecContext<'app, 'gui, 'font> {
     app: &'app mut App,
-    msg: &'msg mut MessageDialog,
+    gui: &'gui mut Gui,
     font: &'font Font,
 }
 
-impl<'app, 'msg, 'font> UserData for LuaExecContext<'app, 'msg, 'font> {
+impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         methods.add_method_mut(
             "add_region",
@@ -41,7 +41,7 @@ impl<'app, 'msg, 'font> UserData for LuaExecContext<'app, 'msg, 'font> {
         );
         methods.add_method_mut("load_file", |_ctx, exec, (path,): (String,)| {
             exec.app
-                .load_file(path.into(), true, exec.font, exec.msg)
+                .load_file(path.into(), true, exec.font, &mut exec.gui.msg_dialog)
                 .map_err(|e| e.into_lua_err())?;
             Ok(())
         });
@@ -73,7 +73,9 @@ impl<'app, 'msg, 'font> UserData for LuaExecContext<'app, 'msg, 'font> {
                 Ok(())
             },
         );
-        methods.add_method_mut("find_result_offsets", |_ctx, exec, ()| Ok(()));
+        methods.add_method_mut("find_result_offsets", |_ctx, exec, ()| {
+            Ok(exec.gui.find_dialog.results_vec.clone())
+        });
     }
 }
 
@@ -123,7 +125,7 @@ impl Dialog for LuaExecuteDialog {
                     let f = chunk.eval::<Function>()?;
                     let app = scope.create_nonstatic_userdata(LuaExecContext {
                         app: &mut *app,
-                        msg: &mut gui.msg_dialog,
+                        gui,
                         font,
                     })?;
                     f.call(app)?;
