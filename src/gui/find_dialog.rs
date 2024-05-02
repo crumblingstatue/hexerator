@@ -22,7 +22,7 @@ use {
     egui::{Align, Ui},
     egui_extras::{Column, Size, StripBuilder, TableBuilder},
     itertools::Itertools,
-    std::{error::Error, str::FromStr},
+    std::{collections::HashMap, error::Error, str::FromStr},
     strum::{EnumIter, IntoEnumIterator, IntoStaticStr},
 };
 
@@ -49,6 +49,8 @@ pub enum FindType {
     F64Be,
     Ascii,
     StringDiff,
+    /// Equivalence pattern
+    EqPattern,
     HexString,
 }
 
@@ -75,6 +77,7 @@ impl FindType {
             FindType::F64Be => ValueType::F64Be(F64Be),
             FindType::Ascii => ValueType::None,
             FindType::StringDiff => ValueType::None,
+            FindType::EqPattern => ValueType::None,
             FindType::HexString => ValueType::U8(U8),
         }
     }
@@ -263,6 +266,9 @@ impl FindDialog {
                                             data_value_label::<U8>(ui, &mut app.data, off)
                                         }
                                         FindType::StringDiff => {
+                                            data_value_label::<U8>(ui, &mut app.data, off)
+                                        }
+                                        FindType::EqPattern => {
                                             data_value_label::<U8>(ui, &mut app.data, off)
                                         }
                                     };
@@ -530,8 +536,80 @@ fn do_search(data: &[u8], gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
                 off += diff.len();
             }
         }
+        FindType::EqPattern => {
+            let needle = make_eq_pattern_needle(&gui.find_dialog.find_input);
+            let mut off = 0;
+            while let Some(offset) = find_eq_pattern_needle(&needle, &data[off..]) {
+                off += offset;
+                gui.find_dialog.results_vec.push(off);
+                gui.highlight_set.insert(off);
+                off += needle.len();
+            }
+        }
     }
     Ok(())
+}
+
+fn make_eq_pattern_needle(pattern: &str) -> Vec<u8> {
+    let mut needle = Vec::new();
+    let mut map = HashMap::new();
+    let mut uniq_counter = 0u8;
+    for b in pattern.bytes() {
+        let val = map.entry(b).or_insert_with(|| {
+            let val = uniq_counter;
+            uniq_counter += 1;
+            val
+        });
+        needle.push(*val);
+    }
+    needle
+}
+
+#[test]
+fn test_make_eq_pattern_needle() {
+    assert_eq!(
+        make_eq_pattern_needle("ABCDBEFFG"),
+        &[0, 1, 2, 3, 1, 4, 5, 5, 6]
+    );
+    assert_eq!(
+        make_eq_pattern_needle("abcdefggheijkbbl"),
+        &[0, 1, 2, 3, 4, 5, 6, 6, 7, 4, 8, 9, 10, 1, 1, 11]
+    );
+}
+
+#[cfg(test)]
+fn find_eq_pattern(pattern: &str, data: &[u8]) -> Option<usize> {
+    let needle = make_eq_pattern_needle(pattern);
+    find_eq_pattern_needle(&needle, data)
+}
+
+fn find_eq_pattern_needle(needle: &[u8], data: &[u8]) -> Option<usize> {
+    for window in data.windows(needle.len()) {
+        if eq_pattern_needle_matches(needle, window) {
+            return Some(window.as_ptr() as usize - data.as_ptr() as usize);
+        }
+    }
+    None
+}
+
+fn eq_pattern_needle_matches(needle: &[u8], data: &[u8]) -> bool {
+    for (n1, d1) in needle.iter().zip(data.iter()) {
+        for (n2, d2) in needle.iter().zip(data.iter()) {
+            if (n1 == n2) != (d1 == d2) {
+                return false;
+            }
+        }
+    }
+    true
+}
+
+#[test]
+fn test_find_eq_pattern() {
+    assert_eq!(find_eq_pattern("ABCDBEFFG", b"I AM GOOD"), Some(0));
+    assert_eq!(
+        find_eq_pattern("abcdefggheijkbbk", b"Hello world, very cool indeed"),
+        Some(13)
+    );
 }
 
 #[allow(clippy::cast_possible_wrap)]
