@@ -10,7 +10,7 @@ use {
     egui_code_editor::{CodeEditor, Syntax},
     egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
-    mlua::{ExternalError, Function, Lua, UserData},
+    mlua::{ExternalError, ExternalResult, Function, Lua, UserData},
     std::time::Instant,
 };
 
@@ -75,6 +75,37 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
         );
         methods.add_method_mut("find_result_offsets", |_ctx, exec, ()| {
             Ok(exec.gui.find_dialog.results_vec.clone())
+        });
+        methods.add_method_mut("byte_at", |_ctx, exec, (offset,): (usize,)| {
+            match exec.app.data.get(offset) {
+                Some(byte) => Ok(*byte),
+                None => Err("out of bounds".into_lua_err()),
+            }
+        });
+        methods.add_method_mut(
+            "fill_range",
+            |_ctx, exec, (start, end, fill): (usize, usize, u8)| match exec
+                .app
+                .data
+                .get_mut(start..end)
+            {
+                Some(slice) => {
+                    slice.fill(fill);
+                    Ok(())
+                }
+                None => Err("out of bounds".into_lua_err()),
+            },
+        );
+        methods.add_method_mut(
+            "set_dirty_region",
+            |_ctx, exec, (begin, end): (usize, usize)| {
+                exec.app.edit_state.dirty_region = Some(Region { begin, end });
+                Ok(())
+            },
+        );
+        methods.add_method_mut("save", |_ctx, exec, ()| {
+            exec.app.save(&mut exec.gui.msg_dialog).into_lua_err()?;
+            Ok(())
         });
     }
 }
