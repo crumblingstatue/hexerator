@@ -95,24 +95,33 @@ pub struct FindDialog {
     pub find_type: FindType,
     /// Used for increased/decreased unknown value search
     pub data_snapshot: Vec<u8>,
+    /// Reload the source before search
+    pub reload_before_search: bool,
 }
 
 impl FindDialog {
     pub fn ui(ui: &mut Ui, gui: &mut crate::gui::Gui, app: &mut App) {
-        egui::ComboBox::new("type_combo", "Data type")
-            .selected_text(<&str>::from(&gui.find_dialog.find_type))
-            .show_ui(ui, |ui| {
-                for type_ in FindType::iter() {
-                    let label = <&str>::from(&type_);
-                    ui.selectable_value(&mut gui.find_dialog.find_type, type_, label);
-                }
-            });
+        ui.horizontal(|ui| {
+            egui::ComboBox::new("type_combo", "Data type")
+                .selected_text(<&str>::from(&gui.find_dialog.find_type))
+                .show_ui(ui, |ui| {
+                    for type_ in FindType::iter() {
+                        let label = <&str>::from(&type_);
+                        ui.selectable_value(&mut gui.find_dialog.find_type, type_, label);
+                    }
+                });
+            ui.checkbox(&mut gui.find_dialog.reload_before_search, "Reload")
+                .on_hover_text("Reload source before every search");
+        });
         let re = ui
             .add(egui::TextEdit::singleline(&mut gui.find_dialog.find_input).hint_text("🔍 Find"));
         if gui.find_dialog.open.just_now() {
             re.request_focus();
         }
         if re.lost_focus() && ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
+            if gui.find_dialog.reload_before_search {
+                msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
+            }
             msg_if_fail(
                 do_search(&app.data, gui),
                 "Search failed",
