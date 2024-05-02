@@ -11,7 +11,14 @@ use {
 pub enum GCmd {
     OpenPerspectiveWindow,
     /// Spawn a command with optional arguments. Must not be an empty vector.
-    SpawnCommand(Vec<String>),
+    SpawnCommand {
+        args: Vec<String>,
+        /// If `Some`, don't focus a pid, just filter for this process in the list.
+        ///
+        /// The idea is that if your command spawns a child process, it might not spawn immediately,
+        /// so the user can wait for it to appear on the process list, with the applied filter.
+        look_for_proc: Option<String>,
+    },
 }
 
 /// Gui command queue.
@@ -46,12 +53,24 @@ impl Gui {
 fn perform_command(gui: &mut Gui, cmd: GCmd) {
     match cmd {
         GCmd::OpenPerspectiveWindow => gui.perspectives_window.open.set(true),
-        GCmd::SpawnCommand(mut cmdvec) => {
-            let cmd = cmdvec.remove(0);
-            match Command::new(cmd).args(cmdvec).spawn() {
+        GCmd::SpawnCommand {
+            mut args,
+            look_for_proc,
+        } => {
+            let cmd = args.remove(0);
+            match Command::new(cmd).args(args).spawn() {
                 Ok(child) => {
                     gui.open_process_window.open.set(true);
-                    gui.open_process_window.selected_pid = Some(sysinfo::Pid::from_u32(child.id()));
+                    match look_for_proc {
+                        Some(procname) => {
+                            gui.open_process_window.sys.refresh_processes();
+                            gui.open_process_window.filters.proc_name = procname;
+                        }
+                        None => {
+                            gui.open_process_window.selected_pid =
+                                Some(sysinfo::Pid::from_u32(child.id()))
+                        }
+                    }
                 }
                 Err(e) => {
                     msg_fail(&e, "Failed to spawn command", &mut gui.msg_dialog);

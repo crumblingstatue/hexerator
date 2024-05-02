@@ -141,8 +141,10 @@ fn try_main() -> anyhow::Result<()> {
         .clone_from(&args.meta);
     transfer_pinned_folders_to_file_dialog(&mut gui, &mut cfg);
     if !args.spawn_command.is_empty() {
-        gui.cmd
-            .push(GCmd::SpawnCommand(std::mem::take(&mut args.spawn_command)));
+        gui.cmd.push(GCmd::SpawnCommand {
+            args: std::mem::take(&mut args.spawn_command),
+            look_for_proc: args.look_for_proc.take(),
+        });
     }
     if let Some(e) = old_config_err {
         gui.msg_dialog.open(

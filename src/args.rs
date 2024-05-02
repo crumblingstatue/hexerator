@@ -26,6 +26,9 @@ pub struct Args {
     /// Spawn and open memory of a command with arguments (must be last option)
     #[arg(long, value_name="command", allow_hyphen_values=true, num_args=1..)]
     pub spawn_command: Vec<String>,
+    #[arg(long, value_name = "name")]
+    /// When spawning a command, open the process list with this filter, rather than selecting a pid
+    pub look_for_proc: Option<String>,
     /// Automatically reload the source for the current buffer in millisecond intervals (default:250)
     #[arg(long, value_name="interval", default_missing_value="250", num_args=0..=1)]
     pub autoreload: Option<u32>,

@@ -24,7 +24,7 @@ pub struct OpenProcessWindow {
     addr_sort: Sort,
     size_sort: Sort,
     maps_sort_col: MapsSortColumn,
-    filters: Filters,
+    pub filters: Filters,
     modal: Option<Modal>,
     find: FindState,
     pub default_meta_path: Option<PathBuf>,
@@ -32,11 +32,11 @@ pub struct OpenProcessWindow {
 }
 
 #[derive(Default)]
-struct Filters {
-    path: String,
-    addr: String,
-    proc_name: String,
-    perms: PermFilters,
+pub struct Filters {
+    pub path: String,
+    pub addr: String,
+    pub proc_name: String,
+    pub perms: PermFilters,
 }
 
 #[derive(Default)]
