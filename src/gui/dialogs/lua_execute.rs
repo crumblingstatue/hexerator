@@ -2,7 +2,7 @@ use {
     super::pattern_fill::parse_pattern_string,
     crate::{
         app::App,
-        gui::{message_dialog::MessageDialog, Dialog, FileOps},
+        gui::{message_dialog::MessageDialog, Dialog},
         meta::{region::Region, NamedRegion},
         shell::msg_if_fail,
         slice_ext::SliceExt,
@@ -73,6 +73,7 @@ impl<'app, 'msg, 'font> UserData for LuaExecContext<'app, 'msg, 'font> {
                 Ok(())
             },
         );
+        methods.add_method_mut("find_result_offsets", |_ctx, exec, ()| Ok(()));
     }
 }
 
@@ -85,16 +86,19 @@ impl Dialog for LuaExecuteDialog {
         &mut self,
         ui: &mut egui::Ui,
         app: &mut App,
-        msg: &mut MessageDialog,
+        gui: &mut crate::gui::Gui,
         lua: &Lua,
         font: &Font,
-        file_ops: &mut FileOps,
     ) -> bool {
         let ctrl_enter =
             ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::Enter));
         let ctrl_s = ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::S));
         if ctrl_s {
-            msg_if_fail(app.save(msg), "Failed to save", msg);
+            msg_if_fail(
+                app.save(&mut gui.msg_dialog),
+                "Failed to save",
+                &mut gui.msg_dialog,
+            );
         }
         egui::ScrollArea::vertical()
             // 100.0 is an estimation of ui size below.
@@ -119,7 +123,7 @@ impl Dialog for LuaExecuteDialog {
                     let f = chunk.eval::<Function>()?;
                     let app = scope.create_nonstatic_userdata(LuaExecContext {
                         app: &mut *app,
-                        msg,
+                        msg: &mut gui.msg_dialog,
                         font,
                     })?;
                     f.call(app)?;
@@ -135,14 +139,14 @@ impl Dialog for LuaExecuteDialog {
                 }
                 Ok(())
             });
-            msg_if_fail(result, "Lua exec error", msg);
+            msg_if_fail(result, "Lua exec error", &mut gui.msg_dialog);
         }
         ui.horizontal(|ui| {
             if ui.button("Load script...").clicked() {
-                file_ops.load_lua_script();
+                gui.fileops.load_lua_script();
             }
             if ui.button("Save script...").clicked() {
-                file_ops.save_lua_script();
+                gui.fileops.save_lua_script();
             }
         });
         ui.separator();

@@ -1,9 +1,5 @@
 use {
-    crate::{
-        app::App,
-        gui::{message_dialog::MessageDialog, Dialog, FileOps},
-        shell::msg_if_fail,
-    },
+    crate::{app::App, gui::Dialog, shell::msg_if_fail},
     egui_code_editor::{CodeEditor, Syntax},
     egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
@@ -26,10 +22,9 @@ impl Dialog for LuaFillDialog {
         &mut self,
         ui: &mut egui::Ui,
         app: &mut App,
-        msg: &mut MessageDialog,
+        gui: &mut crate::gui::Gui,
         lua: &Lua,
         _font: &Font,
-        _file_ops: &mut FileOps,
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
@@ -40,7 +35,11 @@ impl Dialog for LuaFillDialog {
 
         let ctrl_s = ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::S));
         if ctrl_s {
-            msg_if_fail(app.save(msg), "Failed to save", msg);
+            msg_if_fail(
+                app.save(&mut gui.msg_dialog),
+                "Failed to save",
+                &mut gui.msg_dialog,
+            );
         }
         egui::ScrollArea::vertical()
             // 100.0 is an estimation of ui size below.

@@ -123,10 +123,9 @@ pub trait Dialog {
         &mut self,
         ui: &mut egui::Ui,
         app: &mut App,
-        msg: &mut MessageDialog,
+        gui: &mut crate::gui::Gui,
         lua: &Lua,
         font: &Font,
-        file_ops: &mut FileOps,
     ) -> bool;
     /// Called when dialog is opened. Can be used to set just-opened flag, etc.
     fn on_open(&mut self) {}
@@ -358,13 +357,15 @@ pub fn do_egui(
             - app.hex_ui.hex_iface_rect.y)
             - padding * 2;
     }
-    gui.dialogs.retain(|_k, dialog| {
+    let mut dialogs = std::mem::take(&mut gui.dialogs);
+    dialogs.retain(|_k, dialog| {
         let mut retain = true;
         Window::new(dialog.title()).show(ctx, |ui| {
-            retain = dialog.ui(ui, app, &mut gui.msg_dialog, lua, font, &mut gui.fileops);
+            retain = dialog.ui(ui, app, gui, lua, font);
         });
         retain
     });
+    std::mem::swap(&mut gui.dialogs, &mut dialogs);
     // File dialog
     gui.fileops.update(
         ctx,

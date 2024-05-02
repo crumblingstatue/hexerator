@@ -1,7 +1,7 @@
 use {
     crate::{
         app::App,
-        gui::{message_dialog::MessageDialog, Dialog, FileOps},
+        gui::Dialog,
         parse_radix::{parse_offset_maybe_relative, Relativity},
         shell::msg_fail,
     },
@@ -30,10 +30,9 @@ impl Dialog for JumpDialog {
         &mut self,
         ui: &mut egui::Ui,
         app: &mut App,
-        msg: &mut MessageDialog,
+        gui: &mut crate::gui::Gui,
         _lua: &Lua,
         _font: &Font,
-        _file_ops: &mut FileOps,
     ) -> bool {
         ui.horizontal(|ui| {
             ui.label("Offset");
@@ -77,7 +76,7 @@ impl Dialog for JumpDialog {
                     false
                 }
                 Err(e) => {
-                    msg_fail(&e, "Failed to parse offset", msg);
+                    msg_fail(&e, "Failed to parse offset", &mut gui.msg_dialog);
                     true
                 }
             }

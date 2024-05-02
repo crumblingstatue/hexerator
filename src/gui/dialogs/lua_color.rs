@@ -1,9 +1,5 @@
 use {
-    crate::{
-        app::App,
-        gui::{message_dialog::MessageDialog, Dialog, FileOps},
-        value_color::ColorMethod,
-    },
+    crate::{app::App, gui::Dialog, value_color::ColorMethod},
     egui_sfml::sfml::graphics::Font,
     mlua::{Function, Lua},
 };
@@ -35,10 +31,9 @@ impl Dialog for LuaColorDialog {
         &mut self,
         ui: &mut egui::Ui,
         app: &mut App,
-        _msg: &mut MessageDialog,
+        _gui: &mut crate::gui::Gui,
         lua: &Lua,
         _font: &Font,
-        _file_ops: &mut FileOps,
     ) -> bool {
         let color_data = match app.hex_ui.focused_view {
             Some(view_key) => {

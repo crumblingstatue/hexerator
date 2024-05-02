@@ -2,10 +2,7 @@ use {
     crate::{
         app::App,
         damage_region::DamageRegion,
-        gui::{
-            message_dialog::{Icon, MessageDialog},
-            Dialog, FileOps,
-        },
+        gui::{message_dialog::Icon, Dialog},
         slice_ext::SliceExt,
     },
     egui_sfml::sfml::graphics::Font,
@@ -31,10 +28,9 @@ impl Dialog for PatternFillDialog {
         &mut self,
         ui: &mut egui::Ui,
         app: &mut App,
-        msg: &mut MessageDialog,
+        gui: &mut crate::gui::Gui,
         _lua: &Lua,
         _font: &Font,
-        _file_ops: &mut FileOps,
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
@@ -51,7 +47,7 @@ impl Dialog for PatternFillDialog {
                 Ok(values) => {
                     let range = sel.begin..=sel.end;
                     let Some(data_slice) = app.data.get_mut(range.clone()) else {
-                        msg.open(Icon::Error, "Pattern fill error", format!("Invalid range for fill.\nRequested range: {range:?}\nData length: {}", app.data.len()));
+                        gui.msg_dialog.open(Icon::Error, "Pattern fill error", format!("Invalid range for fill.\nRequested range: {range:?}\nData length: {}", app.data.len()));
                         return false;
                     };
                     data_slice.pattern_fill(&values);
@@ -60,7 +56,8 @@ impl Dialog for PatternFillDialog {
                     false
                 }
                 Err(e) => {
-                    msg.open(Icon::Error, "Fill parse error", e.to_string());
+                    gui.msg_dialog
+                        .open(Icon::Error, "Fill parse error", e.to_string());
                     true
                 }
             }

@@ -1,9 +1,5 @@
 use {
-    crate::{
-        app::App,
-        gui::{message_dialog::MessageDialog, Dialog, FileOps},
-        preferences::Autoreload,
-    },
+    crate::{app::App, gui::Dialog, preferences::Autoreload},
     egui_sfml::sfml::graphics::Font,
     mlua::Lua,
 };
@@ -20,10 +16,9 @@ impl Dialog for AutoSaveReloadDialog {
         &mut self,
         ui: &mut egui::Ui,
         app: &mut App,
-        _msg: &mut MessageDialog,
+        _gui: &mut crate::gui::Gui,
         _lua: &Lua,
         _font: &Font,
-        _file_ops: &mut FileOps,
     ) -> bool {
         egui::ComboBox::from_label("Auto reload")
             .selected_text(app.preferences.auto_reload.label())

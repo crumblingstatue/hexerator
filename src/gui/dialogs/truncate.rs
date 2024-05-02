@@ -1,9 +1,8 @@
 use {
-    crate::{
-        gui::{Dialog, FileOps},
-        meta::region::Region,
-    },
+    crate::{app::App, gui::Dialog, meta::region::Region},
     egui::{Button, DragValue},
+    egui_sfml::sfml::graphics::Font,
+    mlua::Lua,
 };
 
 pub struct TruncateDialog {
@@ -29,11 +28,10 @@ impl Dialog for TruncateDialog {
     fn ui(
         &mut self,
         ui: &mut egui::Ui,
-        app: &mut crate::app::App,
-        _msg: &mut crate::gui::message_dialog::MessageDialog,
-        _lua: &mlua::Lua,
-        _font: &egui_sfml::sfml::graphics::Font,
-        _file_ops: &mut FileOps,
+        app: &mut App,
+        _gui: &mut crate::gui::Gui,
+        _lua: &Lua,
+        _font: &Font,
     ) -> bool {
         ui.horizontal(|ui| {
             ui.label("Begin");
