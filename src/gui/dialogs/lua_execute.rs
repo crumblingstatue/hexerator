@@ -3,7 +3,11 @@ use {
     crate::{
         app::App,
         gui::{Dialog, Gui},
-        meta::{region::Region, NamedRegion},
+        meta::{
+            region::Region,
+            value_type::{self, EndianedPrimitive as _, ValueType},
+            Bookmark, NamedRegion,
+        },
         shell::msg_if_fail,
         slice_ext::SliceExt,
     },
@@ -76,11 +80,20 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
         methods.add_method_mut("find_result_offsets", |_ctx, exec, ()| {
             Ok(exec.gui.find_dialog.results_vec.clone())
         });
-        methods.add_method_mut("byte_at", |_ctx, exec, (offset,): (usize,)| {
+        methods.add_method_mut("read_u8", |_ctx, exec, (offset,): (usize,)| {
             match exec.app.data.get(offset) {
                 Some(byte) => Ok(*byte),
                 None => Err("out of bounds".into_lua_err()),
             }
+        });
+        methods.add_method_mut("read_u32_le", |_ctx, exec, (offset,): (usize,)| match exec
+            .app
+            .data
+            .get(offset..offset + 4)
+        {
+            Some(slice) => value_type::U32Le::from_byte_slice(slice)
+                .ok_or_else(|| "Failed to convert".into_lua_err()),
+            None => Err("out of bounds".into_lua_err()),
         });
         methods.add_method_mut(
             "fill_range",
@@ -107,6 +120,30 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             exec.app.save(&mut exec.gui.msg_dialog).into_lua_err()?;
             Ok(())
         });
+        methods.add_method_mut(
+            "bookmark_offset",
+            |_ctx, exec, (name,): (String,)| match exec
+                .app
+                .meta_state
+                .meta
+                .bookmark_by_name_mut(&name)
+            {
+                Some(bm) => Ok(bm.offset),
+                None => Err(format!("no such bookmark: {name}").into_lua_err()),
+            },
+        );
+        methods.add_method_mut(
+            "add_bookmark",
+            |_ctx, exec, (offset, name): (usize, String)| {
+                exec.app.meta_state.meta.bookmarks.push(Bookmark {
+                    offset,
+                    label: name,
+                    desc: String::new(),
+                    value_type: ValueType::None,
+                });
+                Ok(())
+            },
+        );
     }
 }
 

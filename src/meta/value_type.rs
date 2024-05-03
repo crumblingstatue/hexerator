@@ -163,6 +163,15 @@ pub trait EndianedPrimitive {
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive;
     fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN];
     fn label(&self) -> &'static str;
+    fn from_byte_slice(slice: &[u8]) -> Option<Self::Primitive>
+    where
+        [(); Self::BYTE_LEN]:,
+    {
+        match slice.try_into() {
+            Ok(slice) => Some(Self::from_bytes(slice)),
+            Err(_) => None,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
