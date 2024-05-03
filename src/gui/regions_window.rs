@@ -168,77 +168,73 @@ impl RegionsWindow {
                     ui.label("Length");
                 });
             })
-            .body(|mut body| {
+            .body(|body| {
                 let mut keys: Vec<RegionKey> = app.meta_state.meta.low.regions.keys().collect();
                 let mut action = Action::None;
                 keys.sort_by_key(|k| app.meta_state.meta.low.regions[*k].region.begin);
-                for k in keys {
-                    body.row(20.0, |mut row| {
-                        let reg = &app.meta_state.meta.low.regions[k];
-                        row.col(|ui| {
-                            let ctx_menu = |ui: &mut egui::Ui| {
-                                region_context_menu(
-                                    ui,
-                                    reg,
-                                    k,
-                                    &app.meta_state.meta,
-                                    &mut app.cmd,
-                                    &mut gui.cmd,
-                                )
-                            };
-                            let re = ui
-                                .selectable_label(
-                                    gui.regions_window.selected_key == Some(k),
-                                    &reg.name,
-                                )
-                                .on_hover_text(&reg.desc);
-                            re.context_menu(ctx_menu);
-                            if re.clicked() {
-                                gui.regions_window.selected_key = Some(k);
-                            }
-                        });
-                        row.col(|ui| {
-                            let re = ui.link(reg.region.begin.to_string());
-                            re.context_menu(|ui| {
-                                if ui.button("Set to cursor").clicked() {
-                                    action = Action::SetRegionBegin {
-                                        key: k,
-                                        begin: app.edit_state.cursor,
-                                    };
-                                    ui.close_menu();
-                                }
-                            });
-                            if re.clicked() {
-                                action = Action::Goto(reg.region.begin);
-                            }
-                        });
-                        row.col(|ui| {
-                            let re = ui.link(reg.region.end.to_string());
-                            re.context_menu(|ui| {
-                                if ui.button("Set to cursor").clicked() {
-                                    action = Action::SetRegionEnd {
-                                        key: k,
-                                        end: app.edit_state.cursor,
-                                    };
-                                    ui.close_menu();
-                                }
-                            });
-                            if re.clicked() {
-                                action = Action::Goto(reg.region.end);
-                            }
-                        });
-                        row.col(
-                            |ui| match (reg.region.end + 1).checked_sub(reg.region.begin) {
-                                Some(len) => {
-                                    ui.label(len.to_string());
-                                }
-                                None => {
-                                    ui.label("Overflow!");
-                                }
-                            },
-                        );
+                body.rows(20.0, keys.len(), |mut row| {
+                    let k = keys[row.index()];
+                    let reg = &app.meta_state.meta.low.regions[k];
+                    row.col(|ui| {
+                        let ctx_menu = |ui: &mut egui::Ui| {
+                            region_context_menu(
+                                ui,
+                                reg,
+                                k,
+                                &app.meta_state.meta,
+                                &mut app.cmd,
+                                &mut gui.cmd,
+                            )
+                        };
+                        let re = ui
+                            .selectable_label(gui.regions_window.selected_key == Some(k), &reg.name)
+                            .on_hover_text(&reg.desc);
+                        re.context_menu(ctx_menu);
+                        if re.clicked() {
+                            gui.regions_window.selected_key = Some(k);
+                        }
                     });
-                }
+                    row.col(|ui| {
+                        let re = ui.link(reg.region.begin.to_string());
+                        re.context_menu(|ui| {
+                            if ui.button("Set to cursor").clicked() {
+                                action = Action::SetRegionBegin {
+                                    key: k,
+                                    begin: app.edit_state.cursor,
+                                };
+                                ui.close_menu();
+                            }
+                        });
+                        if re.clicked() {
+                            action = Action::Goto(reg.region.begin);
+                        }
+                    });
+                    row.col(|ui| {
+                        let re = ui.link(reg.region.end.to_string());
+                        re.context_menu(|ui| {
+                            if ui.button("Set to cursor").clicked() {
+                                action = Action::SetRegionEnd {
+                                    key: k,
+                                    end: app.edit_state.cursor,
+                                };
+                                ui.close_menu();
+                            }
+                        });
+                        if re.clicked() {
+                            action = Action::Goto(reg.region.end);
+                        }
+                    });
+                    row.col(
+                        |ui| match (reg.region.end + 1).checked_sub(reg.region.begin) {
+                            Some(len) => {
+                                ui.label(len.to_string());
+                            }
+                            None => {
+                                ui.label("Overflow!");
+                            }
+                        },
+                    );
+                });
                 match action {
                     Action::None => {}
                     Action::Goto(off) => {
