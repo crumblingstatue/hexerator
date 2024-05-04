@@ -223,9 +223,14 @@ impl Dialog for LuaExecuteDialog {
                         }
                     });
                     ui.separator();
-                    if ui.button("Close").clicked() {
-                        keep_open = false;
-                    }
+                    ui.horizontal(|ui| {
+                        if ui.button("✖ Close").clicked() {
+                            keep_open = false;
+                        }
+                        if ui.button("？ Help").clicked() {
+                            gui.lua_help_window.open.toggle()
+                        }
+                    });
                     if app.edit_state.dirty_region.is_some() {
                         ui.label(
                             egui::RichText::new("Unsaved changes")

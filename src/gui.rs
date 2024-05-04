@@ -1,5 +1,9 @@
 use {
-    self::{command::GCommandQueue, file_ops::FileOps, windows::VarsWindow},
+    self::{
+        command::GCommandQueue,
+        file_ops::FileOps,
+        windows::{LuaHelpWindow, VarsWindow},
+    },
     crate::meta::value_type::U8,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
 };
@@ -91,6 +95,7 @@ pub struct Gui {
     pub msg_dialog: MessageDialog,
     pub about_window: AboutWindow,
     pub vars_window: VarsWindow,
+    pub lua_help_window: LuaHelpWindow,
     /// What to highlight in addition to selection. Can be updated by various actions that want to highlight stuff
     pub highlight_set: HighlightSet,
     pub cmd: GCommandQueue,
@@ -188,6 +193,7 @@ pub fn do_egui(
         "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
         "External command",        external_command_window,     ExternalCommandWindow: gui app;
         "Preferences",             preferences_window,          PreferencesWindow: gui app rwin;
+        "Lua help",                lua_help_window,             LuaHelpWindow: gui app;
         "About Hexerator",         about_window,                AboutWindow: gui app;
     }
     // Context menu
