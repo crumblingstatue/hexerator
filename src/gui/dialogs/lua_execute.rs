@@ -15,7 +15,7 @@ use {
     egui_commonmark::CommonMarkViewer,
     egui_extras::{Size, StripBuilder},
     egui_sfml::sfml::graphics::Font,
-    mlua::{ExternalError, ExternalResult, Function, Lua, UserData},
+    mlua::{ExternalError, ExternalResult, Lua, UserData},
     std::time::Instant,
 };
 
@@ -191,13 +191,16 @@ impl Dialog for LuaExecuteDialog {
                         let result = lua.scope(|scope| {
                             let res: mlua::Result<()> = try {
                                 let chunk = lua.load(&lua_script);
-                                let f = chunk.eval::<Function>()?;
+                                let fun = chunk.into_function()?;
                                 let app = scope.create_nonstatic_userdata(LuaExecContext {
                                     app: &mut *app,
                                     gui,
                                     font,
                                 })?;
-                                f.call(app)?;
+                                if let Some(env) = fun.environment() {
+                                    env.set("hx", app)?;
+                                }
+                                fun.call(())?;
                             };
                             if let Err(e) = res {
                                 self.result_info_string = e.to_string();
