@@ -134,6 +134,9 @@ pub trait Dialog {
     ) -> bool;
     /// Called when dialog is opened. Can be used to set just-opened flag, etc.
     fn on_open(&mut self) {}
+    fn has_close_button(&self) -> bool {
+        false
+    }
 }
 
 impl Gui {
@@ -366,9 +369,17 @@ pub fn do_egui(
     let mut dialogs = std::mem::take(&mut gui.dialogs);
     dialogs.retain(|_k, dialog| {
         let mut retain = true;
-        Window::new(dialog.title()).show(ctx, |ui| {
+        let mut win = Window::new(dialog.title());
+        let mut open = true;
+        if dialog.has_close_button() {
+            win = win.open(&mut open)
+        }
+        win.show(ctx, |ui| {
             retain = dialog.ui(ui, app, gui, lua, font);
         });
+        if !open {
+            retain = false;
+        }
         retain
     });
     std::mem::swap(&mut gui.dialogs, &mut dialogs);

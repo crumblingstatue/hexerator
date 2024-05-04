@@ -161,7 +161,6 @@ impl Dialog for LuaExecuteDialog {
         lua: &Lua,
         font: &Font,
     ) -> bool {
-        let mut keep_open = true;
         let ctrl_enter =
             ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::Enter));
         let ctrl_s = ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::S));
@@ -221,16 +220,11 @@ impl Dialog for LuaExecuteDialog {
                         if ui.button("💾 Save to file...").clicked() {
                             gui.fileops.save_lua_script();
                         }
-                    });
-                    ui.separator();
-                    ui.horizontal(|ui| {
-                        if ui.button("✖ Close").clicked() {
-                            keep_open = false;
-                        }
                         if ui.button("？ Help").clicked() {
                             gui.lua_help_window.open.toggle()
                         }
                     });
+                    ui.separator();
                     if app.edit_state.dirty_region.is_some() {
                         ui.label(
                             egui::RichText::new("Unsaved changes")
@@ -262,6 +256,9 @@ impl Dialog for LuaExecuteDialog {
                     }
                 });
             });
-        keep_open
+        true
+    }
+    fn has_close_button(&self) -> bool {
+        true
     }
 }
