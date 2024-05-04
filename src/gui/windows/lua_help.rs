@@ -32,7 +32,8 @@ impl LuaHelpWindow {
                     save,
                     bookmark_offset,
                     add_bookmark,
-                    find_hex_string
+                    find_hex_string,
+                    focus_cursor,
                     ] $* 'block: {
                         let filter_lower = &gui.lua_help_window.filter.to_ascii_lowercase();
                         if !($t::NAME.to_ascii_lowercase().contains(filter_lower) || $t::HELP.to_ascii_lowercase().contains(filter_lower)) {

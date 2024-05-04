@@ -202,6 +202,14 @@ def_method! {
     }
 }
 
+def_method! {
+    "Set the cursor to `offset`, center the view on the cursor, and flash the cursor"
+    focus_cursor(exec, offset: usize) -> () {
+        exec.app.search_focus(offset);
+        Ok(())
+    }
+}
+
 impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         forr::forr! {$t:ty in [
@@ -217,7 +225,8 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             save,
             bookmark_offset,
             add_bookmark,
-            find_hex_string
+            find_hex_string,
+            focus_cursor,
             ] $* {
             methods.add_method_mut($t::NAME, $t::call);
         }};
