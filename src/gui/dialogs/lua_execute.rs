@@ -174,7 +174,7 @@ impl Dialog for LuaExecuteDialog {
         }
         StripBuilder::new(ui)
             .size(Size::remainder())
-            .size(Size::exact(200.0))
+            .size(Size::exact(300.0))
             .vertical(|mut strip| {
                 strip.cell(|ui| {
                     egui::ScrollArea::vertical().show(ui, |ui| {
