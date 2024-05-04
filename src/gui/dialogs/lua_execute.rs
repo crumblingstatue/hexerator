@@ -190,10 +190,6 @@ impl Dialog for LuaExecuteDialog {
                         let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
                         let result = lua.scope(|scope| {
                             let res: mlua::Result<()> = try {
-                                /*let add_region = scope.create_function_mut(
-                                    ,
-                                )?;
-                                ctx.globals().set("add_region", add_region)?;*/
                                 let chunk = lua.load(&lua_script);
                                 let f = chunk.eval::<Function>()?;
                                 let app = scope.create_nonstatic_userdata(LuaExecContext {
@@ -202,7 +198,6 @@ impl Dialog for LuaExecuteDialog {
                                     font,
                                 })?;
                                 f.call(app)?;
-                                //chunk.exec()?;
                             };
                             if let Err(e) = res {
                                 self.result_info_string = e.to_string();
