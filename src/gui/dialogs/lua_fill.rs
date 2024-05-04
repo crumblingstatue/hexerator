@@ -70,7 +70,6 @@ impl Dialog for LuaFillDialog {
                 self.err = false;
             }
         }
-        let close = ui.button("Close").clicked();
         if app.edit_state.dirty_region.is_some() {
             ui.label(
                 egui::RichText::new("Unsaved changes")
@@ -97,6 +96,9 @@ impl Dialog for LuaFillDialog {
                 ui.label(&self.result_info_string);
             }
         }
-        !close
+        true
+    }
+    fn has_close_button(&self) -> bool {
+        true
     }
 }
