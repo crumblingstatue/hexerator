@@ -17,7 +17,7 @@ pub mod dialogs;
 mod external_command_window;
 pub mod file_diff_result_window;
 pub mod file_ops;
-mod find_dialog;
+pub mod find_dialog;
 mod find_memory_pointers_window;
 pub mod inspect_panel;
 mod layouts_window;

@@ -35,7 +35,7 @@ pub(crate) trait Method {
 }
 
 macro_rules! def_method {
-    ($help:literal $name:ident($exec:ident, $($argname:ident: $argty:ident),*) -> $ret:ty $block:block) => {
+    ($help:literal $name:ident($exec:ident, $($argname:ident: $argty:ty),*) -> $ret:ty $block:block) => {
         #[allow(non_camel_case_types)] pub(crate) enum $name {}
         impl Method for $name {
             const NAME: &'static str = stringify!($name);
@@ -191,6 +191,17 @@ def_method! {
     }
 }
 
+def_method! {
+    "Finds a hex string in the format '99 aa bb ...' format, and returns its offset"
+    find_hex_string(exec, hex_string: String) -> Option<usize> {
+        let mut offset = None;
+        crate::gui::find_dialog::find_hex_string(&hex_string, &exec.app.data, |off| {
+            offset = Some(off);
+        }).into_lua_err()?;
+        Ok(offset)
+    }
+}
+
 impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         forr::forr! {$t:ty in [
@@ -205,7 +216,8 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             set_dirty_region,
             save,
             bookmark_offset,
-            add_bookmark
+            add_bookmark,
+            find_hex_string
             ] $* {
             methods.add_method_mut($t::NAME, $t::call);
         }};

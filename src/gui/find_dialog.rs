@@ -510,21 +510,12 @@ fn do_search(data: &[u8], gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
             }
         }
         FindType::HexString => {
-            let input_bytes: Result<Vec<u8>, _> = gui
-                .find_dialog
-                .find_input
-                .split_whitespace()
-                .map(|s| u8::from_str_radix(s, 16))
-                .collect();
-            match input_bytes {
-                Ok(bytes) => {
-                    for offset in memchr::memmem::find_iter(data, &bytes) {
-                        gui.find_dialog.results_vec.push(offset);
-                        gui.highlight_set.insert(offset);
-                    }
-                }
-                Err(e) => msg_fail(&e, "Hex string search error", &mut gui.msg_dialog),
-            }
+            let fun = |offset| {
+                gui.find_dialog.results_vec.push(offset);
+                gui.highlight_set.insert(offset);
+            };
+            let result = find_hex_string(&gui.find_dialog.find_input, data, fun);
+            msg_if_fail(result, "Hex string search error", &mut gui.msg_dialog);
         }
         FindType::StringDiff => {
             let diff = ascii_to_diff_pattern(gui.find_dialog.find_input.as_bytes());
@@ -799,4 +790,19 @@ fn u8_search(
             highlight.insert(offset);
         }
     }
+}
+
+pub fn find_hex_string(
+    hex_string: &str,
+    haystack: &[u8],
+    mut f: impl FnMut(usize),
+) -> anyhow::Result<()> {
+    let needle = hex_string
+        .split_whitespace()
+        .map(|s| u8::from_str_radix(s, 16))
+        .collect::<Result<Vec<_>, _>>()?;
+    for offset in memchr::memmem::find_iter(haystack, &needle) {
+        f(offset);
+    }
+    Ok(())
 }
