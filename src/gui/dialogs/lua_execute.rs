@@ -185,7 +185,7 @@ impl Dialog for LuaExecuteDialog {
                 });
                 strip.cell(|ui| {
                     ui.separator();
-                    if ui.button("Execute").clicked() || ctrl_enter {
+                    if ui.button("⚡ Execute").clicked() || ctrl_enter {
                         let start_time = Instant::now();
                         let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
                         let result = lua.scope(|scope| {
@@ -215,10 +215,10 @@ impl Dialog for LuaExecuteDialog {
                         msg_if_fail(result, "Lua exec error", &mut gui.msg_dialog);
                     }
                     ui.horizontal(|ui| {
-                        if ui.button("Load script...").clicked() {
+                        if ui.button("🖴 Load from file...").clicked() {
                             gui.fileops.load_lua_script();
                         }
-                        if ui.button("Save script...").clicked() {
+                        if ui.button("💾 Save to file...").clicked() {
                             gui.fileops.save_lua_script();
                         }
                     });
