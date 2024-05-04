@@ -221,6 +221,14 @@ def_method! {
     }
 }
 
+def_method! {
+    "Prints to the debug log of Hexerator. You need to open the debug panel first (F12)"
+    dbg(_exec, value: String) -> () {
+        gamedebug_core::per!("lua: {value}");
+        Ok(())
+    }
+}
+
 impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         forr::forr! {$t:ty in [
@@ -238,7 +246,8 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             add_bookmark,
             find_hex_string,
             focus_cursor,
-            reoffset_bookmarks_cursor_diff
+            reoffset_bookmarks_cursor_diff,
+            dbg
             ] $* {
             methods.add_method_mut($t::NAME, $t::call);
         }};
