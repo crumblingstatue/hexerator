@@ -12,7 +12,6 @@ use {
         slice_ext::SliceExt,
     },
     egui_code_editor::{CodeEditor, Syntax},
-    egui_commonmark::CommonMarkViewer,
     egui_extras::{Size, StripBuilder},
     egui_sfml::sfml::graphics::Font,
     mlua::{ExternalError, ExternalResult, Lua, UserData},
@@ -184,36 +183,15 @@ impl Dialog for LuaExecuteDialog {
                 });
                 strip.cell(|ui| {
                     ui.separator();
-                    if ui.button("⚡ Execute").clicked() || ctrl_enter {
-                        let start_time = Instant::now();
-                        let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
-                        let result = lua.scope(|scope| {
-                            let res: mlua::Result<()> = try {
-                                let chunk = lua.load(&lua_script);
-                                let fun = chunk.into_function()?;
-                                let app = scope.create_nonstatic_userdata(LuaExecContext {
-                                    app: &mut *app,
-                                    gui,
-                                    font,
-                                })?;
-                                if let Some(env) = fun.environment() {
-                                    env.set("hx", app)?;
-                                }
-                                fun.call(())?;
-                            };
-                            if let Err(e) = res {
-                                self.result_info_string = e.to_string();
-                                self.err = true;
-                            } else {
-                                self.result_info_string =
-                                    format!("Script took {} ms", start_time.elapsed().as_millis());
-                                self.err = false;
-                            }
-                            Ok(())
-                        });
-                        msg_if_fail(result, "Lua exec error", &mut gui.msg_dialog);
-                    }
                     ui.horizontal(|ui| {
+                        if ui
+                            .button("⚡ Execute")
+                            .on_hover_text("Ctrl+Enter")
+                            .clicked()
+                            || ctrl_enter
+                        {
+                            self.exec_lua(app, lua, gui, font);
+                        }
                         if ui.button("🖴 Load from file...").clicked() {
                             gui.fileops.load_lua_script();
                         }
@@ -239,11 +217,6 @@ impl Dialog for LuaExecuteDialog {
                                 .code(),
                         );
                     }
-                    CommonMarkViewer::new("viewer").show(
-                        ui,
-                        &mut app.md_cache,
-                        "`ctrl+enter` to execute, `ctrl+s` to save file",
-                    );
                     if !self.result_info_string.is_empty() {
                         if self.err {
                             ui.label(
@@ -260,5 +233,37 @@ impl Dialog for LuaExecuteDialog {
     }
     fn has_close_button(&self) -> bool {
         true
+    }
+}
+
+impl LuaExecuteDialog {
+    fn exec_lua(&mut self, app: &mut App, lua: &Lua, gui: &mut Gui, font: &Font) {
+        let start_time = Instant::now();
+        let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
+        let result = lua.scope(|scope| {
+            let res: mlua::Result<()> = try {
+                let chunk = lua.load(&lua_script);
+                let fun = chunk.into_function()?;
+                let app = scope.create_nonstatic_userdata(LuaExecContext {
+                    app: &mut *app,
+                    gui,
+                    font,
+                })?;
+                if let Some(env) = fun.environment() {
+                    env.set("hx", app)?;
+                }
+                fun.call(())?;
+            };
+            if let Err(e) = res {
+                self.result_info_string = e.to_string();
+                self.err = true;
+            } else {
+                self.result_info_string =
+                    format!("Script took {} ms", start_time.elapsed().as_millis());
+                self.err = false;
+            }
+            Ok(())
+        });
+        msg_if_fail(result, "Lua exec error", &mut gui.msg_dialog);
     }
 }
