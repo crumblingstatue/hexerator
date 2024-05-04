@@ -10,10 +10,12 @@ use {
 #[derive(Default)]
 pub struct LuaHelpWindow {
     pub open: WindowOpen,
+    pub filter: String,
 }
 
 impl LuaHelpWindow {
-    pub fn ui(ui: &mut egui::Ui, _gui: &mut Gui, _app: &mut App) {
+    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, _app: &mut App) {
+        ui.add(egui::TextEdit::singleline(&mut gui.lua_help_window.filter).hint_text("🔍 Filter"));
         egui::ScrollArea::vertical()
             .max_height(500.0)
             .show(ui, |ui| {
@@ -30,7 +32,11 @@ impl LuaHelpWindow {
                     save,
                     bookmark_offset,
                     add_bookmark
-                    ] $* {
+                    ] $* 'block: {
+                        let filter_lower = &gui.lua_help_window.filter.to_ascii_lowercase();
+                        if !($t::NAME.to_ascii_lowercase().contains(filter_lower) || $t::HELP.to_ascii_lowercase().contains(filter_lower)) {
+                            break 'block;
+                        }
                         ui.horizontal(|ui| {
                             ui.style_mut().spacing.item_spacing = egui::vec2(0., 0.);
                             ui.label("hx:");
