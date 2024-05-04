@@ -34,7 +34,7 @@ impl Dialog for PatternFillDialog {
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");
-            return !ui.button("Close").clicked();
+            return true;
         };
         let re = ui.text_edit_singleline(&mut self.pattern_string);
         if self.just_opened {
@@ -62,8 +62,11 @@ impl Dialog for PatternFillDialog {
                 }
             }
         } else {
-            !ui.button("Close").clicked()
+            true
         }
+    }
+    fn has_close_button(&self) -> bool {
+        true
     }
 }
 
