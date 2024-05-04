@@ -263,6 +263,17 @@ impl App {
         self.center_view_on_offset(offset);
         self.hex_ui.flash_cursor();
     }
+    /// Reoffset all bookmarks based on the difference between the cursor and `offset`
+    pub(crate) fn reoffset_bookmarks_cursor_diff(&mut self, offset: usize) {
+        #[expect(
+            clippy::cast_possible_wrap,
+            reason = "We assume that the offset is not greater than isize"
+        )]
+        let difference = self.edit_state.cursor as isize - offset as isize;
+        for bm in &mut self.meta_state.meta.bookmarks {
+            bm.offset = bm.offset.saturating_add_signed(difference);
+        }
+    }
 
     pub(crate) fn center_view_on_offset(&mut self, offset: usize) {
         if let Some(key) = self.hex_ui.focused_view {

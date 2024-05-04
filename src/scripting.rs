@@ -9,6 +9,7 @@ use {
         },
         slice_ext::SliceExt as _,
     },
+    anyhow::Context,
     egui_sfml::sfml::graphics::Font,
     mlua::{ExternalError as _, ExternalResult as _, IntoLuaMulti, Lua, UserData},
 };
@@ -210,6 +211,16 @@ def_method! {
     }
 }
 
+def_method! {
+    "Reoffsets all bookmarks based on the difference between a bookmark's and the cursor's offsets"
+    reoffset_bookmarks_cursor_diff(exec, bookmark_name: String) -> () {
+        let bookmark = exec.app.meta_state.meta.bookmark_by_name_mut(&bookmark_name).context("No such bookmark").into_lua_err()?;
+        let offset = bookmark.offset;
+        exec.app.reoffset_bookmarks_cursor_diff(offset);
+        Ok(())
+    }
+}
+
 impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         forr::forr! {$t:ty in [
@@ -227,6 +238,7 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             add_bookmark,
             find_hex_string,
             focus_cursor,
+            reoffset_bookmarks_cursor_diff
             ] $* {
             methods.add_method_mut($t::NAME, $t::call);
         }};
