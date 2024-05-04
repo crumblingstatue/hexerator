@@ -156,13 +156,12 @@ impl Default for Misc {
     fn default() -> Self {
         Self {
             fill_lua_script: DEFAULT_FILL.into(),
-            exec_lua_script: DEFAULT_EXEC.into(),
+            exec_lua_script: String::new(),
         }
     }
 }
 
 const DEFAULT_FILL: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/lua/fill.lua"));
-const DEFAULT_EXEC: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/lua/exec.lua"));
 
 impl Meta {
     /// Init required after deserializing
