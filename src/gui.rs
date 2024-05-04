@@ -334,7 +334,8 @@ pub fn do_egui(
         }
     }
     // Panels
-    let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, gui, app, font));
+    let top_re =
+        TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, gui, app, lua, font));
     let bot_re = TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
         bottom_panel::ui(ui, app, mouse_pos, &mut gui.msg_dialog)
     });

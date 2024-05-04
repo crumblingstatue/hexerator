@@ -2,9 +2,10 @@ use {
     crate::{
         app::App,
         gui::{Dialog, Gui},
-        scripting::LuaExecContext,
+        meta::Script,
         shell::msg_if_fail,
     },
+    egui::TextBuffer,
     egui_code_editor::{CodeEditor, Syntax},
     egui_extras::{Size, StripBuilder},
     egui_sfml::sfml::graphics::Font,
@@ -16,6 +17,7 @@ use {
 pub struct LuaExecuteDialog {
     result_info_string: String,
     err: bool,
+    new_script_name: String,
 }
 
 impl Dialog for LuaExecuteDialog {
@@ -73,6 +75,19 @@ impl Dialog for LuaExecuteDialog {
                             gui.lua_help_window.open.toggle()
                         }
                     });
+                    ui.horizontal(|ui| {
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.new_script_name)
+                                .hint_text("New script name"),
+                        );
+                        if ui.button("Add named script").clicked() {
+                            app.meta_state.meta.scripts.insert(Script {
+                                name: self.new_script_name.take(),
+                                desc: String::new(),
+                                content: app.meta_state.meta.misc.exec_lua_script.clone(),
+                            });
+                        }
+                    });
                     ui.separator();
                     if app.edit_state.dirty_region.is_some() {
                         ui.label(
@@ -111,30 +126,14 @@ impl LuaExecuteDialog {
     fn exec_lua(&mut self, app: &mut App, lua: &Lua, gui: &mut Gui, font: &Font) {
         let start_time = Instant::now();
         let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
-        let result = lua.scope(|scope| {
-            let res: mlua::Result<()> = try {
-                let chunk = lua.load(&lua_script);
-                let fun = chunk.into_function()?;
-                let app = scope.create_nonstatic_userdata(LuaExecContext {
-                    app: &mut *app,
-                    gui,
-                    font,
-                })?;
-                if let Some(env) = fun.environment() {
-                    env.set("hx", app)?;
-                }
-                fun.call(())?;
-            };
-            if let Err(e) = res {
-                self.result_info_string = e.to_string();
-                self.err = true;
-            } else {
-                self.result_info_string =
-                    format!("Script took {} ms", start_time.elapsed().as_millis());
-                self.err = false;
-            }
-            Ok(())
-        });
-        msg_if_fail(result, "Lua exec error", &mut gui.msg_dialog);
+        let result = crate::scripting::exec_lua(lua, &lua_script, app, gui, font);
+        if let Err(e) = result {
+            self.result_info_string = e.to_string();
+            self.err = true;
+        } else {
+            self.result_info_string =
+                format!("Script took {} ms", start_time.elapsed().as_millis());
+            self.err = false;
+        }
     }
 }

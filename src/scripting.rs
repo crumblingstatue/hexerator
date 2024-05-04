@@ -244,3 +244,26 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
         }};
     }
 }
+
+pub fn exec_lua(
+    lua: &Lua,
+    lua_script: &str,
+    app: &mut App,
+    gui: &mut Gui,
+    font: &Font,
+) -> Result<(), mlua::prelude::LuaError> {
+    lua.scope(|scope| {
+        let chunk = lua.load(lua_script);
+        let fun = chunk.into_function()?;
+        let app = scope.create_nonstatic_userdata(LuaExecContext {
+            app: &mut *app,
+            gui,
+            font,
+        })?;
+        if let Some(env) = fun.environment() {
+            env.set("hx", app)?;
+        }
+        fun.call(())?;
+        Ok(())
+    })
+}

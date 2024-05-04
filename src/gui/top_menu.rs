@@ -1,4 +1,4 @@
-use crate::shell::msg_if_fail;
+use {crate::shell::msg_if_fail, mlua::Lua};
 
 mod analysis;
 mod cursor;
@@ -15,7 +15,13 @@ use {
     egui_sfml::{egui::Layout, sfml::graphics::Font},
 };
 
-pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, font: &Font) {
+pub fn top_menu(
+    ui: &mut egui::Ui,
+    gui: &mut crate::gui::Gui,
+    app: &mut App,
+    lua: &Lua,
+    font: &Font,
+) {
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| file::ui(ui, gui, app, font));
         ui.menu_button("Edit", |ui| edit::ui(ui, gui, app));
@@ -24,7 +30,7 @@ pub fn top_menu(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut App, fon
         ui.menu_button("Perspective", |ui| perspective::ui(ui, gui, app));
         ui.menu_button("Meta", |ui| meta::ui(ui, gui, app, font));
         ui.menu_button("Analysis", |ui| analysis::ui(ui, gui, app));
-        ui.menu_button("Scripting", |ui| scripting::ui(ui, gui, app));
+        ui.menu_button("Scripting", |ui| scripting::ui(ui, gui, app, lua, font));
         ui.menu_button("Help", |ui| help::ui(ui, gui));
         ui.with_layout(
             Layout::right_to_left(egui::Align::Center),

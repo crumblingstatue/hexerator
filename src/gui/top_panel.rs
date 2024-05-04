@@ -9,10 +9,11 @@ use {
         egui::{ComboBox, Layout, Ui},
         sfml::graphics::Font,
     },
+    mlua::Lua,
 };
 
-pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, font: &Font) {
-    top_menu(ui, gui, app, font);
+pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
+    top_menu(ui, gui, app, lua, font);
     ui.horizontal(|ui| {
         if app.hex_ui.select_a.is_some() || app.hex_ui.select_b.is_some() {
             ui.label("Selection");

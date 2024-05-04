@@ -18,12 +18,14 @@ new_key_type! {
     pub struct RegionKey;
     pub struct ViewKey;
     pub struct LayoutKey;
+    pub struct ScriptKey;
 }
 
 pub type PerspectiveMap = SlotMap<PerspectiveKey, Perspective>;
 pub type RegionMap = SlotMap<RegionKey, NamedRegion>;
 pub type ViewMap = SlotMap<ViewKey, NamedView>;
 pub type LayoutMap = SlotMap<LayoutKey, Layout>;
+pub type ScriptMap = SlotMap<ScriptKey, Script>;
 pub type Bookmarks = Vec<Bookmark>;
 
 /// A bookmark for an offset in a file
@@ -104,6 +106,8 @@ pub struct Meta {
     pub misc: Misc,
     #[serde(default)]
     pub vars: HashMap<String, VarEntry>,
+    #[serde(default)]
+    pub scripts: ScriptMap,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -230,4 +234,11 @@ impl NamedRegion {
             desc: String::new(),
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Script {
+    pub name: String,
+    pub desc: String,
+    pub content: String,
 }
