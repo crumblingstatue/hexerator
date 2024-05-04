@@ -13,6 +13,7 @@ use {
     },
     egui_code_editor::{CodeEditor, Syntax},
     egui_commonmark::CommonMarkViewer,
+    egui_extras::{Size, StripBuilder},
     egui_sfml::sfml::graphics::Font,
     mlua::{ExternalError, ExternalResult, Function, Lua, UserData},
     std::time::Instant,
@@ -160,6 +161,7 @@ impl Dialog for LuaExecuteDialog {
         lua: &Lua,
         font: &Font,
     ) -> bool {
+        let mut keep_open = true;
         let ctrl_enter =
             ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::Enter));
         let ctrl_s = ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::S));
@@ -170,83 +172,93 @@ impl Dialog for LuaExecuteDialog {
                 &mut gui.msg_dialog,
             );
         }
-        egui::ScrollArea::vertical()
-            // 100.0 is an estimation of ui size below.
-            // If we don't subtract that, the text edit tries to expand
-            // beyond window height
-            .max_height(ui.available_height() - 100.0)
-            .show(ui, |ui| {
-                CodeEditor::default()
-                    .with_syntax(Syntax::lua())
-                    .show(ui, &mut app.meta_state.meta.misc.exec_lua_script);
+        StripBuilder::new(ui)
+            .size(Size::remainder())
+            .size(Size::exact(200.0))
+            .vertical(|mut strip| {
+                strip.cell(|ui| {
+                    egui::ScrollArea::vertical().show(ui, |ui| {
+                        CodeEditor::default()
+                            .with_syntax(Syntax::lua())
+                            .show(ui, &mut app.meta_state.meta.misc.exec_lua_script);
+                    });
+                });
+                strip.cell(|ui| {
+                    ui.separator();
+                    if ui.button("Execute").clicked() || ctrl_enter {
+                        let start_time = Instant::now();
+                        let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
+                        let result = lua.scope(|scope| {
+                            let res: mlua::Result<()> = try {
+                                /*let add_region = scope.create_function_mut(
+                                    ,
+                                )?;
+                                ctx.globals().set("add_region", add_region)?;*/
+                                let chunk = lua.load(&lua_script);
+                                let f = chunk.eval::<Function>()?;
+                                let app = scope.create_nonstatic_userdata(LuaExecContext {
+                                    app: &mut *app,
+                                    gui,
+                                    font,
+                                })?;
+                                f.call(app)?;
+                                //chunk.exec()?;
+                            };
+                            if let Err(e) = res {
+                                self.result_info_string = e.to_string();
+                                self.err = true;
+                            } else {
+                                self.result_info_string =
+                                    format!("Script took {} ms", start_time.elapsed().as_millis());
+                                self.err = false;
+                            }
+                            Ok(())
+                        });
+                        msg_if_fail(result, "Lua exec error", &mut gui.msg_dialog);
+                    }
+                    ui.horizontal(|ui| {
+                        if ui.button("Load script...").clicked() {
+                            gui.fileops.load_lua_script();
+                        }
+                        if ui.button("Save script...").clicked() {
+                            gui.fileops.save_lua_script();
+                        }
+                    });
+                    ui.separator();
+                    if ui.button("Close").clicked() {
+                        keep_open = false;
+                    }
+                    if app.edit_state.dirty_region.is_some() {
+                        ui.label(
+                            egui::RichText::new("Unsaved changes")
+                                .italics()
+                                .color(egui::Color32::YELLOW)
+                                .code(),
+                        );
+                    } else {
+                        ui.label(
+                            egui::RichText::new("No unsaved changes")
+                                .color(egui::Color32::GREEN)
+                                .code(),
+                        );
+                    }
+                    CommonMarkViewer::new("viewer").show(
+                        ui,
+                        &mut app.md_cache,
+                        "`ctrl+enter` to execute, `ctrl+s` to save file",
+                    );
+                    if !self.result_info_string.is_empty() {
+                        if self.err {
+                            ui.label(
+                                egui::RichText::new(&self.result_info_string)
+                                    .color(egui::Color32::RED),
+                            );
+                        } else {
+                            ui.label(&self.result_info_string);
+                        }
+                    }
+                });
             });
-        if ui.button("Execute").clicked() || ctrl_enter {
-            let start_time = Instant::now();
-            let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
-            let result = lua.scope(|scope| {
-                let res: mlua::Result<()> = try {
-                    /*let add_region = scope.create_function_mut(
-                        ,
-                    )?;
-                    ctx.globals().set("add_region", add_region)?;*/
-                    let chunk = lua.load(&lua_script);
-                    let f = chunk.eval::<Function>()?;
-                    let app = scope.create_nonstatic_userdata(LuaExecContext {
-                        app: &mut *app,
-                        gui,
-                        font,
-                    })?;
-                    f.call(app)?;
-                    //chunk.exec()?;
-                };
-                if let Err(e) = res {
-                    self.result_info_string = e.to_string();
-                    self.err = true;
-                } else {
-                    self.result_info_string =
-                        format!("Script took {} ms", start_time.elapsed().as_millis());
-                    self.err = false;
-                }
-                Ok(())
-            });
-            msg_if_fail(result, "Lua exec error", &mut gui.msg_dialog);
-        }
-        ui.horizontal(|ui| {
-            if ui.button("Load script...").clicked() {
-                gui.fileops.load_lua_script();
-            }
-            if ui.button("Save script...").clicked() {
-                gui.fileops.save_lua_script();
-            }
-        });
-        ui.separator();
-        let close = ui.button("Close").clicked();
-        if app.edit_state.dirty_region.is_some() {
-            ui.label(
-                egui::RichText::new("Unsaved changes")
-                    .italics()
-                    .color(egui::Color32::YELLOW)
-                    .code(),
-            );
-        } else {
-            ui.label(
-                egui::RichText::new("No unsaved changes")
-                    .color(egui::Color32::GREEN)
-                    .code(),
-            );
-        }
-        CommonMarkViewer::new("viewer").show(
-            ui,
-            &mut app.md_cache,
-            "`ctrl+enter` to execute, `ctrl+s` to save file",
-        );
-        if !self.result_info_string.is_empty() {
-            if self.err {
-                ui.label(egui::RichText::new(&self.result_info_string).color(egui::Color32::RED));
-            } else {
-                ui.label(&self.result_info_string);
-            }
-        }
-        !close
+        keep_open
     }
 }
