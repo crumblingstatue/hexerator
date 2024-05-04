@@ -24,6 +24,8 @@ pub(crate) trait Method {
     const NAME: &'static str;
     /// Help text for the method
     const HELP: &'static str;
+    /// Stringified API signature for help purposes
+    const API_SIG: &'static str;
     /// Arguments the method takes when called
     type Args;
     /// Return type
@@ -38,6 +40,7 @@ macro_rules! def_method {
         impl Method for $name {
             const NAME: &'static str = stringify!($name);
             const HELP: &'static str = $help;
+            const API_SIG: &'static str = concat!(stringify!($name), "(", $(stringify!($argname), ": ", stringify!($argty), ", ",)* ")", " -> ", stringify!($ret));
             type Args = ($($argty,)*);
             type Ret = $ret;
             fn call(_lua: &Lua, $exec: &mut LuaExecContext, ($($argname,)*): ($($argty,)*)) -> mlua::Result<$ret> $block
