@@ -19,7 +19,7 @@ pub struct LuaExecContext<'app, 'gui, 'font> {
     pub font: &'font Font,
 }
 
-trait Method {
+pub(crate) trait Method {
     /// Name of the method
     const NAME: &'static str;
     /// Help text for the method
@@ -34,7 +34,7 @@ trait Method {
 
 macro_rules! def_method {
     ($help:literal $name:ident($exec:ident, $($argname:ident: $argty:ident),*) -> $ret:ty $block:block) => {
-        #[allow(non_camel_case_types)] pub enum $name {}
+        #[allow(non_camel_case_types)] pub(crate) enum $name {}
         impl Method for $name {
             const NAME: &'static str = stringify!($name);
             const HELP: &'static str = $help;
