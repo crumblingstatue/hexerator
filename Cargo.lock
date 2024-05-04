@@ -547,6 +547,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
+name = "forr"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e88a16004f7e91ed355aaf362066671022c24405e5833c9613488e843111372"
+dependencies = [
+ "manyhow",
+ "proc-macro-utils 0.9.1",
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
 name = "gamedebug_core"
 version = "0.1.0"
 source = "git+https://github.com/crumblingstatue/gamedebug_core.git#025281ebde35bf1bdcdf490e00dc3fed33c0597b"
@@ -622,6 +634,7 @@ dependencies = [
  "egui_commonmark",
  "egui_extras",
  "either",
+ "forr",
  "gamedebug_core",
  "glu-sys",
  "human_bytes",
@@ -836,6 +849,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "19b955cdeb2a02b9117f121ce63aa52d08ade45de53e48fe6a38b39c10f6f709"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "manyhow"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f12ce15832b1c9c4d1e41dd7972a8afc88008743f1aabdd140ce3c0fb72fed36"
+dependencies = [
+ "manyhow-macros",
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
+name = "manyhow-macros"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f62795c21f127551ebefc71810974b2203f2e8866f5f42c639b1af15b4ed72c2"
+dependencies = [
+ "proc-macro-utils 0.8.0",
+ "proc-macro2",
+ "quote",
 ]
 
 [[package]]
@@ -1105,6 +1140,28 @@ checksum = "5ac2cf0f2e4f42b49f5ffd07dae8d746508ef7526c13940e5f524012ae6c6550"
 dependencies = [
  "proc-macro2",
  "syn",
+]
+
+[[package]]
+name = "proc-macro-utils"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f59e109e2f795a5070e69578c4dc101068139f74616778025ae1011d4cd41a8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "smallvec",
+]
+
+[[package]]
+name = "proc-macro-utils"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c465d89134af1993ccbe4d4c859af29e73f049775f8174beb1de4789c7639a4a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "smallvec",
 ]
 
 [[package]]

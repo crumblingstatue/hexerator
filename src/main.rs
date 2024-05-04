@@ -49,6 +49,7 @@ mod meta;
 mod meta_state;
 mod parse_radix;
 mod preferences;
+mod scripting;
 mod shell;
 mod slice_ext;
 mod source;

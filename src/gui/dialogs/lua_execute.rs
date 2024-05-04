@@ -1,20 +1,14 @@
 use {
-    super::pattern_fill::parse_pattern_string,
     crate::{
         app::App,
         gui::{Dialog, Gui},
-        meta::{
-            region::Region,
-            value_type::{self, EndianedPrimitive as _, ValueType},
-            Bookmark, NamedRegion,
-        },
+        scripting::LuaExecContext,
         shell::msg_if_fail,
-        slice_ext::SliceExt,
     },
     egui_code_editor::{CodeEditor, Syntax},
     egui_extras::{Size, StripBuilder},
     egui_sfml::sfml::graphics::Font,
-    mlua::{ExternalError, ExternalResult, Lua, UserData},
+    mlua::Lua,
     std::time::Instant,
 };
 
@@ -22,129 +16,6 @@ use {
 pub struct LuaExecuteDialog {
     result_info_string: String,
     err: bool,
-}
-
-struct LuaExecContext<'app, 'gui, 'font> {
-    app: &'app mut App,
-    gui: &'gui mut Gui,
-    font: &'font Font,
-}
-
-impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
-    fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        methods.add_method_mut(
-            "add_region",
-            |_ctx, exec, (name, begin, end): (String, usize, usize)| {
-                exec.app.meta_state.meta.low.regions.insert(NamedRegion {
-                    name,
-                    desc: String::new(),
-                    region: Region { begin, end },
-                });
-                Ok(())
-            },
-        );
-        methods.add_method_mut("load_file", |_ctx, exec, (path,): (String,)| {
-            exec.app
-                .load_file(path.into(), true, exec.font, &mut exec.gui.msg_dialog)
-                .map_err(|e| e.into_lua_err())?;
-            Ok(())
-        });
-        methods.add_method_mut(
-            "bookmark_set_int",
-            |_ctx, exec, (name, val): (String, i64)| {
-                let bm = exec
-                    .app
-                    .meta_state
-                    .meta
-                    .bookmark_by_name_mut(&name)
-                    .ok_or("no such bookmark".into_lua_err())?;
-                bm.write_int(&mut exec.app.data[bm.offset..], val)
-                    .map_err(|e| e.into_lua_err())?;
-                Ok(())
-            },
-        );
-        methods.add_method_mut(
-            "region_pattern_fill",
-            |_ctx, exec, (name, pattern): (String, String)| {
-                let reg = exec
-                    .app
-                    .meta_state
-                    .meta
-                    .region_by_name_mut(&name)
-                    .ok_or("no such region".into_lua_err())?;
-                let pat = parse_pattern_string(&pattern).map_err(|e| e.into_lua_err())?;
-                exec.app.data[reg.region.begin..=reg.region.end].pattern_fill(&pat);
-                Ok(())
-            },
-        );
-        methods.add_method_mut("find_result_offsets", |_ctx, exec, ()| {
-            Ok(exec.gui.find_dialog.results_vec.clone())
-        });
-        methods.add_method_mut("read_u8", |_ctx, exec, (offset,): (usize,)| {
-            match exec.app.data.get(offset) {
-                Some(byte) => Ok(*byte),
-                None => Err("out of bounds".into_lua_err()),
-            }
-        });
-        methods.add_method_mut("read_u32_le", |_ctx, exec, (offset,): (usize,)| match exec
-            .app
-            .data
-            .get(offset..offset + 4)
-        {
-            Some(slice) => value_type::U32Le::from_byte_slice(slice)
-                .ok_or_else(|| "Failed to convert".into_lua_err()),
-            None => Err("out of bounds".into_lua_err()),
-        });
-        methods.add_method_mut(
-            "fill_range",
-            |_ctx, exec, (start, end, fill): (usize, usize, u8)| match exec
-                .app
-                .data
-                .get_mut(start..end)
-            {
-                Some(slice) => {
-                    slice.fill(fill);
-                    Ok(())
-                }
-                None => Err("out of bounds".into_lua_err()),
-            },
-        );
-        methods.add_method_mut(
-            "set_dirty_region",
-            |_ctx, exec, (begin, end): (usize, usize)| {
-                exec.app.edit_state.dirty_region = Some(Region { begin, end });
-                Ok(())
-            },
-        );
-        methods.add_method_mut("save", |_ctx, exec, ()| {
-            exec.app.save(&mut exec.gui.msg_dialog).into_lua_err()?;
-            Ok(())
-        });
-        methods.add_method_mut(
-            "bookmark_offset",
-            |_ctx, exec, (name,): (String,)| match exec
-                .app
-                .meta_state
-                .meta
-                .bookmark_by_name_mut(&name)
-            {
-                Some(bm) => Ok(bm.offset),
-                None => Err(format!("no such bookmark: {name}").into_lua_err()),
-            },
-        );
-        methods.add_method_mut(
-            "add_bookmark",
-            |_ctx, exec, (offset, name): (usize, String)| {
-                exec.app.meta_state.meta.bookmarks.push(Bookmark {
-                    offset,
-                    label: name,
-                    desc: String::new(),
-                    value_type: ValueType::None,
-                });
-                Ok(())
-            },
-        );
-    }
 }
 
 impl Dialog for LuaExecuteDialog {

@@ -3,7 +3,7 @@ mod jump;
 mod lua_color;
 mod lua_execute;
 mod lua_fill;
-mod pattern_fill;
+pub mod pattern_fill;
 mod truncate;
 mod x86_asm;
 
