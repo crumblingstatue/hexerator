@@ -242,6 +242,13 @@ def_method! {
     }
 }
 
+def_method! {
+    "Returns the start and end offsets of the selection"
+    selection(exec,) -> (usize, usize) {
+        exec.app.hex_ui.selection().map(|reg| (reg.begin, reg.end)).context("Selection is empty").into_lua_err()
+    }
+}
+
 impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         forr::forr! {$t:ty in [
@@ -261,7 +268,8 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             find_hex_string,
             focus_cursor,
             reoffset_bookmarks_cursor_diff,
-            dbg
+            dbg,
+            selection,
             ] $* {
             methods.add_method_mut($t::NAME, $t::call);
         }};
