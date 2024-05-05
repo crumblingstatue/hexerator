@@ -118,6 +118,19 @@ def_method! {
 }
 
 def_method! {
+    "Sets unsigned 8 bit integer at `offset` to `value`"
+    write_u8(exec, offset: usize, value: u8) -> () {
+        match exec.app.data.get_mut(offset) {
+            Some(byte) => {
+                *byte = value;
+                Ok(())
+            }
+            None => Err("out of bounds".into_lua_err())
+        }
+    }
+}
+
+def_method! {
     "Reads a little endian unsigned 32 bit integer at `offset`"
     read_u32_le(exec, offset: usize) -> u32 {
         match exec
@@ -238,6 +251,7 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             region_pattern_fill,
             find_result_offsets,
             read_u8,
+            write_u8,
             read_u32_le,
             fill_range,
             set_dirty_region,

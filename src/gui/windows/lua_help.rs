@@ -26,6 +26,7 @@ impl LuaHelpWindow {
                     region_pattern_fill,
                     find_result_offsets,
                     read_u8,
+                    write_u8,
                     read_u32_le,
                     fill_range,
                     set_dirty_region,
