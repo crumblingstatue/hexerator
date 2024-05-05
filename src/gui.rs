@@ -1,11 +1,51 @@
+pub use self::windows::ConMsg;
 use {
     self::{
+        advanced_open_window::AdvancedOpenWindow,
+        bookmarks_window::BookmarksWindow,
         command::GCommandQueue,
+        external_command_window::ExternalCommandWindow,
+        file_diff_result_window::FileDiffResultWindow,
         file_ops::FileOps,
-        windows::{LuaHelpWindow, VarsWindow},
+        find_dialog::FindDialog,
+        find_memory_pointers_window::FindMemoryPointersWindow,
+        inspect_panel::InspectPanel,
+        layouts_window::LayoutsWindow,
+        message_dialog::MessageDialog,
+        meta_diff_window::MetaDiffWindow,
+        open_process_window::OpenProcessWindow,
+        perspectives_window::PerspectivesWindow,
+        preferences_window::PreferencesWindow,
+        regions_window::RegionsWindow,
+        views_window::ViewsWindow,
+        windows::{LuaConsoleWindow, LuaHelpWindow, VarsWindow},
     },
-    crate::meta::value_type::U8,
+    crate::{
+        app::App,
+        config::Style,
+        gui::windows::AboutWindow,
+        meta::{
+            value_type::{ValueType, U8},
+            Bookmark, ViewKey,
+        },
+        view::{ViewportScalar, ViewportVec},
+    },
+    egui_sfml::{
+        egui::{
+            FontFamily::{self, Proportional},
+            FontId,
+            TextStyle::{Body, Button, Heading, Monospace, Small},
+            TopBottomPanel, Window,
+        },
+        sfml::graphics::{Font, RenderWindow},
+        SfEgui,
+    },
     gamedebug_core::{IMMEDIATE, PERSISTENT},
+    mlua::Lua,
+    std::{
+        any::TypeId,
+        collections::{HashMap, HashSet},
+    },
 };
 
 mod advanced_open_window;
@@ -35,41 +75,6 @@ mod views_window;
 mod window_open;
 mod windows;
 
-use {
-    self::{
-        advanced_open_window::AdvancedOpenWindow, bookmarks_window::BookmarksWindow,
-        external_command_window::ExternalCommandWindow,
-        file_diff_result_window::FileDiffResultWindow, find_dialog::FindDialog,
-        find_memory_pointers_window::FindMemoryPointersWindow, inspect_panel::InspectPanel,
-        layouts_window::LayoutsWindow, message_dialog::MessageDialog,
-        meta_diff_window::MetaDiffWindow, open_process_window::OpenProcessWindow,
-        perspectives_window::PerspectivesWindow, preferences_window::PreferencesWindow,
-        regions_window::RegionsWindow, views_window::ViewsWindow,
-    },
-    crate::{
-        app::App,
-        config::Style,
-        gui::windows::AboutWindow,
-        meta::{value_type::ValueType, Bookmark, ViewKey},
-        view::{ViewportScalar, ViewportVec},
-    },
-    egui_sfml::{
-        egui::{
-            FontFamily::{self, Proportional},
-            FontId,
-            TextStyle::{Body, Button, Heading, Monospace, Small},
-            TopBottomPanel, Window,
-        },
-        sfml::graphics::{Font, RenderWindow},
-        SfEgui,
-    },
-    mlua::Lua,
-    std::{
-        any::TypeId,
-        collections::{HashMap, HashSet},
-    },
-};
-
 type Dialogs = HashMap<TypeId, Box<dyn Dialog>>;
 
 pub type HighlightSet = HashSet<usize>;
@@ -96,6 +101,7 @@ pub struct Gui {
     pub about_window: AboutWindow,
     pub vars_window: VarsWindow,
     pub lua_help_window: LuaHelpWindow,
+    pub lua_console_window: LuaConsoleWindow,
     /// What to highlight in addition to selection. Can be updated by various actions that want to highlight stuff
     pub highlight_set: HighlightSet,
     pub cmd: GCommandQueue,
@@ -197,6 +203,7 @@ pub fn do_egui(
         "External command",        external_command_window,     ExternalCommandWindow: gui app;
         "Preferences",             preferences_window,          PreferencesWindow: gui app rwin;
         "Lua help",                lua_help_window,             LuaHelpWindow: gui app;
+        "Lua console",             lua_console_window,          LuaConsoleWindow: gui app lua font;
         "About Hexerator",         about_window,                AboutWindow: gui app;
     }
     // Context menu

@@ -1,7 +1,7 @@
 use {
     crate::{
         app::App,
-        gui::{dialogs::pattern_fill::parse_pattern_string, Gui},
+        gui::{dialogs::pattern_fill::parse_pattern_string, ConMsg, Gui},
         meta::{
             region::Region,
             value_type::{self, EndianedPrimitive as _, ValueType},
@@ -235,9 +235,19 @@ def_method! {
 }
 
 def_method! {
-    "Prints to the debug log of Hexerator. You need to open the debug panel first (F12)"
-    dbg(_exec, value: String) -> () {
-        gamedebug_core::per!("lua: {value}");
+    "Prints to the lua console"
+    log(exec, value: String) -> () {
+        exec.gui.lua_console_window.open.set(true);
+        exec.gui.lua_console_window.messages.push(ConMsg::Plain(value));
+        Ok(())
+    }
+}
+
+def_method! {
+    "Prints a clickable offset link to the lua console with an optional text"
+    loffset(exec, offset: usize, text: Option<String>) -> () {
+        exec.gui.lua_console_window.open.set(true);
+        exec.gui.lua_console_window.messages.push(ConMsg::OffsetLink { text: text.map_or(offset.to_string(), |text| format!("{offset}: {text}")), offset });
         Ok(())
     }
 }
@@ -268,7 +278,8 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             find_hex_string,
             focus_cursor,
             reoffset_bookmarks_cursor_diff,
-            dbg,
+            log,
+            loffset,
             selection,
             ] $* {
             methods.add_method_mut($t::NAME, $t::call);
