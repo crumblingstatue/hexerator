@@ -100,6 +100,8 @@ pub struct FindDialog {
     pub data_snapshot: Vec<u8>,
     /// Reload the source before search
     pub reload_before_search: bool,
+    /// Only search in selection
+    pub selection_only: bool,
 }
 
 impl FindDialog {
@@ -115,6 +117,8 @@ impl FindDialog {
                 });
             ui.checkbox(&mut gui.find_dialog.reload_before_search, "Reload")
                 .on_hover_text("Reload source before every search");
+            ui.checkbox(&mut gui.find_dialog.selection_only, "Selection only")
+                .on_hover_text("Only search in selection");
         });
         let re = ui
             .add(egui::TextEdit::singleline(&mut gui.find_dialog.find_input).hint_text("🔍 Find"));
@@ -125,8 +129,15 @@ impl FindDialog {
             if gui.find_dialog.reload_before_search {
                 msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
             }
+            let (data, offs) = if gui.find_dialog.selection_only
+                && let Some(sel) = app.hex_ui.selection()
+            {
+                (&app.data[sel.begin..=sel.end], sel.begin)
+            } else {
+                (&app.data[..], 0)
+            };
             msg_if_fail(
-                do_search(&app.data, gui),
+                do_search(data, offs, gui),
                 "Search failed",
                 &mut gui.msg_dialog,
             );
@@ -448,7 +459,7 @@ impl<T> SliceExt<T> for [T] {
 
 fn data_value_label<N: EndianedPrimitive>(
     ui: &mut Ui,
-    data: &mut Vec<u8>,
+    data: &mut [u8],
     off: usize,
 ) -> Option<DamageRegion>
 where
@@ -472,8 +483,9 @@ enum Action {
     RemoveIdxFromResults(usize),
 }
 
-fn do_search(data: &[u8], gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
+fn do_search(data: &[u8], initial_offset: usize, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
     // Reset the result cursor, so it's not out of bounds if new results_vec is smaller
+    // TODO: Review everything to use `initial_offset` correctly
     gui.find_dialog.result_cursor = 0;
     if !gui.find_dialog.filter_results {
         gui.find_dialog.results_vec.clear();
@@ -484,6 +496,7 @@ fn do_search(data: &[u8], gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
         FindType::U8 => find_u8(
             &mut gui.find_dialog,
             data,
+            initial_offset,
             &mut gui.msg_dialog,
             &mut gui.highlight_set,
         ),
@@ -505,14 +518,14 @@ fn do_search(data: &[u8], gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
         FindType::F64Be => find_num::<F64Be>(gui, data)?,
         FindType::Ascii => {
             for offset in memchr::memmem::find_iter(data, &gui.find_dialog.find_input) {
-                gui.find_dialog.results_vec.push(offset);
-                gui.highlight_set.insert(offset);
+                gui.find_dialog.results_vec.push(initial_offset + offset);
+                gui.highlight_set.insert(initial_offset + offset);
             }
         }
         FindType::HexString => {
             let fun = |offset| {
-                gui.find_dialog.results_vec.push(offset);
-                gui.highlight_set.insert(offset);
+                gui.find_dialog.results_vec.push(initial_offset + offset);
+                gui.highlight_set.insert(initial_offset + offset);
             };
             let result = find_hex_string(&gui.find_dialog.find_input, data, fun);
             msg_if_fail(result, "Hex string search error", &mut gui.msg_dialog);
@@ -522,8 +535,8 @@ fn do_search(data: &[u8], gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
             let mut off = 0;
             while let Some(offset) = find_diff_pattern(&data[off..], &diff) {
                 off += offset;
-                gui.find_dialog.results_vec.push(off);
-                gui.highlight_set.insert(off);
+                gui.find_dialog.results_vec.push(initial_offset + off);
+                gui.highlight_set.insert(initial_offset + off);
                 off += diff.len();
             }
         }
@@ -532,8 +545,8 @@ fn do_search(data: &[u8], gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
             let mut off = 0;
             while let Some(offset) = find_eq_pattern_needle(&needle, &data[off..]) {
                 off += offset;
-                gui.find_dialog.results_vec.push(off);
-                gui.highlight_set.insert(off);
+                gui.find_dialog.results_vec.push(initial_offset + off);
+                gui.highlight_set.insert(initial_offset + off);
                 off += needle.len();
             }
         }
@@ -688,17 +701,20 @@ where
 fn find_u8(
     dia: &mut FindDialog,
     data: &[u8],
+    initial_offset: usize,
     msg: &mut MessageDialog,
     highlight: &mut HighlightSet,
 ) {
+    // TODO: This is probably a minefield for initial_offset shenanigans.
+    // Need to review carefully
     match dia.find_input.as_str() {
         "?" => {
             dia.data_snapshot = data.to_vec();
             dia.results_vec.clear();
             highlight.clear();
             for i in 0..data.len() {
-                dia.results_vec.push(i);
-                highlight.insert(i);
+                dia.results_vec.push(initial_offset + i);
+                highlight.insert(initial_offset + i);
             }
         }
         ">" => {
@@ -766,11 +782,18 @@ fn find_u8(
                     u8_search(
                         dia,
                         results_vec_clone.iter().map(|&off| (off, data[off])),
+                        initial_offset,
                         needle,
                         highlight,
                     );
                 } else {
-                    u8_search(dia, data.iter().cloned().enumerate(), needle, highlight);
+                    u8_search(
+                        dia,
+                        data.iter().cloned().enumerate(),
+                        initial_offset,
+                        needle,
+                        highlight,
+                    );
                 }
             }
             Err(e) => msg.open(Icon::Error, "Parse error", e.to_string()),
@@ -781,13 +804,14 @@ fn find_u8(
 fn u8_search(
     dialog: &mut FindDialog,
     haystack: impl Iterator<Item = (usize, u8)>,
+    initial_offset: usize,
     needle: u8,
     highlight: &mut HighlightSet,
 ) {
     for (offset, byte) in haystack {
         if byte == needle {
-            dialog.results_vec.push(offset);
-            highlight.insert(offset);
+            dialog.results_vec.push(initial_offset + offset);
+            highlight.insert(initial_offset + offset);
         }
     }
 }
