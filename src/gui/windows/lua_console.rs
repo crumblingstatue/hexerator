@@ -3,6 +3,7 @@ use {
         app::App,
         gui::{window_open::WindowOpen, Gui},
         scripting::exec_lua,
+        shell::msg_if_fail,
     },
     egui_sfml::sfml::graphics::Font,
     mlua::Lua,
@@ -39,6 +40,25 @@ impl LuaConsoleWindow {
             }
             if ui.button("Clear log").clicked() {
                 gui.lua_console_window.messages.clear();
+            }
+            if ui.button("Copy to clipboard").clicked() {
+                let mut buf = String::new();
+                for msg in &gui.lua_console_window.messages {
+                    match msg {
+                        ConMsg::Plain(s) => {
+                            buf.push_str(s);
+                            buf.push('\n')
+                        }
+                        ConMsg::OffsetLink { text, offset } => {
+                            buf.push_str(&format!("{offset}: {text}\n"))
+                        }
+                    }
+                }
+                msg_if_fail(
+                    app.clipboard.set_text(buf),
+                    "Failed to copy clipboard text",
+                    &mut gui.msg_dialog,
+                );
             }
         });
         ui.separator();
