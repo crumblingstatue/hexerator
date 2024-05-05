@@ -1,6 +1,7 @@
 use {
     super::{window_open::WindowOpen, Gui},
     crate::{app::App, config},
+    egui_fontcfg::FontCfgUi,
     egui_sfml::sfml::graphics::RenderWindow,
 };
 
@@ -8,6 +9,8 @@ use {
 pub struct PreferencesWindow {
     pub open: WindowOpen,
     tab: Tab,
+    font_cfg: FontCfgUi,
+    font_defs: egui::FontDefinitions,
 }
 
 #[derive(Default, PartialEq)]
@@ -15,6 +18,7 @@ enum Tab {
     #[default]
     Video,
     Style,
+    Fonts,
 }
 
 impl Tab {
@@ -22,6 +26,7 @@ impl Tab {
         match self {
             Tab::Video => "Video",
             Tab::Style => "Style",
+            Tab::Fonts => "Fonts",
         }
     }
 }
@@ -39,11 +44,21 @@ impl PreferencesWindow {
                 Tab::Style,
                 Tab::Style.label(),
             );
+            ui.selectable_value(
+                &mut gui.preferences_window.tab,
+                Tab::Fonts,
+                Tab::Fonts.label(),
+            );
         });
         ui.separator();
         match gui.preferences_window.tab {
             Tab::Video => video_ui(ui, app, rwin),
             Tab::Style => style_ui(app, ui),
+            Tab::Fonts => fonts_ui(
+                ui,
+                &mut gui.preferences_window.font_cfg,
+                &mut gui.preferences_window.font_defs,
+            ),
         }
     }
 }
@@ -104,4 +119,8 @@ fn style_ui(app: &mut App, ui: &mut egui::Ui) {
             crate::gui::set_font_sizes_ctx(ui.ctx(), style);
         }
     });
+}
+
+fn fonts_ui(ui: &mut egui::Ui, font_cfg_ui: &mut FontCfgUi, font_defs: &mut egui::FontDefinitions) {
+    font_cfg_ui.show(ui, font_defs, None);
 }

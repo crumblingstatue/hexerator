@@ -400,6 +400,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui-fontcfg"
+version = "0.1.0"
+source = "git+https://github.com/crumblingstatue/egui-fontcfg.git#6e6705a8b939c5601351086450dc1755c57bdfdd"
+dependencies = [
+ "egui",
+]
+
+[[package]]
 name = "egui-modal"
 version = "0.3.6"
 source = "git+https://github.com/n00kii/egui-modal.git#4aa823eb217122d889b81864dbbffd0d6259bd5d"
@@ -628,6 +636,7 @@ dependencies = [
  "directories",
  "egui",
  "egui-file-dialog",
+ "egui-fontcfg",
  "egui-modal",
  "egui-sfml",
  "egui_code_editor",
@@ -768,7 +777,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.5",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
