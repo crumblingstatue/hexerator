@@ -18,7 +18,7 @@ use {
         preferences_window::PreferencesWindow,
         regions_window::RegionsWindow,
         views_window::ViewsWindow,
-        windows::{LuaConsoleWindow, LuaHelpWindow, VarsWindow},
+        windows::{LuaConsoleWindow, LuaHelpWindow, ScriptManagerWindow, VarsWindow},
     },
     crate::{
         app::App,
@@ -102,6 +102,7 @@ pub struct Gui {
     pub vars_window: VarsWindow,
     pub lua_help_window: LuaHelpWindow,
     pub lua_console_window: LuaConsoleWindow,
+    pub script_manager_window: ScriptManagerWindow,
     /// What to highlight in addition to selection. Can be updated by various actions that want to highlight stuff
     pub highlight_set: HighlightSet,
     pub cmd: GCommandQueue,
@@ -204,6 +205,7 @@ pub fn do_egui(
         "Preferences",             preferences_window,          PreferencesWindow: gui app rwin;
         "Lua help",                lua_help_window,             LuaHelpWindow: gui app;
         "Lua console",             lua_console_window,          LuaConsoleWindow: gui app lua font;
+        "Script manager",          script_manager_window,       ScriptManagerWindow: gui app lua font;
         "About Hexerator",         about_window,                AboutWindow: gui app;
     }
     // Context menu
