@@ -389,6 +389,8 @@ pub enum ArgParseError {
     UnterminatedString,
     #[error("Error parsing number: {0}")]
     NumParse(#[from] std::num::ParseFloatError),
+    #[error("Missing value after assignment")]
+    MissingValue,
 }
 
 /// Parse script arguments
@@ -400,8 +402,11 @@ pub fn parse_script_args(s: &str) -> Result<HashMap<String, ScriptArg>, ArgParse
             Some((lhs, rhs)) => {
                 let key = lhs.trim();
                 let strval = rhs.trim();
-                if let Some(strval) = strval.strip_prefix('"') {
-                    let Some(end) = strval.find('"') else {
+                let Some(first_byte) = strval.bytes().next() else {
+                    return Err(ArgParseError::MissingValue);
+                };
+                if let Some(strval) = strval.strip_prefix(['"', '\'']) {
+                    let Some(end) = strval.find(first_byte as char) else {
                         return Err(ArgParseError::UnterminatedString);
                     };
                     hm.insert(
@@ -429,5 +434,15 @@ fn test_parse_script_args() {
     assert_eq!(
         args.get("mystring"),
         Some(&ScriptArg::String("hello".to_string()))
+    );
+}
+
+#[test]
+#[allow(clippy::unwrap_used)]
+fn test_parse_script_args_single_quot() {
+    let args = parse_script_args(" myval = 'hello world' ").unwrap();
+    assert_eq!(
+        args.get("myval"),
+        Some(&ScriptArg::String("hello world".to_string()))
     );
 }
