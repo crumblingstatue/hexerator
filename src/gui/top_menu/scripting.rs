@@ -30,7 +30,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
     for script in scripts.values() {
         if ui.button(&script.name).clicked() {
             ui.close_menu();
-            let result = crate::scripting::exec_lua(lua, &script.content, app, gui, font);
+            let result = crate::scripting::exec_lua(lua, &script.content, app, gui, font, "");
             msg_if_fail(result, "Failed to execute script", &mut gui.msg_dialog);
         }
     }

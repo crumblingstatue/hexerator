@@ -3,6 +3,7 @@ use {
         app::App,
         gui::{Dialog, Gui},
         meta::Script,
+        scripting::SCRIPT_ARG_FMT_HELP_STR,
         shell::msg_if_fail,
     },
     egui::TextBuffer,
@@ -18,6 +19,7 @@ pub struct LuaExecuteDialog {
     result_info_string: String,
     err: bool,
     new_script_name: String,
+    args_string: String,
 }
 
 impl Dialog for LuaExecuteDialog {
@@ -88,6 +90,10 @@ impl Dialog for LuaExecuteDialog {
                             });
                         }
                     });
+                    ui.horizontal(|ui| {
+                        ui.label(format!("Args ({SCRIPT_ARG_FMT_HELP_STR})"));
+                        ui.text_edit_singleline(&mut self.args_string);
+                    });
                     ui.separator();
                     if app.edit_state.dirty_region.is_some() {
                         ui.label(
@@ -126,7 +132,8 @@ impl LuaExecuteDialog {
     fn exec_lua(&mut self, app: &mut App, lua: &Lua, gui: &mut Gui, font: &Font) {
         let start_time = Instant::now();
         let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
-        let result = crate::scripting::exec_lua(lua, &lua_script, app, gui, font);
+        let result =
+            crate::scripting::exec_lua(lua, &lua_script, app, gui, font, &self.args_string);
         if let Err(e) = result {
             self.result_info_string = e.to_string();
             self.err = true;

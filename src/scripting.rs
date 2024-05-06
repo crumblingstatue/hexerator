@@ -12,6 +12,7 @@ use {
     anyhow::Context,
     egui_sfml::sfml::graphics::Font,
     mlua::{ExternalError as _, ExternalResult as _, IntoLuaMulti, Lua, UserData},
+    std::collections::HashMap,
 };
 
 pub struct LuaExecContext<'app, 'gui, 'font> {
@@ -298,13 +299,32 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
     }
 }
 
+#[derive(thiserror::Error, Debug)]
+pub enum ExecLuaError {
+    #[error("Failed to parse arguments: {0}")]
+    ArgParse(#[from] ArgParseError),
+    #[error("Failed to execute lua: {0}")]
+    Lua(#[from] mlua::prelude::LuaError),
+}
+
 pub fn exec_lua(
     lua: &Lua,
     lua_script: &str,
     app: &mut App,
     gui: &mut Gui,
     font: &Font,
-) -> Result<(), mlua::prelude::LuaError> {
+    args: &str,
+) -> Result<(), ExecLuaError> {
+    let args_table = lua.create_table()?;
+    if !args.is_empty() {
+        let args = parse_script_args(args)?;
+        for (k, v) in args.into_iter() {
+            match v {
+                ScriptArg::String(s) => args_table.set(k, s)?,
+                ScriptArg::Num(n) => args_table.set(k, n)?,
+            }
+        }
+    }
     lua.scope(|scope| {
         let chunk = lua.load(lua_script);
         let fun = chunk.into_function()?;
@@ -315,8 +335,68 @@ pub fn exec_lua(
         })?;
         if let Some(env) = fun.environment() {
             env.set("hx", app)?;
+            env.set("args", args_table)?;
         }
         fun.call(())?;
         Ok(())
-    })
+    })?;
+    Ok(())
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ScriptArg {
+    String(String),
+    Num(f64),
+}
+
+pub const SCRIPT_ARG_FMT_HELP_STR: &str = "mynum = 4.5, mystring = \"hello\"";
+
+#[derive(thiserror::Error, Debug)]
+pub enum ArgParseError {
+    #[error("Argument must be of format 'a=b'")]
+    ArgNotAEqB,
+    #[error("Unterminated string literal")]
+    UnterminatedString,
+    #[error("Error parsing number: {0}")]
+    NumParse(#[from] std::num::ParseFloatError),
+}
+
+/// Parse script arguments
+pub fn parse_script_args(s: &str) -> Result<HashMap<String, ScriptArg>, ArgParseError> {
+    let mut hm = HashMap::new();
+    let assignments = s.split(',');
+    for assignment in assignments {
+        match assignment.split_once('=') {
+            Some((lhs, rhs)) => {
+                let key = lhs.trim();
+                let strval = rhs.trim();
+                if let Some(strval) = strval.strip_prefix('"') {
+                    let Some(end) = strval.find('"') else {
+                        return Err(ArgParseError::UnterminatedString);
+                    };
+                    hm.insert(
+                        key.to_string(),
+                        ScriptArg::String(strval[..end].to_string()),
+                    );
+                } else {
+                    let num: f64 = strval.parse()?;
+                    hm.insert(key.to_string(), ScriptArg::Num(num));
+                }
+            }
+            None => {
+                return Err(ArgParseError::ArgNotAEqB);
+            }
+        }
+    }
+    Ok(hm)
+}
+
+#[test]
+fn test_parse_script_args() {
+    let args = parse_script_args(SCRIPT_ARG_FMT_HELP_STR).unwrap();
+    assert_eq!(args.get("mynum"), Some(&ScriptArg::Num(4.5)));
+    assert_eq!(
+        args.get("mystring"),
+        Some(&ScriptArg::String("hello".to_string()))
+    );
 }

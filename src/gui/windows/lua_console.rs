@@ -40,7 +40,7 @@ impl LuaConsoleWindow {
                 || (ui.input(|inp| inp.key_pressed(egui::Key::Enter)) && re.lost_focus())
             {
                 let code = &gui.lua_console_window.eval_buf.clone();
-                if let Err(e) = exec_lua(lua, code, app, gui, font) {
+                if let Err(e) = exec_lua(lua, code, app, gui, font, "") {
                     gui.lua_console_window
                         .messages
                         .push(ConMsg::Plain(e.to_string()));
