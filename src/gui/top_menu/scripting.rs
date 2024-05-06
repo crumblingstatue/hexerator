@@ -9,12 +9,16 @@ use {
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
-    if ui.button("Lua console").clicked() {
+    if ui.button("🖳 Lua console").clicked() {
         gui.lua_console_window.open.toggle();
         ui.close_menu();
     }
-    if ui.button("Execute script...").clicked() {
+    if ui.button("🖹 Execute script...").clicked() {
         Gui::add_dialog(&mut gui.dialogs, LuaExecuteDialog::default());
+        ui.close_menu();
+    }
+    if ui.button("？ Lua help").clicked() {
+        gui.lua_help_window.open.toggle();
         ui.close_menu();
     }
     ui.separator();
