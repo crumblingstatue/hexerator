@@ -8,9 +8,11 @@ use {
         shell::msg_if_fail,
     },
     egui::Button,
+    egui_sfml::sfml::graphics::Font,
+    mlua::Lua,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
     if ui
         .add(Button::new("Find...").shortcut_text("Ctrl+F"))
         .clicked()
@@ -79,11 +81,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                     .map(|s| u8::from_str_radix(s, 16))
                     .collect::<Result<Vec<_>, _>>()?;
                 if cursor + bytes.len() < app.data.len() {
-                    perform_command(
-                        app,
-                        Cmd::PasteBytes { at: cursor, bytes },
-                        &mut gui.msg_dialog,
-                    );
+                    perform_command(app, Cmd::PasteBytes { at: cursor, bytes }, gui, lua, font);
                 } else {
                     gui.msg_dialog.open(
                         Icon::Warn,

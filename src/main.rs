@@ -286,7 +286,7 @@ fn do_frame(
     // Handle window events
     handle_events(gui, app, window, sf_egui, font);
     update(app, sf_egui.context().wants_keyboard_input());
-    app.update(&mut gui.msg_dialog, window);
+    app.update(gui, window, lua, font);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
     if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window)? {
         return Ok(false);

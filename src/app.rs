@@ -11,6 +11,7 @@ use {
         gui::{
             file_diff_result_window::FileDiffResultWindow,
             message_dialog::{Icon, MessageDialog},
+            Gui,
         },
         hex_ui::HexUi,
         input::Input,
@@ -29,6 +30,7 @@ use {
     egui_commonmark::CommonMarkCache,
     egui_sfml::sfml::graphics::{Font, RenderWindow},
     gamedebug_core::{per, per_dbg},
+    mlua::Lua,
     slotmap::Key,
     std::{
         ffi::OsString,
@@ -569,7 +571,7 @@ impl App {
         Ok(())
     }
     /// Called every frame
-    pub(crate) fn update(&mut self, msg: &mut MessageDialog, rw: &mut RenderWindow) {
+    pub(crate) fn update(&mut self, gui: &mut Gui, rw: &mut RenderWindow, lua: &Lua, font: &Font) {
         if !self.hex_ui.current_layout.is_null() {
             let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
             do_auto_layout(
@@ -581,7 +583,7 @@ impl App {
             );
         }
         if self.preferences.auto_save && self.edit_state.dirty_region.is_some() {
-            if let Err(e) = self.save(msg) {
+            if let Err(e) = self.save(&mut gui.msg_dialog) {
                 per!("Save fail: {}", e);
             }
         }
@@ -593,12 +595,19 @@ impl App {
             match &self.preferences.auto_reload {
                 Autoreload::Disabled => {}
                 Autoreload::All => {
-                    if msg_if_fail(self.reload(), "Auto-reload fail", msg).is_some() {
+                    if msg_if_fail(self.reload(), "Auto-reload fail", &mut gui.msg_dialog).is_some()
+                    {
                         self.preferences.auto_reload = Autoreload::Disabled;
                     }
                 }
                 Autoreload::Visible => {
-                    if msg_if_fail(self.reload_visible(), "Auto-reload fail", msg).is_some() {
+                    if msg_if_fail(
+                        self.reload_visible(),
+                        "Auto-reload fail",
+                        &mut gui.msg_dialog,
+                    )
+                    .is_some()
+                    {
                         self.preferences.auto_reload = Autoreload::Disabled;
                     }
                 }
@@ -606,7 +615,7 @@ impl App {
             self.last_reload = Instant::now();
         }
         // Here we perform all queued up `Command`s.
-        self.flush_command_queue(msg);
+        self.flush_command_queue(gui, lua, font);
         self.flush_backend_command_queue(rw);
     }
     /// Reload only what's visible on the screen (current layout)

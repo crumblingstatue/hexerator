@@ -176,7 +176,7 @@ pub fn do_egui(
         PERSISTENT.toggle();
     }
     gui.msg_dialog.show(ctx, &mut app.clipboard, &mut app.cmd);
-    app.flush_command_queue(&mut gui.msg_dialog);
+    app.flush_command_queue(gui, lua, font);
     macro_rules! windows {
             ($($title:expr, $field:ident, $ty:ty: $($arg:ident)*;)*) => {
                 $(

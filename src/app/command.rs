@@ -10,11 +10,14 @@
 use {
     super::{backend_command::BackendCmd, App},
     crate::{
-        gui::message_dialog::MessageDialog,
+        gui::Gui,
         meta::{NamedView, PerspectiveKey, RegionKey},
+        scripting::exec_lua,
         shell::msg_if_fail,
         view::{HexData, View, ViewKind},
     },
+    egui_sfml::sfml::graphics::Font,
+    mlua::Lua,
     std::{collections::VecDeque, path::Path},
 };
 
@@ -69,16 +72,16 @@ impl App {
     ///
     /// Automatically called every frame, but can be called manually if operations need to be
     /// performed sooner.
-    pub fn flush_command_queue(&mut self, msg: &mut MessageDialog) {
+    pub fn flush_command_queue(&mut self, gui: &mut Gui, lua: &Lua, font: &Font) {
         while let Some(cmd) = self.cmd.inner.pop_front() {
-            perform_command(self, cmd, msg);
+            perform_command(self, cmd, gui, lua, font);
         }
     }
 }
 
 /// Perform a command. Called by `App::flush_command_queue`, but can be called manually if you
 /// have a `Cmd` you would like you perform.
-pub fn perform_command(app: &mut App, cmd: Cmd, msg: &mut MessageDialog) {
+pub fn perform_command(app: &mut App, cmd: Cmd, gui: &mut Gui, lua: &Lua, font: &Font) {
     match cmd {
         Cmd::CreatePerspective { region_key, name } => {
             app.add_perspective_from_region(region_key, name)
@@ -110,7 +113,11 @@ pub fn perform_command(app: &mut App, cmd: Cmd, msg: &mut MessageDialog) {
             });
         }
         Cmd::SaveTruncateFinish => {
-            msg_if_fail(app.save_truncated_file_finish(), "Save error", msg);
+            msg_if_fail(
+                app.save_truncated_file_finish(),
+                "Save error",
+                &mut gui.msg_dialog,
+            );
         }
         Cmd::ExtendDocument { new_len } => {
             app.data.resize(new_len, 0);
@@ -123,6 +130,16 @@ pub fn perform_command(app: &mut App, cmd: Cmd, msg: &mut MessageDialog) {
                 "{} - Hexerator",
                 app.source_file().map_or("no source", path_filename_as_str)
             )));
+            if let Some(key) = &app.meta_state.meta.onload_script {
+                let scr = &app.meta_state.meta.scripts[*key];
+                let content = scr.content.clone();
+                let result = exec_lua(lua, &content, app, gui, font);
+                msg_if_fail(
+                    result,
+                    "Failed to execute onload lua script",
+                    &mut gui.msg_dialog,
+                );
+            }
         }
     }
 }
