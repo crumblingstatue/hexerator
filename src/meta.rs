@@ -108,6 +108,9 @@ pub struct Meta {
     pub vars: HashMap<String, VarEntry>,
     #[serde(default)]
     pub scripts: ScriptMap,
+    /// Script to execute when a document loads
+    #[serde(default)]
+    pub onload_script: Option<ScriptKey>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

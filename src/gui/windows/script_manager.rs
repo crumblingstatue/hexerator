@@ -23,6 +23,10 @@ impl ScriptManagerWindow {
         scripts.retain(|key, script| {
             let mut retain = true;
             ui.horizontal(|ui| {
+                if app.meta_state.meta.onload_script == Some(key) {
+                    ui.label("⚡")
+                        .on_hover_text("This script executes on document load");
+                }
                 if ui
                     .selectable_label(
                         gui.script_manager_window.selected == Some(key),
@@ -71,5 +75,8 @@ fn selected_script_ui(
     if ui.button("⚡ Execute").clicked() {
         let result = exec_lua(lua, &scr.content, app, gui, font);
         msg_if_fail(result, "Failed to execute script", &mut gui.msg_dialog);
+    }
+    if ui.button("⚡ Set as onload script").clicked() {
+        app.meta_state.meta.onload_script = Some(key);
     }
 }
