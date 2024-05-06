@@ -82,7 +82,10 @@ impl Dialog for LuaExecuteDialog {
                         egui::ComboBox::from_label("Script")
                             .selected_text(script_label)
                             .show_ui(ui, |ui| {
-                                if ui.button("<Unnamed>").clicked() {
+                                if ui
+                                    .selectable_label(self.edit_key.is_none(), "<Unnamed>")
+                                    .clicked()
+                                {
                                     self.edit_key = None;
                                 }
                                 ui.separator();
