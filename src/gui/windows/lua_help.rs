@@ -38,6 +38,7 @@ impl LuaHelpWindow {
                     reoffset_bookmarks_cursor_diff,
                     log,
                     loffset,
+                    lrange,
                     selection
                     ] $* 'block: {
                         let filter_lower = &gui.lua_help_window.filter.to_ascii_lowercase();

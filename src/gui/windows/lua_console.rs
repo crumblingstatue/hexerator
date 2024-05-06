@@ -18,7 +18,15 @@ pub struct LuaConsoleWindow {
 
 pub enum ConMsg {
     Plain(String),
-    OffsetLink { text: String, offset: usize },
+    OffsetLink {
+        text: String,
+        offset: usize,
+    },
+    RangeLink {
+        text: String,
+        start: usize,
+        end: usize,
+    },
 }
 
 impl LuaConsoleWindow {
@@ -52,6 +60,9 @@ impl LuaConsoleWindow {
                         ConMsg::OffsetLink { text, offset } => {
                             buf.push_str(&format!("{offset}: {text}\n"))
                         }
+                        ConMsg::RangeLink { text, start, end } => {
+                            buf.push_str(&format!("{start}..={end}: {text}\n"))
+                        }
                     }
                 }
                 msg_if_fail(
@@ -73,6 +84,13 @@ impl LuaConsoleWindow {
                         ConMsg::OffsetLink { text, offset } => {
                             if ui.link(text).clicked() {
                                 app.search_focus(*offset);
+                            }
+                        }
+                        ConMsg::RangeLink { text, start, end } => {
+                            if ui.link(text).clicked() {
+                                app.hex_ui.select_a = Some(*start);
+                                app.hex_ui.select_b = Some(*end);
+                                app.search_focus(*start);
                             }
                         }
                     }

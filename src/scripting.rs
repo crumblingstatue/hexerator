@@ -253,6 +253,16 @@ def_method! {
 }
 
 def_method! {
+    "Prints a clickable (inclusive) range link to the lua console with an optional text"
+    lrange(exec, start: usize, end: usize, text: Option<String>) -> () {
+        exec.gui.lua_console_window.open.set(true);
+        let fmt = move || { format!("{start}..={end}")};
+        exec.gui.lua_console_window.messages.push(ConMsg::RangeLink { text: text.map_or_else(fmt, |text| format!("{}: {text}", fmt())), start, end });
+        Ok(())
+    }
+}
+
+def_method! {
     "Returns the start and end offsets of the selection"
     selection(exec,) -> (usize, usize) {
         exec.app.hex_ui.selection().map(|reg| (reg.begin, reg.end)).context("Selection is empty").into_lua_err()
@@ -280,6 +290,7 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             reoffset_bookmarks_cursor_diff,
             log,
             loffset,
+            lrange,
             selection,
             ] $* {
             methods.add_method_mut($t::NAME, $t::call);
