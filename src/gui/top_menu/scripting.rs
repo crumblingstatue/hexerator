@@ -19,6 +19,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
     }
     if ui.button("📃 Script manager").clicked() {
         gui.script_manager_window.open.toggle();
+        ui.close_menu();
     }
     if ui.button("？ Lua help").clicked() {
         gui.lua_help_window.open.toggle();
