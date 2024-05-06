@@ -2,7 +2,7 @@ use {
     crate::{
         app::App,
         gui::{Dialog, Gui},
-        meta::Script,
+        meta::{Script, ScriptKey},
         scripting::SCRIPT_ARG_FMT_HELP_STR,
         shell::msg_if_fail,
     },
@@ -20,6 +20,7 @@ pub struct LuaExecuteDialog {
     err: bool,
     new_script_name: String,
     args_string: String,
+    edit_key: Option<ScriptKey>,
 }
 
 impl Dialog for LuaExecuteDialog {
@@ -51,9 +52,13 @@ impl Dialog for LuaExecuteDialog {
             .vertical(|mut strip| {
                 strip.cell(|ui| {
                     egui::ScrollArea::vertical().show(ui, |ui| {
+                        let lua = self
+                            .edit_key
+                            .map(|key| &mut app.meta_state.meta.scripts[key].content)
+                            .unwrap_or(&mut app.meta_state.meta.misc.exec_lua_script);
                         CodeEditor::default()
                             .with_syntax(Syntax::lua())
-                            .show(ui, &mut app.meta_state.meta.misc.exec_lua_script);
+                            .show(ui, lua);
                     });
                 });
                 strip.cell(|ui| {
@@ -67,6 +72,30 @@ impl Dialog for LuaExecuteDialog {
                         {
                             self.exec_lua(app, lua, gui, font);
                         }
+                        let script_label = match &self.edit_key {
+                            Some(key) => {
+                                let scr = &app.meta_state.meta.scripts[*key];
+                                &scr.name
+                            }
+                            None => "<Unnamed>",
+                        };
+                        egui::ComboBox::from_label("Script")
+                            .selected_text(script_label)
+                            .show_ui(ui, |ui| {
+                                if ui.button("New unnamed").clicked() {
+                                    app.meta_state.meta.misc.exec_lua_script.clear();
+                                    self.edit_key = None;
+                                }
+                                ui.separator();
+                                for (k, v) in app.meta_state.meta.scripts.iter() {
+                                    if ui
+                                        .selectable_label(self.edit_key == Some(k), &v.name)
+                                        .clicked()
+                                    {
+                                        self.edit_key = Some(k);
+                                    }
+                                }
+                            });
                         if ui.button("🖴 Load from file...").clicked() {
                             gui.fileops.load_lua_script();
                         }
@@ -83,11 +112,12 @@ impl Dialog for LuaExecuteDialog {
                                 .hint_text("New script name"),
                         );
                         if ui.button("Add named script").clicked() {
-                            app.meta_state.meta.scripts.insert(Script {
+                            let key = app.meta_state.meta.scripts.insert(Script {
                                 name: self.new_script_name.take(),
                                 desc: String::new(),
                                 content: app.meta_state.meta.misc.exec_lua_script.clone(),
                             });
+                            self.edit_key = Some(key);
                         }
                     });
                     ui.horizontal(|ui| {
@@ -131,7 +161,11 @@ impl Dialog for LuaExecuteDialog {
 impl LuaExecuteDialog {
     fn exec_lua(&mut self, app: &mut App, lua: &Lua, gui: &mut Gui, font: &Font) {
         let start_time = Instant::now();
-        let lua_script = app.meta_state.meta.misc.exec_lua_script.clone();
+        let lua_script = self
+            .edit_key
+            .map(|key| &app.meta_state.meta.scripts[key].content)
+            .unwrap_or(&app.meta_state.meta.misc.exec_lua_script)
+            .clone();
         let result =
             crate::scripting::exec_lua(lua, &lua_script, app, gui, font, &self.args_string);
         if let Err(e) = result {
