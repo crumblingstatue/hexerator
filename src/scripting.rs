@@ -22,7 +22,7 @@ pub struct LuaExecContext<'app, 'gui, 'font> {
     pub key: Option<ScriptKey>,
 }
 
-pub(crate) trait Method {
+pub(crate) trait Method<'lua> {
     /// Name of the method
     const NAME: &'static str;
     /// Help text for the method
@@ -32,21 +32,22 @@ pub(crate) trait Method {
     /// Arguments the method takes when called
     type Args;
     /// Return type
-    type Ret: IntoLuaMulti<'static>;
+    type Ret: IntoLuaMulti<'lua>;
     /// The function that gets called
-    fn call(lua: &Lua, exec: &mut LuaExecContext, args: Self::Args) -> mlua::Result<Self::Ret>;
+    fn call(lua: &'lua Lua, exec: &mut LuaExecContext, args: Self::Args)
+        -> mlua::Result<Self::Ret>;
 }
 
 macro_rules! def_method {
     ($help:literal $name:ident($lua:ident, $exec:ident, $($argname:ident: $argty:ty),*) -> $ret:ty $block:block) => {
         #[allow(non_camel_case_types)] pub(crate) enum $name {}
-        impl Method for $name {
+        impl<'lua> Method<'lua> for $name {
             const NAME: &'static str = stringify!($name);
             const HELP: &'static str = $help;
             const API_SIG: &'static str = concat!(stringify!($name), "(", $(stringify!($argname), ": ", stringify!($argty), ", ",)* ")", " -> ", stringify!($ret));
             type Args = ($($argty,)*);
             type Ret = $ret;
-            fn call($lua: &Lua, $exec: &mut LuaExecContext, ($($argname,)*): ($($argty,)*)) -> mlua::Result<$ret> $block
+            fn call($lua: &'lua Lua, $exec: &mut LuaExecContext, ($($argname,)*): ($($argty,)*)) -> mlua::Result<$ret> $block
         }
     };
 }
@@ -275,6 +276,15 @@ def_method! {
 }
 
 def_method! {
+    "Gets a named script as a callable function. `hx:require('myscript')()`"
+    require(lua, exec, name: String) -> mlua::Function<'lua> {
+        let s = exec.app.meta_state.meta.scripts.values().find(|scr| scr.name == name).ok_or_else(|| "no such script".into_lua_err())?;
+        let chunk = lua.load(&s.content);
+        chunk.into_function()
+    }
+}
+
+def_method! {
     "Executes another script with the provided (optional) arguments"
     exec(lua, exec, name: String, args: Option<String>) -> () {
         let args = args.as_deref().unwrap_or("");
@@ -309,6 +319,7 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             loffset,
             lrange,
             selection,
+            require,
             exec
             ] $* {
             methods.add_method_mut($t::NAME, $t::call);

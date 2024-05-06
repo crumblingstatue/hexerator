@@ -40,6 +40,7 @@ impl LuaHelpWindow {
                     loffset,
                     lrange,
                     selection,
+                    require,
                     exec,
                     ] $* 'block: {
                         let filter_lower = &gui.lua_help_window.filter.to_ascii_lowercase();
