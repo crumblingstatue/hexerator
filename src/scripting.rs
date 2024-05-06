@@ -37,7 +37,7 @@ pub(crate) trait Method {
 }
 
 macro_rules! def_method {
-    ($help:literal $name:ident($exec:ident, $($argname:ident: $argty:ty),*) -> $ret:ty $block:block) => {
+    ($help:literal $name:ident($lua:ident, $exec:ident, $($argname:ident: $argty:ty),*) -> $ret:ty $block:block) => {
         #[allow(non_camel_case_types)] pub(crate) enum $name {}
         impl Method for $name {
             const NAME: &'static str = stringify!($name);
@@ -45,14 +45,14 @@ macro_rules! def_method {
             const API_SIG: &'static str = concat!(stringify!($name), "(", $(stringify!($argname), ": ", stringify!($argty), ", ",)* ")", " -> ", stringify!($ret));
             type Args = ($($argty,)*);
             type Ret = $ret;
-            fn call(_lua: &Lua, $exec: &mut LuaExecContext, ($($argname,)*): ($($argty,)*)) -> mlua::Result<$ret> $block
+            fn call($lua: &Lua, $exec: &mut LuaExecContext, ($($argname,)*): ($($argty,)*)) -> mlua::Result<$ret> $block
         }
     };
 }
 
 def_method! {
     "Adds a region to the meta"
-    add_region(exec, name: String, begin: usize, end: usize) -> () {
+    add_region(_lua, exec, name: String, begin: usize, end: usize) -> () {
         exec.app.meta_state.meta.low.regions.insert(NamedRegion {
             name,
             desc: String::new(),
@@ -64,7 +64,7 @@ def_method! {
 
 def_method! {
     "Loads a file"
-    load_file(exec, path: String) -> () {
+    load_file(_lua, exec, path: String) -> () {
         exec.app
             .load_file(path.into(), true, exec.font, &mut exec.gui.msg_dialog)
             .map_err(|e| e.into_lua_err())?;
@@ -74,7 +74,7 @@ def_method! {
 
 def_method! {
     "Sets the value pointed to by the bookmark to an integer value"
-    bookmark_set_int(exec, name: String, val: i64) -> () {
+    bookmark_set_int(_lua, exec, name: String, val: i64) -> () {
         let bm = exec
             .app
             .meta_state
@@ -88,7 +88,7 @@ def_method! {
 
 def_method! {
     "Fills a named region with a pattern"
-    region_pattern_fill(exec, name: String, pattern: String) -> () {
+    region_pattern_fill(_lua, exec, name: String, pattern: String) -> () {
         let reg = exec
             .app
             .meta_state
@@ -103,14 +103,14 @@ def_method! {
 
 def_method! {
     "Returns an array containing the offsets of the find results"
-    find_result_offsets(exec,) -> Vec<usize> {
+    find_result_offsets(_lua, exec,) -> Vec<usize> {
         Ok(exec.gui.find_dialog.results_vec.clone())
     }
 }
 
 def_method! {
     "Reads an unsigned 8 bit integer at `offset`"
-    read_u8(exec, offset: usize) -> u8 {
+    read_u8(_lua, exec, offset: usize) -> u8 {
         match exec.app.data.get(offset) {
             Some(byte) => Ok(*byte),
             None => Err("out of bounds".into_lua_err()),
@@ -120,7 +120,7 @@ def_method! {
 
 def_method! {
     "Sets unsigned 8 bit integer at `offset` to `value`"
-    write_u8(exec, offset: usize, value: u8) -> () {
+    write_u8(_lua, exec, offset: usize, value: u8) -> () {
         match exec.app.data.get_mut(offset) {
             Some(byte) => {
                 *byte = value;
@@ -133,7 +133,7 @@ def_method! {
 
 def_method! {
     "Reads a little endian unsigned 32 bit integer at `offset`"
-    read_u32_le(exec, offset: usize) -> u32 {
+    read_u32_le(_lua, exec, offset: usize) -> u32 {
         match exec
         .app
         .data
@@ -148,7 +148,7 @@ def_method! {
 
 def_method! {
     "Fills a range from `start` to `end` with the value `fill`"
-    fill_range(exec, start: usize, end: usize, fill: u8) -> () {
+    fill_range(_lua, exec, start: usize, end: usize, fill: u8) -> () {
         match exec
               .app
               .data
@@ -164,7 +164,7 @@ def_method! {
 
 def_method! {
     "Sets the dirty region to `begin..=end`"
-    set_dirty_region(exec, begin: usize, end: usize) -> () {
+    set_dirty_region(_lua, exec, begin: usize, end: usize) -> () {
         exec.app.edit_state.dirty_region = Some(Region { begin, end });
         Ok(())
     }
@@ -172,7 +172,7 @@ def_method! {
 
 def_method! {
     "Save the currently opened document (its dirty ranges)"
-    save(exec,) -> () {
+    save(_lua, exec,) -> () {
         exec.app.save(&mut exec.gui.msg_dialog).into_lua_err()?;
         Ok(())
     }
@@ -180,7 +180,7 @@ def_method! {
 
 def_method! {
     "Returns the offset pointed to by the bookmark `name`"
-    bookmark_offset(exec, name: String) -> usize {
+    bookmark_offset(_lua, exec, name: String) -> usize {
         match exec
              .app
              .meta_state
@@ -195,7 +195,7 @@ def_method! {
 
 def_method! {
     "Adds a bookmark with name `name`, pointing at `offset`"
-    add_bookmark(exec, offset: usize, name: String) -> () {
+    add_bookmark(_lua, exec, offset: usize, name: String) -> () {
         exec.app.meta_state.meta.bookmarks.push(Bookmark {
             offset,
             label: name,
@@ -208,7 +208,7 @@ def_method! {
 
 def_method! {
     "Finds a hex string in the format '99 aa bb ...' format, and returns its offset"
-    find_hex_string(exec, hex_string: String) -> Option<usize> {
+    find_hex_string(_lua, exec, hex_string: String) -> Option<usize> {
         let mut offset = None;
         crate::gui::find_dialog::find_hex_string(&hex_string, &exec.app.data, |off| {
             offset = Some(off);
@@ -219,7 +219,7 @@ def_method! {
 
 def_method! {
     "Set the cursor to `offset`, center the view on the cursor, and flash the cursor"
-    focus_cursor(exec, offset: usize) -> () {
+    focus_cursor(_lua, exec, offset: usize) -> () {
         exec.app.search_focus(offset);
         Ok(())
     }
@@ -227,7 +227,7 @@ def_method! {
 
 def_method! {
     "Reoffsets all bookmarks based on the difference between a bookmark's and the cursor's offsets"
-    reoffset_bookmarks_cursor_diff(exec, bookmark_name: String) -> () {
+    reoffset_bookmarks_cursor_diff(_lua, exec, bookmark_name: String) -> () {
         let bookmark = exec.app.meta_state.meta.bookmark_by_name_mut(&bookmark_name).context("No such bookmark").into_lua_err()?;
         let offset = bookmark.offset;
         exec.app.reoffset_bookmarks_cursor_diff(offset);
@@ -237,7 +237,7 @@ def_method! {
 
 def_method! {
     "Prints to the lua console"
-    log(exec, value: String) -> () {
+    log(_lua, exec, value: String) -> () {
         exec.gui.lua_console_window.open.set(true);
         exec.gui.lua_console_window.messages.push(ConMsg::Plain(value));
         Ok(())
@@ -246,7 +246,7 @@ def_method! {
 
 def_method! {
     "Prints a clickable offset link to the lua console with an optional text"
-    loffset(exec, offset: usize, text: Option<String>) -> () {
+    loffset(_lua, exec, offset: usize, text: Option<String>) -> () {
         exec.gui.lua_console_window.open.set(true);
         exec.gui.lua_console_window.messages.push(ConMsg::OffsetLink { text: text.map_or(offset.to_string(), |text| format!("{offset}: {text}")), offset });
         Ok(())
@@ -255,7 +255,7 @@ def_method! {
 
 def_method! {
     "Prints a clickable (inclusive) range link to the lua console with an optional text"
-    lrange(exec, start: usize, end: usize, text: Option<String>) -> () {
+    lrange(_lua, exec, start: usize, end: usize, text: Option<String>) -> () {
         exec.gui.lua_console_window.open.set(true);
         let fmt = move || { format!("{start}..={end}")};
         exec.gui.lua_console_window.messages.push(ConMsg::RangeLink { text: text.map_or_else(fmt, |text| format!("{}: {text}", fmt())), start, end });
@@ -265,8 +265,20 @@ def_method! {
 
 def_method! {
     "Returns the start and end offsets of the selection"
-    selection(exec,) -> (usize, usize) {
+    selection(_lua, exec,) -> (usize, usize) {
         exec.app.hex_ui.selection().map(|reg| (reg.begin, reg.end)).context("Selection is empty").into_lua_err()
+    }
+}
+
+def_method! {
+    "Executes another script with the provided (optional) arguments"
+    exec(lua, exec, name: String, args: Option<String>) -> () {
+        let args = args.as_deref().unwrap_or("");
+        if let Some(scr) = exec.app.meta_state.meta.scripts.values().find(|scr| scr.name == name) {
+            let script = scr.content.clone();
+            exec_lua(lua, &script, exec.app, exec.gui, exec.font, args).into_lua_err()?;
+        }
+        Ok(())
     }
 }
 
@@ -293,6 +305,7 @@ impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
             loffset,
             lrange,
             selection,
+            exec
             ] $* {
             methods.add_method_mut($t::NAME, $t::call);
         }};
@@ -392,6 +405,7 @@ pub fn parse_script_args(s: &str) -> Result<HashMap<String, ScriptArg>, ArgParse
 }
 
 #[test]
+#[allow(clippy::unwrap_used)]
 fn test_parse_script_args() {
     let args = parse_script_args(SCRIPT_ARG_FMT_HELP_STR).unwrap();
     assert_eq!(args.get("mynum"), Some(&ScriptArg::Num(4.5)));

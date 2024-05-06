@@ -39,7 +39,8 @@ impl LuaHelpWindow {
                     log,
                     loffset,
                     lrange,
-                    selection
+                    selection,
+                    exec,
                     ] $* 'block: {
                         let filter_lower = &gui.lua_help_window.filter.to_ascii_lowercase();
                         if !($t::NAME.to_ascii_lowercase().contains(filter_lower) || $t::HELP.to_ascii_lowercase().contains(filter_lower)) {
