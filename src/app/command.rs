@@ -133,7 +133,7 @@ pub fn perform_command(app: &mut App, cmd: Cmd, gui: &mut Gui, lua: &Lua, font: 
             if let Some(key) = &app.meta_state.meta.onload_script {
                 let scr = &app.meta_state.meta.scripts[*key];
                 let content = scr.content.clone();
-                let result = exec_lua(lua, &content, app, gui, font, "");
+                let result = exec_lua(lua, &content, app, gui, font, "", Some(*key));
                 msg_if_fail(
                     result,
                     "Failed to execute onload lua script",

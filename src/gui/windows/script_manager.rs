@@ -37,7 +37,7 @@ impl ScriptManagerWindow {
                     gui.script_manager_window.selected = Some(key);
                 }
                 if ui.button("⚡ Execute").clicked() {
-                    let result = exec_lua(lua, &script.content, app, gui, font, "");
+                    let result = exec_lua(lua, &script.content, app, gui, font, "", Some(key));
                     msg_if_fail(result, "Failed to execute script", &mut gui.msg_dialog);
                 }
                 if ui.button("Delete").clicked() {
@@ -73,7 +73,7 @@ fn selected_script_ui(
             .show(ui, &mut scr.content);
     });
     if ui.button("⚡ Execute").clicked() {
-        let result = exec_lua(lua, &scr.content, app, gui, font, "");
+        let result = exec_lua(lua, &scr.content, app, gui, font, "", Some(key));
         msg_if_fail(result, "Failed to execute script", &mut gui.msg_dialog);
     }
     if ui.button("⚡ Set as onload script").clicked() {

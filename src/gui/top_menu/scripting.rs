@@ -27,10 +27,11 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
     }
     ui.separator();
     let mut scripts = std::mem::take(&mut app.meta_state.meta.scripts);
-    for script in scripts.values() {
+    for (key, script) in scripts.iter() {
         if ui.button(&script.name).clicked() {
             ui.close_menu();
-            let result = crate::scripting::exec_lua(lua, &script.content, app, gui, font, "");
+            let result =
+                crate::scripting::exec_lua(lua, &script.content, app, gui, font, "", Some(key));
             msg_if_fail(result, "Failed to execute script", &mut gui.msg_dialog);
         }
     }

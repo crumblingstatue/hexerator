@@ -5,7 +5,7 @@ use {
         meta::{
             region::Region,
             value_type::{self, EndianedPrimitive as _, ValueType},
-            Bookmark, NamedRegion,
+            Bookmark, NamedRegion, ScriptKey,
         },
         slice_ext::SliceExt as _,
     },
@@ -19,6 +19,7 @@ pub struct LuaExecContext<'app, 'gui, 'font> {
     pub app: &'app mut App,
     pub gui: &'gui mut Gui,
     pub font: &'font Font,
+    pub key: Option<ScriptKey>,
 }
 
 pub(crate) trait Method {
@@ -239,7 +240,8 @@ def_method! {
     "Prints to the lua console"
     log(_lua, exec, value: String) -> () {
         exec.gui.lua_console_window.open.set(true);
-        exec.gui.lua_console_window.messages.push(ConMsg::Plain(value));
+        exec.gui.lua_console_window.active_msg_buf = exec.key;
+        exec.gui.lua_console_window.msg_buf_for_key(exec.key).push(ConMsg::Plain(value));
         Ok(())
     }
 }
@@ -248,7 +250,8 @@ def_method! {
     "Prints a clickable offset link to the lua console with an optional text"
     loffset(_lua, exec, offset: usize, text: Option<String>) -> () {
         exec.gui.lua_console_window.open.set(true);
-        exec.gui.lua_console_window.messages.push(ConMsg::OffsetLink { text: text.map_or(offset.to_string(), |text| format!("{offset}: {text}")), offset });
+        exec.gui.lua_console_window.active_msg_buf = exec.key;
+        exec.gui.lua_console_window.msg_buf_for_key(exec.key).push(ConMsg::OffsetLink { text: text.map_or(offset.to_string(), |text| format!("{offset}: {text}")), offset });
         Ok(())
     }
 }
@@ -257,8 +260,9 @@ def_method! {
     "Prints a clickable (inclusive) range link to the lua console with an optional text"
     lrange(_lua, exec, start: usize, end: usize, text: Option<String>) -> () {
         exec.gui.lua_console_window.open.set(true);
+        exec.gui.lua_console_window.active_msg_buf = exec.key;
         let fmt = move || { format!("{start}..={end}")};
-        exec.gui.lua_console_window.messages.push(ConMsg::RangeLink { text: text.map_or_else(fmt, |text| format!("{}: {text}", fmt())), start, end });
+        exec.gui.lua_console_window.msg_buf_for_key(exec.key).push(ConMsg::RangeLink { text: text.map_or_else(fmt, |text| format!("{}: {text}", fmt())), start, end });
         Ok(())
     }
 }
@@ -274,9 +278,9 @@ def_method! {
     "Executes another script with the provided (optional) arguments"
     exec(lua, exec, name: String, args: Option<String>) -> () {
         let args = args.as_deref().unwrap_or("");
-        if let Some(scr) = exec.app.meta_state.meta.scripts.values().find(|scr| scr.name == name) {
+        if let Some((key, scr)) = exec.app.meta_state.meta.scripts.iter().find(|(_key, scr)| scr.name == name) {
             let script = scr.content.clone();
-            exec_lua(lua, &script, exec.app, exec.gui, exec.font, args).into_lua_err()?;
+            exec_lua(lua, &script, exec.app, exec.gui, exec.font, args, Some(key)).into_lua_err()?;
         }
         Ok(())
     }
@@ -327,6 +331,7 @@ pub fn exec_lua(
     gui: &mut Gui,
     font: &Font,
     args: &str,
+    key: Option<ScriptKey>,
 ) -> Result<(), ExecLuaError> {
     let args_table = lua.create_table()?;
     if !args.is_empty() {
@@ -345,6 +350,7 @@ pub fn exec_lua(
             app: &mut *app,
             gui,
             font,
+            key,
         })?;
         if let Some(env) = fun.environment() {
             env.set("hx", app)?;

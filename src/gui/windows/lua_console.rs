@@ -2,18 +2,43 @@ use {
     crate::{
         app::App,
         gui::{window_open::WindowOpen, Gui},
+        meta::ScriptKey,
         scripting::exec_lua,
         shell::msg_if_fail,
     },
     egui_sfml::sfml::graphics::Font,
     mlua::Lua,
+    std::collections::HashMap,
 };
+
+type MsgBuf = Vec<ConMsg>;
+type MsgBufMap = HashMap<ScriptKey, MsgBuf>;
 
 #[derive(Default)]
 pub struct LuaConsoleWindow {
     pub open: WindowOpen,
-    pub messages: Vec<ConMsg>,
+    pub msg_bufs: MsgBufMap,
     pub eval_buf: String,
+    pub active_msg_buf: Option<ScriptKey>,
+    pub default_msg_buf: MsgBuf,
+}
+
+impl LuaConsoleWindow {
+    fn msg_buf(&mut self) -> &mut MsgBuf {
+        match self.active_msg_buf {
+            Some(key) => self
+                .msg_bufs
+                .get_mut(&key)
+                .unwrap_or(&mut self.default_msg_buf),
+            None => &mut self.default_msg_buf,
+        }
+    }
+    pub fn msg_buf_for_key(&mut self, key: Option<ScriptKey>) -> &mut MsgBuf {
+        match key {
+            Some(key) => self.msg_bufs.entry(key).or_default(),
+            None => &mut self.default_msg_buf,
+        }
+    }
 }
 
 pub enum ConMsg {
@@ -32,6 +57,26 @@ pub enum ConMsg {
 impl LuaConsoleWindow {
     pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
         ui.horizontal(|ui| {
+            if ui
+                .selectable_label(gui.lua_console_window.active_msg_buf.is_none(), "Default")
+                .clicked()
+            {
+                gui.lua_console_window.active_msg_buf = None;
+            }
+            for k in gui.lua_console_window.msg_bufs.keys() {
+                if ui
+                    .selectable_label(
+                        gui.lua_console_window.active_msg_buf == Some(*k),
+                        &app.meta_state.meta.scripts[*k].name,
+                    )
+                    .clicked()
+                {
+                    gui.lua_console_window.active_msg_buf = Some(*k);
+                }
+            }
+        });
+        ui.separator();
+        ui.horizontal(|ui| {
             let re = ui.text_edit_singleline(&mut gui.lua_console_window.eval_buf);
             if ui.button("x").on_hover_text("Clear input").clicked() {
                 gui.lua_console_window.eval_buf.clear();
@@ -40,18 +85,26 @@ impl LuaConsoleWindow {
                 || (ui.input(|inp| inp.key_pressed(egui::Key::Enter)) && re.lost_focus())
             {
                 let code = &gui.lua_console_window.eval_buf.clone();
-                if let Err(e) = exec_lua(lua, code, app, gui, font, "") {
+                if let Err(e) = exec_lua(
+                    lua,
+                    code,
+                    app,
+                    gui,
+                    font,
+                    "",
+                    gui.lua_console_window.active_msg_buf,
+                ) {
                     gui.lua_console_window
-                        .messages
+                        .msg_buf()
                         .push(ConMsg::Plain(e.to_string()));
                 }
             }
             if ui.button("Clear log").clicked() {
-                gui.lua_console_window.messages.clear();
+                gui.lua_console_window.msg_buf().clear();
             }
             if ui.button("Copy to clipboard").clicked() {
                 let mut buf = String::new();
-                for msg in &gui.lua_console_window.messages {
+                for msg in gui.lua_console_window.msg_buf() {
                     match msg {
                         ConMsg::Plain(s) => {
                             buf.push_str(s);
@@ -76,7 +129,7 @@ impl LuaConsoleWindow {
         egui::ScrollArea::vertical()
             .auto_shrink([false, true])
             .show(ui, |ui| {
-                for msg in &gui.lua_console_window.messages {
+                for msg in &*gui.lua_console_window.msg_buf() {
                     match msg {
                         ConMsg::Plain(text) => {
                             ui.label(text);

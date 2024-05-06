@@ -166,8 +166,15 @@ impl LuaExecuteDialog {
             .map(|key| &app.meta_state.meta.scripts[key].content)
             .unwrap_or(&app.meta_state.meta.misc.exec_lua_script)
             .clone();
-        let result =
-            crate::scripting::exec_lua(lua, &lua_script, app, gui, font, &self.args_string);
+        let result = crate::scripting::exec_lua(
+            lua,
+            &lua_script,
+            app,
+            gui,
+            font,
+            &self.args_string,
+            self.edit_key,
+        );
         if let Err(e) = result {
             self.result_info_string = e.to_string();
             self.err = true;
