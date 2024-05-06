@@ -19,43 +19,31 @@ impl LuaHelpWindow {
         egui::ScrollArea::vertical()
             .max_height(500.0)
             .show(ui, |ui| {
-                forr::forr! {$t:ty in [
-                    add_region,
-                    load_file,
-                    bookmark_set_int,
-                    region_pattern_fill,
-                    find_result_offsets,
-                    read_u8,
-                    write_u8,
-                    read_u32_le,
-                    fill_range,
-                    set_dirty_region,
-                    save,
-                    bookmark_offset,
-                    add_bookmark,
-                    find_hex_string,
-                    focus_cursor,
-                    reoffset_bookmarks_cursor_diff,
-                    log,
-                    loffset,
-                    lrange,
-                    selection,
-                    require,
-                    exec,
-                    ] $* 'block: {
-                        let filter_lower = &gui.lua_help_window.filter.to_ascii_lowercase();
-                        if !($t::NAME.to_ascii_lowercase().contains(filter_lower) || $t::HELP.to_ascii_lowercase().contains(filter_lower)) {
-                            break 'block;
+                macro_rules! add_help {
+                    ($t:ty) => {
+                        'block: {
+                            let filter_lower = &gui.lua_help_window.filter.to_ascii_lowercase();
+                            if !(<$t>::NAME.to_ascii_lowercase().contains(filter_lower)
+                                || <$t>::HELP.to_ascii_lowercase().contains(filter_lower))
+                            {
+                                break 'block;
+                            }
+                            ui.horizontal(|ui| {
+                                ui.style_mut().spacing.item_spacing = egui::vec2(0., 0.);
+                                ui.label("hx:");
+                                ui.label(
+                                    egui::RichText::new(<$t>::API_SIG)
+                                        .color(Color32::WHITE)
+                                        .strong(),
+                                );
+                            });
+                            ui.indent("doc_indent", |ui| {
+                                ui.label(<$t>::HELP);
+                            });
                         }
-                        ui.horizontal(|ui| {
-                            ui.style_mut().spacing.item_spacing = egui::vec2(0., 0.);
-                            ui.label("hx:");
-                            ui.label(egui::RichText::new($t::API_SIG).color(Color32::WHITE).strong());
-                        });
-                        ui.indent("doc_indent", |ui| {
-                            ui.label($t::HELP);
-                        });
-                }};
+                    };
+                }
+                for_each_method!(add_help);
             });
     }
 }

@@ -296,34 +296,42 @@ def_method! {
     }
 }
 
+macro_rules! for_each_method {
+    ($m:ident) => {
+        $m!(add_region);
+        $m!(load_file);
+        $m!(bookmark_set_int);
+        $m!(region_pattern_fill);
+        $m!(find_result_offsets);
+        $m!(read_u8);
+        $m!(write_u8);
+        $m!(read_u32_le);
+        $m!(fill_range);
+        $m!(set_dirty_region);
+        $m!(save);
+        $m!(bookmark_offset);
+        $m!(add_bookmark);
+        $m!(find_hex_string);
+        $m!(focus_cursor);
+        $m!(reoffset_bookmarks_cursor_diff);
+        $m!(log);
+        $m!(loffset);
+        $m!(lrange);
+        $m!(selection);
+        $m!(require);
+        $m!(exec);
+    };
+}
+pub(super) use for_each_method;
+
 impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        forr::forr! {$t:ty in [
-            add_region,
-            load_file,
-            bookmark_set_int,
-            region_pattern_fill,
-            find_result_offsets,
-            read_u8,
-            write_u8,
-            read_u32_le,
-            fill_range,
-            set_dirty_region,
-            save,
-            bookmark_offset,
-            add_bookmark,
-            find_hex_string,
-            focus_cursor,
-            reoffset_bookmarks_cursor_diff,
-            log,
-            loffset,
-            lrange,
-            selection,
-            require,
-            exec
-            ] $* {
-            methods.add_method_mut($t::NAME, $t::call);
-        }};
+        macro_rules! add_method {
+            ($t:ty) => {
+                methods.add_method_mut(<$t>::NAME, <$t>::call)
+            };
+        }
+        for_each_method!(add_method);
     }
 }
 
