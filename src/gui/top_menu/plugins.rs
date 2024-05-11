@@ -1,8 +1,8 @@
 use crate::{
     app::App,
-    gui::Gui,
+    gui::{message_dialog::Icon, Gui},
     plugin::PluginContainer,
-    shell::{msg_fail, msg_if_fail},
+    shell::msg_fail,
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
@@ -57,8 +57,24 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
             };
             if ui.button(name).on_hover_ui(hover_ui).clicked() {
                 ui.close_menu();
-                let result = plugin.plugin.on_method_called(method.method_name, &[], app);
-                msg_if_fail(result, "Method call failed", &mut gui.msg_dialog);
+                match plugin.plugin.on_method_called(method.method_name, &[], app) {
+                    Ok(val) => {
+                        if let Some(val) = val {
+                            let strval = match val {
+                                hexerator_plugin_api::Value::U64(n) => n.to_string(),
+                                hexerator_plugin_api::Value::String(s) => s.to_string(),
+                            };
+                            gui.msg_dialog.open(
+                                Icon::Info,
+                                "Method call result",
+                                format!("{}: {}", method.method_name, strval),
+                            );
+                        }
+                    }
+                    Err(e) => {
+                        msg_fail(&e, "Method call failed", &mut gui.msg_dialog);
+                    }
+                }
             }
         }
         retain
