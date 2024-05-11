@@ -26,22 +26,26 @@ pub struct MethodParam {
 
 pub enum ValueTy {
     U64,
+    String,
 }
 
 pub enum Value {
     U64(u64),
+    String(String),
 }
 
 impl ValueTy {
     pub fn label(&self) -> &'static str {
         match self {
             ValueTy::U64 => "u64",
+            ValueTy::String => "string",
         }
     }
 }
 
 pub trait HexeratorHandle {
     fn selection_range(&self) -> Option<(usize, usize)>;
+    fn get_data(&self, start: usize, end: usize) -> Option<&[u8]>;
     fn get_data_mut(&mut self, start: usize, end: usize) -> Option<&mut [u8]>;
     fn debug_log(&self, msg: &str);
 }

@@ -298,12 +298,12 @@ def_method! {
 
 def_method! {
     "Calls a plugin method"
-    call_plugin(_lua, exec, plugin_name: String, method_name: String, args: mlua::Variadic<mlua::Value<'lua>>) -> mlua::Value<'lua> {
+    call_plugin(lua, exec, plugin_name: String, method_name: String, args: mlua::Variadic<mlua::Value<'lua>>) -> mlua::Value<'lua> {
         let method_args: Vec<_> = args.into_iter().map(lua_plugin_value_conv).collect();
         let val = exec.app.call_plugin_method(&plugin_name, &method_name, &method_args).into_lua_err()?;
         match val {
             None => Ok(mlua::Value::Nil),
-            Some(val) => Ok(plugin_value_lua_conv(val)),
+            Some(val) => Ok(plugin_value_lua_conv(val, lua)?),
         }
     }
 }
@@ -326,9 +326,13 @@ fn lua_plugin_value_conv(lval: mlua::Value) -> Option<hexerator_plugin_api::Valu
 }
 
 #[expect(clippy::cast_precision_loss)]
-fn plugin_value_lua_conv<'lua>(pval: hexerator_plugin_api::Value) -> mlua::Value<'lua> {
+fn plugin_value_lua_conv(
+    pval: hexerator_plugin_api::Value,
+    lua: &Lua,
+) -> mlua::Result<mlua::Value> {
     match pval {
-        hexerator_plugin_api::Value::U64(num) => mlua::Value::Number(num as f64),
+        hexerator_plugin_api::Value::U64(num) => Ok(mlua::Value::Number(num as f64)),
+        hexerator_plugin_api::Value::String(s) => Ok(mlua::Value::String(lua.create_string(s)?)),
     }
 }
 

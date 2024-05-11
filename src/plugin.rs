@@ -17,6 +17,10 @@ impl HexeratorHandle for App {
         gamedebug_core::per!("{msg}");
     }
 
+    fn get_data(&self, start: usize, end: usize) -> Option<&[u8]> {
+        self.data.get(start..=end)
+    }
+
     fn get_data_mut(&mut self, start: usize, end: usize) -> Option<&mut [u8]> {
         self.data.get_mut(start..=end)
     }
