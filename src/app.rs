@@ -21,6 +21,7 @@ use {
             PerspectiveKey, PerspectiveMap, RegionKey, RegionMap, ViewKey,
         },
         meta_state::MetaState,
+        plugin::PluginContainer,
         preferences::{Autoreload, Preferences},
         shell::{msg_fail, msg_if_fail},
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
@@ -30,6 +31,7 @@ use {
     egui_commonmark::CommonMarkCache,
     egui_sfml::sfml::graphics::{Font, RenderWindow},
     gamedebug_core::{per, per_dbg},
+    hexerator_plugin_api::MethodResult,
     mlua::Lua,
     slotmap::Key,
     std::{
@@ -72,6 +74,7 @@ pub struct App {
     pub backend_cmd: BackendCommandQueue,
     /// A quit was requested
     pub quit_requested: bool,
+    pub plugins: Vec<PluginContainer>,
 }
 
 impl App {
@@ -105,7 +108,11 @@ impl App {
             cmd: Default::default(),
             backend_cmd: Default::default(),
             quit_requested: false,
+            plugins: Vec::new(),
         };
+        for path in args.load_plugin {
+            this.plugins.push(unsafe { PluginContainer::new(path)? });
+        }
         if args.autosave {
             this.preferences.auto_save = true;
         }
@@ -834,6 +841,24 @@ impl App {
             self.edit_state
                 .widen_dirty_region(DamageRegion::RangeInclusive(range));
         }
+    }
+    pub(crate) fn call_plugin_method(
+        &mut self,
+        plugin_name: &str,
+        method_name: &str,
+        args: &[Option<hexerator_plugin_api::Value>],
+    ) -> MethodResult {
+        let mut plugins = std::mem::take(&mut self.plugins);
+        let result = 'block: {
+            for plugin in &mut plugins {
+                if plugin_name == plugin.plugin.name() {
+                    break 'block plugin.plugin.on_method_called(method_name, args, self);
+                }
+            }
+            Err(format!("Plugin `{plugin_name}` not found."))
+        };
+        std::mem::swap(&mut self.plugins, &mut plugins);
+        result
     }
 }
 

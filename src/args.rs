@@ -41,6 +41,9 @@ pub struct Args {
     /// Open this layout on startup instead of the default
     #[arg(long, value_name = "name")]
     pub layout: Option<String>,
+    #[arg(long)]
+    /// Load a dynamic library plugin at startup
+    pub load_plugin: Vec<PathBuf>,
 }
 
 /// Arguments for opening a source (file/stream/process/etc)

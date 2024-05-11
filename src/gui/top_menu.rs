@@ -7,6 +7,7 @@ mod file;
 mod help;
 mod meta;
 mod perspective;
+mod plugins;
 mod scripting;
 mod view;
 
@@ -31,6 +32,7 @@ pub fn top_menu(
         ui.menu_button("Meta", |ui| meta::ui(ui, gui, app, font));
         ui.menu_button("Analysis", |ui| analysis::ui(ui, gui, app));
         ui.menu_button("Scripting", |ui| scripting::ui(ui, gui, app, lua, font));
+        ui.menu_button("Plugins", |ui| plugins::ui(ui, gui, app));
         ui.menu_button("Help", |ui| help::ui(ui, gui));
         ui.with_layout(
             Layout::right_to_left(egui::Align::Center),

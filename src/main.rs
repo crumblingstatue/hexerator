@@ -48,6 +48,7 @@ mod layout;
 mod meta;
 mod meta_state;
 mod parse_radix;
+mod plugin;
 mod preferences;
 mod scripting;
 mod shell;

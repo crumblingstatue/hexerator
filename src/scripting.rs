@@ -296,6 +296,42 @@ def_method! {
     }
 }
 
+def_method! {
+    "Calls a plugin method"
+    call_plugin(_lua, exec, plugin_name: String, method_name: String, args: mlua::Variadic<mlua::Value<'lua>>) -> mlua::Value<'lua> {
+        let method_args: Vec<_> = args.into_iter().map(lua_plugin_value_conv).collect();
+        let val = exec.app.call_plugin_method(&plugin_name, &method_name, &method_args).into_lua_err()?;
+        match val {
+            None => Ok(mlua::Value::Nil),
+            Some(val) => Ok(plugin_value_lua_conv(val)),
+        }
+    }
+}
+
+#[expect(clippy::cast_sign_loss)]
+fn lua_plugin_value_conv(lval: mlua::Value) -> Option<hexerator_plugin_api::Value> {
+    match lval {
+        mlua::Value::Nil => None,
+        mlua::Value::Boolean(_) => todo!(),
+        mlua::Value::LightUserData(_) => todo!(),
+        mlua::Value::Integer(num) => Some(hexerator_plugin_api::Value::U64(num as u64)),
+        mlua::Value::Number(_) => todo!(),
+        mlua::Value::String(_) => todo!(),
+        mlua::Value::Table(_) => todo!(),
+        mlua::Value::Function(_) => todo!(),
+        mlua::Value::Thread(_) => todo!(),
+        mlua::Value::UserData(_) => todo!(),
+        mlua::Value::Error(_) => todo!(),
+    }
+}
+
+#[expect(clippy::cast_precision_loss)]
+fn plugin_value_lua_conv<'lua>(pval: hexerator_plugin_api::Value) -> mlua::Value<'lua> {
+    match pval {
+        hexerator_plugin_api::Value::U64(num) => mlua::Value::Number(num as f64),
+    }
+}
+
 macro_rules! for_each_method {
     ($m:ident) => {
         $m!(add_region);
@@ -320,6 +356,7 @@ macro_rules! for_each_method {
         $m!(selection);
         $m!(require);
         $m!(exec);
+        $m!(call_plugin);
     };
 }
 pub(super) use for_each_method;

@@ -614,6 +614,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
+name = "hello-world"
+version = "0.1.0"
+dependencies = [
+ "hexerator-plugin-api",
+]
+
+[[package]]
 name = "hexerator"
 version = "0.3.0-dev"
 dependencies = [
@@ -633,9 +640,11 @@ dependencies = [
  "either",
  "gamedebug_core",
  "glu-sys",
+ "hexerator-plugin-api",
  "human_bytes",
  "iced-x86",
  "itertools",
+ "libloading",
  "memchr",
  "mlua",
  "num-traits",
@@ -658,6 +667,10 @@ dependencies = [
  "vergen",
  "windows-sys 0.52.0",
 ]
+
+[[package]]
+name = "hexerator-plugin-api"
+version = "0.1.0"
 
 [[package]]
 name = "home"
@@ -764,7 +777,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.5",
 ]
 
 [[package]]
