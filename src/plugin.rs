@@ -31,12 +31,6 @@ impl HexeratorHandle for App {
 }
 
 impl PluginContainer {
-    pub(crate) unsafe fn reload(&mut self) -> anyhow::Result<()> {
-        unsafe {
-            *self = Self::new(self.path.clone())?;
-        }
-        Ok(())
-    }
     pub unsafe fn new(path: PathBuf) -> anyhow::Result<Self> {
         unsafe {
             let lib = libloading::Library::new(&path)?;

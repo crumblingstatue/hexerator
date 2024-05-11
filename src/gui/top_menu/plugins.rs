@@ -1,7 +1,13 @@
-use crate::{app::App, gui::Gui, shell::msg_if_fail};
+use crate::{
+    app::App,
+    gui::Gui,
+    plugin::PluginContainer,
+    shell::{msg_fail, msg_if_fail},
+};
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     let mut plugins = std::mem::take(&mut app.plugins);
+    let mut reload = None;
     plugins.retain_mut(|plugin| {
         let mut retain = true;
         ui.horizontal(|ui| {
@@ -12,13 +18,8 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                 ui.close_menu();
             }
             if ui.button("r").clicked() {
-                unsafe {
-                    msg_if_fail(
-                        plugin.reload(),
-                        "Failed to reload plugin",
-                        &mut gui.msg_dialog,
-                    );
-                }
+                retain = false;
+                reload = Some(plugin.path.clone());
                 ui.close_menu();
             }
         });
@@ -62,5 +63,15 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         }
         retain
     });
+    if let Some(path) = reload {
+        unsafe {
+            match PluginContainer::new(path) {
+                Ok(plugin) => {
+                    plugins.push(plugin);
+                }
+                Err(e) => msg_fail(&e, "Failed to reload plugin", &mut gui.msg_dialog),
+            }
+        }
+    }
     std::mem::swap(&mut app.plugins, &mut plugins);
 }
