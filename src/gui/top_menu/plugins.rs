@@ -13,11 +13,11 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         ui.horizontal(|ui| {
             ui.label(plugin.plugin.name())
                 .on_hover_text(plugin.plugin.desc());
-            if ui.button("x").clicked() {
+            if ui.button("🗑").on_hover_text("Unload").clicked() {
                 retain = false;
                 ui.close_menu();
             }
-            if ui.button("r").clicked() {
+            if ui.button("↺").on_hover_text("Reload").clicked() {
                 retain = false;
                 reload = Some(plugin.path.clone());
                 ui.close_menu();
