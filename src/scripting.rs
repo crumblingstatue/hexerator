@@ -392,7 +392,7 @@ pub fn exec_lua(
     font: &Font,
     args: &str,
     key: Option<ScriptKey>,
-) -> Result<(), ExecLuaError> {
+) -> Result<Option<String>, ExecLuaError> {
     let args_table = lua.create_table()?;
     if !args.is_empty() {
         let args = parse_script_args(args)?;
@@ -403,6 +403,7 @@ pub fn exec_lua(
             }
         }
     }
+    let mut out = None;
     lua.scope(|scope| {
         let chunk = lua.load(lua_script);
         let fun = chunk.into_function()?;
@@ -416,10 +417,10 @@ pub fn exec_lua(
             env.set("hx", app)?;
             env.set("args", args_table)?;
         }
-        fun.call(())?;
+        out = fun.call(())?;
         Ok(())
     })?;
-    Ok(())
+    Ok(out)
 }
 
 #[derive(Debug, PartialEq)]

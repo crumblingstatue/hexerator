@@ -18,7 +18,9 @@ use {
         preferences_window::PreferencesWindow,
         regions_window::RegionsWindow,
         views_window::ViewsWindow,
-        windows::{LuaConsoleWindow, LuaHelpWindow, ScriptManagerWindow, VarsWindow},
+        windows::{
+            LuaConsoleWindow, LuaHelpWindow, LuaWatchWindow, ScriptManagerWindow, VarsWindow,
+        },
     },
     crate::{
         app::App,
@@ -102,6 +104,7 @@ pub struct Gui {
     pub vars_window: VarsWindow,
     pub lua_help_window: LuaHelpWindow,
     pub lua_console_window: LuaConsoleWindow,
+    pub lua_watch_windows: Vec<LuaWatchWindow>,
     pub script_manager_window: ScriptManagerWindow,
     /// What to highlight in addition to selection. Can be updated by various actions that want to highlight stuff
     pub highlight_set: HighlightSet,
@@ -208,6 +211,20 @@ pub fn do_egui(
         "Script manager",          script_manager_window,       ScriptManagerWindow: gui app lua font;
         "About Hexerator",         about_window,                AboutWindow: gui app;
     }
+
+    let mut watch_windows = std::mem::take(&mut gui.lua_watch_windows);
+    let mut i = 0;
+    watch_windows.retain_mut(|win| {
+        let mut retain = true;
+        Window::new(&win.name)
+            .id(egui::Id::new("watch_w").with(i))
+            .open(&mut retain)
+            .show(ctx, |ui| win.ui(ui, gui, app, lua, font));
+        i += 1;
+        retain
+    });
+    std::mem::swap(&mut gui.lua_watch_windows, &mut watch_windows);
+
     // Context menu
     if let Some(menu) = &gui.context_menu {
         let mut close = false;
