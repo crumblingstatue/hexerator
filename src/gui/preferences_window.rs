@@ -1,7 +1,14 @@
 use {
-    super::{window_open::WindowOpen, Gui},
-    crate::{app::App, config},
-    egui_fontcfg::FontCfgUi,
+    super::{
+        message_dialog::{Icon, MessageDialog},
+        window_open::WindowOpen,
+        Gui,
+    },
+    crate::{
+        app::App,
+        config::{self, Config},
+    },
+    egui_fontcfg::{CustomFontPaths, FontCfgUi, FontDefsUiMsg},
     egui_sfml::sfml::graphics::RenderWindow,
 };
 
@@ -11,6 +18,7 @@ pub struct PreferencesWindow {
     tab: Tab,
     font_cfg: FontCfgUi,
     font_defs: egui::FontDefinitions,
+    temp_custom_font_paths: CustomFontPaths,
 }
 
 #[derive(Default, PartialEq)]
@@ -33,6 +41,16 @@ impl Tab {
 
 impl PreferencesWindow {
     pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, rwin: &mut RenderWindow) {
+        if gui.preferences_window.open.just_now() {
+            gui.preferences_window.font_defs.families = app.cfg.font_families.clone();
+            gui.preferences_window
+                .temp_custom_font_paths
+                .clone_from(&app.cfg.custom_font_paths);
+            let _ = egui_fontcfg::load_custom_fonts(
+                &app.cfg.custom_font_paths,
+                &mut gui.preferences_window.font_defs.font_data,
+            );
+        }
         ui.horizontal(|ui| {
             ui.selectable_value(
                 &mut gui.preferences_window.tab,
@@ -58,8 +76,12 @@ impl PreferencesWindow {
                 ui,
                 &mut gui.preferences_window.font_cfg,
                 &mut gui.preferences_window.font_defs,
+                &mut app.cfg,
+                &mut gui.preferences_window.temp_custom_font_paths,
+                &mut gui.msg_dialog,
             ),
         }
+        gui.preferences_window.open.post_ui();
     }
 }
 
@@ -121,6 +143,22 @@ fn style_ui(app: &mut App, ui: &mut egui::Ui) {
     });
 }
 
-fn fonts_ui(ui: &mut egui::Ui, font_cfg_ui: &mut FontCfgUi, font_defs: &mut egui::FontDefinitions) {
-    font_cfg_ui.show(ui, font_defs, None);
+fn fonts_ui(
+    ui: &mut egui::Ui,
+    font_cfg_ui: &mut FontCfgUi,
+    font_defs: &mut egui::FontDefinitions,
+    cfg: &mut Config,
+    temp_custom_font_paths: &mut CustomFontPaths,
+    msg_dia: &mut MessageDialog,
+) {
+    let msg = font_cfg_ui.show(ui, font_defs, Some(temp_custom_font_paths));
+    if matches!(msg, FontDefsUiMsg::SaveRequest) {
+        cfg.font_families = font_defs.families.clone();
+        cfg.custom_font_paths.clone_from(temp_custom_font_paths);
+        msg_dia.open(
+            Icon::Info,
+            "Config saved",
+            "Your font configuration has been saved.",
+        );
+    }
 }

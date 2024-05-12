@@ -2,9 +2,13 @@ use {
     crate::args::SourceArgs,
     anyhow::Context,
     directories::ProjectDirs,
+    egui_fontcfg::CustomFontPaths,
     recently_used_list::RecentlyUsedList,
     serde::{Deserialize, Serialize},
-    std::{collections::HashMap, path::PathBuf},
+    std::{
+        collections::{BTreeMap, HashMap},
+        path::PathBuf,
+    },
 };
 
 #[derive(Serialize, Deserialize)]
@@ -20,6 +24,10 @@ pub struct Config {
     pub fps_limit: u32,
     #[serde(default)]
     pub pinned_dirs: Vec<PathBuf>,
+    #[serde(default)]
+    pub custom_font_paths: CustomFontPaths,
+    #[serde(default)]
+    pub font_families: BTreeMap<egui::FontFamily, Vec<String>>,
 }
 
 const fn default_vsync() -> bool {
@@ -67,6 +75,8 @@ impl Default for Config {
             fps_limit: 0,
             vsync: default_vsync(),
             pinned_dirs: Vec::new(),
+            custom_font_paths: Default::default(),
+            font_families: Default::default(),
         }
     }
 }

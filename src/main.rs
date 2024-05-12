@@ -165,6 +165,12 @@ fn try_main() -> anyhow::Result<()> {
                 }
             }));
     }
+    let mut font_defs = egui::FontDefinitions::default();
+    egui_fontcfg::load_custom_fonts(&cfg.custom_font_paths, &mut font_defs.font_data)?;
+    if !cfg.font_families.is_empty() {
+        font_defs.families = cfg.font_families.clone();
+    }
+    sf_egui.context().set_fonts(font_defs);
     let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog)?;
     let lua = Lua::default();
     crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
