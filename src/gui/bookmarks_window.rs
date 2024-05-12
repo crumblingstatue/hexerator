@@ -217,6 +217,13 @@ impl BookmarksWindow {
             ui.horizontal(|ui| {
                 ui.label("Offset");
                 ui.add(egui::DragValue::new(&mut mark.offset));
+                if ui
+                    .button("👆")
+                    .on_hover_text("Set to cursor position")
+                    .clicked()
+                {
+                    mark.offset = app.edit_state.cursor;
+                }
             });
             egui::ComboBox::new("type_combo", "value type")
                 .selected_text(mark.value_type.label())
