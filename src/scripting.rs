@@ -134,6 +134,21 @@ def_method! {
 }
 
 def_method! {
+    "Reads a little endian unsigned 16 bit integer at `offset`"
+    read_u16_le(_lua, exec, offset: usize) -> u16 {
+        match exec
+        .app
+        .data
+        .get(offset..offset + 2)
+    {
+        Some(slice) => value_type::U16Le::from_byte_slice(slice)
+            .ok_or_else(|| "Failed to convert".into_lua_err()),
+        None => Err("out of bounds".into_lua_err()),
+    }
+    }
+}
+
+def_method! {
     "Reads a little endian unsigned 32 bit integer at `offset`"
     read_u32_le(_lua, exec, offset: usize) -> u32 {
         match exec
@@ -315,7 +330,8 @@ fn lua_plugin_value_conv(lval: mlua::Value) -> Option<hexerator_plugin_api::Valu
         mlua::Value::Boolean(_) => todo!(),
         mlua::Value::LightUserData(_) => todo!(),
         mlua::Value::Integer(num) => Some(hexerator_plugin_api::Value::U64(num as u64)),
-        mlua::Value::Number(_) => todo!(),
+        // TODO: Float data type... probably
+        mlua::Value::Number(num) => Some(hexerator_plugin_api::Value::U64(num as u64)),
         mlua::Value::String(_) => todo!(),
         mlua::Value::Table(_) => todo!(),
         mlua::Value::Function(_) => todo!(),
@@ -345,6 +361,7 @@ macro_rules! for_each_method {
         $m!(find_result_offsets);
         $m!(read_u8);
         $m!(write_u8);
+        $m!(read_u16_le);
         $m!(read_u32_le);
         $m!(fill_range);
         $m!(set_dirty_region);
