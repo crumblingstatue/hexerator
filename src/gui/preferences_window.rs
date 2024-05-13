@@ -106,31 +106,31 @@ fn style_ui(app: &mut App, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.label("heading");
             any_changed |= ui
-                .add(egui::DragValue::new(&mut style.font_sizes.heading))
+                .add(egui::DragValue::new(&mut style.font_sizes.heading).clamp_range(3..=100))
                 .changed();
         });
         ui.horizontal(|ui| {
             ui.label("body");
             any_changed |= ui
-                .add(egui::DragValue::new(&mut style.font_sizes.body))
+                .add(egui::DragValue::new(&mut style.font_sizes.body).clamp_range(3..=100))
                 .changed();
         });
         ui.horizontal(|ui| {
             ui.label("monospace");
             any_changed |= ui
-                .add(egui::DragValue::new(&mut style.font_sizes.monospace))
+                .add(egui::DragValue::new(&mut style.font_sizes.monospace).clamp_range(3..=100))
                 .changed();
         });
         ui.horizontal(|ui| {
             ui.label("button");
             any_changed |= ui
-                .add(egui::DragValue::new(&mut style.font_sizes.button))
+                .add(egui::DragValue::new(&mut style.font_sizes.button).clamp_range(3..=100))
                 .changed();
         });
         ui.horizontal(|ui| {
             ui.label("small");
             any_changed |= ui
-                .add(egui::DragValue::new(&mut style.font_sizes.small))
+                .add(egui::DragValue::new(&mut style.font_sizes.small).clamp_range(3..=100))
                 .changed();
         });
         if ui.button("Reset default").clicked() {
