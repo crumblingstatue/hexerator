@@ -37,7 +37,7 @@ pub struct BookmarksWindow {
 impl BookmarksWindow {
     pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
-        let win = &mut gui.bookmarks_window;
+        let win = &mut gui.win.bookmarks;
         ui.horizontal(|ui| {
             ui.add(
                 egui::TextEdit::singleline(&mut win.name_filter_string).hint_text("Filter by name"),
@@ -170,8 +170,8 @@ impl BookmarksWindow {
                                 let re = ui.link(&region.name).on_hover_text(&region.desc);
                                 re.context_menu(ctx_menu);
                                 if re.clicked() {
-                                    gui.regions_window.open.set(true);
-                                    gui.regions_window.selected_key = Some(region_key);
+                                    gui.win.regions.open.set(true);
+                                    gui.win.regions.selected_key = Some(region_key);
                                 }
                             } else {
                                 ui.label("<no region>");

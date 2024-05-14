@@ -45,47 +45,36 @@ impl PreferencesWindow {
             ui, gui, app, rwin, ..
         }: WindowCtxt,
     ) {
-        if gui.preferences_window.open.just_now() {
-            gui.preferences_window.font_defs.families = app.cfg.font_families.clone();
-            gui.preferences_window
+        if gui.win.preferences.open.just_now() {
+            gui.win.preferences.font_defs.families = app.cfg.font_families.clone();
+            gui.win
+                .preferences
                 .temp_custom_font_paths
                 .clone_from(&app.cfg.custom_font_paths);
             let _ = egui_fontcfg::load_custom_fonts(
                 &app.cfg.custom_font_paths,
-                &mut gui.preferences_window.font_defs.font_data,
+                &mut gui.win.preferences.font_defs.font_data,
             );
         }
         ui.horizontal(|ui| {
-            ui.selectable_value(
-                &mut gui.preferences_window.tab,
-                Tab::Video,
-                Tab::Video.label(),
-            );
-            ui.selectable_value(
-                &mut gui.preferences_window.tab,
-                Tab::Style,
-                Tab::Style.label(),
-            );
-            ui.selectable_value(
-                &mut gui.preferences_window.tab,
-                Tab::Fonts,
-                Tab::Fonts.label(),
-            );
+            ui.selectable_value(&mut gui.win.preferences.tab, Tab::Video, Tab::Video.label());
+            ui.selectable_value(&mut gui.win.preferences.tab, Tab::Style, Tab::Style.label());
+            ui.selectable_value(&mut gui.win.preferences.tab, Tab::Fonts, Tab::Fonts.label());
         });
         ui.separator();
-        match gui.preferences_window.tab {
+        match gui.win.preferences.tab {
             Tab::Video => video_ui(ui, app, rwin),
             Tab::Style => style_ui(app, ui),
             Tab::Fonts => fonts_ui(
                 ui,
-                &mut gui.preferences_window.font_cfg,
-                &mut gui.preferences_window.font_defs,
+                &mut gui.win.preferences.font_cfg,
+                &mut gui.win.preferences.font_defs,
                 &mut app.cfg,
-                &mut gui.preferences_window.temp_custom_font_paths,
+                &mut gui.win.preferences.temp_custom_font_paths,
                 &mut gui.msg_dialog,
             ),
         }
-        gui.preferences_window.open.post_ui();
+        gui.win.preferences.open.post_ui();
     }
 }
 

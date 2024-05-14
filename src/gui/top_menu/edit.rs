@@ -17,7 +17,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
         .add(Button::new("Find...").shortcut_text("Ctrl+F"))
         .clicked()
     {
-        gui.find_dialog.open.toggle();
+        gui.win.find.open.toggle();
         ui.close_menu();
     }
     ui.separator();
@@ -29,7 +29,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
                 app,
                 &mut gui.dialogs,
                 &mut gui.msg_dialog,
-                &mut gui.regions_window,
+                &mut gui.win.regions,
                 sel,
                 &mut gui.fileops,
             ) {
@@ -66,7 +66,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
         .add(Button::new("External command...").shortcut_text("Ctrl+E"))
         .clicked()
     {
-        gui.external_command_window.open.toggle();
+        gui.win.external_command.open.toggle();
         ui.close_menu();
     }
     ui.separator();

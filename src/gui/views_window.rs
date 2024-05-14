@@ -43,13 +43,13 @@ impl ViewsWindow {
         }: WindowCtxt,
     ) {
         ui.style_mut().wrap = Some(false);
-        if gui.views_window.open.just_now() &&
+        if gui.win.views.open.just_now() &&
            // Don't override selected key if there already is one
            // For example, it could be set by the context menu "view properties".
-           gui.views_window.selected.is_null() &&
+           gui.win.views.selected.is_null() &&
            let Some(view_key) = app.hex_ui.focused_view
         {
-            gui.views_window.selected = view_key;
+            gui.win.views.selected = view_key;
         }
         let mut removed_idx = None;
         if app.meta_state.meta.views.is_empty() {
@@ -98,10 +98,10 @@ impl ViewsWindow {
                             });
                         };
                         let re =
-                            ui.selectable_label(view_key == gui.views_window.selected, &view.name);
+                            ui.selectable_label(view_key == gui.win.views.selected, &view.name);
                         re.context_menu(ctx_menu);
                         if re.clicked() {
-                            gui.views_window.selected = view_key;
+                            gui.win.views.selected = view_key;
                         }
                     });
                     row.col(|ui| {
@@ -112,7 +112,7 @@ impl ViewsWindow {
                             .link(&app.meta_state.meta.low.perspectives[view.view.perspective].name)
                             .clicked()
                         {
-                            gui.perspectives_window.open.set(true);
+                            gui.win.perspectives.open.set(true);
                         }
                     });
                     row.col(|ui| {
@@ -131,8 +131,8 @@ impl ViewsWindow {
                         let re = ui.link(&reg.name).on_hover_text(&reg.desc);
                         re.context_menu(ctx_menu);
                         if re.clicked() {
-                            gui.regions_window.open.set(true);
-                            gui.regions_window.selected_key = Some(per.region);
+                            gui.win.regions.open.set(true);
+                            gui.win.regions.selected_key = Some(per.region);
                         }
                     });
                 });
@@ -150,20 +150,20 @@ impl ViewsWindow {
             }
         });
         ui.separator();
-        if let Some(view) = app.meta_state.meta.views.get_mut(gui.views_window.selected) {
+        if let Some(view) = app.meta_state.meta.views.get_mut(gui.win.views.selected) {
             ui.horizontal(|ui| {
-                if gui.views_window.rename {
+                if gui.win.views.rename {
                     if ui
                         .add(egui::TextEdit::singleline(&mut view.name).desired_width(150.0))
                         .lost_focus()
                     {
-                        gui.views_window.rename = false;
+                        gui.win.views.rename = false;
                     }
                 } else {
                     ui.heading(&view.name);
                 }
                 if ui.button("✏").on_hover_text("Rename").clicked() {
-                    gui.views_window.rename ^= true;
+                    gui.win.views.rename ^= true;
                 }
                 if view_combo(egui::Id::new("view_combo"), &mut view.view.kind, ui, font) {
                     view.view.adjust_state_to_kind();
@@ -261,14 +261,14 @@ impl ViewsWindow {
                 );
             });
             if ui.button("Delete").clicked() {
-                removed_idx = Some(gui.views_window.selected);
+                removed_idx = Some(gui.win.views.selected);
             }
         }
         if let Some(rem_key) = removed_idx {
             app.meta_state.meta.remove_view(rem_key);
             app.hex_ui.focused_view = None;
         }
-        gui.views_window.open.post_ui();
+        gui.win.views.open.post_ui();
     }
 }
 

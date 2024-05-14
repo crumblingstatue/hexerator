@@ -19,7 +19,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         .add(Button::new("Layouts...").shortcut_text("F5"))
         .clicked()
     {
-        gui.layouts_window.open.toggle();
+        gui.win.layouts.open.toggle();
         ui.close_menu();
     }
     if ui
@@ -40,7 +40,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         .add(Button::new("Views...").shortcut_text("F6"))
         .clicked()
     {
-        gui.views_window.open.toggle();
+        gui.win.views.open.toggle();
         ui.close_menu();
     }
     ui.checkbox(

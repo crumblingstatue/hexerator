@@ -37,12 +37,12 @@ impl PerspectivesWindow {
                 body.rows(20.0, keys.len(), |mut row| {
                     let idx = row.index();
                     row.col(|ui| {
-                        if gui.perspectives_window.rename_idx == keys[idx] {
+                        if gui.win.perspectives.rename_idx == keys[idx] {
                             let re = ui.text_edit_singleline(
                                 &mut app.meta_state.meta.low.perspectives[keys[idx]].name,
                             );
                             if re.lost_focus() {
-                                gui.perspectives_window.rename_idx = PerspectiveKey::null();
+                                gui.win.perspectives.rename_idx = PerspectiveKey::null();
                             } else {
                                 re.request_focus();
                             }
@@ -50,7 +50,7 @@ impl PerspectivesWindow {
                             let name = &app.meta_state.meta.low.perspectives[keys[idx]].name;
                             ui.menu_button(name, |ui| {
                                 if ui.button("✏ Rename").clicked() {
-                                    gui.perspectives_window.rename_idx = keys[idx];
+                                    gui.win.perspectives.rename_idx = keys[idx];
                                     ui.close_menu();
                                 }
                                 if ui.button("🗑 Delete").clicked() {
@@ -69,8 +69,8 @@ impl PerspectivesWindow {
                                         if view.view.perspective == keys[idx]
                                             && ui.button(&view.name).clicked()
                                         {
-                                            gui.views_window.open.set(true);
-                                            gui.views_window.selected = view_key;
+                                            gui.win.views.open.set(true);
+                                            gui.win.views.selected = view_key;
                                             ui.close_menu();
                                         }
                                     }
@@ -93,8 +93,8 @@ impl PerspectivesWindow {
                             )
                         });
                         if re.clicked() {
-                            gui.regions_window.open.set(true);
-                            gui.regions_window.selected_key = Some(per.region);
+                            gui.win.regions.open.set(true);
+                            gui.win.regions.selected_key = Some(per.region);
                         }
                     });
                     row.col(|ui| {

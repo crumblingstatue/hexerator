@@ -15,7 +15,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         )
         .clicked()
     {
-        gui.perspectives_window.open.toggle();
+        gui.win.perspectives.open.toggle();
         ui.close_menu();
     }
     let Some(view_key) = app.hex_ui.focused_view else {

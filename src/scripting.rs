@@ -106,7 +106,7 @@ def_method! {
 def_method! {
     "Returns an array containing the offsets of the find results"
     find_result_offsets(_lua, exec,) -> Vec<usize> {
-        Ok(exec.gui.find_dialog.results_vec.clone())
+        Ok(exec.gui.win.find.results_vec.clone())
     }
 }
 
@@ -255,9 +255,9 @@ def_method! {
 def_method! {
     "Prints to the lua console"
     log(_lua, exec, value: String) -> () {
-        exec.gui.lua_console_window.open.set(true);
-        exec.gui.lua_console_window.active_msg_buf = exec.key;
-        exec.gui.lua_console_window.msg_buf_for_key(exec.key).push(ConMsg::Plain(value));
+        exec.gui.win.lua_console.open.set(true);
+        exec.gui.win.lua_console.active_msg_buf = exec.key;
+        exec.gui.win.lua_console.msg_buf_for_key(exec.key).push(ConMsg::Plain(value));
         Ok(())
     }
 }
@@ -265,9 +265,9 @@ def_method! {
 def_method! {
     "Prints a clickable offset link to the lua console with an optional text"
     loffset(_lua, exec, offset: usize, text: Option<String>) -> () {
-        exec.gui.lua_console_window.open.set(true);
-        exec.gui.lua_console_window.active_msg_buf = exec.key;
-        exec.gui.lua_console_window.msg_buf_for_key(exec.key).push(ConMsg::OffsetLink { text: text.map_or(offset.to_string(), |text| format!("{offset}: {text}")), offset });
+        exec.gui.win.lua_console.open.set(true);
+        exec.gui.win.lua_console.active_msg_buf = exec.key;
+        exec.gui.win.lua_console.msg_buf_for_key(exec.key).push(ConMsg::OffsetLink { text: text.map_or(offset.to_string(), |text| format!("{offset}: {text}")), offset });
         Ok(())
     }
 }
@@ -275,10 +275,10 @@ def_method! {
 def_method! {
     "Prints a clickable (inclusive) range link to the lua console with an optional text"
     lrange(_lua, exec, start: usize, end: usize, text: Option<String>) -> () {
-        exec.gui.lua_console_window.open.set(true);
-        exec.gui.lua_console_window.active_msg_buf = exec.key;
+        exec.gui.win.lua_console.open.set(true);
+        exec.gui.win.lua_console.active_msg_buf = exec.key;
         let fmt = move || { format!("{start}..={end}")};
-        exec.gui.lua_console_window.msg_buf_for_key(exec.key).push(ConMsg::RangeLink { text: text.map_or_else(fmt, |text| format!("{}: {text}", fmt())), start, end });
+        exec.gui.win.lua_console.msg_buf_for_key(exec.key).push(ConMsg::RangeLink { text: text.map_or_else(fmt, |text| format!("{}: {text}", fmt())), start, end });
         Ok(())
     }
 }

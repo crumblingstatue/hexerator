@@ -41,11 +41,11 @@ impl FileDiffResultWindow {
             ui, gui, app, font, ..
         }: WindowCtxt,
     ) {
-        if gui.file_diff_result_window.offsets.is_empty() {
+        if gui.win.file_diff_result.offsets.is_empty() {
             ui.label("No difference");
             return;
         }
-        ui.label(gui.file_diff_result_window.path.display().to_string());
+        ui.label(gui.win.file_diff_result.path.display().to_string());
         ui.horizontal(|ui| {
             if ui
                 .button("🗁 Open this")
@@ -56,7 +56,7 @@ impl FileDiffResultWindow {
                 let prev_path = app.src_args.file.clone();
                 app.preferences.keep_meta = true;
                 let result = app.load_file(
-                    gui.file_diff_result_window.path.clone(),
+                    gui.win.file_diff_result.path.clone(),
                     false,
                     font,
                     &mut gui.msg_dialog,
@@ -65,7 +65,7 @@ impl FileDiffResultWindow {
                 if msg_if_fail(result, "Failed to load file", &mut gui.msg_dialog).is_none() {
                     if let Some(path) = prev_path {
                         msg_if_fail(
-                            app.diff_with_file(path, &mut gui.file_diff_result_window),
+                            app.diff_with_file(path, &mut gui.win.file_diff_result),
                             "Failed to diff",
                             &mut gui.msg_dialog,
                         );
@@ -89,9 +89,9 @@ impl FileDiffResultWindow {
             {
                 let result: anyhow::Result<()> = try {
                     let file_data =
-                        read_source_to_buf(&gui.file_diff_result_window.path, &app.src_args)?;
-                    gui.file_diff_result_window.offsets.retain(|&offs| {
-                        gui.file_diff_result_window.file_data[offs] == file_data[offs]
+                        read_source_to_buf(&gui.win.file_diff_result.path, &app.src_args)?;
+                    gui.win.file_diff_result.offsets.retain(|&offs| {
+                        gui.win.file_diff_result.file_data[offs] == file_data[offs]
                     });
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
@@ -103,16 +103,16 @@ impl FileDiffResultWindow {
             {
                 let result: anyhow::Result<()> = try {
                     let file_data =
-                        read_source_to_buf(&gui.file_diff_result_window.path, &app.src_args)?;
-                    gui.file_diff_result_window.offsets.retain(|&offs| {
-                        gui.file_diff_result_window.file_data[offs] != file_data[offs]
+                        read_source_to_buf(&gui.win.file_diff_result.path, &app.src_args)?;
+                    gui.win.file_diff_result.offsets.retain(|&offs| {
+                        gui.win.file_diff_result.file_data[offs] != file_data[offs]
                     });
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
             if ui.button("Highlight all").clicked() {
                 gui.highlight_set.clear();
-                for &offs in &gui.file_diff_result_window.offsets {
+                for &offs in &gui.win.file_diff_result.offsets {
                     gui.highlight_set.insert(offs);
                     if let Some((_, bm)) =
                         Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
@@ -126,28 +126,21 @@ impl FileDiffResultWindow {
         });
         ui.horizontal(|ui| {
             if ui.button("Refresh").clicked()
-                || (gui.file_diff_result_window.auto_refresh
-                    && gui
-                        .file_diff_result_window
-                        .last_refresh
-                        .elapsed()
-                        .as_millis()
-                        >= u128::from(gui.file_diff_result_window.auto_refresh_interval_ms))
+                || (gui.win.file_diff_result.auto_refresh
+                    && gui.win.file_diff_result.last_refresh.elapsed().as_millis()
+                        >= u128::from(gui.win.file_diff_result.auto_refresh_interval_ms))
             {
-                gui.file_diff_result_window.last_refresh = Instant::now();
+                gui.win.file_diff_result.last_refresh = Instant::now();
                 let result: anyhow::Result<()> = try {
-                    gui.file_diff_result_window.file_data =
-                        read_source_to_buf(&gui.file_diff_result_window.path, &app.src_args)?;
+                    gui.win.file_diff_result.file_data =
+                        read_source_to_buf(&gui.win.file_diff_result.path, &app.src_args)?;
                 };
                 msg_if_fail(result, "Refresh failed", &mut gui.msg_dialog);
             }
-            ui.checkbox(
-                &mut gui.file_diff_result_window.auto_refresh,
-                "Auto refresh",
-            );
+            ui.checkbox(&mut gui.win.file_diff_result.auto_refresh, "Auto refresh");
             ui.label("Interval");
             ui.add(egui::DragValue::new(
-                &mut gui.file_diff_result_window.auto_refresh_interval_ms,
+                &mut gui.win.file_diff_result.auto_refresh_interval_ms,
             ));
         });
         ui.separator();
@@ -175,111 +168,107 @@ impl FileDiffResultWindow {
                 });
             })
             .body(|body| {
-                body.rows(
-                    20.0,
-                    gui.file_diff_result_window.offsets.len(),
-                    |mut row| {
-                        let offs = gui.file_diff_result_window.offsets[row.index()];
-                        let bm = Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
-                            .map(|(_, bm)| bm);
-                        row.col(|ui| {
-                            let s = match bm {
-                                Some(bm) => bm
-                                    .value_type
-                                    .read(&app.data[offs..])
-                                    .map(|v| v.to_string())
-                                    .unwrap_or("err".into()),
-                                None => app.data[offs].to_string(),
-                            };
-                            ui.label(s);
-                        });
-                        row.col(|ui| {
-                            let s = match bm {
-                                Some(bm) => bm
-                                    .value_type
-                                    .read(&gui.file_diff_result_window.file_data[offs..])
-                                    .map(|v| v.to_string())
-                                    .unwrap_or("err".into()),
-                                None => gui.file_diff_result_window.file_data[offs].to_string(),
-                            };
-                            ui.label(s);
-                        });
-                        row.col(|ui| {
-                            let re = ui.link(offs.to_string());
-                            re.context_menu(|ui| {
-                                if ui.button("Add bookmark").clicked() {
-                                    let idx = app.meta_state.meta.bookmarks.len();
-                                    app.meta_state.meta.bookmarks.push(Bookmark {
-                                        offset: offs,
-                                        label: "New bookmark".into(),
-                                        desc: String::new(),
-                                        value_type: ValueType::None,
-                                    });
-                                    gui.bookmarks_window.open.set(true);
-                                    gui.bookmarks_window.selected = Some(idx);
-                                    ui.close_menu();
-                                }
-                            });
-                            if re.clicked() {
-                                action = Action::Goto(offs);
+                body.rows(20.0, gui.win.file_diff_result.offsets.len(), |mut row| {
+                    let offs = gui.win.file_diff_result.offsets[row.index()];
+                    let bm = Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
+                        .map(|(_, bm)| bm);
+                    row.col(|ui| {
+                        let s = match bm {
+                            Some(bm) => bm
+                                .value_type
+                                .read(&app.data[offs..])
+                                .map(|v| v.to_string())
+                                .unwrap_or("err".into()),
+                            None => app.data[offs].to_string(),
+                        };
+                        ui.label(s);
+                    });
+                    row.col(|ui| {
+                        let s = match bm {
+                            Some(bm) => bm
+                                .value_type
+                                .read(&gui.win.file_diff_result.file_data[offs..])
+                                .map(|v| v.to_string())
+                                .unwrap_or("err".into()),
+                            None => gui.win.file_diff_result.file_data[offs].to_string(),
+                        };
+                        ui.label(s);
+                    });
+                    row.col(|ui| {
+                        let re = ui.link(offs.to_string());
+                        re.context_menu(|ui| {
+                            if ui.button("Add bookmark").clicked() {
+                                let idx = app.meta_state.meta.bookmarks.len();
+                                app.meta_state.meta.bookmarks.push(Bookmark {
+                                    offset: offs,
+                                    label: "New bookmark".into(),
+                                    desc: String::new(),
+                                    value_type: ValueType::None,
+                                });
+                                gui.win.bookmarks.open.set(true);
+                                gui.win.bookmarks.selected = Some(idx);
+                                ui.close_menu();
                             }
                         });
-                        row.col(|ui| {
-                            match find_most_specific_region_for_offset(
-                                &app.meta_state.meta.low.regions,
-                                offs,
-                            ) {
-                                Some(reg_key) => {
-                                    let reg = &app.meta_state.meta.low.regions[reg_key];
-                                    ui.menu_button(&reg.name, |ui| {
-                                        if ui.button("Remove region from results").clicked() {
-                                            action = Action::RemoveRegion(reg_key);
-                                            ui.close_menu();
-                                        }
-                                    })
-                                    .response
-                                    .context_menu(|ui| {
-                                        region_context_menu(
-                                            ui,
-                                            reg,
-                                            reg_key,
-                                            &app.meta_state.meta,
-                                            &mut app.cmd,
-                                            &mut gui.cmd,
-                                        )
-                                    });
-                                }
-                                None => {
-                                    ui.label("[no region]");
-                                }
-                            }
-                        });
-                        row.col(|ui| {
-                            match app
-                                .meta_state
-                                .meta
-                                .bookmarks
-                                .iter()
-                                .enumerate()
-                                .find(|(_i, b)| b.offset == offs)
-                            {
-                                Some((idx, bookmark)) => {
-                                    if ui
-                                        .link(&bookmark.label)
-                                        .on_hover_text(&bookmark.desc)
-                                        .clicked()
-                                    {
-                                        gui.bookmarks_window.open.set(true);
-                                        gui.bookmarks_window.selected = Some(idx);
+                        if re.clicked() {
+                            action = Action::Goto(offs);
+                        }
+                    });
+                    row.col(|ui| {
+                        match find_most_specific_region_for_offset(
+                            &app.meta_state.meta.low.regions,
+                            offs,
+                        ) {
+                            Some(reg_key) => {
+                                let reg = &app.meta_state.meta.low.regions[reg_key];
+                                ui.menu_button(&reg.name, |ui| {
+                                    if ui.button("Remove region from results").clicked() {
+                                        action = Action::RemoveRegion(reg_key);
+                                        ui.close_menu();
                                     }
-                                }
-                                None => {
-                                    ui.label("-");
+                                })
+                                .response
+                                .context_menu(|ui| {
+                                    region_context_menu(
+                                        ui,
+                                        reg,
+                                        reg_key,
+                                        &app.meta_state.meta,
+                                        &mut app.cmd,
+                                        &mut gui.cmd,
+                                    )
+                                });
+                            }
+                            None => {
+                                ui.label("[no region]");
+                            }
+                        }
+                    });
+                    row.col(|ui| {
+                        match app
+                            .meta_state
+                            .meta
+                            .bookmarks
+                            .iter()
+                            .enumerate()
+                            .find(|(_i, b)| b.offset == offs)
+                        {
+                            Some((idx, bookmark)) => {
+                                if ui
+                                    .link(&bookmark.label)
+                                    .on_hover_text(&bookmark.desc)
+                                    .clicked()
+                                {
+                                    gui.win.bookmarks.open.set(true);
+                                    gui.win.bookmarks.selected = Some(idx);
                                 }
                             }
-                        });
-                    },
-                );
+                            None => {
+                                ui.label("-");
+                            }
+                        }
+                    });
+                });
             });
         match action {
             Action::None => {}
@@ -288,7 +277,7 @@ impl FileDiffResultWindow {
                 app.edit_state.set_cursor(off);
                 app.hex_ui.flash_cursor();
             }
-            Action::RemoveRegion(key) => gui.file_diff_result_window.offsets.retain(|&offs| {
+            Action::RemoveRegion(key) => gui.win.file_diff_result.offsets.retain(|&offs| {
                 let reg =
                     find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, offs);
                 reg != Some(key)

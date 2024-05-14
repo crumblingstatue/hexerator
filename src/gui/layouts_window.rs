@@ -18,7 +18,7 @@ pub struct LayoutsWindow {
 }
 impl LayoutsWindow {
     pub(crate) fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
-        let win = &mut gui.layouts_window;
+        let win = &mut gui.win.layouts;
         if win.open.just_now() {
             win.selected = app.hex_ui.current_layout;
         }
@@ -88,8 +88,8 @@ impl LayoutsWindow {
                                     ui.close_menu();
                                 }
                                 if ui.button("👁 View properties").clicked() {
-                                    gui.views_window.open.set(true);
-                                    gui.views_window.selected = *view_key;
+                                    gui.win.views.open.set(true);
+                                    gui.win.views.selected = *view_key;
                                     ui.close_menu();
                                 }
                             });

@@ -37,13 +37,10 @@ impl ScriptManagerWindow {
                         .on_hover_text("This script executes on document load");
                 }
                 if ui
-                    .selectable_label(
-                        gui.script_manager_window.selected == Some(key),
-                        &script.name,
-                    )
+                    .selectable_label(gui.win.script_manager.selected == Some(key), &script.name)
                     .clicked()
                 {
-                    gui.script_manager_window.selected = Some(key);
+                    gui.win.script_manager.selected = Some(key);
                 }
                 if ui.button("⚡ Execute").clicked() {
                     let result = exec_lua(lua, &script.content, app, gui, font, "", Some(key));
@@ -69,7 +66,7 @@ fn selected_script_ui(
     font: &Font,
     scripts: &mut ScriptMap,
 ) {
-    let Some(key) = gui.script_manager_window.selected else {
+    let Some(key) = gui.win.script_manager.selected else {
         return;
     };
     let scr = &mut scripts[key];

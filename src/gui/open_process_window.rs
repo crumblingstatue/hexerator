@@ -124,7 +124,7 @@ impl OpenProcessWindow {
         }: WindowCtxt,
     ) {
         ui.style_mut().wrap = Some(false);
-        let win = &mut gui.open_process_window;
+        let win = &mut gui.win.open_process;
         if let Some(modal) = &mut win.modal {
             let mut close_modal = false;
             ui.horizontal(|ui| match modal {

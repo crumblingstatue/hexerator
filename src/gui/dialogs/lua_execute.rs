@@ -105,7 +105,7 @@ impl Dialog for LuaExecuteDialog {
                             gui.fileops.save_lua_script();
                         }
                         if ui.button("？ Help").clicked() {
-                            gui.lua_help_window.open.toggle()
+                            gui.win.lua_help.open.toggle()
                         }
                     });
                     ui.horizontal(|ui| {

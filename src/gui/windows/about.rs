@@ -41,7 +41,7 @@ macro_rules! optenv {
 impl AboutWindow {
     pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
-        let win = &mut gui.about_window;
+        let win = &mut gui.win.about;
         if win.open.just_now() {
             win.sys.refresh_cpu();
             win.sys.refresh_memory();
@@ -114,7 +114,7 @@ impl AboutWindow {
             msg_if_fail(result, "Failed to open link", &mut gui.msg_dialog);
             ui.separator();
             if ui.button("Close").clicked() {
-                gui.about_window.open.set(false);
+                gui.win.about.open.set(false);
             }
         });
     }

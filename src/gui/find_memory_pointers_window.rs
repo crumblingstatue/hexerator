@@ -28,11 +28,11 @@ impl FindMemoryPointersWindow {
         }: WindowCtxt,
     ) {
         ui.style_mut().wrap = Some(false);
-        let Some(pid) = gui.open_process_window.selected_pid else {
+        let Some(pid) = gui.win.open_process.selected_pid else {
             ui.label("No selected pid.");
             return;
         };
-        let win = &mut gui.find_memory_pointers_window;
+        let win = &mut gui.win.find_memory_pointers;
         if win.open.just_now() {
             for (i, wnd) in app
                 .data
@@ -40,10 +40,10 @@ impl FindMemoryPointersWindow {
                 .enumerate()
             {
                 let ptr = usize::from_le_bytes(*wnd);
-                if let Some(pos) = gui.open_process_window.map_ranges.iter().position(|range| {
+                if let Some(pos) = gui.win.open_process.map_ranges.iter().position(|range| {
                     range.is_read() && range.start() <= ptr && range.start() + range.size() >= ptr
                 }) {
-                    let range = &gui.open_process_window.map_ranges[pos];
+                    let range = &gui.win.open_process.map_ranges[pos];
                     win.pointers.push(PtrEntry {
                         src_idx: i,
                         ptr,
@@ -69,7 +69,7 @@ impl FindMemoryPointersWindow {
                 row.col(|ui| {
                     if ui.button("Region").clicked() {
                         win.pointers.sort_by_key(|p| {
-                            gui.open_process_window.map_ranges[p.range_idx].filename()
+                            gui.win.open_process.map_ranges[p.range_idx].filename()
                         });
                     }
                 });
@@ -104,7 +104,7 @@ impl FindMemoryPointersWindow {
                         }
                     });
                     row.col(|ui| {
-                        let range = &gui.open_process_window.map_ranges[en.range_idx];
+                        let range = &gui.win.open_process.map_ranges[en.range_idx];
                         ui.label(
                             range
                                 .filename()
@@ -115,7 +115,7 @@ impl FindMemoryPointersWindow {
                         );
                     });
                     row.col(|ui| {
-                        let range = &gui.open_process_window.map_ranges[en.range_idx];
+                        let range = &gui.win.open_process.map_ranges[en.range_idx];
                         ui.label(format!(
                             "{}{}",
                             if range.is_write() { "w" } else { "" },
@@ -123,7 +123,7 @@ impl FindMemoryPointersWindow {
                         ));
                     });
                     row.col(|ui| {
-                        let range = &gui.open_process_window.map_ranges[en.range_idx];
+                        let range = &gui.win.open_process.map_ranges[en.range_idx];
                         if ui.link(format!("{:X}", en.ptr)).clicked() {
                             match app.load_proc_memory(
                                 pid,

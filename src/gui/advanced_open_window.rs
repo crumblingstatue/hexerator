@@ -36,7 +36,7 @@ impl AdvancedOpenWindow {
             ui, gui, app, font, ..
         }: WindowCtxt,
     ) {
-        let win = &mut gui.advanced_open_window;
+        let win = &mut gui.win.advanced_open;
         let src_args = &mut win.src_args;
         ui.heading("Source");
         match &src_args.file {

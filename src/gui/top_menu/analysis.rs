@@ -23,7 +23,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         if let Some(path) = app.source_file() {
             let path = path.to_owned();
             msg_if_fail(
-                app.diff_with_file(path, &mut gui.file_diff_result_window),
+                app.diff_with_file(path, &mut gui.win.file_diff_result),
                 "Failed to diff",
                 &mut gui.msg_dialog,
             );
@@ -34,7 +34,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
             if ui.button("Diff with backup").clicked() {
                 ui.close_menu();
                 msg_if_fail(
-                    app.diff_with_file(path, &mut gui.file_diff_result_window),
+                    app.diff_with_file(path, &mut gui.win.file_diff_result),
                     "Failed to diff",
                     &mut gui.msg_dialog,
                 );
@@ -47,12 +47,12 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     ui.separator();
     if ui
         .add_enabled(
-            gui.open_process_window.selected_pid.is_some(),
+            gui.win.open_process.selected_pid.is_some(),
             egui::Button::new("Find memory pointers..."),
         )
         .clicked()
     {
-        gui.find_memory_pointers_window.open.toggle();
+        gui.win.find_memory_pointers.open.toggle();
         ui.close_menu()
     }
 }

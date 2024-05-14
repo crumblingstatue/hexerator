@@ -108,28 +108,28 @@ impl FindDialog {
     pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.horizontal(|ui| {
             egui::ComboBox::new("type_combo", "Data type")
-                .selected_text(<&str>::from(&gui.find_dialog.find_type))
+                .selected_text(<&str>::from(&gui.win.find.find_type))
                 .show_ui(ui, |ui| {
                     for type_ in FindType::iter() {
                         let label = <&str>::from(&type_);
-                        ui.selectable_value(&mut gui.find_dialog.find_type, type_, label);
+                        ui.selectable_value(&mut gui.win.find.find_type, type_, label);
                     }
                 });
-            ui.checkbox(&mut gui.find_dialog.reload_before_search, "Reload")
+            ui.checkbox(&mut gui.win.find.reload_before_search, "Reload")
                 .on_hover_text("Reload source before every search");
-            ui.checkbox(&mut gui.find_dialog.selection_only, "Selection only")
+            ui.checkbox(&mut gui.win.find.selection_only, "Selection only")
                 .on_hover_text("Only search in selection");
         });
-        let re = ui
-            .add(egui::TextEdit::singleline(&mut gui.find_dialog.find_input).hint_text("🔍 Find"));
-        if gui.find_dialog.open.just_now() {
+        let re =
+            ui.add(egui::TextEdit::singleline(&mut gui.win.find.find_input).hint_text("🔍 Find"));
+        if gui.win.find.open.just_now() {
             re.request_focus();
         }
         if re.lost_focus() && ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
-            if gui.find_dialog.reload_before_search {
+            if gui.win.find.reload_before_search {
                 msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
             }
-            let (data, offs) = if gui.find_dialog.selection_only
+            let (data, offs) = if gui.win.find.selection_only
                 && let Some(sel) = app.hex_ui.selection()
             {
                 (&app.data[sel.begin..=sel.end], sel.begin)
@@ -141,31 +141,31 @@ impl FindDialog {
                 "Search failed",
                 &mut gui.msg_dialog,
             );
-            if let Some(&off) = gui.find_dialog.results_vec.first() {
+            if let Some(&off) = gui.win.find.results_vec.first() {
                 app.search_focus(off);
             }
         }
-        if gui.find_dialog.find_type == FindType::Ascii {
+        if gui.win.find.find_type == FindType::Ascii {
             ui.horizontal(|ui| {
                 ui.add(
-                    egui::TextEdit::singleline(&mut gui.find_dialog.replace_input)
+                    egui::TextEdit::singleline(&mut gui.win.find.replace_input)
                         .hint_text("🔁 Replace"),
                 );
                 if ui
                     .add_enabled(
-                        !gui.find_dialog.results_vec.is_empty(),
+                        !gui.win.find.results_vec.is_empty(),
                         egui::Button::new("Replace all"),
                     )
                     .clicked()
                 {
-                    let replace_data = gui.find_dialog.replace_input.as_bytes();
-                    for &offset in &gui.find_dialog.results_vec {
+                    let replace_data = gui.win.find.replace_input.as_bytes();
+                    for &offset in &gui.win.find.results_vec {
                         app.data[offset..offset + replace_data.len()].copy_from_slice(replace_data);
                     }
                 }
             });
         }
-        ui.checkbox(&mut gui.find_dialog.filter_results, "Filter results")
+        ui.checkbox(&mut gui.win.find.filter_results, "Filter results")
             .on_hover_text("Base search on existing results");
         StripBuilder::new(ui)
             .size(Size::initial(400.0))
@@ -195,12 +195,12 @@ impl FindDialog {
                             });
                         })
                         .body(|body| {
-                            body.rows(20.0, gui.find_dialog.results_vec.len(), |mut row| {
+                            body.rows(20.0, gui.win.find.results_vec.len(), |mut row| {
                                 let i = row.index();
-                                let off = gui.find_dialog.results_vec[i];
+                                let off = gui.win.find.results_vec[i];
                                 let (_, col1_re) = row.col(|ui| {
                                     let re = ui.selectable_label(
-                                        gui.find_dialog.result_cursor == i,
+                                        gui.win.find.result_cursor == i,
                                         off.to_string(),
                                     );
                                     re.context_menu(|ui| {
@@ -211,11 +211,11 @@ impl FindDialog {
                                     });
                                     if re.clicked() {
                                         app.search_focus(off);
-                                        gui.find_dialog.result_cursor = i;
+                                        gui.win.find.result_cursor = i;
                                     }
                                 });
                                 row.col(|ui| {
-                                    let damage = match gui.find_dialog.find_type {
+                                    let damage = match gui.win.find.find_type {
                                         FindType::I8 => {
                                             data_value_label::<I8>(ui, &mut app.data, off)
                                         }
@@ -313,8 +313,8 @@ impl FindDialog {
                                             let re = ui.link(&reg.name);
                                             re.context_menu(ctx_menu);
                                             if re.clicked() {
-                                                gui.regions_window.open.set(true);
-                                                gui.regions_window.selected_key = Some(key);
+                                                gui.win.regions.open.set(true);
+                                                gui.win.regions.selected_key = Some(key);
                                             }
                                         }
                                         None => {
@@ -330,8 +330,8 @@ impl FindDialog {
                                         Some((bm_idx, bm)) => {
                                             if ui.link(&bm.label).on_hover_text(&bm.desc).clicked()
                                             {
-                                                gui.bookmarks_window.open.set(true);
-                                                gui.bookmarks_window.selected = Some(bm_idx);
+                                                gui.win.bookmarks.open.set(true);
+                                                gui.win.bookmarks.selected = Some(bm_idx);
                                             }
                                         }
                                         None => {
@@ -346,26 +346,27 @@ impl FindDialog {
                                                     label: "New bookmark".into(),
                                                     desc: String::new(),
                                                     value_type: gui
-                                                        .find_dialog
+                                                        .win
+                                                        .find
                                                         .find_type
                                                         .to_value_type(),
                                                 });
-                                                gui.bookmarks_window.open.set(true);
-                                                gui.bookmarks_window.selected = Some(idx);
-                                                gui.bookmarks_window.edit_name = true;
-                                                gui.bookmarks_window.focus_text_edit = true;
+                                                gui.win.bookmarks.open.set(true);
+                                                gui.win.bookmarks.selected = Some(idx);
+                                                gui.win.bookmarks.edit_name = true;
+                                                gui.win.bookmarks.focus_text_edit = true;
                                             }
                                         }
                                     }
                                 });
-                                if let Some(scroll_off) = gui.find_dialog.scroll_to
+                                if let Some(scroll_off) = gui.win.find.scroll_to
                                     && scroll_off == i
                                 {
                                     // We use center align, because it keeps the selected element in
                                     // view at all times, preventing the issue of it becoming out
                                     // of view, and scroll_to_me not being called because of that.
                                     col1_re.scroll_to_me(Some(Align::Center));
-                                    gui.find_dialog.scroll_to = None;
+                                    gui.win.find.scroll_to = None;
                                 }
                             });
                         });
@@ -373,46 +374,48 @@ impl FindDialog {
                         Action::None => {}
                         Action::RemoveRegionFromResults(key) => {
                             let reg = &app.meta_state.meta.low.regions[key];
-                            gui.find_dialog
+                            gui.win
+                                .find
                                 .results_vec
                                 .retain(|&idx| !reg.region.contains(idx));
                         }
                         Action::RemoveIdxFromResults(idx) => {
-                            gui.find_dialog.results_vec.remove(idx);
+                            gui.win.find.results_vec.remove(idx);
                         }
                     }
                 });
                 strip.cell(|ui| {
                     ui.horizontal(|ui| {
-                        ui.set_enabled(!gui.find_dialog.results_vec.is_empty());
+                        ui.set_enabled(!gui.win.find.results_vec.is_empty());
                         if (ui.button("Previous (P)").clicked()
                             || ui.input(|inp| inp.key_pressed(egui::Key::P)))
-                            && gui.find_dialog.result_cursor > 0
-                            && !gui.find_dialog.results_vec.is_empty()
+                            && gui.win.find.result_cursor > 0
+                            && !gui.win.find.results_vec.is_empty()
                         {
-                            gui.find_dialog.result_cursor -= 1;
-                            let off = gui.find_dialog.results_vec[gui.find_dialog.result_cursor];
+                            gui.win.find.result_cursor -= 1;
+                            let off = gui.win.find.results_vec[gui.win.find.result_cursor];
                             app.search_focus(off);
-                            gui.find_dialog.scroll_to = Some(gui.find_dialog.result_cursor);
+                            gui.win.find.scroll_to = Some(gui.win.find.result_cursor);
                         }
-                        ui.label((gui.find_dialog.result_cursor + 1).to_string());
+                        ui.label((gui.win.find.result_cursor + 1).to_string());
                         if (ui.button("Next (N)").clicked()
                             || ui.input(|inp| inp.key_pressed(egui::Key::N)))
-                            && gui.find_dialog.result_cursor + 1 < gui.find_dialog.results_vec.len()
+                            && gui.win.find.result_cursor + 1 < gui.win.find.results_vec.len()
                         {
-                            gui.find_dialog.result_cursor += 1;
-                            let off = gui.find_dialog.results_vec[gui.find_dialog.result_cursor];
+                            gui.win.find.result_cursor += 1;
+                            let off = gui.win.find.results_vec[gui.win.find.result_cursor];
                             app.search_focus(off);
-                            gui.find_dialog.scroll_to = Some(gui.find_dialog.result_cursor);
+                            gui.win.find.scroll_to = Some(gui.win.find.result_cursor);
                         }
-                        ui.label(format!("{} results", gui.find_dialog.results_vec.len()));
+                        ui.label(format!("{} results", gui.win.find.results_vec.len()));
                     });
                 });
                 strip.cell(|ui| {
                     ui.horizontal(|ui| {
                         if ui.button("Copy offsets").clicked() {
                             let s = gui
-                                .find_dialog
+                                .win
+                                .find
                                 .results_vec
                                 .iter()
                                 .map(ToString::to_string)
@@ -424,28 +427,28 @@ impl FindDialog {
                             let offsets: Result<Vec<usize>, _> =
                                 s.split_ascii_whitespace().map(|s| s.parse()).collect();
                             match offsets {
-                                Ok(offs) => gui.find_dialog.results_vec = offs,
+                                Ok(offs) => gui.win.find.results_vec = offs,
                                 Err(e) => {
                                     msg_fail(&e, "failed to parse offsets", &mut gui.msg_dialog)
                                 }
                             }
                         }
                         if ui.button("🗑 Clear").clicked() {
-                            gui.find_dialog.results_vec.clear();
+                            gui.win.find.results_vec.clear();
                         }
                         // We don't want to highlight results by default, because
                         // it (at the very least) doubles memory usage for find results,
                         // which can be catastrophic for really large searches.
                         if ui.button("💡 Highlight").clicked() {
                             gui.highlight_set.clear();
-                            for &offset in &gui.find_dialog.results_vec {
+                            for &offset in &gui.win.find.results_vec {
                                 gui.highlight_set.insert(offset);
                             }
                         }
                     });
                 });
             });
-        gui.find_dialog.open.post_ui();
+        gui.win.find.open.post_ui();
     }
 }
 
@@ -493,18 +496,13 @@ enum Action {
 fn do_search(data: &[u8], initial_offset: usize, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
     // Reset the result cursor, so it's not out of bounds if new results_vec is smaller
     // TODO: Review everything to use `initial_offset` correctly
-    gui.find_dialog.result_cursor = 0;
-    if !gui.find_dialog.filter_results {
-        gui.find_dialog.results_vec.clear();
+    gui.win.find.result_cursor = 0;
+    if !gui.win.find.filter_results {
+        gui.win.find.results_vec.clear();
     }
-    match gui.find_dialog.find_type {
+    match gui.win.find.find_type {
         FindType::I8 => find_num::<I8>(gui, data)?,
-        FindType::U8 => find_u8(
-            &mut gui.find_dialog,
-            data,
-            initial_offset,
-            &mut gui.msg_dialog,
-        ),
+        FindType::U8 => find_u8(&mut gui.win.find, data, initial_offset, &mut gui.msg_dialog),
         FindType::I16Le => find_num::<I16Le>(gui, data)?,
         FindType::I16Be => find_num::<I16Be>(gui, data)?,
         FindType::U16Le => find_num::<U16Le>(gui, data)?,
@@ -522,32 +520,32 @@ fn do_search(data: &[u8], initial_offset: usize, gui: &mut crate::gui::Gui) -> a
         FindType::F64Le => find_num::<F64Le>(gui, data)?,
         FindType::F64Be => find_num::<F64Be>(gui, data)?,
         FindType::Ascii => {
-            for offset in memchr::memmem::find_iter(data, &gui.find_dialog.find_input) {
-                gui.find_dialog.results_vec.push(initial_offset + offset);
+            for offset in memchr::memmem::find_iter(data, &gui.win.find.find_input) {
+                gui.win.find.results_vec.push(initial_offset + offset);
             }
         }
         FindType::HexString => {
             let fun = |offset| {
-                gui.find_dialog.results_vec.push(initial_offset + offset);
+                gui.win.find.results_vec.push(initial_offset + offset);
             };
-            let result = find_hex_string(&gui.find_dialog.find_input, data, fun);
+            let result = find_hex_string(&gui.win.find.find_input, data, fun);
             msg_if_fail(result, "Hex string search error", &mut gui.msg_dialog);
         }
         FindType::StringDiff => {
-            let diff = ascii_to_diff_pattern(gui.find_dialog.find_input.as_bytes());
+            let diff = ascii_to_diff_pattern(gui.win.find.find_input.as_bytes());
             let mut off = 0;
             while let Some(offset) = find_diff_pattern(&data[off..], &diff) {
                 off += offset;
-                gui.find_dialog.results_vec.push(initial_offset + off);
+                gui.win.find.results_vec.push(initial_offset + off);
                 off += diff.len();
             }
         }
         FindType::EqPattern => {
-            let needle = make_eq_pattern_needle(&gui.find_dialog.find_input);
+            let needle = make_eq_pattern_needle(&gui.win.find.find_input);
             let mut off = 0;
             while let Some(offset) = find_eq_pattern_needle(&needle, &data[off..]) {
                 off += offset;
-                gui.find_dialog.results_vec.push(initial_offset + off);
+                gui.win.find.results_vec.push(initial_offset + off);
                 off += needle.len();
             }
         }
@@ -676,8 +674,8 @@ where
     [(); N::BYTE_LEN]:,
     <<N as EndianedPrimitive>::Primitive as FromStr>::Err: Error + Send + Sync,
 {
-    find_num_raw::<N>(&gui.find_dialog.find_input, data, |offset| {
-        gui.find_dialog.results_vec.push(offset);
+    find_num_raw::<N>(&gui.win.find.find_input, data, |offset| {
+        gui.win.find.results_vec.push(offset);
     })
 }
 

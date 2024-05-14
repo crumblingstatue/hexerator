@@ -138,7 +138,8 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
-    gui.open_process_window
+    gui.win
+        .open_process
         .default_meta_path
         .clone_from(&args.meta);
     transfer_pinned_folders_to_file_dialog(&mut gui, &mut cfg);
@@ -493,7 +494,7 @@ fn handle_events(
                     }
                     if let Some(view_idx) = app.view_idx_at_pos(mp.x, mp.y) {
                         app.hex_ui.focused_view = Some(view_idx);
-                        gui.views_window.selected = view_idx;
+                        gui.win.views.selected = view_idx;
                     }
                 } else if button == mouse::Button::Right {
                     match app.view_at_pos(mp.x, mp.y) {
@@ -859,12 +860,12 @@ fn handle_key_pressed(
         }
         Key::F1 => app.hex_ui.interact_mode = InteractMode::View,
         Key::F2 => app.hex_ui.interact_mode = InteractMode::Edit,
-        Key::F5 => gui.layouts_window.open.toggle(),
-        Key::F6 => gui.views_window.open.toggle(),
-        Key::F7 => gui.perspectives_window.open.toggle(),
-        Key::F8 => gui.regions_window.open.toggle(),
-        Key::F9 => gui.bookmarks_window.open.toggle(),
-        Key::F10 => gui.vars_window.open.toggle(),
+        Key::F5 => gui.win.layouts.open.toggle(),
+        Key::F6 => gui.win.views.open.toggle(),
+        Key::F7 => gui.win.perspectives.open.toggle(),
+        Key::F8 => gui.win.regions.open.toggle(),
+        Key::F9 => gui.win.bookmarks.open.toggle(),
+        Key::F10 => gui.win.vars.open.toggle(),
         Key::Escape => {
             gui.context_menu = None;
             if let Some(view_key) = app.hex_ui.focused_view {
@@ -887,10 +888,10 @@ fn handle_key_pressed(
             app.focused_view_select_all();
         }
         Key::E if key_mod.ctrl => {
-            gui.external_command_window.open.set(true);
+            gui.win.external_command.open.set(true);
         }
         Key::F if key_mod.ctrl => {
-            gui.find_dialog.open.toggle();
+            gui.win.find.open.toggle();
         }
         Key::S if key_mod.ctrl => match &mut app.source {
             Some(source) => {

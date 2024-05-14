@@ -9,21 +9,21 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         .add(Button::new("Regions...").shortcut_text("F8"))
         .clicked()
     {
-        gui.regions_window.open.toggle();
+        gui.win.regions.open.toggle();
         ui.close_menu();
     }
     if ui
         .add(Button::new("Bookmarks...").shortcut_text("F9"))
         .clicked()
     {
-        gui.bookmarks_window.open.toggle();
+        gui.win.bookmarks.open.toggle();
         ui.close_menu();
     }
     if ui
         .add(Button::new("Variables").shortcut_text("F10"))
         .clicked()
     {
-        gui.vars_window.open.toggle();
+        gui.win.vars.open.toggle();
         ui.close_menu();
     }
     ui.separator();
@@ -32,7 +32,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         .on_hover_text("See and manage changes to metafile")
         .clicked()
     {
-        gui.meta_diff_window.open.toggle();
+        gui.win.meta_diff.open.toggle();
         ui.close_menu();
     }
     ui.separator();

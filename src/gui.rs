@@ -82,34 +82,39 @@ type Dialogs = HashMap<TypeId, Box<dyn Dialog>>;
 pub type HighlightSet = HashSet<usize>;
 
 #[derive(Default)]
+pub struct Windows {
+    pub layouts: LayoutsWindow,
+    pub views: ViewsWindow,
+    pub regions: RegionsWindow,
+    pub bookmarks: BookmarksWindow,
+    pub find: FindDialog,
+    pub perspectives: PerspectivesWindow,
+    pub file_diff_result: FileDiffResultWindow,
+    pub open_process: OpenProcessWindow,
+    pub find_memory_pointers: FindMemoryPointersWindow,
+    pub advanced_open: AdvancedOpenWindow,
+    pub external_command: ExternalCommandWindow,
+    pub preferences: PreferencesWindow,
+    pub about: AboutWindow,
+    pub vars: VarsWindow,
+    pub lua_help: LuaHelpWindow,
+    pub lua_console: LuaConsoleWindow,
+    pub lua_watch: Vec<LuaWatchWindow>,
+    pub script_manager: ScriptManagerWindow,
+    pub meta_diff: MetaDiffWindow,
+}
+
+#[derive(Default)]
 pub struct Gui {
     pub inspect_panel: InspectPanel,
-    pub find_dialog: FindDialog,
-    pub regions_window: RegionsWindow,
-    pub bookmarks_window: BookmarksWindow,
     pub dialogs: Dialogs,
-    pub layouts_window: LayoutsWindow,
-    pub views_window: ViewsWindow,
-    pub perspectives_window: PerspectivesWindow,
-    pub file_diff_result_window: FileDiffResultWindow,
     pub context_menu: Option<ContextMenu>,
-    pub meta_diff_window: MetaDiffWindow,
-    pub open_process_window: OpenProcessWindow,
-    pub find_memory_pointers_window: FindMemoryPointersWindow,
-    pub advanced_open_window: AdvancedOpenWindow,
-    pub external_command_window: ExternalCommandWindow,
-    pub preferences_window: PreferencesWindow,
     pub msg_dialog: MessageDialog,
-    pub about_window: AboutWindow,
-    pub vars_window: VarsWindow,
-    pub lua_help_window: LuaHelpWindow,
-    pub lua_console_window: LuaConsoleWindow,
-    pub lua_watch_windows: Vec<LuaWatchWindow>,
-    pub script_manager_window: ScriptManagerWindow,
     /// What to highlight in addition to selection. Can be updated by various actions that want to highlight stuff
     pub highlight_set: HighlightSet,
     pub cmd: GCommandQueue,
     pub fileops: FileOps,
+    pub win: Windows,
 }
 
 pub struct ContextMenu {
@@ -192,36 +197,36 @@ pub fn do_egui(
     macro_rules! windows {
             ($($title:expr, $field:ident, $ty:ty;)*) => {
                 $(
-                    open = gui.$field.open.is();
+                    open = gui.win.$field.open.is();
                     Window::new($title).open(&mut open).show(ctx, |ui| <$ty>::ui(WindowCtxt{ ui, gui, app, rwin, lua, font }));
                     if !open {
-                        gui.$field.open.set(false);
+                        gui.win.$field.open.set(false);
                     }
                 )*
             };
         }
     windows! {
-        "Find",                    find_dialog,                 FindDialog;
-        "Regions",                 regions_window,              RegionsWindow;
-        "Bookmarks",               bookmarks_window,            BookmarksWindow;
-        "Layouts",                 layouts_window,              LayoutsWindow;
-        "Views",                   views_window,                ViewsWindow;
-        "Variables",               vars_window,                 VarsWindow;
-        "Perspectives",            perspectives_window,         PerspectivesWindow;
-        "File Diff results",       file_diff_result_window,     FileDiffResultWindow;
-        "Diff against clean meta", meta_diff_window,            MetaDiffWindow;
-        "Open process",            open_process_window,         OpenProcessWindow;
-        "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow;
-        "Advanced open",           advanced_open_window,        AdvancedOpenWindow;
-        "External command",        external_command_window,     ExternalCommandWindow;
-        "Preferences",             preferences_window,          PreferencesWindow;
-        "Lua help",                lua_help_window,             LuaHelpWindow;
-        "Lua console",             lua_console_window,          LuaConsoleWindow;
-        "Script manager",          script_manager_window,       ScriptManagerWindow;
-        "About Hexerator",         about_window,                AboutWindow;
+        "Find",                    find,                 FindDialog;
+        "Regions",                 regions,              RegionsWindow;
+        "Bookmarks",               bookmarks,            BookmarksWindow;
+        "Layouts",                 layouts,              LayoutsWindow;
+        "Views",                   views,                ViewsWindow;
+        "Variables",               vars,                 VarsWindow;
+        "Perspectives",            perspectives,         PerspectivesWindow;
+        "File Diff results",       file_diff_result,     FileDiffResultWindow;
+        "Diff against clean meta", meta_diff,            MetaDiffWindow;
+        "Open process",            open_process,         OpenProcessWindow;
+        "Find memory pointers",    find_memory_pointers, FindMemoryPointersWindow;
+        "Advanced open",           advanced_open,        AdvancedOpenWindow;
+        "External command",        external_command,     ExternalCommandWindow;
+        "Preferences",             preferences,          PreferencesWindow;
+        "Lua help",                lua_help,             LuaHelpWindow;
+        "Lua console",             lua_console,          LuaConsoleWindow;
+        "Script manager",          script_manager,       ScriptManagerWindow;
+        "About Hexerator",         about,                AboutWindow;
     }
 
-    let mut watch_windows = std::mem::take(&mut gui.lua_watch_windows);
+    let mut watch_windows = std::mem::take(&mut gui.win.lua_watch);
     let mut i = 0;
     watch_windows.retain_mut(|win| {
         let mut retain = true;
@@ -232,7 +237,7 @@ pub fn do_egui(
         i += 1;
         retain
     });
-    std::mem::swap(&mut gui.lua_watch_windows, &mut watch_windows);
+    std::mem::swap(&mut gui.win.lua_watch, &mut watch_windows);
 
     // Context menu
     if let Some(menu) = &gui.context_menu {
@@ -252,7 +257,7 @@ pub fn do_egui(
                                 app,
                                 &mut gui.dialogs,
                                 &mut gui.msg_dialog,
-                                &mut gui.regions_window,
+                                &mut gui.win.regions,
                                 sel,
                                 &mut gui.fileops,
                             ) {
@@ -262,14 +267,13 @@ pub fn do_egui(
                         if let Some(view) = menu.data.view {
                             ui.separator();
                             if ui.button("Region properties...").clicked() {
-                                gui.regions_window.selected_key =
-                                    Some(app.region_key_for_view(view));
-                                gui.regions_window.open.set(true);
+                                gui.win.regions.selected_key = Some(app.region_key_for_view(view));
+                                gui.win.regions.open.set(true);
                                 close = true;
                             }
                             if ui.button("View properties...").clicked() {
-                                gui.views_window.selected = view;
-                                gui.views_window.open.set(true);
+                                gui.win.views.selected = view;
+                                gui.win.views.open.set(true);
                                 close = true;
                             }
                             ui.menu_button("Change this view to", |ui| {
@@ -324,8 +328,8 @@ pub fn do_egui(
                             {
                                 Some(pos) => {
                                     if ui.button("Open bookmark").clicked() {
-                                        gui.bookmarks_window.open.set(true);
-                                        gui.bookmarks_window.selected = Some(pos);
+                                        gui.win.bookmarks.open.set(true);
+                                        gui.win.bookmarks.selected = Some(pos);
                                         close = true;
                                     }
                                 }
@@ -339,10 +343,10 @@ pub fn do_egui(
                                             desc: String::new(),
                                             value_type: ValueType::U8(U8),
                                         });
-                                        gui.bookmarks_window.open.set(true);
-                                        gui.bookmarks_window.selected = Some(idx);
-                                        gui.bookmarks_window.edit_name = true;
-                                        gui.bookmarks_window.focus_text_edit = true;
+                                        gui.win.bookmarks.open.set(true);
+                                        gui.win.bookmarks.selected = Some(idx);
+                                        gui.win.bookmarks.edit_name = true;
+                                        gui.win.bookmarks.focus_text_edit = true;
                                         close = true;
                                     }
                                 }
@@ -350,7 +354,7 @@ pub fn do_egui(
                         }
                         ui.separator();
                         if ui.button("Layout properties...").clicked() {
-                            gui.layouts_window.open.toggle();
+                            gui.win.layouts.open.toggle();
                             close = true;
                         }
                         ui.menu_button("Layouts ->", |ui| {
@@ -424,8 +428,8 @@ pub fn do_egui(
         ctx,
         app,
         &mut gui.msg_dialog,
-        &mut gui.advanced_open_window,
-        &mut gui.file_diff_result_window,
+        &mut gui.win.advanced_open,
+        &mut gui.win.file_diff_result,
         font,
     );
     sf_egui.end_frame(rwin)?;

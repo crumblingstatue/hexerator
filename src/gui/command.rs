@@ -52,7 +52,7 @@ impl Gui {
 
 fn perform_command(gui: &mut Gui, cmd: GCmd) {
     match cmd {
-        GCmd::OpenPerspectiveWindow => gui.perspectives_window.open.set(true),
+        GCmd::OpenPerspectiveWindow => gui.win.perspectives.open.set(true),
         GCmd::SpawnCommand {
             mut args,
             look_for_proc,
@@ -60,14 +60,14 @@ fn perform_command(gui: &mut Gui, cmd: GCmd) {
             let cmd = args.remove(0);
             match Command::new(cmd).args(args).spawn() {
                 Ok(child) => {
-                    gui.open_process_window.open.set(true);
+                    gui.win.open_process.open.set(true);
                     match look_for_proc {
                         Some(procname) => {
-                            gui.open_process_window.sys.refresh_processes();
-                            gui.open_process_window.filters.proc_name = procname;
+                            gui.win.open_process.sys.refresh_processes();
+                            gui.win.open_process.filters.proc_name = procname;
                         }
                         None => {
-                            gui.open_process_window.selected_pid =
+                            gui.win.open_process.selected_pid =
                                 Some(sysinfo::Pid::from_u32(child.id()))
                         }
                     }

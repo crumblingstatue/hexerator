@@ -17,11 +17,11 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         ui.close_menu();
     }
     if ui.button("Advanced open...").clicked() {
-        gui.advanced_open_window.open.toggle();
+        gui.win.advanced_open.open.toggle();
         ui.close_menu();
     }
     if ui.button("Open process...").clicked() {
-        gui.open_process_window.open.toggle();
+        gui.win.open_process.open.toggle();
         ui.close_menu();
     }
     let mut load = None;
@@ -136,7 +136,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     }
     ui.separator();
     if ui.button("Preferences").clicked() {
-        gui.preferences_window.open.toggle();
+        gui.win.preferences.open.toggle();
         ui.close_menu();
     }
     ui.separator();

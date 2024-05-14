@@ -30,28 +30,20 @@ impl VarsWindow {
             ui.label("New");
             ui.horizontal(|ui| {
                 ui.label("Name");
-                ui.text_edit_singleline(&mut gui.vars_window.new_var_name);
+                ui.text_edit_singleline(&mut gui.win.vars.new_var_name);
                 ui.label("Type");
-                let sel_txt = var_val_label(&gui.vars_window.new_val_val);
+                let sel_txt = var_val_label(&gui.win.vars.new_val_val);
                 egui::ComboBox::new("type_select", "Type")
                     .selected_text(sel_txt)
                     .show_ui(ui, |ui| {
-                        ui.selectable_value(
-                            &mut gui.vars_window.new_val_val,
-                            VarVal::U64(0),
-                            "U64",
-                        );
-                        ui.selectable_value(
-                            &mut gui.vars_window.new_val_val,
-                            VarVal::I64(0),
-                            "I64",
-                        );
+                        ui.selectable_value(&mut gui.win.vars.new_val_val, VarVal::U64(0), "U64");
+                        ui.selectable_value(&mut gui.win.vars.new_val_val, VarVal::I64(0), "I64");
                     });
                 if ui.button("Add").clicked() {
                     app.meta_state.meta.vars.insert(
-                        gui.vars_window.new_var_name.take(),
+                        gui.win.vars.new_var_name.take(),
                         VarEntry {
-                            val: gui.vars_window.new_val_val.clone(),
+                            val: gui.win.vars.new_val_val.clone(),
                             desc: String::new(),
                         },
                     );

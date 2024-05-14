@@ -64,33 +64,33 @@ impl LuaConsoleWindow {
     ) {
         ui.horizontal(|ui| {
             if ui
-                .selectable_label(gui.lua_console_window.active_msg_buf.is_none(), "Default")
+                .selectable_label(gui.win.lua_console.active_msg_buf.is_none(), "Default")
                 .clicked()
             {
-                gui.lua_console_window.active_msg_buf = None;
+                gui.win.lua_console.active_msg_buf = None;
             }
-            for k in gui.lua_console_window.msg_bufs.keys() {
+            for k in gui.win.lua_console.msg_bufs.keys() {
                 if ui
                     .selectable_label(
-                        gui.lua_console_window.active_msg_buf == Some(*k),
+                        gui.win.lua_console.active_msg_buf == Some(*k),
                         &app.meta_state.meta.scripts[*k].name,
                     )
                     .clicked()
                 {
-                    gui.lua_console_window.active_msg_buf = Some(*k);
+                    gui.win.lua_console.active_msg_buf = Some(*k);
                 }
             }
         });
         ui.separator();
         ui.horizontal(|ui| {
-            let re = ui.text_edit_singleline(&mut gui.lua_console_window.eval_buf);
+            let re = ui.text_edit_singleline(&mut gui.win.lua_console.eval_buf);
             if ui.button("x").on_hover_text("Clear input").clicked() {
-                gui.lua_console_window.eval_buf.clear();
+                gui.win.lua_console.eval_buf.clear();
             }
             if ui.button("Eval").clicked()
                 || (ui.input(|inp| inp.key_pressed(egui::Key::Enter)) && re.lost_focus())
             {
-                let code = &gui.lua_console_window.eval_buf.clone();
+                let code = &gui.win.lua_console.eval_buf.clone();
                 if let Err(e) = exec_lua(
                     lua,
                     code,
@@ -98,19 +98,20 @@ impl LuaConsoleWindow {
                     gui,
                     font,
                     "",
-                    gui.lua_console_window.active_msg_buf,
+                    gui.win.lua_console.active_msg_buf,
                 ) {
-                    gui.lua_console_window
+                    gui.win
+                        .lua_console
                         .msg_buf()
                         .push(ConMsg::Plain(e.to_string()));
                 }
             }
             if ui.button("Clear log").clicked() {
-                gui.lua_console_window.msg_buf().clear();
+                gui.win.lua_console.msg_buf().clear();
             }
             if ui.button("Copy to clipboard").clicked() {
                 let mut buf = String::new();
-                for msg in gui.lua_console_window.msg_buf() {
+                for msg in gui.win.lua_console.msg_buf() {
                     match msg {
                         ConMsg::Plain(s) => {
                             buf.push_str(s);
@@ -135,7 +136,7 @@ impl LuaConsoleWindow {
         egui::ScrollArea::vertical()
             .auto_shrink([false, true])
             .show(ui, |ui| {
-                for msg in &*gui.lua_console_window.msg_buf() {
+                for msg in &*gui.win.lua_console.msg_buf() {
                     match msg {
                         ConMsg::Plain(text) => {
                             ui.label(text);

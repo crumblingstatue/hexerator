@@ -46,7 +46,7 @@ enum Arg<'src> {
 
 impl ExternalCommandWindow {
     pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
-        let win = &mut gui.external_command_window;
+        let win = &mut gui.win.external_command;
         let re = ui.add(
             egui::TextEdit::multiline(&mut win.cmd_str)
                 .hint_text("Use {} to substitute filename.\nExample: aplay {} -f s16_le"),

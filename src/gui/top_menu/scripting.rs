@@ -10,7 +10,7 @@ use {
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
     if ui.button("🖳 Lua console").clicked() {
-        gui.lua_console_window.open.toggle();
+        gui.win.lua_console.open.toggle();
         ui.close_menu();
     }
     if ui.button("🖹 Execute script...").clicked() {
@@ -18,15 +18,15 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
         ui.close_menu();
     }
     if ui.button("📃 Script manager").clicked() {
-        gui.script_manager_window.open.toggle();
+        gui.win.script_manager.open.toggle();
         ui.close_menu();
     }
     if ui.button("New watch window").clicked() {
-        gui.lua_watch_windows.push(LuaWatchWindow::default());
+        gui.win.lua_watch.push(LuaWatchWindow::default());
         ui.close_menu();
     }
     if ui.button("？ Lua help").clicked() {
-        gui.lua_help_window.open.toggle();
+        gui.win.lua_help.open.toggle();
         ui.close_menu();
     }
     ui.separator();
