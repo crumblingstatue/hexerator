@@ -1,7 +1,7 @@
 use {
     super::{
-        advanced_open_window::AdvancedOpenWindow, file_diff_result_window::FileDiffResultWindow,
-        message_dialog::MessageDialog,
+        file_diff_result_window::FileDiffResultWindow, message_dialog::MessageDialog,
+        windows::AdvancedOpenWindow,
     },
     crate::{
         app::App,

@@ -1,5 +1,6 @@
 pub use {
     about::AboutWindow,
+    advanced_open::AdvancedOpenWindow,
     lua_console::{ConMsg, LuaConsoleWindow},
     lua_help::LuaHelpWindow,
     lua_watch::LuaWatchWindow,
@@ -8,6 +9,7 @@ pub use {
 };
 
 mod about;
+mod advanced_open;
 mod lua_console;
 mod lua_help;
 mod lua_watch;

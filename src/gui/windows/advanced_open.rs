@@ -1,6 +1,9 @@
 use {
-    super::{window_open::WindowOpen, WindowCtxt},
-    crate::{args::SourceArgs, shell::msg_if_fail},
+    crate::{
+        args::SourceArgs,
+        gui::{window_open::WindowOpen, WindowCtxt},
+        shell::msg_if_fail,
+    },
     std::path::PathBuf,
 };
 

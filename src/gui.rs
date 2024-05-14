@@ -1,7 +1,6 @@
 pub use self::windows::ConMsg;
 use {
     self::{
-        advanced_open_window::AdvancedOpenWindow,
         bookmarks_window::BookmarksWindow,
         command::GCommandQueue,
         external_command_window::ExternalCommandWindow,
@@ -19,7 +18,8 @@ use {
         regions_window::RegionsWindow,
         views_window::ViewsWindow,
         windows::{
-            LuaConsoleWindow, LuaHelpWindow, LuaWatchWindow, ScriptManagerWindow, VarsWindow,
+            AdvancedOpenWindow, LuaConsoleWindow, LuaHelpWindow, LuaWatchWindow,
+            ScriptManagerWindow, VarsWindow,
         },
     },
     crate::{
@@ -50,7 +50,6 @@ use {
     },
 };
 
-mod advanced_open_window;
 mod bookmarks_window;
 mod bottom_panel;
 pub mod command;
