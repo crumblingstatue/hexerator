@@ -3,7 +3,6 @@ use {
         message_dialog::{Icon, MessageDialog},
         regions_window::region_context_menu,
         window_open::WindowOpen,
-        HighlightSet,
     },
     crate::{
         app::{get_clipboard_string, set_clipboard_string, App},
@@ -376,11 +375,9 @@ impl FindDialog {
                             gui.find_dialog
                                 .results_vec
                                 .retain(|&idx| !reg.region.contains(idx));
-                            gui.highlight_set.retain(|&idx| !reg.region.contains(idx));
                         }
                         Action::RemoveIdxFromResults(idx) => {
                             gui.find_dialog.results_vec.remove(idx);
-                            gui.highlight_set.remove(&idx);
                         }
                     }
                 });
@@ -432,8 +429,17 @@ impl FindDialog {
                                 }
                             }
                         }
-                        if ui.button("Clear").clicked() {
+                        if ui.button("🗑 Clear").clicked() {
                             gui.find_dialog.results_vec.clear();
+                        }
+                        // We don't want to highlight results by default, because
+                        // it (at the very least) doubles memory usage for find results,
+                        // which can be catastrophic for really large searches.
+                        if ui.button("💡 Highlight").clicked() {
+                            gui.highlight_set.clear();
+                            for &offset in &gui.find_dialog.results_vec {
+                                gui.highlight_set.insert(offset);
+                            }
                         }
                     });
                 });
@@ -489,7 +495,6 @@ fn do_search(data: &[u8], initial_offset: usize, gui: &mut crate::gui::Gui) -> a
     gui.find_dialog.result_cursor = 0;
     if !gui.find_dialog.filter_results {
         gui.find_dialog.results_vec.clear();
-        gui.highlight_set.clear();
     }
     match gui.find_dialog.find_type {
         FindType::I8 => find_num::<I8>(gui, data)?,
@@ -498,7 +503,6 @@ fn do_search(data: &[u8], initial_offset: usize, gui: &mut crate::gui::Gui) -> a
             data,
             initial_offset,
             &mut gui.msg_dialog,
-            &mut gui.highlight_set,
         ),
         FindType::I16Le => find_num::<I16Le>(gui, data)?,
         FindType::I16Be => find_num::<I16Be>(gui, data)?,
@@ -519,13 +523,11 @@ fn do_search(data: &[u8], initial_offset: usize, gui: &mut crate::gui::Gui) -> a
         FindType::Ascii => {
             for offset in memchr::memmem::find_iter(data, &gui.find_dialog.find_input) {
                 gui.find_dialog.results_vec.push(initial_offset + offset);
-                gui.highlight_set.insert(initial_offset + offset);
             }
         }
         FindType::HexString => {
             let fun = |offset| {
                 gui.find_dialog.results_vec.push(initial_offset + offset);
-                gui.highlight_set.insert(initial_offset + offset);
             };
             let result = find_hex_string(&gui.find_dialog.find_input, data, fun);
             msg_if_fail(result, "Hex string search error", &mut gui.msg_dialog);
@@ -536,7 +538,6 @@ fn do_search(data: &[u8], initial_offset: usize, gui: &mut crate::gui::Gui) -> a
             while let Some(offset) = find_diff_pattern(&data[off..], &diff) {
                 off += offset;
                 gui.find_dialog.results_vec.push(initial_offset + off);
-                gui.highlight_set.insert(initial_offset + off);
                 off += diff.len();
             }
         }
@@ -546,7 +547,6 @@ fn do_search(data: &[u8], initial_offset: usize, gui: &mut crate::gui::Gui) -> a
             while let Some(offset) = find_eq_pattern_needle(&needle, &data[off..]) {
                 off += offset;
                 gui.find_dialog.results_vec.push(initial_offset + off);
-                gui.highlight_set.insert(initial_offset + off);
                 off += needle.len();
             }
         }
@@ -677,7 +677,6 @@ where
 {
     find_num_raw::<N>(&gui.find_dialog.find_input, data, |offset| {
         gui.find_dialog.results_vec.push(offset);
-        gui.highlight_set.insert(offset);
     })
 }
 
@@ -698,30 +697,21 @@ where
     Ok(())
 }
 
-fn find_u8(
-    dia: &mut FindDialog,
-    data: &[u8],
-    initial_offset: usize,
-    msg: &mut MessageDialog,
-    highlight: &mut HighlightSet,
-) {
+fn find_u8(dia: &mut FindDialog, data: &[u8], initial_offset: usize, msg: &mut MessageDialog) {
     // TODO: This is probably a minefield for initial_offset shenanigans.
     // Need to review carefully
     match dia.find_input.as_str() {
         "?" => {
             dia.data_snapshot = data.to_vec();
             dia.results_vec.clear();
-            highlight.clear();
             for i in 0..data.len() {
                 dia.results_vec.push(initial_offset + i);
-                highlight.insert(initial_offset + i);
             }
         }
         ">" => {
             if dia.filter_results {
                 dia.results_vec
                     .retain(|&offset| data[offset] > dia.data_snapshot[offset]);
-                highlight.retain(|&offset| data[offset] > dia.data_snapshot[offset]);
             } else {
                 for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new > old {
@@ -735,7 +725,6 @@ fn find_u8(
             if dia.filter_results {
                 dia.results_vec
                     .retain(|&offset| data[offset] == dia.data_snapshot[offset]);
-                highlight.retain(|&offset| data[offset] == dia.data_snapshot[offset]);
             } else {
                 for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new == old {
@@ -749,7 +738,6 @@ fn find_u8(
             if dia.filter_results {
                 dia.results_vec
                     .retain(|&offset| data[offset] != dia.data_snapshot[offset]);
-                highlight.retain(|&offset| data[offset] != dia.data_snapshot[offset]);
             } else {
                 for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new == old {
@@ -763,7 +751,6 @@ fn find_u8(
             if dia.filter_results {
                 dia.results_vec
                     .retain(|&offset| data[offset] < dia.data_snapshot[offset]);
-                highlight.retain(|&offset| data[offset] < dia.data_snapshot[offset]);
             } else {
                 for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new < old {
@@ -778,13 +765,11 @@ fn find_u8(
                 if dia.filter_results {
                     let results_vec_clone = dia.results_vec.clone();
                     dia.results_vec.clear();
-                    highlight.clear();
                     u8_search(
                         dia,
                         results_vec_clone.iter().map(|&off| (off, data[off])),
                         initial_offset,
                         needle,
-                        highlight,
                     );
                 } else {
                     u8_search(
@@ -792,7 +777,6 @@ fn find_u8(
                         data.iter().cloned().enumerate(),
                         initial_offset,
                         needle,
-                        highlight,
                     );
                 }
             }
@@ -806,12 +790,10 @@ fn u8_search(
     haystack: impl Iterator<Item = (usize, u8)>,
     initial_offset: usize,
     needle: u8,
-    highlight: &mut HighlightSet,
 ) {
     for (offset, byte) in haystack {
         if byte == needle {
             dialog.results_vec.push(initial_offset + offset);
-            highlight.insert(initial_offset + offset);
         }
     }
 }
