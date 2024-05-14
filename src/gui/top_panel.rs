@@ -2,6 +2,7 @@ use {
     super::{dialogs::LuaColorDialog, message_dialog::Icon, top_menu::top_menu, Gui},
     crate::{
         app::App,
+        util::human_size,
         value_color::{ColorMethod, Palette},
     },
     anyhow::Context,
@@ -34,7 +35,8 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
                 "{rows} rows * {} cols + {rem} = {}",
                 app.meta_state.meta.low.perspectives[view.perspective].cols,
                 sel.len()
-            ));
+            ))
+            .on_hover_text(human_size(sel.len()));
         }
         if !gui.highlight_set.is_empty() {
             ui.label(format!("{} bytes highlighted", gui.highlight_set.len()));
