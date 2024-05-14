@@ -1,10 +1,10 @@
 use {
+    super::WindowCtxt,
     crate::{
         app::command::{Cmd, CommandQueue},
         gui::{
             command::{GCmd, GCommandQueue},
             window_open::WindowOpen,
-            WindowCtxt,
         },
         meta::{Meta, NamedRegion, RegionKey},
     },

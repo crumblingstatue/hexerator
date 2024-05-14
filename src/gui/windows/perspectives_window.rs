@@ -1,7 +1,8 @@
 use {
+    super::WindowCtxt,
     crate::{
         app::command::Cmd,
-        gui::{window_open::WindowOpen, windows::regions_window::region_context_menu, WindowCtxt},
+        gui::{window_open::WindowOpen, windows::regions_window::region_context_menu},
         meta::PerspectiveKey,
     },
     egui_extras::{Column, TableBuilder},

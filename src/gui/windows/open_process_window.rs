@@ -1,6 +1,7 @@
 use {
+    super::WindowCtxt,
     crate::{
-        gui::{message_dialog::MessageDialog, window_open::WindowOpen, WindowCtxt},
+        gui::{message_dialog::MessageDialog, window_open::WindowOpen},
         shell::{msg_fail, msg_if_fail},
         util::human_size,
     },

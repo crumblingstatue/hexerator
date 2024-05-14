@@ -1,7 +1,8 @@
 use {
+    super::WindowCtxt,
     crate::{
         app::App,
-        gui::{window_open::WindowOpen, WindowCtxt},
+        gui::window_open::WindowOpen,
         layout::{default_margin, Layout},
         meta::{LayoutKey, MetaLow, NamedView, ViewKey, ViewMap},
         view::{HexData, View, ViewKind},

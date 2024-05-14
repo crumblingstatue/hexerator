@@ -1,4 +1,5 @@
 use {
+    super::WindowCtxt,
     crate::{
         app::{get_clipboard_string, set_clipboard_string},
         damage_region::DamageRegion,
@@ -6,7 +7,6 @@ use {
             message_dialog::{Icon, MessageDialog},
             window_open::WindowOpen,
             windows::region_context_menu,
-            WindowCtxt,
         },
         meta::{
             find_most_specific_region_for_offset,

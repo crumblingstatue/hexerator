@@ -1,9 +1,7 @@
 use {
+    super::WindowCtxt,
     crate::{
-        gui::{window_open::WindowOpen, WindowCtxt},
-        meta::ScriptKey,
-        scripting::exec_lua,
-        shell::msg_if_fail,
+        gui::window_open::WindowOpen, meta::ScriptKey, scripting::exec_lua, shell::msg_if_fail,
     },
     std::collections::HashMap,
 };

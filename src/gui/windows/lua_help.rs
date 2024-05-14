@@ -1,8 +1,6 @@
 use {
-    crate::{
-        gui::{window_open::WindowOpen, WindowCtxt},
-        scripting::*,
-    },
+    super::WindowCtxt,
+    crate::{gui::window_open::WindowOpen, scripting::*},
     egui::Color32,
 };
 

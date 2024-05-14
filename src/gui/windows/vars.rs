@@ -1,6 +1,7 @@
 use {
+    super::WindowCtxt,
     crate::{
-        gui::{window_open::WindowOpen, WindowCtxt},
+        gui::window_open::WindowOpen,
         meta::{VarEntry, VarVal},
     },
     egui::TextBuffer,

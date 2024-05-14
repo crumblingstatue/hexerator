@@ -105,15 +105,6 @@ impl Gui {
     }
 }
 
-pub struct WindowCtxt<'a> {
-    ui: &'a mut egui::Ui,
-    gui: &'a mut crate::gui::Gui,
-    app: &'a mut crate::app::App,
-    rwin: &'a mut RenderWindow,
-    lua: &'a mlua::Lua,
-    font: &'a Font,
-}
-
 #[must_use = "Returns false if application should quit"]
 pub fn do_egui(
     sf_egui: &mut SfEgui,
@@ -138,40 +129,7 @@ pub fn do_egui(
     }
     gui.msg_dialog.show(ctx, &mut app.clipboard, &mut app.cmd);
     app.flush_command_queue(gui, lua, font);
-    macro_rules! windows {
-            ($($title:expr, $field:ident;)*) => {
-                $(
-                    let mut win = std::mem::take(&mut gui.win.$field);
-                    open = win.open.is();
-                    Window::new($title).open(&mut open).show(ctx, |ui| win.ui(WindowCtxt{ ui, gui, app, rwin, lua, font }));
-                    if !open {
-                        win.open.set(false);
-                    }
-                    std::mem::swap(&mut gui.win.$field, &mut win);
-                )*
-            };
-        }
-    windows! {
-        "Find",                    find;
-        "Regions",                 regions;
-        "Bookmarks",               bookmarks;
-        "Layouts",                 layouts;
-        "Views",                   views;
-        "Variables",               vars;
-        "Perspectives",            perspectives;
-        "File Diff results",       file_diff_result;
-        "Diff against clean meta", meta_diff;
-        "Open process",            open_process;
-        "Find memory pointers",    find_memory_pointers;
-        "Advanced open",           advanced_open;
-        "External command",        external_command;
-        "Preferences",             preferences;
-        "Lua help",                lua_help;
-        "Lua console",             lua_console;
-        "Script manager",          script_manager;
-        "About Hexerator",         about;
-    }
-
+    self::Windows::update(ctx, gui, app, rwin, lua, font);
     let mut watch_windows = std::mem::take(&mut gui.win.lua_watch);
     let mut i = 0;
     watch_windows.retain_mut(|win| {

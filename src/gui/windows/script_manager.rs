@@ -1,7 +1,8 @@
 use {
+    super::WindowCtxt,
     crate::{
         app::App,
-        gui::{window_open::WindowOpen, Gui, WindowCtxt},
+        gui::{window_open::WindowOpen, Gui},
         meta::{ScriptKey, ScriptMap},
         scripting::exec_lua,
         shell::msg_if_fail,

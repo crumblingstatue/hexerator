@@ -9,12 +9,17 @@ pub use self::{
     script_manager::ScriptManagerWindow,
     vars::VarsWindow,
 };
-use self::{
-    bookmarks_window::BookmarksWindow, external_command_window::ExternalCommandWindow,
-    find_dialog::FindDialog, find_memory_pointers_window::FindMemoryPointersWindow,
-    layouts_window::LayoutsWindow, meta_diff_window::MetaDiffWindow,
-    open_process_window::OpenProcessWindow, perspectives_window::PerspectivesWindow,
-    preferences_window::PreferencesWindow, views_window::ViewsWindow,
+use {
+    self::{
+        bookmarks_window::BookmarksWindow, external_command_window::ExternalCommandWindow,
+        find_dialog::FindDialog, find_memory_pointers_window::FindMemoryPointersWindow,
+        layouts_window::LayoutsWindow, meta_diff_window::MetaDiffWindow,
+        open_process_window::OpenProcessWindow, perspectives_window::PerspectivesWindow,
+        preferences_window::PreferencesWindow, views_window::ViewsWindow,
+    },
+    super::Gui,
+    crate::app::App,
+    egui_sfml::sfml::graphics::{Font, RenderWindow},
 };
 
 mod about;
@@ -59,4 +64,59 @@ pub struct Windows {
     pub lua_watch: Vec<LuaWatchWindow>,
     pub script_manager: ScriptManagerWindow,
     pub meta_diff: MetaDiffWindow,
+}
+
+pub struct WindowCtxt<'a> {
+    ui: &'a mut egui::Ui,
+    gui: &'a mut crate::gui::Gui,
+    app: &'a mut crate::app::App,
+    rwin: &'a mut RenderWindow,
+    lua: &'a mlua::Lua,
+    font: &'a Font,
+}
+
+impl Windows {
+    pub(crate) fn update(
+        ctx: &egui::Context,
+        gui: &mut Gui,
+        app: &mut App,
+        rwin: &mut RenderWindow,
+        lua: &mlua::Lua,
+        font: &Font,
+    ) {
+        let mut open;
+        macro_rules! windows {
+            ($($title:expr, $field:ident;)*) => {
+                $(
+                    let mut win = std::mem::take(&mut gui.win.$field);
+                    open = win.open.is();
+                    egui::Window::new($title).open(&mut open).show(ctx, |ui| win.ui(WindowCtxt{ ui, gui, app, rwin, lua, font }));
+                    if !open {
+                        win.open.set(false);
+                    }
+                    std::mem::swap(&mut gui.win.$field, &mut win);
+                )*
+            };
+        }
+        windows! {
+            "Find",                    find;
+            "Regions",                 regions;
+            "Bookmarks",               bookmarks;
+            "Layouts",                 layouts;
+            "Views",                   views;
+            "Variables",               vars;
+            "Perspectives",            perspectives;
+            "File Diff results",       file_diff_result;
+            "Diff against clean meta", meta_diff;
+            "Open process",            open_process;
+            "Find memory pointers",    find_memory_pointers;
+            "Advanced open",           advanced_open;
+            "External command",        external_command;
+            "Preferences",             preferences;
+            "Lua help",                lua_help;
+            "Lua console",             lua_console;
+            "Script manager",          script_manager;
+            "About Hexerator",         about;
+        }
+    }
 }
