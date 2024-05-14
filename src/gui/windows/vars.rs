@@ -1,7 +1,6 @@
 use {
     crate::{
-        app::App,
-        gui::{window_open::WindowOpen, Gui},
+        gui::{window_open::WindowOpen, WindowCtxt},
         meta::{VarEntry, VarVal},
     },
     egui::TextBuffer,
@@ -25,7 +24,7 @@ impl Default for VarsWindow {
 }
 
 impl VarsWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
+    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         ui.group(|ui| {
             ui.label("New");

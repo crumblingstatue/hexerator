@@ -1,13 +1,10 @@
 use {
     crate::{
-        app::App,
-        gui::{window_open::WindowOpen, Gui},
+        gui::{window_open::WindowOpen, WindowCtxt},
         meta::ScriptKey,
         scripting::exec_lua,
         shell::msg_if_fail,
     },
-    egui_sfml::sfml::graphics::Font,
-    mlua::Lua,
     std::collections::HashMap,
 };
 
@@ -55,7 +52,16 @@ pub enum ConMsg {
 }
 
 impl LuaConsoleWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
+    pub fn ui(
+        WindowCtxt {
+            ui,
+            gui,
+            app,
+            lua,
+            font,
+            ..
+        }: WindowCtxt,
+    ) {
         ui.horizontal(|ui| {
             if ui
                 .selectable_label(gui.lua_console_window.active_msg_buf.is_none(), "Default")

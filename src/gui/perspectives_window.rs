@@ -1,5 +1,5 @@
 use {
-    super::{regions_window::region_context_menu, window_open::WindowOpen},
+    super::{regions_window::region_context_menu, window_open::WindowOpen, WindowCtxt},
     crate::{app::command::Cmd, meta::PerspectiveKey},
     egui_extras::{Column, TableBuilder},
     slotmap::Key,
@@ -11,7 +11,7 @@ pub struct PerspectivesWindow {
     pub rename_idx: PerspectiveKey,
 }
 impl PerspectivesWindow {
-    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut crate::app::App) {
+    pub(crate) fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         TableBuilder::new(ui)
             .columns(Column::auto(), 3)

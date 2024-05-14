@@ -156,6 +156,15 @@ impl Gui {
     }
 }
 
+pub struct WindowCtxt<'a> {
+    ui: &'a mut egui::Ui,
+    gui: &'a mut crate::gui::Gui,
+    app: &'a mut crate::app::App,
+    rwin: &'a mut RenderWindow,
+    lua: &'a mlua::Lua,
+    font: &'a Font,
+}
+
 #[must_use = "Returns false if application should quit"]
 pub fn do_egui(
     sf_egui: &mut SfEgui,
@@ -181,10 +190,10 @@ pub fn do_egui(
     gui.msg_dialog.show(ctx, &mut app.clipboard, &mut app.cmd);
     app.flush_command_queue(gui, lua, font);
     macro_rules! windows {
-            ($($title:expr, $field:ident, $ty:ty: $($arg:ident)*;)*) => {
+            ($($title:expr, $field:ident, $ty:ty;)*) => {
                 $(
                     open = gui.$field.open.is();
-                    Window::new($title).open(&mut open).show(ctx, |ui| <$ty>::ui(ui, $($arg,)*));
+                    Window::new($title).open(&mut open).show(ctx, |ui| <$ty>::ui(WindowCtxt{ ui, gui, app, rwin, lua, font }));
                     if !open {
                         gui.$field.open.set(false);
                     }
@@ -192,24 +201,24 @@ pub fn do_egui(
             };
         }
     windows! {
-        "Find",                    find_dialog,                 FindDialog: gui app;
-        "Regions",                 regions_window,              RegionsWindow: gui app;
-        "Bookmarks",               bookmarks_window,            BookmarksWindow: gui app;
-        "Layouts",                 layouts_window,              LayoutsWindow: gui app;
-        "Views",                   views_window,                ViewsWindow: gui app font;
-        "Variables",               vars_window,                 VarsWindow: gui app;
-        "Perspectives",            perspectives_window,         PerspectivesWindow: gui app;
-        "File Diff results",       file_diff_result_window,     FileDiffResultWindow: gui app font;
-        "Diff against clean meta", meta_diff_window,            MetaDiffWindow: app;
-        "Open process",            open_process_window,         OpenProcessWindow: gui app font;
-        "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow: gui app font;
-        "Advanced open",           advanced_open_window,        AdvancedOpenWindow: gui app font;
-        "External command",        external_command_window,     ExternalCommandWindow: gui app;
-        "Preferences",             preferences_window,          PreferencesWindow: gui app rwin;
-        "Lua help",                lua_help_window,             LuaHelpWindow: gui app;
-        "Lua console",             lua_console_window,          LuaConsoleWindow: gui app lua font;
-        "Script manager",          script_manager_window,       ScriptManagerWindow: gui app lua font;
-        "About Hexerator",         about_window,                AboutWindow: gui app;
+        "Find",                    find_dialog,                 FindDialog;
+        "Regions",                 regions_window,              RegionsWindow;
+        "Bookmarks",               bookmarks_window,            BookmarksWindow;
+        "Layouts",                 layouts_window,              LayoutsWindow;
+        "Views",                   views_window,                ViewsWindow;
+        "Variables",               vars_window,                 VarsWindow;
+        "Perspectives",            perspectives_window,         PerspectivesWindow;
+        "File Diff results",       file_diff_result_window,     FileDiffResultWindow;
+        "Diff against clean meta", meta_diff_window,            MetaDiffWindow;
+        "Open process",            open_process_window,         OpenProcessWindow;
+        "Find memory pointers",    find_memory_pointers_window, FindMemoryPointersWindow;
+        "Advanced open",           advanced_open_window,        AdvancedOpenWindow;
+        "External command",        external_command_window,     ExternalCommandWindow;
+        "Preferences",             preferences_window,          PreferencesWindow;
+        "Lua help",                lua_help_window,             LuaHelpWindow;
+        "Lua console",             lua_console_window,          LuaConsoleWindow;
+        "Script manager",          script_manager_window,       ScriptManagerWindow;
+        "About Hexerator",         about_window,                AboutWindow;
     }
 
     let mut watch_windows = std::mem::take(&mut gui.lua_watch_windows);

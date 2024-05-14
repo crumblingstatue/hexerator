@@ -1,5 +1,5 @@
 use {
-    super::regions_window::region_context_menu,
+    super::{regions_window::region_context_menu, WindowCtxt},
     crate::{
         app::read_source_to_buf,
         gui::window_open::WindowOpen,
@@ -7,10 +7,8 @@ use {
             find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta, RegionKey,
         },
         shell::msg_if_fail,
-        Gui,
     },
     egui_extras::Column,
-    egui_sfml::sfml::graphics::Font,
     std::{path::PathBuf, time::Instant},
 };
 
@@ -38,7 +36,11 @@ impl Default for FileDiffResultWindow {
     }
 }
 impl FileDiffResultWindow {
-    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut crate::app::App, font: &Font) {
+    pub(crate) fn ui(
+        WindowCtxt {
+            ui, gui, app, font, ..
+        }: WindowCtxt,
+    ) {
         if gui.file_diff_result_window.offsets.is_empty() {
             ui.label("No difference");
             return;

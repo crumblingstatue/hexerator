@@ -1,5 +1,5 @@
 use {
-    super::window_open::WindowOpen,
+    super::{window_open::WindowOpen, WindowCtxt},
     crate::{
         layout::Layout,
         meta::{
@@ -17,7 +17,7 @@ pub struct MetaDiffWindow {
     pub open: WindowOpen,
 }
 impl MetaDiffWindow {
-    pub(crate) fn ui(ui: &mut egui::Ui, app: &mut crate::app::App) {
+    pub(crate) fn ui(WindowCtxt { ui, app, .. }: WindowCtxt) {
         let this = &mut app.meta_state.meta;
         let clean = &app.meta_state.clean_meta;
         ui.heading("Regions");

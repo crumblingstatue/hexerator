@@ -1,7 +1,6 @@
 use {
     crate::{
-        app::App,
-        gui::{window_open::WindowOpen, Gui},
+        gui::{window_open::WindowOpen, WindowCtxt},
         shell::msg_if_fail,
     },
     egui_extras::{Column, TableBuilder},
@@ -40,7 +39,7 @@ macro_rules! optenv {
 }
 
 impl AboutWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
+    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         let win = &mut gui.about_window;
         if win.open.just_now() {

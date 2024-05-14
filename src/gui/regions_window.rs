@@ -2,15 +2,12 @@ use {
     super::{
         command::{GCmd, GCommandQueue},
         window_open::WindowOpen,
+        WindowCtxt,
     },
     crate::{
-        app::{
-            command::{Cmd, CommandQueue},
-            App,
-        },
+        app::command::{Cmd, CommandQueue},
         meta::{Meta, NamedRegion, RegionKey},
     },
-    egui::Ui,
     egui_extras::{Column, TableBuilder},
 };
 
@@ -63,7 +60,7 @@ pub fn region_context_menu(
 }
 
 impl RegionsWindow {
-    pub fn ui(ui: &mut Ui, gui: &mut crate::gui::Gui, app: &mut App) {
+    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         let button = egui::Button::new("Add selection as region");
         match app.hex_ui.selection() {

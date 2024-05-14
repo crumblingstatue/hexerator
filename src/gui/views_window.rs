@@ -1,5 +1,5 @@
 use {
-    super::{regions_window::region_context_menu, window_open::WindowOpen},
+    super::{regions_window::region_context_menu, window_open::WindowOpen, WindowCtxt},
     crate::{
         app::{command::Cmd, App},
         meta::ViewKey,
@@ -38,10 +38,9 @@ pub const MAX_FONT_SIZE: u16 = 256;
 
 impl ViewsWindow {
     pub(crate) fn ui(
-        ui: &mut egui::Ui,
-        gui: &mut crate::gui::Gui,
-        app: &mut crate::app::App,
-        font: &Font,
+        WindowCtxt {
+            ui, gui, app, font, ..
+        }: WindowCtxt,
     ) {
         ui.style_mut().wrap = Some(false);
         if gui.views_window.open.just_now() &&

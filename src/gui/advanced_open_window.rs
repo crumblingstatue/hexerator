@@ -1,7 +1,6 @@
 use {
-    super::{window_open::WindowOpen, Gui},
-    crate::{app::App, args::SourceArgs, shell::msg_if_fail},
-    egui_sfml::sfml::graphics::Font,
+    super::{window_open::WindowOpen, WindowCtxt},
+    crate::{args::SourceArgs, shell::msg_if_fail},
     std::path::PathBuf,
 };
 
@@ -32,7 +31,11 @@ fn opt<V: Default>(
 }
 
 impl AdvancedOpenWindow {
-    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
+    pub(crate) fn ui(
+        WindowCtxt {
+            ui, gui, app, font, ..
+        }: WindowCtxt,
+    ) {
         let win = &mut gui.advanced_open_window;
         let src_args = &mut win.src_args;
         ui.heading("Source");

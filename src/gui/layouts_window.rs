@@ -1,5 +1,5 @@
 use {
-    super::window_open::WindowOpen,
+    super::{window_open::WindowOpen, WindowCtxt},
     crate::{
         app::App,
         layout::{default_margin, Layout},
@@ -17,7 +17,7 @@ pub struct LayoutsWindow {
     edit_name: bool,
 }
 impl LayoutsWindow {
-    pub(crate) fn ui(ui: &mut egui::Ui, gui: &mut crate::gui::Gui, app: &mut crate::app::App) {
+    pub(crate) fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         let win = &mut gui.layouts_window;
         if win.open.just_now() {
             win.selected = app.hex_ui.current_layout;

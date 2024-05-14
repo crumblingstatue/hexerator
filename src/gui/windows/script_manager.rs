@@ -1,7 +1,7 @@
 use {
     crate::{
         app::App,
-        gui::{window_open::WindowOpen, Gui},
+        gui::{window_open::WindowOpen, Gui, WindowCtxt},
         meta::{ScriptKey, ScriptMap},
         scripting::exec_lua,
         shell::msg_if_fail,
@@ -18,7 +18,16 @@ pub struct ScriptManagerWindow {
 }
 
 impl ScriptManagerWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
+    pub fn ui(
+        WindowCtxt {
+            ui,
+            gui,
+            app,
+            rwin: _,
+            lua,
+            font,
+        }: WindowCtxt,
+    ) {
         let mut scripts = std::mem::take(&mut app.meta_state.meta.scripts);
         scripts.retain(|key, script| {
             let mut retain = true;

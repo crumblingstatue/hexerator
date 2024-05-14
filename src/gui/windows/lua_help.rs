@@ -1,7 +1,6 @@
 use {
     crate::{
-        app::App,
-        gui::{window_open::WindowOpen, Gui},
+        gui::{window_open::WindowOpen, WindowCtxt},
         scripting::*,
     },
     egui::Color32,
@@ -14,7 +13,7 @@ pub struct LuaHelpWindow {
 }
 
 impl LuaHelpWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, _app: &mut App) {
+    pub fn ui(WindowCtxt { ui, gui, .. }: WindowCtxt) {
         ui.add(egui::TextEdit::singleline(&mut gui.lua_help_window.filter).hint_text("🔍 Filter"));
         egui::ScrollArea::vertical()
             .max_height(500.0)

@@ -1,8 +1,7 @@
 use {
-    super::{window_open::WindowOpen, Gui},
-    crate::{app::App, shell::msg_fail},
+    super::{window_open::WindowOpen, WindowCtxt},
+    crate::shell::msg_fail,
     egui_extras::{Column, TableBuilder},
-    egui_sfml::sfml::graphics::Font,
 };
 
 #[derive(Default)]
@@ -23,7 +22,11 @@ struct PtrEntry {
 }
 
 impl FindMemoryPointersWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
+    pub fn ui(
+        WindowCtxt {
+            ui, gui, app, font, ..
+        }: WindowCtxt,
+    ) {
         ui.style_mut().wrap = Some(false);
         let Some(pid) = gui.open_process_window.selected_pid else {
             ui.label("No selected pid.");

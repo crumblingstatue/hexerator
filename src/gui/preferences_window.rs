@@ -2,7 +2,7 @@ use {
     super::{
         message_dialog::{Icon, MessageDialog},
         window_open::WindowOpen,
-        Gui,
+        WindowCtxt,
     },
     crate::{
         app::App,
@@ -40,7 +40,11 @@ impl Tab {
 }
 
 impl PreferencesWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, rwin: &mut RenderWindow) {
+    pub fn ui(
+        WindowCtxt {
+            ui, gui, app, rwin, ..
+        }: WindowCtxt,
+    ) {
         if gui.preferences_window.open.just_now() {
             gui.preferences_window.font_defs.families = app.cfg.font_families.clone();
             gui.preferences_window

@@ -1,10 +1,10 @@
 use {
     super::{
         message_dialog::MessageDialog, regions_window::region_context_menu,
-        window_open::WindowOpen, Gui,
+        window_open::WindowOpen, WindowCtxt,
     },
     crate::{
-        app::{edit_state::EditState, set_clipboard_string, App},
+        app::{edit_state::EditState, set_clipboard_string},
         damage_region::DamageRegion,
         meta::{
             find_most_specific_region_for_offset,
@@ -35,7 +35,7 @@ pub struct BookmarksWindow {
 }
 
 impl BookmarksWindow {
-    pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App) {
+    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         let win = &mut gui.bookmarks_window;
         ui.horizontal(|ui| {

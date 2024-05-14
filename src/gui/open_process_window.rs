@@ -1,12 +1,11 @@
 use {
-    super::{message_dialog::MessageDialog, window_open::WindowOpen},
+    super::{message_dialog::MessageDialog, window_open::WindowOpen, WindowCtxt},
     crate::{
         shell::{msg_fail, msg_if_fail},
         util::human_size,
     },
     egui_extras::{Column, TableBuilder},
     egui_file_dialog::FileDialog,
-    egui_sfml::sfml::graphics::Font,
     proc_maps::MapRange,
     smart_default::SmartDefault,
     std::{path::PathBuf, process::Command},
@@ -120,10 +119,9 @@ struct RunCommand {
 
 impl OpenProcessWindow {
     pub(crate) fn ui(
-        ui: &mut egui::Ui,
-        gui: &mut crate::gui::Gui,
-        app: &mut crate::app::App,
-        font: &Font,
+        WindowCtxt {
+            ui, gui, app, font, ..
+        }: WindowCtxt,
     ) {
         ui.style_mut().wrap = Some(false);
         let win = &mut gui.open_process_window;

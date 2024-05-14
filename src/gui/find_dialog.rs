@@ -3,9 +3,10 @@ use {
         message_dialog::{Icon, MessageDialog},
         regions_window::region_context_menu,
         window_open::WindowOpen,
+        WindowCtxt,
     },
     crate::{
-        app::{get_clipboard_string, set_clipboard_string, App},
+        app::{get_clipboard_string, set_clipboard_string},
         damage_region::DamageRegion,
         meta::{
             find_most_specific_region_for_offset,
@@ -104,7 +105,7 @@ pub struct FindDialog {
 }
 
 impl FindDialog {
-    pub fn ui(ui: &mut Ui, gui: &mut crate::gui::Gui, app: &mut App) {
+    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.horizontal(|ui| {
             egui::ComboBox::new("type_combo", "Data type")
                 .selected_text(<&str>::from(&gui.find_dialog.find_type))

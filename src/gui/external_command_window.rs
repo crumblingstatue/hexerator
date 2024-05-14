@@ -1,6 +1,6 @@
 use {
-    super::{window_open::WindowOpen, Gui},
-    crate::{app::App, shell::msg_if_fail},
+    super::{window_open::WindowOpen, WindowCtxt},
+    crate::shell::msg_if_fail,
     anyhow::Context,
     std::{
         ffi::OsString,
@@ -45,7 +45,7 @@ enum Arg<'src> {
 }
 
 impl ExternalCommandWindow {
-    pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
+    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         let win = &mut gui.external_command_window;
         let re = ui.add(
             egui::TextEdit::multiline(&mut win.cmd_str)
