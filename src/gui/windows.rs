@@ -1,21 +1,18 @@
 pub use self::{
-    about::AboutWindow,
     advanced_open::AdvancedOpenWindow,
     file_diff_result_window::FileDiffResultWindow,
     lua_console::{ConMsg, LuaConsoleWindow},
-    lua_help::LuaHelpWindow,
-    lua_watch::LuaWatchWindow,
     regions_window::{region_context_menu, RegionsWindow},
-    script_manager::ScriptManagerWindow,
-    vars::VarsWindow,
 };
 use {
     self::{
-        bookmarks_window::BookmarksWindow, external_command_window::ExternalCommandWindow,
-        find_dialog::FindDialog, find_memory_pointers_window::FindMemoryPointersWindow,
-        layouts_window::LayoutsWindow, meta_diff_window::MetaDiffWindow,
+        about::AboutWindow, bookmarks_window::BookmarksWindow,
+        external_command_window::ExternalCommandWindow, find_dialog::FindDialog,
+        find_memory_pointers_window::FindMemoryPointersWindow, layouts_window::LayoutsWindow,
+        lua_help::LuaHelpWindow, lua_watch::LuaWatchWindow, meta_diff_window::MetaDiffWindow,
         open_process_window::OpenProcessWindow, perspectives_window::PerspectivesWindow,
-        preferences_window::PreferencesWindow, views_window::ViewsWindow,
+        preferences_window::PreferencesWindow, script_manager::ScriptManagerWindow,
+        vars::VarsWindow, views_window::ViewsWindow,
     },
     super::Gui,
     crate::app::App,
@@ -145,5 +142,8 @@ impl Windows {
             retain
         });
         std::mem::swap(&mut gui.win.lua_watch, &mut watch_windows);
+    }
+    pub fn add_lua_watch_window(&mut self) {
+        self.lua_watch.push(LuaWatchWindow::default())
     }
 }

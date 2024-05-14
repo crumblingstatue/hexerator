@@ -1,7 +1,7 @@
 use {
     crate::{
         app::App,
-        gui::{dialogs::LuaExecuteDialog, windows::LuaWatchWindow, Gui},
+        gui::{dialogs::LuaExecuteDialog, Gui},
         shell::msg_if_fail,
     },
     egui_sfml::sfml::graphics::Font,
@@ -22,7 +22,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
         ui.close_menu();
     }
     if ui.button("New watch window").clicked() {
-        gui.win.lua_watch.push(LuaWatchWindow::default());
+        gui.win.add_lua_watch_window();
         ui.close_menu();
     }
     if ui.button("？ Lua help").clicked() {
