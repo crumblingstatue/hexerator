@@ -115,6 +115,10 @@ impl super::Window for AboutWindow {
             }
         });
     }
+
+    fn title(&self) -> &str {
+        "About Hexerator"
+    }
 }
 
 fn info_table(ui: &mut egui::Ui, info: &[InfoPair]) {

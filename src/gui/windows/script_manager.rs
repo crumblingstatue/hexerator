@@ -58,6 +58,10 @@ impl super::Window for ScriptManagerWindow {
         self.selected_script_ui(ui, gui, app, lua, font, &mut scripts);
         std::mem::swap(&mut app.meta_state.meta.scripts, &mut scripts);
     }
+
+    fn title(&self) -> &str {
+        "Script manager"
+    }
 }
 
 impl ScriptManagerWindow {

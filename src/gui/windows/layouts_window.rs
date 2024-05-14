@@ -178,6 +178,10 @@ impl super::Window for LayoutsWindow {
         }
         self.open.post_ui();
     }
+
+    fn title(&self) -> &str {
+        "Layouts"
+    }
 }
 
 fn add_new_view_menu(ui: &mut egui::Ui, low: &MetaLow, views: &mut ViewMap) -> Option<ViewKey> {

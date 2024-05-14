@@ -152,6 +152,10 @@ impl super::Window for FindMemoryPointersWindow {
         }
         self.open.post_ui();
     }
+
+    fn title(&self) -> &str {
+        "Find memory pointers"
+    }
 }
 
 enum Action {

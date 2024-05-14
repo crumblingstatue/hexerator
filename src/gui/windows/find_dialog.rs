@@ -444,6 +444,10 @@ impl super::Window for FindDialog {
             });
         self.open.post_ui();
     }
+
+    fn title(&self) -> &str {
+        "Find"
+    }
 }
 
 trait SliceExt<T> {

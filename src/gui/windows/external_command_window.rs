@@ -156,6 +156,10 @@ impl super::Window for ExternalCommandWindow {
         }
         self.open.post_ui();
     }
+
+    fn title(&self) -> &str {
+        "External command"
+    }
 }
 
 fn resolve_args<'src>(

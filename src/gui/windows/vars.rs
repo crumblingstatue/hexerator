@@ -24,8 +24,8 @@ impl Default for VarsWindow {
     }
 }
 
-impl VarsWindow {
-    pub fn ui(&mut self, WindowCtxt { ui, app, .. }: WindowCtxt) {
+impl super::Window for VarsWindow {
+    fn ui(&mut self, WindowCtxt { ui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         ui.group(|ui| {
             ui.label("New");
@@ -89,6 +89,10 @@ impl VarsWindow {
                     });
                 }
             });
+    }
+
+    fn title(&self) -> &str {
+        "Variables"
     }
 }
 

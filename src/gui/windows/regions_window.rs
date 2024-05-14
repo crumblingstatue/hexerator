@@ -241,6 +241,10 @@ impl super::Window for RegionsWindow {
                 }
             });
     }
+
+    fn title(&self) -> &str {
+        "Regions"
+    }
 }
 
 enum Action {

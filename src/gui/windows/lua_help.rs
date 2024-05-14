@@ -43,4 +43,8 @@ impl super::Window for LuaHelpWindow {
                 for_each_method!(add_help);
             });
     }
+
+    fn title(&self) -> &str {
+        "Lua help"
+    }
 }

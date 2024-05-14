@@ -273,6 +273,10 @@ impl super::Window for FileDiffResultWindow {
             }),
         }
     }
+
+    fn title(&self) -> &str {
+        "File Diff results"
+    }
 }
 
 enum Action {

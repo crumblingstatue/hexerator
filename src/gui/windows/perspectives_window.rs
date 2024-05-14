@@ -128,4 +128,8 @@ impl super::Window for PerspectivesWindow {
             }
         });
     }
+
+    fn title(&self) -> &str {
+        "Perspectives"
+    }
 }

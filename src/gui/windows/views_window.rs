@@ -37,8 +37,8 @@ impl ViewKind {
 pub const MIN_FONT_SIZE: u16 = 5;
 pub const MAX_FONT_SIZE: u16 = 256;
 
-impl ViewsWindow {
-    pub(crate) fn ui(
+impl super::Window for ViewsWindow {
+    fn ui(
         &mut self,
         WindowCtxt {
             ui, gui, app, font, ..
@@ -270,6 +270,10 @@ impl ViewsWindow {
             app.hex_ui.focused_view = None;
         }
         self.open.post_ui();
+    }
+
+    fn title(&self) -> &str {
+        "Views"
     }
 }
 

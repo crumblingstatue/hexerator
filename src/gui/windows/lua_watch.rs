@@ -46,4 +46,8 @@ impl super::Window for LuaWatchWindow {
             }
         }
     }
+
+    fn title(&self) -> &str {
+        &self.name
+    }
 }

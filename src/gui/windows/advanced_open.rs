@@ -119,4 +119,8 @@ impl super::Window for AdvancedOpenWindow {
             self.open.set(false);
         }
     }
+
+    fn title(&self) -> &str {
+        "Advanced open"
+    }
 }

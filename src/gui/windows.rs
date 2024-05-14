@@ -77,6 +77,7 @@ pub struct WindowCtxt<'a> {
 
 trait Window {
     fn ui(&mut self, ctx: WindowCtxt);
+    fn title(&self) -> &str;
 }
 
 impl Windows {
@@ -90,11 +91,11 @@ impl Windows {
     ) {
         let mut open;
         macro_rules! windows {
-            ($($title:expr, $field:ident;)*) => {
+            ($($field:ident,)*) => {
                 $(
                     let mut win = std::mem::take(&mut gui.win.$field);
                     open = win.open.is();
-                    egui::Window::new($title).open(&mut open).show(ctx, |ui| win.ui(WindowCtxt{ ui, gui, app, rwin, lua, font }));
+                    egui::Window::new(win.title()).open(&mut open).show(ctx, |ui| win.ui(WindowCtxt{ ui, gui, app, rwin, lua, font }));
                     if !open {
                         win.open.set(false);
                     }
@@ -102,26 +103,26 @@ impl Windows {
                 )*
             };
         }
-        windows! {
-            "Find",                    find;
-            "Regions",                 regions;
-            "Bookmarks",               bookmarks;
-            "Layouts",                 layouts;
-            "Views",                   views;
-            "Variables",               vars;
-            "Perspectives",            perspectives;
-            "File Diff results",       file_diff_result;
-            "Diff against clean meta", meta_diff;
-            "Open process",            open_process;
-            "Find memory pointers",    find_memory_pointers;
-            "Advanced open",           advanced_open;
-            "External command",        external_command;
-            "Preferences",             preferences;
-            "Lua help",                lua_help;
-            "Lua console",             lua_console;
-            "Script manager",          script_manager;
-            "About Hexerator",         about;
-        }
+        windows!(
+            find,
+            regions,
+            bookmarks,
+            layouts,
+            views,
+            vars,
+            perspectives,
+            file_diff_result,
+            meta_diff,
+            open_process,
+            find_memory_pointers,
+            advanced_open,
+            external_command,
+            preferences,
+            lua_help,
+            lua_console,
+            script_manager,
+            about,
+        );
 
         let mut watch_windows = std::mem::take(&mut gui.win.lua_watch);
         let mut i = 0;

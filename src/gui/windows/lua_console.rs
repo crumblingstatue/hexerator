@@ -145,4 +145,8 @@ impl super::Window for LuaConsoleWindow {
                 }
             });
     }
+
+    fn title(&self) -> &str {
+        "Lua console"
+    }
 }

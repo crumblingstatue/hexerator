@@ -347,6 +347,10 @@ impl super::Window for BookmarksWindow {
             }
         }
     }
+
+    fn title(&self) -> &str {
+        "Bookmarks"
+    }
 }
 
 fn value_ui(

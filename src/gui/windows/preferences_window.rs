@@ -77,6 +77,10 @@ impl super::Window for PreferencesWindow {
         }
         self.open.post_ui();
     }
+
+    fn title(&self) -> &str {
+        "Preferences"
+    }
 }
 
 fn video_ui(ui: &mut egui::Ui, app: &mut App, rwin: &mut RenderWindow) {

@@ -30,6 +30,10 @@ impl super::Window for MetaDiffWindow {
         ui.heading("Layouts");
         diff_slotmap(ui, &mut this.layouts, &clean.layouts);
     }
+
+    fn title(&self) -> &str {
+        "Diff against clean meta"
+    }
 }
 
 trait SlotmapDiffItem: PartialEq + Eq + Clone + Debug {
