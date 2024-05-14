@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         app::{command::Cmd, App},
         gui::{window_open::WindowOpen, windows::regions_window::region_context_menu},
@@ -40,9 +40,9 @@ pub const MAX_FONT_SIZE: u16 = 256;
 impl super::Window for ViewsWindow {
     fn ui(
         &mut self,
-        WindowCtxt {
+        WinCtx {
             ui, gui, app, font, ..
-        }: WindowCtxt,
+        }: WinCtx,
     ) {
         ui.style_mut().wrap = Some(false);
         if self.open.just_now() &&

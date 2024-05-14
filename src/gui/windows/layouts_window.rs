@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         app::App,
         gui::window_open::WindowOpen,
@@ -18,7 +18,7 @@ pub struct LayoutsWindow {
     edit_name: bool,
 }
 impl super::Window for LayoutsWindow {
-    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         if self.open.just_now() {
             self.selected = app.hex_ui.current_layout;
         }

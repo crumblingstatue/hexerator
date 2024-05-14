@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         app::App,
         config::{self, Config},
@@ -42,9 +42,9 @@ impl Tab {
 impl super::Window for PreferencesWindow {
     fn ui(
         &mut self,
-        WindowCtxt {
+        WinCtx {
             ui, gui, app, rwin, ..
-        }: WindowCtxt,
+        }: WinCtx,
     ) {
         if self.open.just_now() {
             self.font_defs.families = app.cfg.font_families.clone();

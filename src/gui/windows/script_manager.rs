@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         app::App,
         gui::{window_open::WindowOpen, Gui},
@@ -21,14 +21,14 @@ pub struct ScriptManagerWindow {
 impl super::Window for ScriptManagerWindow {
     fn ui(
         &mut self,
-        WindowCtxt {
+        WinCtx {
             ui,
             gui,
             app,
             rwin: _,
             lua,
             font,
-        }: WindowCtxt,
+        }: WinCtx,
     ) {
         let mut scripts = std::mem::take(&mut app.meta_state.meta.scripts);
         scripts.retain(|key, script| {

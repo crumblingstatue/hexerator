@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{gui::window_open::WindowOpen, shell::msg_if_fail},
     egui_extras::{Column, TableBuilder},
     std::fmt::Write,
@@ -37,7 +37,7 @@ macro_rules! optenv {
 }
 
 impl super::Window for AboutWindow {
-    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         ui.style_mut().wrap = Some(false);
         if self.open.just_now() {
             self.sys.refresh_cpu();

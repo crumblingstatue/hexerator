@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{gui::window_open::WindowOpen, shell::msg_if_fail},
     anyhow::Context,
     std::{
@@ -45,7 +45,7 @@ enum Arg<'src> {
 }
 
 impl super::Window for ExternalCommandWindow {
-    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         let re = ui.add(
             egui::TextEdit::multiline(&mut self.cmd_str)
                 .hint_text("Use {} to substitute filename.\nExample: aplay {} -f s16_le"),

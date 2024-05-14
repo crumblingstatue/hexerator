@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         app::{get_clipboard_string, set_clipboard_string},
         damage_region::DamageRegion,
@@ -105,7 +105,7 @@ pub struct FindDialog {
 }
 
 impl super::Window for FindDialog {
-    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         ui.horizontal(|ui| {
             egui::ComboBox::new("type_combo", "Data type")
                 .selected_text(<&str>::from(&self.find_type))

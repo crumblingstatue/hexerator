@@ -63,7 +63,7 @@ pub struct Windows {
     pub meta_diff: MetaDiffWindow,
 }
 
-pub struct WindowCtxt<'a> {
+pub struct WinCtx<'a> {
     ui: &'a mut egui::Ui,
     gui: &'a mut crate::gui::Gui,
     app: &'a mut crate::app::App,
@@ -73,7 +73,7 @@ pub struct WindowCtxt<'a> {
 }
 
 trait Window {
-    fn ui(&mut self, ctx: WindowCtxt);
+    fn ui(&mut self, ctx: WinCtx);
     fn title(&self) -> &str;
 }
 
@@ -92,7 +92,7 @@ impl Windows {
                 $(
                     let mut win = std::mem::take(&mut gui.win.$field);
                     open = win.open.is();
-                    egui::Window::new(win.title()).open(&mut open).show(ctx, |ui| win.ui(WindowCtxt{ ui, gui, app, rwin, lua, font }));
+                    egui::Window::new(win.title()).open(&mut open).show(ctx, |ui| win.ui(WinCtx{ ui, gui, app, rwin, lua, font }));
                     if !open {
                         win.open.set(false);
                     }
@@ -129,7 +129,7 @@ impl Windows {
                 .id(egui::Id::new("watch_w").with(i))
                 .open(&mut retain)
                 .show(ctx, |ui| {
-                    win.ui(WindowCtxt {
+                    win.ui(WinCtx {
                         ui,
                         gui,
                         app,

@@ -1,4 +1,4 @@
-use {super::WindowCtxt, crate::scripting::exec_lua};
+use {super::WinCtx, crate::scripting::exec_lua};
 
 pub struct LuaWatchWindow {
     pub name: String,
@@ -19,14 +19,14 @@ impl Default for LuaWatchWindow {
 impl super::Window for LuaWatchWindow {
     fn ui(
         &mut self,
-        WindowCtxt {
+        WinCtx {
             ui,
             gui,
             app,
             lua,
             font,
             ..
-        }: WindowCtxt,
+        }: WinCtx,
     ) {
         ui.text_edit_singleline(&mut self.name);
         ui.text_edit_singleline(&mut self.expr);

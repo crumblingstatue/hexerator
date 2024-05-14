@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{args::SourceArgs, gui::window_open::WindowOpen, shell::msg_if_fail},
     std::path::PathBuf,
 };
@@ -33,9 +33,9 @@ fn opt<V: Default>(
 impl super::Window for AdvancedOpenWindow {
     fn ui(
         &mut self,
-        WindowCtxt {
+        WinCtx {
             ui, gui, app, font, ..
-        }: WindowCtxt,
+        }: WinCtx,
     ) {
         let src_args = &mut self.src_args;
         ui.heading("Source");

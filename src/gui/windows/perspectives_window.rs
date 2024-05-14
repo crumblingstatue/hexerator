@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         app::command::Cmd,
         gui::{window_open::WindowOpen, windows::regions_window::region_context_menu},
@@ -15,7 +15,7 @@ pub struct PerspectivesWindow {
     pub rename_idx: PerspectiveKey,
 }
 impl super::Window for PerspectivesWindow {
-    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         ui.style_mut().wrap = Some(false);
         TableBuilder::new(ui)
             .columns(Column::auto(), 3)

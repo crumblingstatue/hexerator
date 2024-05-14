@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         app::read_source_to_buf,
         gui::{window_open::WindowOpen, windows::regions_window::region_context_menu},
@@ -38,9 +38,9 @@ impl Default for FileDiffResultWindow {
 impl super::Window for FileDiffResultWindow {
     fn ui(
         &mut self,
-        WindowCtxt {
+        WinCtx {
             ui, gui, app, font, ..
-        }: WindowCtxt,
+        }: WinCtx,
     ) {
         if self.offsets.is_empty() {
             ui.label("No difference");

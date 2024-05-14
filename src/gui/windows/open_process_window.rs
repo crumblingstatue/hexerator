@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         gui::{message_dialog::MessageDialog, window_open::WindowOpen},
         shell::{msg_fail, msg_if_fail},
@@ -121,9 +121,9 @@ struct RunCommand {
 impl super::Window for OpenProcessWindow {
     fn ui(
         &mut self,
-        WindowCtxt {
+        WinCtx {
             ui, gui, app, font, ..
-        }: WindowCtxt,
+        }: WinCtx,
     ) {
         ui.style_mut().wrap = Some(false);
         if let Some(modal) = &mut self.modal {

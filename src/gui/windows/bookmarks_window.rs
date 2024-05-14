@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         app::{edit_state::EditState, set_clipboard_string},
         damage_region::DamageRegion,
@@ -36,7 +36,7 @@ pub struct BookmarksWindow {
 }
 
 impl super::Window for BookmarksWindow {
-    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         ui.style_mut().wrap = Some(false);
         ui.horizontal(|ui| {
             ui.add(

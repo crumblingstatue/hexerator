@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{gui::window_open::WindowOpen, scripting::*},
     egui::Color32,
 };
@@ -11,7 +11,7 @@ pub struct LuaHelpWindow {
 }
 
 impl super::Window for LuaHelpWindow {
-    fn ui(&mut self, WindowCtxt { ui, .. }: WindowCtxt) {
+    fn ui(&mut self, WinCtx { ui, .. }: WinCtx) {
         ui.add(egui::TextEdit::singleline(&mut self.filter).hint_text("🔍 Filter"));
         egui::ScrollArea::vertical()
             .max_height(500.0)

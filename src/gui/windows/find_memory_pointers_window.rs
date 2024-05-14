@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{gui::window_open::WindowOpen, shell::msg_fail},
     egui_extras::{Column, TableBuilder},
 };
@@ -24,9 +24,9 @@ struct PtrEntry {
 impl super::Window for FindMemoryPointersWindow {
     fn ui(
         &mut self,
-        WindowCtxt {
+        WinCtx {
             ui, gui, app, font, ..
-        }: WindowCtxt,
+        }: WinCtx,
     ) {
         ui.style_mut().wrap = Some(false);
         let Some(pid) = gui.win.open_process.selected_pid else {

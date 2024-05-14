@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         app::command::{Cmd, CommandQueue},
         gui::{
@@ -60,7 +60,7 @@ pub fn region_context_menu(
 }
 
 impl super::Window for RegionsWindow {
-    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         ui.style_mut().wrap = Some(false);
         let button = egui::Button::new("Add selection as region");
         match app.hex_ui.selection() {

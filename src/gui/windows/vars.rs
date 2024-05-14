@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         gui::window_open::WindowOpen,
         meta::{VarEntry, VarVal},
@@ -25,7 +25,7 @@ impl Default for VarsWindow {
 }
 
 impl super::Window for VarsWindow {
-    fn ui(&mut self, WindowCtxt { ui, app, .. }: WindowCtxt) {
+    fn ui(&mut self, WinCtx { ui, app, .. }: WinCtx) {
         ui.style_mut().wrap = Some(false);
         ui.group(|ui| {
             ui.label("New");

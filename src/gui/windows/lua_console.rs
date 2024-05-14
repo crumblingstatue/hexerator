@@ -1,5 +1,5 @@
 use {
-    super::WindowCtxt,
+    super::WinCtx,
     crate::{
         gui::window_open::WindowOpen, meta::ScriptKey, scripting::exec_lua, shell::msg_if_fail,
     },
@@ -52,14 +52,14 @@ pub enum ConMsg {
 impl super::Window for LuaConsoleWindow {
     fn ui(
         &mut self,
-        WindowCtxt {
+        WinCtx {
             ui,
             gui,
             app,
             lua,
             font,
             ..
-        }: WindowCtxt,
+        }: WinCtx,
     ) {
         ui.horizontal(|ui| {
             if ui
