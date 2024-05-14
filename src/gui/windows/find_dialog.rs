@@ -707,8 +707,9 @@ fn find_u8(dia: &mut FindDialog, data: &[u8], initial_offset: usize, msg: &mut M
         }
         ">" => {
             if dia.filter_results {
-                dia.results_vec
-                    .retain(|&offset| data[offset] > dia.data_snapshot[offset]);
+                dia.results_vec.retain(|&offset| {
+                    data[offset - initial_offset] > dia.data_snapshot[offset - initial_offset]
+                });
             } else {
                 for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new > old {
@@ -720,8 +721,9 @@ fn find_u8(dia: &mut FindDialog, data: &[u8], initial_offset: usize, msg: &mut M
         }
         "=" => {
             if dia.filter_results {
-                dia.results_vec
-                    .retain(|&offset| data[offset] == dia.data_snapshot[offset]);
+                dia.results_vec.retain(|&offset| {
+                    data[offset - initial_offset] == dia.data_snapshot[offset - initial_offset]
+                });
             } else {
                 for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new == old {
@@ -733,8 +735,9 @@ fn find_u8(dia: &mut FindDialog, data: &[u8], initial_offset: usize, msg: &mut M
         }
         "!=" => {
             if dia.filter_results {
-                dia.results_vec
-                    .retain(|&offset| data[offset] != dia.data_snapshot[offset]);
+                dia.results_vec.retain(|&offset| {
+                    data[offset - initial_offset] != dia.data_snapshot[offset - initial_offset]
+                });
             } else {
                 for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new == old {
@@ -746,8 +749,9 @@ fn find_u8(dia: &mut FindDialog, data: &[u8], initial_offset: usize, msg: &mut M
         }
         "<" => {
             if dia.filter_results {
-                dia.results_vec
-                    .retain(|&offset| data[offset] < dia.data_snapshot[offset]);
+                dia.results_vec.retain(|&offset| {
+                    data[offset - initial_offset] < dia.data_snapshot[offset - initial_offset]
+                });
             } else {
                 for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
                     if new < old {
