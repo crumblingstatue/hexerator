@@ -98,7 +98,7 @@ impl WindowOpen {
     }
 }
 
-pub struct WinCtx<'a> {
+struct WinCtx<'a> {
     ui: &'a mut egui::Ui,
     gui: &'a mut crate::gui::Gui,
     app: &'a mut crate::app::App,
