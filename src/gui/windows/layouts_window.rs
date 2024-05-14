@@ -175,7 +175,6 @@ impl super::Window for LayoutsWindow {
             self.selected = key;
             App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, key);
         }
-        self.open.post_ui();
     }
 
     fn title(&self) -> &str {

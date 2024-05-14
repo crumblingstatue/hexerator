@@ -269,7 +269,6 @@ impl super::Window for ViewsWindow {
             app.meta_state.meta.remove_view(rem_key);
             app.hex_ui.focused_view = None;
         }
-        self.open.post_ui();
     }
 
     fn title(&self) -> &str {

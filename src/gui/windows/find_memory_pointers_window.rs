@@ -150,7 +150,6 @@ impl super::Window for FindMemoryPointersWindow {
             }
             Action::None => {}
         }
-        self.open.post_ui();
     }
 
     fn title(&self) -> &str {

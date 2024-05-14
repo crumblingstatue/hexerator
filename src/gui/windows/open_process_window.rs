@@ -636,7 +636,6 @@ impl super::Window for OpenProcessWindow {
                     });
                 });
         }
-        self.open.post_ui();
     }
 
     fn title(&self) -> &str {

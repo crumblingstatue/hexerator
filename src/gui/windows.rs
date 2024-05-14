@@ -92,10 +92,6 @@ impl WindowOpen {
     fn just_now(&self) -> bool {
         self.just_opened
     }
-    /// Call this at the end of your ui, where you won't query just_opened anymore
-    fn post_ui(&mut self) {
-        self.just_opened = false;
-    }
 }
 
 struct WinCtx<'a> {
@@ -128,6 +124,7 @@ impl Windows {
                     let mut win = std::mem::take(&mut gui.win.$field);
                     open = win.open.is();
                     egui::Window::new(win.title()).open(&mut open).show(ctx, |ui| win.ui(WinCtx{ ui, gui, app, rwin, lua, font }));
+                    win.open.just_opened = false;
                     if !open {
                         win.open.set(false);
                     }

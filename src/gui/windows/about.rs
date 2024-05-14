@@ -95,7 +95,6 @@ impl super::Window for AboutWindow {
         });
         ui.separator();
         ui.heading("Links");
-        self.open.post_ui();
         ui.vertical_centered_justified(|ui| {
             let result: anyhow::Result<()> = try {
                 if ui.link("📖 Book").clicked() {

@@ -154,7 +154,6 @@ impl super::Window for ExternalCommandWindow {
                     ui.text_edit_multiline(&mut &self.stderr[..]);
                 });
         }
-        self.open.post_ui();
     }
 
     fn title(&self) -> &str {

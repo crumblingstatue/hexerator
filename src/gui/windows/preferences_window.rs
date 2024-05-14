@@ -72,7 +72,6 @@ impl super::Window for PreferencesWindow {
                 &mut gui.msg_dialog,
             ),
         }
-        self.open.post_ui();
     }
 
     fn title(&self) -> &str {
