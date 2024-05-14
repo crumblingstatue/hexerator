@@ -78,7 +78,7 @@ impl WindowOpen {
         }
     }
     /// Wheter the window is open
-    pub fn is(&self) -> bool {
+    fn is(&self) -> bool {
         self.open
     }
     /// Set whether the window is open
@@ -89,11 +89,11 @@ impl WindowOpen {
         self.open = open;
     }
     /// Whether the window was opened just now (this frame)
-    pub fn just_now(&self) -> bool {
+    fn just_now(&self) -> bool {
         self.just_opened
     }
     /// Call this at the end of your ui, where you won't query just_opened anymore
-    pub fn post_ui(&mut self) {
+    fn post_ui(&mut self) {
         self.just_opened = false;
     }
 }
