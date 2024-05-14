@@ -1,8 +1,7 @@
 use {
-    super::{regions_window::region_context_menu, WindowCtxt},
     crate::{
         app::read_source_to_buf,
-        gui::window_open::WindowOpen,
+        gui::{window_open::WindowOpen, windows::regions_window::region_context_menu, WindowCtxt},
         meta::{
             find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta, RegionKey,
         },

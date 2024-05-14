@@ -1,31 +1,12 @@
 pub use self::windows::ConMsg;
 use {
     self::{
-        bookmarks_window::BookmarksWindow,
-        command::GCommandQueue,
-        external_command_window::ExternalCommandWindow,
-        file_diff_result_window::FileDiffResultWindow,
-        file_ops::FileOps,
-        find_dialog::FindDialog,
-        find_memory_pointers_window::FindMemoryPointersWindow,
-        inspect_panel::InspectPanel,
-        layouts_window::LayoutsWindow,
-        message_dialog::MessageDialog,
-        meta_diff_window::MetaDiffWindow,
-        open_process_window::OpenProcessWindow,
-        perspectives_window::PerspectivesWindow,
-        preferences_window::PreferencesWindow,
-        regions_window::RegionsWindow,
-        views_window::ViewsWindow,
-        windows::{
-            AdvancedOpenWindow, LuaConsoleWindow, LuaHelpWindow, LuaWatchWindow,
-            ScriptManagerWindow, VarsWindow,
-        },
+        command::GCommandQueue, file_ops::FileOps, inspect_panel::InspectPanel,
+        message_dialog::MessageDialog, windows::Windows,
     },
     crate::{
         app::App,
         config::Style,
-        gui::windows::AboutWindow,
         meta::{
             value_type::{ValueType, U8},
             Bookmark, ViewKey,
@@ -50,58 +31,22 @@ use {
     },
 };
 
-mod bookmarks_window;
 mod bottom_panel;
 pub mod command;
-mod debug_window;
 pub mod dialogs;
-mod external_command_window;
-pub mod file_diff_result_window;
 pub mod file_ops;
-pub mod find_dialog;
-mod find_memory_pointers_window;
 pub mod inspect_panel;
-mod layouts_window;
 pub mod message_dialog;
-mod meta_diff_window;
-mod open_process_window;
 mod ops;
-mod perspectives_window;
-mod preferences_window;
-mod regions_window;
 pub mod selection_menu;
 pub mod top_menu;
 mod top_panel;
-mod views_window;
 mod window_open;
-mod windows;
+pub mod windows;
 
 type Dialogs = HashMap<TypeId, Box<dyn Dialog>>;
 
 pub type HighlightSet = HashSet<usize>;
-
-#[derive(Default)]
-pub struct Windows {
-    pub layouts: LayoutsWindow,
-    pub views: ViewsWindow,
-    pub regions: RegionsWindow,
-    pub bookmarks: BookmarksWindow,
-    pub find: FindDialog,
-    pub perspectives: PerspectivesWindow,
-    pub file_diff_result: FileDiffResultWindow,
-    pub open_process: OpenProcessWindow,
-    pub find_memory_pointers: FindMemoryPointersWindow,
-    pub advanced_open: AdvancedOpenWindow,
-    pub external_command: ExternalCommandWindow,
-    pub preferences: PreferencesWindow,
-    pub about: AboutWindow,
-    pub vars: VarsWindow,
-    pub lua_help: LuaHelpWindow,
-    pub lua_console: LuaConsoleWindow,
-    pub lua_watch: Vec<LuaWatchWindow>,
-    pub script_manager: ScriptManagerWindow,
-    pub meta_diff: MetaDiffWindow,
-}
 
 #[derive(Default)]
 pub struct Gui {
@@ -186,7 +131,7 @@ pub fn do_egui(
     let was_open = open;
     Window::new("Debug")
         .open(&mut open)
-        .show(ctx, debug_window::ui);
+        .show(ctx, windows::debug_window::ui);
     if was_open && !open {
         IMMEDIATE.toggle();
         PERSISTENT.toggle();

@@ -40,6 +40,7 @@ mod config;
 mod damage_region;
 mod dec_conv;
 pub mod edit_buffer;
+mod find_util;
 mod gui;
 mod hex_conv;
 mod hex_ui;

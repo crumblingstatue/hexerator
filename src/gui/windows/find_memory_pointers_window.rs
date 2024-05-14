@@ -1,6 +1,8 @@
 use {
-    super::{window_open::WindowOpen, WindowCtxt},
-    crate::shell::msg_fail,
+    crate::{
+        gui::{window_open::WindowOpen, WindowCtxt},
+        shell::msg_fail,
+    },
     egui_extras::{Column, TableBuilder},
 };
 

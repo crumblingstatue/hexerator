@@ -1,6 +1,6 @@
 use {
-    super::{window_open::WindowOpen, WindowCtxt},
     crate::{
+        gui::{window_open::WindowOpen, WindowCtxt},
         layout::Layout,
         meta::{
             perspective::Perspective, LayoutKey, NamedRegion, NamedView, PerspectiveKey, RegionKey,

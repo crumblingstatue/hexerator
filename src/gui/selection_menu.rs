@@ -1,12 +1,15 @@
 use {
-    super::{
-        dialogs::{LuaFillDialog, PatternFillDialog, X86AsmDialog},
-        file_ops::FileOps,
-        message_dialog::MessageDialog,
-        regions_window::RegionsWindow,
-        Gui,
+    crate::{
+        app::App,
+        damage_region::DamageRegion,
+        gui::{
+            dialogs::{LuaFillDialog, PatternFillDialog, X86AsmDialog},
+            file_ops::FileOps,
+            message_dialog::MessageDialog,
+            windows::RegionsWindow,
+            Gui,
+        },
     },
-    crate::{app::App, damage_region::DamageRegion},
     egui::Button,
     rand::RngCore,
     std::fmt::Write,

@@ -9,8 +9,8 @@ use {
         config::Config,
         damage_region::DamageRegion,
         gui::{
-            file_diff_result_window::FileDiffResultWindow,
             message_dialog::{Icon, MessageDialog},
+            windows::FileDiffResultWindow,
             Gui,
         },
         hex_ui::HexUi,

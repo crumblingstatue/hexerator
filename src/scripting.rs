@@ -227,7 +227,7 @@ def_method! {
     "Finds a hex string in the format '99 aa bb ...' format, and returns its offset"
     find_hex_string(_lua, exec, hex_string: String) -> Option<usize> {
         let mut offset = None;
-        crate::gui::find_dialog::find_hex_string(&hex_string, &exec.app.data, |off| {
+        crate::find_util::find_hex_string(&hex_string, &exec.app.data, |off| {
             offset = Some(off);
         }).into_lua_err()?;
         Ok(offset)

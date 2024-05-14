@@ -1,13 +1,13 @@
 use {
-    super::{
-        message_dialog::{Icon, MessageDialog},
-        regions_window::region_context_menu,
-        window_open::WindowOpen,
-        WindowCtxt,
-    },
     crate::{
         app::{get_clipboard_string, set_clipboard_string},
         damage_region::DamageRegion,
+        gui::{
+            message_dialog::{Icon, MessageDialog},
+            window_open::WindowOpen,
+            windows::region_context_menu,
+            WindowCtxt,
+        },
         meta::{
             find_most_specific_region_for_offset,
             value_type::{
@@ -527,7 +527,7 @@ fn do_search(
             let fun = |offset| {
                 win.results_vec.push(initial_offset + offset);
             };
-            let result = find_hex_string(&win.find_input, data, fun);
+            let result = crate::find_util::find_hex_string(&win.find_input, data, fun);
             msg_if_fail(result, "Hex string search error", &mut gui.msg_dialog);
         }
         FindType::StringDiff => {
@@ -791,19 +791,4 @@ fn u8_search(
             dialog.results_vec.push(initial_offset + offset);
         }
     }
-}
-
-pub fn find_hex_string(
-    hex_string: &str,
-    haystack: &[u8],
-    mut f: impl FnMut(usize),
-) -> anyhow::Result<()> {
-    let needle = hex_string
-        .split_whitespace()
-        .map(|s| u8::from_str_radix(s, 16))
-        .collect::<Result<Vec<_>, _>>()?;
-    for offset in memchr::memmem::find_iter(haystack, &needle) {
-        f(offset);
-    }
-    Ok(())
 }

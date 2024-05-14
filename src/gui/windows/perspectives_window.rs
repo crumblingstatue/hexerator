@@ -1,6 +1,9 @@
 use {
-    super::{regions_window::region_context_menu, window_open::WindowOpen, WindowCtxt},
-    crate::{app::command::Cmd, meta::PerspectiveKey},
+    crate::{
+        app::command::Cmd,
+        gui::{window_open::WindowOpen, windows::regions_window::region_context_menu, WindowCtxt},
+        meta::PerspectiveKey,
+    },
     egui_extras::{Column, TableBuilder},
     slotmap::Key,
 };

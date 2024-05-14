@@ -1,12 +1,12 @@
 use {
-    super::{
-        message_dialog::{Icon, MessageDialog},
-        window_open::WindowOpen,
-        WindowCtxt,
-    },
     crate::{
         app::App,
         config::{self, Config},
+        gui::{
+            message_dialog::{Icon, MessageDialog},
+            window_open::WindowOpen,
+            WindowCtxt,
+        },
     },
     egui_fontcfg::{CustomFontPaths, FontCfgUi, FontDefsUiMsg},
     egui_sfml::sfml::graphics::RenderWindow,

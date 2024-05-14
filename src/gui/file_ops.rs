@@ -1,11 +1,11 @@
 use {
-    super::{
-        file_diff_result_window::FileDiffResultWindow, message_dialog::MessageDialog,
-        windows::AdvancedOpenWindow,
-    },
     crate::{
         app::App,
         args::SourceArgs,
+        gui::{
+            message_dialog::MessageDialog,
+            windows::{AdvancedOpenWindow, FileDiffResultWindow},
+        },
         meta::{region::Region, ViewKey},
         shell::{msg_fail, msg_if_fail},
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},

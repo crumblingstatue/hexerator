@@ -1,11 +1,11 @@
 use {
-    super::{
-        command::{GCmd, GCommandQueue},
-        window_open::WindowOpen,
-        WindowCtxt,
-    },
     crate::{
         app::command::{Cmd, CommandQueue},
+        gui::{
+            command::{GCmd, GCommandQueue},
+            window_open::WindowOpen,
+            WindowCtxt,
+        },
         meta::{Meta, NamedRegion, RegionKey},
     },
     egui_extras::{Column, TableBuilder},
@@ -66,7 +66,7 @@ impl RegionsWindow {
         match app.hex_ui.selection() {
             Some(sel) => {
                 if ui.add(button).clicked() {
-                    super::ops::add_region_from_selection(sel, &mut app.meta_state, self);
+                    crate::gui::ops::add_region_from_selection(sel, &mut app.meta_state, self);
                 }
             }
             None => {
