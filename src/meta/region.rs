@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// An inclusive region spanning `begin` to `end`
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Region {
     pub begin: usize,

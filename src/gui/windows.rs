@@ -12,7 +12,7 @@ use {
         lua_help::LuaHelpWindow, lua_watch::LuaWatchWindow, meta_diff_window::MetaDiffWindow,
         open_process_window::OpenProcessWindow, perspectives_window::PerspectivesWindow,
         preferences_window::PreferencesWindow, script_manager::ScriptManagerWindow,
-        vars::VarsWindow, views_window::ViewsWindow,
+        vars::VarsWindow, views_window::ViewsWindow, zero_partition::ZeroPartition,
     },
     super::Gui,
     crate::app::App,
@@ -39,6 +39,7 @@ mod regions_window;
 mod script_manager;
 mod vars;
 mod views_window;
+mod zero_partition;
 
 #[derive(Default)]
 pub struct Windows {
@@ -61,6 +62,7 @@ pub struct Windows {
     pub lua_watch: Vec<LuaWatchWindow>,
     pub script_manager: ScriptManagerWindow,
     pub meta_diff: MetaDiffWindow,
+    pub zero_partition: ZeroPartition,
 }
 
 #[derive(Default)]
@@ -151,6 +153,7 @@ impl Windows {
             lua_console,
             script_manager,
             about,
+            zero_partition,
         );
 
         let mut watch_windows = std::mem::take(&mut gui.win.lua_watch);

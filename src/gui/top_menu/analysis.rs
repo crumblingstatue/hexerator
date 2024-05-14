@@ -55,4 +55,12 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         gui.win.find_memory_pointers.open.toggle();
         ui.close_menu()
     }
+    if ui
+        .button("Zero partition...")
+        .on_hover_text("Find regions of non-zero data separated by zeroed regions")
+        .clicked()
+    {
+        gui.win.zero_partition.open.toggle();
+        ui.close_menu();
+    }
 }
