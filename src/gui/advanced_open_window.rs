@@ -32,12 +32,12 @@ fn opt<V: Default>(
 
 impl AdvancedOpenWindow {
     pub(crate) fn ui(
+        &mut self,
         WindowCtxt {
             ui, gui, app, font, ..
         }: WindowCtxt,
     ) {
-        let win = &mut gui.win.advanced_open;
-        let src_args = &mut win.src_args;
+        let src_args = &mut self.src_args;
         ui.heading("Source");
         match &src_args.file {
             Some(file) => {
@@ -90,7 +90,7 @@ impl AdvancedOpenWindow {
             src_args.read_only = src_args.stream;
         }
         ui.heading("Meta");
-        match &win.path_to_meta {
+        match &self.path_to_meta {
             Some(file) => {
                 ui.label(file.display().to_string());
             }
@@ -109,14 +109,14 @@ impl AdvancedOpenWindow {
             msg_if_fail(
                 app.load_file_args(
                     src_args.clone(),
-                    win.path_to_meta.clone(),
+                    self.path_to_meta.clone(),
                     font,
                     &mut gui.msg_dialog,
                 ),
                 "Failed to load file",
                 &mut gui.msg_dialog,
             );
-            win.open.set(false);
+            self.open.set(false);
         }
     }
 }

@@ -41,40 +41,41 @@ impl Tab {
 
 impl PreferencesWindow {
     pub fn ui(
+        &mut self,
         WindowCtxt {
             ui, gui, app, rwin, ..
         }: WindowCtxt,
     ) {
-        if gui.win.preferences.open.just_now() {
-            gui.win.preferences.font_defs.families = app.cfg.font_families.clone();
+        if self.open.just_now() {
+            self.font_defs.families = app.cfg.font_families.clone();
             gui.win
                 .preferences
                 .temp_custom_font_paths
                 .clone_from(&app.cfg.custom_font_paths);
             let _ = egui_fontcfg::load_custom_fonts(
                 &app.cfg.custom_font_paths,
-                &mut gui.win.preferences.font_defs.font_data,
+                &mut self.font_defs.font_data,
             );
         }
         ui.horizontal(|ui| {
-            ui.selectable_value(&mut gui.win.preferences.tab, Tab::Video, Tab::Video.label());
-            ui.selectable_value(&mut gui.win.preferences.tab, Tab::Style, Tab::Style.label());
-            ui.selectable_value(&mut gui.win.preferences.tab, Tab::Fonts, Tab::Fonts.label());
+            ui.selectable_value(&mut self.tab, Tab::Video, Tab::Video.label());
+            ui.selectable_value(&mut self.tab, Tab::Style, Tab::Style.label());
+            ui.selectable_value(&mut self.tab, Tab::Fonts, Tab::Fonts.label());
         });
         ui.separator();
-        match gui.win.preferences.tab {
+        match self.tab {
             Tab::Video => video_ui(ui, app, rwin),
             Tab::Style => style_ui(app, ui),
             Tab::Fonts => fonts_ui(
                 ui,
-                &mut gui.win.preferences.font_cfg,
-                &mut gui.win.preferences.font_defs,
+                &mut self.font_cfg,
+                &mut self.font_defs,
                 &mut app.cfg,
-                &mut gui.win.preferences.temp_custom_font_paths,
+                &mut self.temp_custom_font_paths,
                 &mut gui.msg_dialog,
             ),
         }
-        gui.win.preferences.open.post_ui();
+        self.open.post_ui();
     }
 }
 

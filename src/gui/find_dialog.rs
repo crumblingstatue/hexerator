@@ -105,31 +105,30 @@ pub struct FindDialog {
 }
 
 impl FindDialog {
-    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    pub fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.horizontal(|ui| {
             egui::ComboBox::new("type_combo", "Data type")
-                .selected_text(<&str>::from(&gui.win.find.find_type))
+                .selected_text(<&str>::from(&self.find_type))
                 .show_ui(ui, |ui| {
                     for type_ in FindType::iter() {
                         let label = <&str>::from(&type_);
-                        ui.selectable_value(&mut gui.win.find.find_type, type_, label);
+                        ui.selectable_value(&mut self.find_type, type_, label);
                     }
                 });
-            ui.checkbox(&mut gui.win.find.reload_before_search, "Reload")
+            ui.checkbox(&mut self.reload_before_search, "Reload")
                 .on_hover_text("Reload source before every search");
-            ui.checkbox(&mut gui.win.find.selection_only, "Selection only")
+            ui.checkbox(&mut self.selection_only, "Selection only")
                 .on_hover_text("Only search in selection");
         });
-        let re =
-            ui.add(egui::TextEdit::singleline(&mut gui.win.find.find_input).hint_text("🔍 Find"));
-        if gui.win.find.open.just_now() {
+        let re = ui.add(egui::TextEdit::singleline(&mut self.find_input).hint_text("🔍 Find"));
+        if self.open.just_now() {
             re.request_focus();
         }
         if re.lost_focus() && ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
-            if gui.win.find.reload_before_search {
+            if self.reload_before_search {
                 msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
             }
-            let (data, offs) = if gui.win.find.selection_only
+            let (data, offs) = if self.selection_only
                 && let Some(sel) = app.hex_ui.selection()
             {
                 (&app.data[sel.begin..=sel.end], sel.begin)
@@ -137,35 +136,32 @@ impl FindDialog {
                 (&app.data[..], 0)
             };
             msg_if_fail(
-                do_search(data, offs, gui),
+                do_search(data, offs, self, gui),
                 "Search failed",
                 &mut gui.msg_dialog,
             );
-            if let Some(&off) = gui.win.find.results_vec.first() {
+            if let Some(&off) = self.results_vec.first() {
                 app.search_focus(off);
             }
         }
-        if gui.win.find.find_type == FindType::Ascii {
+        if self.find_type == FindType::Ascii {
             ui.horizontal(|ui| {
-                ui.add(
-                    egui::TextEdit::singleline(&mut gui.win.find.replace_input)
-                        .hint_text("🔁 Replace"),
-                );
+                ui.add(egui::TextEdit::singleline(&mut self.replace_input).hint_text("🔁 Replace"));
                 if ui
                     .add_enabled(
-                        !gui.win.find.results_vec.is_empty(),
+                        !self.results_vec.is_empty(),
                         egui::Button::new("Replace all"),
                     )
                     .clicked()
                 {
-                    let replace_data = gui.win.find.replace_input.as_bytes();
-                    for &offset in &gui.win.find.results_vec {
+                    let replace_data = self.replace_input.as_bytes();
+                    for &offset in &self.results_vec {
                         app.data[offset..offset + replace_data.len()].copy_from_slice(replace_data);
                     }
                 }
             });
         }
-        ui.checkbox(&mut gui.win.find.filter_results, "Filter results")
+        ui.checkbox(&mut self.filter_results, "Filter results")
             .on_hover_text("Base search on existing results");
         StripBuilder::new(ui)
             .size(Size::initial(400.0))
@@ -195,14 +191,12 @@ impl FindDialog {
                             });
                         })
                         .body(|body| {
-                            body.rows(20.0, gui.win.find.results_vec.len(), |mut row| {
+                            body.rows(20.0, self.results_vec.len(), |mut row| {
                                 let i = row.index();
-                                let off = gui.win.find.results_vec[i];
+                                let off = self.results_vec[i];
                                 let (_, col1_re) = row.col(|ui| {
-                                    let re = ui.selectable_label(
-                                        gui.win.find.result_cursor == i,
-                                        off.to_string(),
-                                    );
+                                    let re = ui
+                                        .selectable_label(self.result_cursor == i, off.to_string());
                                     re.context_menu(|ui| {
                                         if ui.button("Remove from results").clicked() {
                                             action = Action::RemoveIdxFromResults(i);
@@ -211,11 +205,11 @@ impl FindDialog {
                                     });
                                     if re.clicked() {
                                         app.search_focus(off);
-                                        gui.win.find.result_cursor = i;
+                                        self.result_cursor = i;
                                     }
                                 });
                                 row.col(|ui| {
-                                    let damage = match gui.win.find.find_type {
+                                    let damage = match self.find_type {
                                         FindType::I8 => {
                                             data_value_label::<I8>(ui, &mut app.data, off)
                                         }
@@ -359,14 +353,14 @@ impl FindDialog {
                                         }
                                     }
                                 });
-                                if let Some(scroll_off) = gui.win.find.scroll_to
+                                if let Some(scroll_off) = self.scroll_to
                                     && scroll_off == i
                                 {
                                     // We use center align, because it keeps the selected element in
                                     // view at all times, preventing the issue of it becoming out
                                     // of view, and scroll_to_me not being called because of that.
                                     col1_re.scroll_to_me(Some(Align::Center));
-                                    gui.win.find.scroll_to = None;
+                                    self.scroll_to = None;
                                 }
                             });
                         });
@@ -380,34 +374,34 @@ impl FindDialog {
                                 .retain(|&idx| !reg.region.contains(idx));
                         }
                         Action::RemoveIdxFromResults(idx) => {
-                            gui.win.find.results_vec.remove(idx);
+                            self.results_vec.remove(idx);
                         }
                     }
                 });
                 strip.cell(|ui| {
                     ui.horizontal(|ui| {
-                        ui.set_enabled(!gui.win.find.results_vec.is_empty());
+                        ui.set_enabled(!self.results_vec.is_empty());
                         if (ui.button("Previous (P)").clicked()
                             || ui.input(|inp| inp.key_pressed(egui::Key::P)))
-                            && gui.win.find.result_cursor > 0
-                            && !gui.win.find.results_vec.is_empty()
+                            && self.result_cursor > 0
+                            && !self.results_vec.is_empty()
                         {
-                            gui.win.find.result_cursor -= 1;
-                            let off = gui.win.find.results_vec[gui.win.find.result_cursor];
+                            self.result_cursor -= 1;
+                            let off = self.results_vec[self.result_cursor];
                             app.search_focus(off);
-                            gui.win.find.scroll_to = Some(gui.win.find.result_cursor);
+                            self.scroll_to = Some(self.result_cursor);
                         }
-                        ui.label((gui.win.find.result_cursor + 1).to_string());
+                        ui.label((self.result_cursor + 1).to_string());
                         if (ui.button("Next (N)").clicked()
                             || ui.input(|inp| inp.key_pressed(egui::Key::N)))
-                            && gui.win.find.result_cursor + 1 < gui.win.find.results_vec.len()
+                            && self.result_cursor + 1 < self.results_vec.len()
                         {
-                            gui.win.find.result_cursor += 1;
-                            let off = gui.win.find.results_vec[gui.win.find.result_cursor];
+                            self.result_cursor += 1;
+                            let off = self.results_vec[self.result_cursor];
                             app.search_focus(off);
-                            gui.win.find.scroll_to = Some(gui.win.find.result_cursor);
+                            self.scroll_to = Some(self.result_cursor);
                         }
-                        ui.label(format!("{} results", gui.win.find.results_vec.len()));
+                        ui.label(format!("{} results", self.results_vec.len()));
                     });
                 });
                 strip.cell(|ui| {
@@ -427,28 +421,28 @@ impl FindDialog {
                             let offsets: Result<Vec<usize>, _> =
                                 s.split_ascii_whitespace().map(|s| s.parse()).collect();
                             match offsets {
-                                Ok(offs) => gui.win.find.results_vec = offs,
+                                Ok(offs) => self.results_vec = offs,
                                 Err(e) => {
                                     msg_fail(&e, "failed to parse offsets", &mut gui.msg_dialog)
                                 }
                             }
                         }
                         if ui.button("🗑 Clear").clicked() {
-                            gui.win.find.results_vec.clear();
+                            self.results_vec.clear();
                         }
                         // We don't want to highlight results by default, because
                         // it (at the very least) doubles memory usage for find results,
                         // which can be catastrophic for really large searches.
                         if ui.button("💡 Highlight").clicked() {
                             gui.highlight_set.clear();
-                            for &offset in &gui.win.find.results_vec {
+                            for &offset in &self.results_vec {
                                 gui.highlight_set.insert(offset);
                             }
                         }
                     });
                 });
             });
-        gui.win.find.open.post_ui();
+        self.open.post_ui();
     }
 }
 
@@ -493,59 +487,64 @@ enum Action {
     RemoveIdxFromResults(usize),
 }
 
-fn do_search(data: &[u8], initial_offset: usize, gui: &mut crate::gui::Gui) -> anyhow::Result<()> {
+fn do_search(
+    data: &[u8],
+    initial_offset: usize,
+    win: &mut FindDialog,
+    gui: &mut crate::gui::Gui,
+) -> anyhow::Result<()> {
     // Reset the result cursor, so it's not out of bounds if new results_vec is smaller
     // TODO: Review everything to use `initial_offset` correctly
-    gui.win.find.result_cursor = 0;
-    if !gui.win.find.filter_results {
-        gui.win.find.results_vec.clear();
+    win.result_cursor = 0;
+    if !win.filter_results {
+        win.results_vec.clear();
     }
-    match gui.win.find.find_type {
-        FindType::I8 => find_num::<I8>(gui, data)?,
-        FindType::U8 => find_u8(&mut gui.win.find, data, initial_offset, &mut gui.msg_dialog),
-        FindType::I16Le => find_num::<I16Le>(gui, data)?,
-        FindType::I16Be => find_num::<I16Be>(gui, data)?,
-        FindType::U16Le => find_num::<U16Le>(gui, data)?,
-        FindType::U16Be => find_num::<U16Be>(gui, data)?,
-        FindType::I32Le => find_num::<I32Le>(gui, data)?,
-        FindType::I32Be => find_num::<I32Be>(gui, data)?,
-        FindType::U32Le => find_num::<U32Le>(gui, data)?,
-        FindType::U32Be => find_num::<U32Be>(gui, data)?,
-        FindType::I64Le => find_num::<I64Le>(gui, data)?,
-        FindType::I64Be => find_num::<I64Be>(gui, data)?,
-        FindType::U64Le => find_num::<U64Le>(gui, data)?,
-        FindType::U64Be => find_num::<U64Be>(gui, data)?,
-        FindType::F32Le => find_num::<F32Le>(gui, data)?,
-        FindType::F32Be => find_num::<F32Be>(gui, data)?,
-        FindType::F64Le => find_num::<F64Le>(gui, data)?,
-        FindType::F64Be => find_num::<F64Be>(gui, data)?,
+    match win.find_type {
+        FindType::I8 => find_num::<I8>(win, data)?,
+        FindType::U8 => find_u8(win, data, initial_offset, &mut gui.msg_dialog),
+        FindType::I16Le => find_num::<I16Le>(win, data)?,
+        FindType::I16Be => find_num::<I16Be>(win, data)?,
+        FindType::U16Le => find_num::<U16Le>(win, data)?,
+        FindType::U16Be => find_num::<U16Be>(win, data)?,
+        FindType::I32Le => find_num::<I32Le>(win, data)?,
+        FindType::I32Be => find_num::<I32Be>(win, data)?,
+        FindType::U32Le => find_num::<U32Le>(win, data)?,
+        FindType::U32Be => find_num::<U32Be>(win, data)?,
+        FindType::I64Le => find_num::<I64Le>(win, data)?,
+        FindType::I64Be => find_num::<I64Be>(win, data)?,
+        FindType::U64Le => find_num::<U64Le>(win, data)?,
+        FindType::U64Be => find_num::<U64Be>(win, data)?,
+        FindType::F32Le => find_num::<F32Le>(win, data)?,
+        FindType::F32Be => find_num::<F32Be>(win, data)?,
+        FindType::F64Le => find_num::<F64Le>(win, data)?,
+        FindType::F64Be => find_num::<F64Be>(win, data)?,
         FindType::Ascii => {
-            for offset in memchr::memmem::find_iter(data, &gui.win.find.find_input) {
-                gui.win.find.results_vec.push(initial_offset + offset);
+            for offset in memchr::memmem::find_iter(data, &win.find_input) {
+                win.results_vec.push(initial_offset + offset);
             }
         }
         FindType::HexString => {
             let fun = |offset| {
-                gui.win.find.results_vec.push(initial_offset + offset);
+                win.results_vec.push(initial_offset + offset);
             };
-            let result = find_hex_string(&gui.win.find.find_input, data, fun);
+            let result = find_hex_string(&win.find_input, data, fun);
             msg_if_fail(result, "Hex string search error", &mut gui.msg_dialog);
         }
         FindType::StringDiff => {
-            let diff = ascii_to_diff_pattern(gui.win.find.find_input.as_bytes());
+            let diff = ascii_to_diff_pattern(win.find_input.as_bytes());
             let mut off = 0;
             while let Some(offset) = find_diff_pattern(&data[off..], &diff) {
                 off += offset;
-                gui.win.find.results_vec.push(initial_offset + off);
+                win.results_vec.push(initial_offset + off);
                 off += diff.len();
             }
         }
         FindType::EqPattern => {
-            let needle = make_eq_pattern_needle(&gui.win.find.find_input);
+            let needle = make_eq_pattern_needle(&win.find_input);
             let mut off = 0;
             while let Some(offset) = find_eq_pattern_needle(&needle, &data[off..]) {
                 off += offset;
-                gui.win.find.results_vec.push(initial_offset + off);
+                win.results_vec.push(initial_offset + off);
                 off += needle.len();
             }
         }
@@ -666,16 +665,13 @@ fn test_find_diff_pattern() {
     assert_eq!(&s[off..off + key.len()], key);
 }
 
-fn find_num<N: EndianedPrimitive>(
-    gui: &mut crate::gui::Gui,
-    data: &[u8],
-) -> Result<(), anyhow::Error>
+fn find_num<N: EndianedPrimitive>(win: &mut FindDialog, data: &[u8]) -> Result<(), anyhow::Error>
 where
     [(); N::BYTE_LEN]:,
     <<N as EndianedPrimitive>::Primitive as FromStr>::Err: Error + Send + Sync,
 {
-    find_num_raw::<N>(&gui.win.find.find_input, data, |offset| {
-        gui.win.find.results_vec.push(offset);
+    find_num_raw::<N>(&win.find_input, data, |offset| {
+        win.results_vec.push(offset);
     })
 }
 

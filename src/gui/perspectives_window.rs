@@ -11,7 +11,7 @@ pub struct PerspectivesWindow {
     pub rename_idx: PerspectiveKey,
 }
 impl PerspectivesWindow {
-    pub(crate) fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    pub(crate) fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         TableBuilder::new(ui)
             .columns(Column::auto(), 3)
@@ -37,12 +37,12 @@ impl PerspectivesWindow {
                 body.rows(20.0, keys.len(), |mut row| {
                     let idx = row.index();
                     row.col(|ui| {
-                        if gui.win.perspectives.rename_idx == keys[idx] {
+                        if self.rename_idx == keys[idx] {
                             let re = ui.text_edit_singleline(
                                 &mut app.meta_state.meta.low.perspectives[keys[idx]].name,
                             );
                             if re.lost_focus() {
-                                gui.win.perspectives.rename_idx = PerspectiveKey::null();
+                                self.rename_idx = PerspectiveKey::null();
                             } else {
                                 re.request_focus();
                             }
@@ -50,7 +50,7 @@ impl PerspectivesWindow {
                             let name = &app.meta_state.meta.low.perspectives[keys[idx]].name;
                             ui.menu_button(name, |ui| {
                                 if ui.button("✏ Rename").clicked() {
-                                    gui.win.perspectives.rename_idx = keys[idx];
+                                    self.rename_idx = keys[idx];
                                     ui.close_menu();
                                 }
                                 if ui.button("🗑 Delete").clicked() {

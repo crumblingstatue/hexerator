@@ -17,30 +17,29 @@ pub struct LayoutsWindow {
     edit_name: bool,
 }
 impl LayoutsWindow {
-    pub(crate) fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
-        let win = &mut gui.win.layouts;
-        if win.open.just_now() {
-            win.selected = app.hex_ui.current_layout;
+    pub(crate) fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+        if self.open.just_now() {
+            self.selected = app.hex_ui.current_layout;
         }
         for (k, v) in &app.meta_state.meta.layouts {
-            if ui.selectable_label(win.selected == k, &v.name).clicked() {
-                win.selected = k;
+            if ui.selectable_label(self.selected == k, &v.name).clicked() {
+                self.selected = k;
                 App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, k);
             }
         }
-        if !win.selected.is_null() {
+        if !self.selected.is_null() {
             ui.separator();
-            let layout = &mut app.meta_state.meta.layouts[win.selected];
+            let layout = &mut app.meta_state.meta.layouts[self.selected];
             ui.horizontal(|ui| {
-                if win.edit_name {
+                if self.edit_name {
                     if ui.text_edit_singleline(&mut layout.name).lost_focus() {
-                        win.edit_name = false;
+                        self.edit_name = false;
                     }
                 } else {
                     ui.heading(&layout.name);
                 }
                 if ui.button("✏").clicked() {
-                    win.edit_name ^= true;
+                    self.edit_name ^= true;
                 }
             });
             let unused_views: Vec<ViewKey> = app
@@ -57,13 +56,13 @@ impl LayoutsWindow {
                     row.retain_mut(|view_key| {
                         let mut retain = true;
                         let view = &app.meta_state.meta.views[*view_key];
-                        if win.swap_a == *view_key {
+                        if self.swap_a == *view_key {
                             if ui.selectable_label(true, &view.name).clicked() {
-                                win.swap_a = ViewKey::null();
+                                self.swap_a = ViewKey::null();
                             }
-                        } else if !win.swap_a.is_null() {
+                        } else if !self.swap_a.is_null() {
                             if ui.button(format!("🔃 {}", view.name)).clicked() {
-                                swap = Some((win.swap_a, *view_key));
+                                swap = Some((self.swap_a, *view_key));
                             }
                         } else {
                             ui.menu_button(&view.name, |ui| {
@@ -80,7 +79,7 @@ impl LayoutsWindow {
                             .response
                             .context_menu(|ui| {
                                 if ui.button("🔃 Swap").clicked() {
-                                    win.swap_a = *view_key;
+                                    self.swap_a = *view_key;
                                     ui.close_menu();
                                 }
                                 if ui.button("🗑 Remove").clicked() {
@@ -135,7 +134,7 @@ impl LayoutsWindow {
                             unsafe {
                                 std::ptr::swap(addr_a, addr_b);
                             }
-                            win.swap_a = ViewKey::null();
+                            self.swap_a = ViewKey::null();
                         }
                     }
                 }
@@ -173,10 +172,10 @@ impl LayoutsWindow {
                 view_grid: Vec::new(),
                 margin: default_margin(),
             });
-            win.selected = key;
+            self.selected = key;
             App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, key);
         }
-        win.open.post_ui();
+        self.open.post_ui();
     }
 }
 

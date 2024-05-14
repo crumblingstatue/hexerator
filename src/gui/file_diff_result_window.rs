@@ -37,15 +37,16 @@ impl Default for FileDiffResultWindow {
 }
 impl FileDiffResultWindow {
     pub(crate) fn ui(
+        &mut self,
         WindowCtxt {
             ui, gui, app, font, ..
         }: WindowCtxt,
     ) {
-        if gui.win.file_diff_result.offsets.is_empty() {
+        if self.offsets.is_empty() {
             ui.label("No difference");
             return;
         }
-        ui.label(gui.win.file_diff_result.path.display().to_string());
+        ui.label(self.path.display().to_string());
         ui.horizontal(|ui| {
             if ui
                 .button("🗁 Open this")
@@ -55,17 +56,12 @@ impl FileDiffResultWindow {
                 let prev_pref = app.preferences.keep_meta;
                 let prev_path = app.src_args.file.clone();
                 app.preferences.keep_meta = true;
-                let result = app.load_file(
-                    gui.win.file_diff_result.path.clone(),
-                    false,
-                    font,
-                    &mut gui.msg_dialog,
-                );
+                let result = app.load_file(self.path.clone(), false, font, &mut gui.msg_dialog);
                 app.preferences.keep_meta = prev_pref;
                 if msg_if_fail(result, "Failed to load file", &mut gui.msg_dialog).is_none() {
                     if let Some(path) = prev_path {
                         msg_if_fail(
-                            app.diff_with_file(path, &mut gui.win.file_diff_result),
+                            app.diff_with_file(path, self),
                             "Failed to diff",
                             &mut gui.msg_dialog,
                         );
@@ -88,11 +84,9 @@ impl FileDiffResultWindow {
                 .clicked()
             {
                 let result: anyhow::Result<()> = try {
-                    let file_data =
-                        read_source_to_buf(&gui.win.file_diff_result.path, &app.src_args)?;
-                    gui.win.file_diff_result.offsets.retain(|&offs| {
-                        gui.win.file_diff_result.file_data[offs] == file_data[offs]
-                    });
+                    let file_data = read_source_to_buf(&self.path, &app.src_args)?;
+                    self.offsets
+                        .retain(|&offs| self.file_data[offs] == file_data[offs]);
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
@@ -102,17 +96,15 @@ impl FileDiffResultWindow {
                 .clicked()
             {
                 let result: anyhow::Result<()> = try {
-                    let file_data =
-                        read_source_to_buf(&gui.win.file_diff_result.path, &app.src_args)?;
-                    gui.win.file_diff_result.offsets.retain(|&offs| {
-                        gui.win.file_diff_result.file_data[offs] != file_data[offs]
-                    });
+                    let file_data = read_source_to_buf(&self.path, &app.src_args)?;
+                    self.offsets
+                        .retain(|&offs| self.file_data[offs] != file_data[offs]);
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
             if ui.button("Highlight all").clicked() {
                 gui.highlight_set.clear();
-                for &offs in &gui.win.file_diff_result.offsets {
+                for &offs in &self.offsets {
                     gui.highlight_set.insert(offs);
                     if let Some((_, bm)) =
                         Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
@@ -126,22 +118,19 @@ impl FileDiffResultWindow {
         });
         ui.horizontal(|ui| {
             if ui.button("Refresh").clicked()
-                || (gui.win.file_diff_result.auto_refresh
-                    && gui.win.file_diff_result.last_refresh.elapsed().as_millis()
-                        >= u128::from(gui.win.file_diff_result.auto_refresh_interval_ms))
+                || (self.auto_refresh
+                    && self.last_refresh.elapsed().as_millis()
+                        >= u128::from(self.auto_refresh_interval_ms))
             {
-                gui.win.file_diff_result.last_refresh = Instant::now();
+                self.last_refresh = Instant::now();
                 let result: anyhow::Result<()> = try {
-                    gui.win.file_diff_result.file_data =
-                        read_source_to_buf(&gui.win.file_diff_result.path, &app.src_args)?;
+                    self.file_data = read_source_to_buf(&self.path, &app.src_args)?;
                 };
                 msg_if_fail(result, "Refresh failed", &mut gui.msg_dialog);
             }
-            ui.checkbox(&mut gui.win.file_diff_result.auto_refresh, "Auto refresh");
+            ui.checkbox(&mut self.auto_refresh, "Auto refresh");
             ui.label("Interval");
-            ui.add(egui::DragValue::new(
-                &mut gui.win.file_diff_result.auto_refresh_interval_ms,
-            ));
+            ui.add(egui::DragValue::new(&mut self.auto_refresh_interval_ms));
         });
         ui.separator();
         let mut action = Action::None;
@@ -168,8 +157,8 @@ impl FileDiffResultWindow {
                 });
             })
             .body(|body| {
-                body.rows(20.0, gui.win.file_diff_result.offsets.len(), |mut row| {
-                    let offs = gui.win.file_diff_result.offsets[row.index()];
+                body.rows(20.0, self.offsets.len(), |mut row| {
+                    let offs = self.offsets[row.index()];
                     let bm = Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
                         .map(|(_, bm)| bm);
                     row.col(|ui| {
@@ -187,10 +176,10 @@ impl FileDiffResultWindow {
                         let s = match bm {
                             Some(bm) => bm
                                 .value_type
-                                .read(&gui.win.file_diff_result.file_data[offs..])
+                                .read(&self.file_data[offs..])
                                 .map(|v| v.to_string())
                                 .unwrap_or("err".into()),
-                            None => gui.win.file_diff_result.file_data[offs].to_string(),
+                            None => self.file_data[offs].to_string(),
                         };
                         ui.label(s);
                     });
@@ -277,7 +266,7 @@ impl FileDiffResultWindow {
                 app.edit_state.set_cursor(off);
                 app.hex_ui.flash_cursor();
             }
-            Action::RemoveRegion(key) => gui.win.file_diff_result.offsets.retain(|&offs| {
+            Action::RemoveRegion(key) => self.offsets.retain(|&offs| {
                 let reg =
                     find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, offs);
                 reg != Some(key)

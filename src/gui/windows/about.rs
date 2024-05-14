@@ -39,13 +39,12 @@ macro_rules! optenv {
 }
 
 impl AboutWindow {
-    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    pub fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
-        let win = &mut gui.win.about;
-        if win.open.just_now() {
-            win.sys.refresh_cpu();
-            win.sys.refresh_memory();
-            win.info = [
+        if self.open.just_now() {
+            self.sys.refresh_cpu();
+            self.sys.refresh_memory();
+            self.info = [
                 ("Hexerator", String::new()),
                 ("Version", optenv!("CARGO_PKG_VERSION")),
                 ("Git SHA", optenv!("VERGEN_GIT_SHA")),
@@ -70,35 +69,35 @@ impl AboutWindow {
                 ("Opt-level", optenv!("VERGEN_CARGO_OPT_LEVEL")),
                 ("Built with rustc", optenv!("VERGEN_RUSTC_SEMVER")),
                 ("System", String::new()),
-                ("OS", format!("{} {}", win.os_name, win.os_ver)),
+                ("OS", format!("{} {}", self.os_name, self.os_ver)),
                 (
                     "Total memory",
-                    format!("{} MiB", win.sys.total_memory() / MIB),
+                    format!("{} MiB", self.sys.total_memory() / MIB),
                 ),
                 (
                     "Used memory",
-                    format!("{} MiB", win.sys.used_memory() / MIB),
+                    format!("{} MiB", self.sys.used_memory() / MIB),
                 ),
                 (
                     "Available memory",
-                    format!("{} MiB", win.sys.available_memory() / MIB),
+                    format!("{} MiB", self.sys.available_memory() / MIB),
                 ),
             ];
         }
-        info_table(ui, &win.info);
+        info_table(ui, &self.info);
         ui.separator();
         ui.vertical_centered_justified(|ui| {
             if ui.button("Copy to clipboard").clicked() {
                 crate::app::set_clipboard_string(
                     &mut app.clipboard,
                     &mut gui.msg_dialog,
-                    &clipfmt_info(&win.info),
+                    &clipfmt_info(&self.info),
                 );
             }
         });
         ui.separator();
         ui.heading("Links");
-        win.open.post_ui();
+        self.open.post_ui();
         ui.vertical_centered_justified(|ui| {
             let result: anyhow::Result<()> = try {
                 if ui.link("📖 Book").clicked() {
@@ -114,7 +113,7 @@ impl AboutWindow {
             msg_if_fail(result, "Failed to open link", &mut gui.msg_dialog);
             ui.separator();
             if ui.button("Close").clicked() {
-                gui.win.about.open.set(false);
+                self.open.set(false);
             }
         });
     }

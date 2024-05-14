@@ -35,12 +35,12 @@ pub struct BookmarksWindow {
 }
 
 impl BookmarksWindow {
-    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+    pub fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
-        let win = &mut gui.win.bookmarks;
         ui.horizontal(|ui| {
             ui.add(
-                egui::TextEdit::singleline(&mut win.name_filter_string).hint_text("Filter by name"),
+                egui::TextEdit::singleline(&mut self.name_filter_string)
+                    .hint_text("Filter by name"),
             );
             if ui.button("Highlight all").clicked() {
                 gui.highlight_set.clear();
@@ -78,17 +78,17 @@ impl BookmarksWindow {
                     let mut keys: Vec<usize> = (0..app.meta_state.meta.bookmarks.len()).collect();
                     keys.sort_by_key(|&idx| app.meta_state.meta.bookmarks[idx].offset);
                     keys.retain(|&k| {
-                        win.name_filter_string.is_empty()
+                        self.name_filter_string.is_empty()
                             || app.meta_state.meta.bookmarks[k]
                                 .label
                                 .to_ascii_lowercase()
-                                .contains(&win.name_filter_string.to_ascii_lowercase())
+                                .contains(&self.name_filter_string.to_ascii_lowercase())
                     });
                     body.rows(20.0, keys.len(), |mut row| {
                         let idx = keys[row.index()];
                         row.col(|ui| {
                             let re = ui.selectable_label(
-                                win.selected == Some(idx),
+                                self.selected == Some(idx),
                                 &app.meta_state.meta.bookmarks[idx].label,
                             );
                             re.context_menu(|ui| {
@@ -102,7 +102,7 @@ impl BookmarksWindow {
                                 }
                             });
                             if re.clicked() {
-                                win.selected = Some(idx);
+                                self.selected = Some(idx);
                             }
                         });
                         row.col(|ui| {
@@ -180,34 +180,34 @@ impl BookmarksWindow {
                     });
                 });
         });
-        if let Some(idx) = win.selected {
+        if let Some(idx) = self.selected {
             let Some(mark) = app.meta_state.meta.bookmarks.get_mut(idx) else {
                 per!("Invalid bookmark selection: {idx}");
-                win.selected = None;
+                self.selected = None;
                 return;
             };
             ui.separator();
             ui.horizontal(|ui| {
-                if win.edit_name {
+                if self.edit_name {
                     let mut out = egui::TextEdit::singleline(&mut mark.label).show(ui);
                     if out.response.lost_focus() {
-                        win.edit_name = false;
+                        self.edit_name = false;
                     }
-                    if win.focus_text_edit {
+                    if self.focus_text_edit {
                         out.response.request_focus();
                         out.state
                             .cursor
                             .set_range(Some(CursorRange::select_all(&out.galley)));
                         out.state.store(ui.ctx(), out.response.id);
-                        win.focus_text_edit = false;
+                        self.focus_text_edit = false;
                     }
                 } else {
                     ui.heading(&mark.label);
                 }
                 if ui.button("✏").clicked() {
-                    win.edit_name ^= true;
-                    if win.edit_name {
-                        win.focus_text_edit = true;
+                    self.edit_name ^= true;
+                    if self.edit_name {
+                        self.focus_text_edit = true;
                     }
                 }
                 if ui.button("⮩").on_hover_text("Jump").clicked() {
@@ -293,14 +293,14 @@ impl BookmarksWindow {
                 ValueType::StringMap(list) => {
                     let text_edit_finished = ui
                         .add(
-                            egui::TextEdit::singleline(&mut win.value_type_string_buf)
+                            egui::TextEdit::singleline(&mut self.value_type_string_buf)
                                 .hint_text("key = value"),
                         )
                         .lost_focus()
                         && ui.input(|inp| inp.key_pressed(egui::Key::Enter));
                     if text_edit_finished || ui.button("Set key = value").clicked() {
                         let result: anyhow::Result<()> = try {
-                            let s = &win.value_type_string_buf;
+                            let s = &self.value_type_string_buf;
                             let (k, v) = s.split_once('=').context("Missing `=`")?;
                             let k: u8 = k.trim().parse()?;
                             let v = v.trim().to_owned();
@@ -324,7 +324,7 @@ impl BookmarksWindow {
                 });
             if ui.button("Delete").clicked() {
                 app.meta_state.meta.bookmarks.remove(idx);
-                win.selected = None;
+                self.selected = None;
             }
         }
         ui.separator();
@@ -335,7 +335,7 @@ impl BookmarksWindow {
                 desc: String::new(),
                 value_type: ValueType::None,
             });
-            win.selected = Some(app.meta_state.meta.bookmarks.len() - 1);
+            self.selected = Some(app.meta_state.meta.bookmarks.len() - 1);
         }
         match action {
             Action::None => {}

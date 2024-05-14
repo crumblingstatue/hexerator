@@ -23,6 +23,7 @@ struct PtrEntry {
 
 impl FindMemoryPointersWindow {
     pub fn ui(
+        &mut self,
         WindowCtxt {
             ui, gui, app, font, ..
         }: WindowCtxt,
@@ -32,8 +33,7 @@ impl FindMemoryPointersWindow {
             ui.label("No selected pid.");
             return;
         };
-        let win = &mut gui.win.find_memory_pointers;
-        if win.open.just_now() {
+        if self.open.just_now() {
             for (i, wnd) in app
                 .data
                 .array_windows::<{ (usize::BITS / 8) as usize }>()
@@ -44,7 +44,7 @@ impl FindMemoryPointersWindow {
                     range.is_read() && range.start() <= ptr && range.start() + range.size() >= ptr
                 }) {
                     let range = &gui.win.open_process.map_ranges[pos];
-                    win.pointers.push(PtrEntry {
+                    self.pointers.push(PtrEntry {
                         src_idx: i,
                         ptr,
                         range_idx: pos,
@@ -68,30 +68,30 @@ impl FindMemoryPointersWindow {
                 });
                 row.col(|ui| {
                     if ui.button("Region").clicked() {
-                        win.pointers.sort_by_key(|p| {
+                        self.pointers.sort_by_key(|p| {
                             gui.win.open_process.map_ranges[p.range_idx].filename()
                         });
                     }
                 });
                 row.col(|ui| {
                     ui.menu_button("w/x", |ui| {
-                        ui.checkbox(&mut win.filter_write, "Write");
-                        ui.checkbox(&mut win.filter_exec, "Execute");
+                        ui.checkbox(&mut self.filter_write, "Write");
+                        ui.checkbox(&mut self.filter_exec, "Execute");
                     });
                 });
                 row.col(|ui| {
                     if ui.button("Pointer").clicked() {
-                        win.pointers.sort_by_key(|p| p.ptr);
+                        self.pointers.sort_by_key(|p| p.ptr);
                     }
                 });
             })
             .body(|body| {
-                let mut filtered = win.pointers.clone();
+                let mut filtered = self.pointers.clone();
                 filtered.retain(|ptr| {
-                    if win.filter_exec && !ptr.execute {
+                    if self.filter_exec && !ptr.execute {
                         return false;
                     }
-                    if win.filter_write && !ptr.write {
+                    if self.filter_write && !ptr.write {
                         return false;
                     }
                     true
@@ -150,7 +150,7 @@ impl FindMemoryPointersWindow {
             }
             Action::None => {}
         }
-        win.open.post_ui();
+        self.open.post_ui();
     }
 }
 

@@ -38,18 +38,19 @@ pub const MAX_FONT_SIZE: u16 = 256;
 
 impl ViewsWindow {
     pub(crate) fn ui(
+        &mut self,
         WindowCtxt {
             ui, gui, app, font, ..
         }: WindowCtxt,
     ) {
         ui.style_mut().wrap = Some(false);
-        if gui.win.views.open.just_now() &&
+        if self.open.just_now() &&
            // Don't override selected key if there already is one
            // For example, it could be set by the context menu "view properties".
-           gui.win.views.selected.is_null() &&
+           self.selected.is_null() &&
            let Some(view_key) = app.hex_ui.focused_view
         {
-            gui.win.views.selected = view_key;
+            self.selected = view_key;
         }
         let mut removed_idx = None;
         if app.meta_state.meta.views.is_empty() {
@@ -97,11 +98,10 @@ impl ViewsWindow {
                                 }
                             });
                         };
-                        let re =
-                            ui.selectable_label(view_key == gui.win.views.selected, &view.name);
+                        let re = ui.selectable_label(view_key == self.selected, &view.name);
                         re.context_menu(ctx_menu);
                         if re.clicked() {
-                            gui.win.views.selected = view_key;
+                            self.selected = view_key;
                         }
                     });
                     row.col(|ui| {
@@ -150,20 +150,20 @@ impl ViewsWindow {
             }
         });
         ui.separator();
-        if let Some(view) = app.meta_state.meta.views.get_mut(gui.win.views.selected) {
+        if let Some(view) = app.meta_state.meta.views.get_mut(self.selected) {
             ui.horizontal(|ui| {
-                if gui.win.views.rename {
+                if self.rename {
                     if ui
                         .add(egui::TextEdit::singleline(&mut view.name).desired_width(150.0))
                         .lost_focus()
                     {
-                        gui.win.views.rename = false;
+                        self.rename = false;
                     }
                 } else {
                     ui.heading(&view.name);
                 }
                 if ui.button("✏").on_hover_text("Rename").clicked() {
-                    gui.win.views.rename ^= true;
+                    self.rename ^= true;
                 }
                 if view_combo(egui::Id::new("view_combo"), &mut view.view.kind, ui, font) {
                     view.view.adjust_state_to_kind();
@@ -261,14 +261,14 @@ impl ViewsWindow {
                 );
             });
             if ui.button("Delete").clicked() {
-                removed_idx = Some(gui.win.views.selected);
+                removed_idx = Some(self.selected);
             }
         }
         if let Some(rem_key) = removed_idx {
             app.meta_state.meta.remove_view(rem_key);
             app.hex_ui.focused_view = None;
         }
-        gui.win.views.open.post_ui();
+        self.open.post_ui();
     }
 }
 

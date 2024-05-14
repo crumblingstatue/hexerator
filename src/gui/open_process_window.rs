@@ -119,13 +119,13 @@ struct RunCommand {
 
 impl OpenProcessWindow {
     pub(crate) fn ui(
+        &mut self,
         WindowCtxt {
             ui, gui, app, font, ..
         }: WindowCtxt,
     ) {
         ui.style_mut().wrap = Some(false);
-        let win = &mut gui.win.open_process;
-        if let Some(modal) = &mut win.modal {
+        if let Some(modal) = &mut self.modal {
             let mut close_modal = false;
             ui.horizontal(|ui| match modal {
                 Modal::RunCommand(run_command) => {
@@ -150,14 +150,14 @@ impl OpenProcessWindow {
                                     match Command::new(first).args(tokens).spawn() {
                                         Ok(child) => {
                                             let pid = child.id();
-                                            win.selected_pid = Some(sysinfo::Pid::from_u32(pid));
+                                            self.selected_pid = Some(sysinfo::Pid::from_u32(pid));
                                             refresh_proc_maps(
                                                 pid,
-                                                &mut win.map_ranges,
+                                                &mut self.map_ranges,
                                                 &mut gui.msg_dialog,
                                             );
                                             // Make sure this process is visible for sysinfo to kill/stop/etc.
-                                            win.sys.refresh_processes();
+                                            self.sys.refresh_processes();
                                             close_modal = true;
                                         }
                                         Err(e) => {
@@ -180,51 +180,51 @@ impl OpenProcessWindow {
                 }
             });
             if close_modal {
-                win.modal = None;
+                self.modal = None;
             }
             ui.set_enabled(false);
         }
         ui.horizontal(|ui| {
-            match win.selected_pid {
+            match self.selected_pid {
                 None => {
-                    if win.open.just_now() || ui.button("Refresh processes").clicked() {
-                        win.sys.refresh_processes();
+                    if self.open.just_now() || ui.button("Refresh processes").clicked() {
+                        self.sys.refresh_processes();
                     }
                 }
                 Some(pid) => {
                     if ui.button("Refresh memory maps").clicked() {
-                        refresh_proc_maps(pid.as_u32(), &mut win.map_ranges, &mut gui.msg_dialog);
+                        refresh_proc_maps(pid.as_u32(), &mut self.map_ranges, &mut gui.msg_dialog);
                     }
                     if ui
-                        .selectable_label(win.find.open, "🔍 Find...")
+                        .selectable_label(self.find.open, "🔍 Find...")
                         .on_hover_text("Find values across all map ranges")
                         .clicked()
                     {
-                        win.find.open ^= true;
+                        self.find.open ^= true;
                     }
                 }
             }
             if ui.button("Run command...").clicked() {
-                win.modal = Some(Modal::run_command());
+                self.modal = Some(Modal::run_command());
             }
-            if let Some(path) = &win.default_meta_path {
+            if let Some(path) = &self.default_meta_path {
                 ui.checkbox(
-                    &mut win.use_default_meta_path,
+                    &mut self.use_default_meta_path,
                     format!("Use metafile {}", path.display()),
                 );
             }
         });
-        if let &Some(pid) = &win.selected_pid {
-            if win.find.open {
-                ui.text_edit_singleline(&mut win.find.input);
-                match win.find.input.parse::<u8>() {
+        if let &Some(pid) = &self.selected_pid {
+            if self.find.open {
+                ui.text_edit_singleline(&mut self.find.input);
+                match self.find.input.parse::<u8>() {
                     Ok(num) => {
                         if ui.button("Find").clicked() {
-                            win.find.results.clear();
-                            for range in win
+                            self.find.results.clear();
+                            for range in self
                                 .map_ranges
                                 .iter()
-                                .filter(|range| should_retain_range(&win.filters, range))
+                                .filter(|range| should_retain_range(&self.filters, range))
                             {
                                 match app.load_proc_memory(
                                     pid,
@@ -239,7 +239,7 @@ impl OpenProcessWindow {
                                         for offset in memchr::memchr_iter(num, &app.data) {
                                             offsets.push(offset);
                                         }
-                                        win.find.results.push(MapFindResults {
+                                        self.find.results.push(MapFindResults {
                                             map: range.clone(),
                                             offsets,
                                         });
@@ -248,8 +248,8 @@ impl OpenProcessWindow {
                                 }
                             }
                         }
-                        if !win.find.results.is_empty() && ui.button("Retain").clicked() {
-                            win.find.results.retain_mut(|result| {
+                        if !self.find.results.is_empty() && ui.button("Retain").clicked() {
+                            self.find.results.retain_mut(|result| {
                                 match app.load_proc_memory(
                                     pid,
                                     result.map.start(),
@@ -279,10 +279,10 @@ impl OpenProcessWindow {
                 }
 
                 let result_count: usize =
-                    win.find.results.iter().map(|res| res.offsets.len()).sum();
+                    self.find.results.iter().map(|res| res.offsets.len()).sum();
 
                 if result_count < 30 {
-                    for (i, result) in win.find.results.iter().enumerate() {
+                    for (i, result) in self.find.results.iter().enumerate() {
                         let label = format!(
                             "{}..={} ({}) @ {:?}",
                             result.map.start(),
@@ -315,8 +315,8 @@ impl OpenProcessWindow {
                                                     msg_fail(&e, "Error", &mut gui.msg_dialog)
                                                 }
                                             }
-                                            if let Some(path) = &win.default_meta_path
-                                                && win.use_default_meta_path
+                                            if let Some(path) = &self.default_meta_path
+                                                && self.use_default_meta_path
                                             {
                                                 let result =
                                                     app.consume_meta_from_file(path.clone());
@@ -353,10 +353,10 @@ impl OpenProcessWindow {
             }
             ui.heading(format!("Virtual memory maps for pid {pid}"));
             if ui.link("Back to process list").clicked() {
-                win.sys.refresh_processes();
-                win.selected_pid = None;
+                self.sys.refresh_processes();
+                self.selected_pid = None;
             }
-            if let Some(proc) = win.sys.process(pid) {
+            if let Some(proc) = self.sys.process(pid) {
                 ui.horizontal(|ui| {
                     if ui.button("Stop").clicked() {
                         proc.kill_with(Signal::Stop);
@@ -369,7 +369,7 @@ impl OpenProcessWindow {
                     }
                 });
             }
-            let mut filtered = win.map_ranges.clone();
+            let mut filtered = self.map_ranges.clone();
             TableBuilder::new(ui)
                 .max_scroll_height(400.0)
                 .column(Column::auto())
@@ -384,16 +384,16 @@ impl OpenProcessWindow {
                             if sort_button(
                                 ui,
                                 "",
-                                win.maps_sort_col == MapsSortColumn::StartOffset,
-                                win.addr_sort,
+                                self.maps_sort_col == MapsSortColumn::StartOffset,
+                                self.addr_sort,
                             )
                             .clicked()
                             {
-                                win.maps_sort_col = MapsSortColumn::StartOffset;
-                                win.addr_sort.flip();
+                                self.maps_sort_col = MapsSortColumn::StartOffset;
+                                self.addr_sort.flip();
                             }
                             ui.add(
-                                egui::TextEdit::singleline(&mut win.filters.addr)
+                                egui::TextEdit::singleline(&mut self.filters.addr)
                                     .hint_text("🔎 Addr"),
                             );
                         });
@@ -402,13 +402,13 @@ impl OpenProcessWindow {
                         if sort_button(
                             ui,
                             "size",
-                            win.maps_sort_col == MapsSortColumn::Size,
-                            win.size_sort,
+                            self.maps_sort_col == MapsSortColumn::Size,
+                            self.size_sort,
                         )
                         .clicked()
                         {
-                            win.maps_sort_col = MapsSortColumn::Size;
-                            win.size_sort.flip();
+                            self.maps_sort_col = MapsSortColumn::Size;
+                            self.size_sort.flip();
                         }
                     });
                     row.col(|ui| {
@@ -416,15 +416,15 @@ impl OpenProcessWindow {
                             .context_menu(|ui| {
                                 ui.label("Filter");
                                 ui.separator();
-                                ui.checkbox(&mut win.filters.perms.read, "Read");
-                                ui.checkbox(&mut win.filters.perms.write, "Write");
-                                ui.checkbox(&mut win.filters.perms.execute, "Execute");
+                                ui.checkbox(&mut self.filters.perms.read, "Read");
+                                ui.checkbox(&mut self.filters.perms.write, "Write");
+                                ui.checkbox(&mut self.filters.perms.execute, "Execute");
                             });
                     });
                     row.col(|ui| {
                         ui.horizontal(|ui| {
                             ui.add(
-                                egui::TextEdit::singleline(&mut win.filters.path)
+                                egui::TextEdit::singleline(&mut self.filters.path)
                                     .hint_text("🔎 Path"),
                             );
                             if ui
@@ -432,32 +432,32 @@ impl OpenProcessWindow {
                                 .on_hover_text("Remove filtered paths")
                                 .clicked()
                             {
-                                win.map_ranges.retain(|range| {
+                                self.map_ranges.retain(|range| {
                                     let mut retain = true;
                                     if let Some(filename) = range.filename() {
                                         if filename
                                             .display()
                                             .to_string()
-                                            .contains(&win.filters.path)
+                                            .contains(&self.filters.path)
                                         {
                                             retain = false;
                                         }
                                     }
                                     retain
                                 });
-                                win.filters.path.clear();
+                                self.filters.path.clear();
                             }
                         });
                     });
                 })
                 .body(|body| {
-                    filtered.retain(|range| should_retain_range(&win.filters, range));
-                    filtered.sort_by(|range1, range2| match win.maps_sort_col {
-                        MapsSortColumn::Size => match win.size_sort {
+                    filtered.retain(|range| should_retain_range(&self.filters, range));
+                    filtered.sort_by(|range1, range2| match self.maps_sort_col {
+                        MapsSortColumn::Size => match self.size_sort {
                             Sort::Ascending => range1.size().cmp(&range2.size()),
                             Sort::Descending => range1.size().cmp(&range2.size()).reverse(),
                         },
-                        MapsSortColumn::StartOffset => match win.addr_sort {
+                        MapsSortColumn::StartOffset => match self.addr_sort {
                             Sort::Ascending => range1.start().cmp(&range2.start()),
                             Sort::Descending => range1.start().cmp(&range2.start()).reverse(),
                         },
@@ -509,8 +509,8 @@ impl OpenProcessWindow {
                                     "Failed to load process memory",
                                     &mut gui.msg_dialog,
                                 );
-                                if let Some(path) = &win.default_meta_path
-                                    && win.use_default_meta_path
+                                if let Some(path) = &self.default_meta_path
+                                    && self.use_default_meta_path
                                 {
                                     let result = app.consume_meta_from_file(path.clone());
                                     msg_if_fail(
@@ -519,7 +519,7 @@ impl OpenProcessWindow {
                                         &mut gui.msg_dialog,
                                     );
                                 }
-                                if let Ok(off) = usize::from_str_radix(&win.filters.addr, 16) {
+                                if let Ok(off) = usize::from_str_radix(&self.filters.addr, 16) {
                                     let off = off - app.src_args.hard_seek.unwrap_or(0);
                                     app.edit_state.set_cursor(off);
                                     app.center_view_on_offset(off);
@@ -574,7 +574,7 @@ impl OpenProcessWindow {
             ui.label(format!(
                 "{}/{} maps shown ({})",
                 filtered.len(),
-                win.map_ranges.len(),
+                self.map_ranges.len(),
                 crate::util::human_size(filtered.iter().map(|range| range.size()).sum::<usize>())
             ));
         } else {
@@ -585,25 +585,25 @@ impl OpenProcessWindow {
                 .striped(true)
                 .header(20.0, |mut row| {
                     row.col(|ui| {
-                        if sort_button(ui, "pid", true, win.pid_sort).clicked() {
-                            win.pid_sort.flip()
+                        if sort_button(ui, "pid", true, self.pid_sort).clicked() {
+                            self.pid_sort.flip()
                         }
                     });
                     row.col(|ui| {
                         ui.add(
-                            egui::TextEdit::singleline(&mut win.filters.proc_name)
+                            egui::TextEdit::singleline(&mut self.filters.proc_name)
                                 .hint_text("🔎 Name"),
                         );
                     });
                 })
                 .body(|body| {
-                    let procs = win.sys.processes();
-                    let filt_str = win.filters.proc_name.to_ascii_lowercase();
+                    let procs = self.sys.processes();
+                    let filt_str = self.filters.proc_name.to_ascii_lowercase();
                     let mut pids: Vec<&sysinfo::Pid> = procs
                         .keys()
                         .filter(|&pid| procs[pid].name().to_ascii_lowercase().contains(&filt_str))
                         .collect();
-                    pids.sort_by(|pid1, pid2| match win.pid_sort {
+                    pids.sort_by(|pid1, pid2| match self.pid_sort {
                         Sort::Ascending => pid1.cmp(pid2),
                         Sort::Descending => pid1.cmp(pid2).reverse(),
                     });
@@ -611,14 +611,14 @@ impl OpenProcessWindow {
                         let pid = pids[row.index()];
                         row.col(|ui| {
                             if ui
-                                .selectable_label(Some(*pid) == win.selected_pid, pid.to_string())
+                                .selectable_label(Some(*pid) == self.selected_pid, pid.to_string())
                                 .clicked()
                             {
-                                win.selected_pid = Some(*pid);
+                                self.selected_pid = Some(*pid);
                                 match pid.to_string().parse() {
                                     Ok(pid) => refresh_proc_maps(
                                         pid,
-                                        &mut win.map_ranges,
+                                        &mut self.map_ranges,
                                         &mut gui.msg_dialog,
                                     ),
                                     Err(e) => msg_fail(
@@ -635,7 +635,7 @@ impl OpenProcessWindow {
                     });
                 });
         }
-        win.open.post_ui();
+        self.open.post_ui();
     }
 }
 

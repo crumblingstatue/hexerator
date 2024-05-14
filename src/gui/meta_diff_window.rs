@@ -17,7 +17,7 @@ pub struct MetaDiffWindow {
     pub open: WindowOpen,
 }
 impl MetaDiffWindow {
-    pub(crate) fn ui(WindowCtxt { ui, app, .. }: WindowCtxt) {
+    pub(crate) fn ui(&mut self, WindowCtxt { ui, app, .. }: WindowCtxt) {
         let this = &mut app.meta_state.meta;
         let clean = &app.meta_state.clean_meta;
         ui.heading("Regions");

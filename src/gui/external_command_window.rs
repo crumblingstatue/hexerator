@@ -45,40 +45,39 @@ enum Arg<'src> {
 }
 
 impl ExternalCommandWindow {
-    pub fn ui(WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
-        let win = &mut gui.win.external_command;
+    pub fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         let re = ui.add(
-            egui::TextEdit::multiline(&mut win.cmd_str)
+            egui::TextEdit::multiline(&mut self.cmd_str)
                 .hint_text("Use {} to substitute filename.\nExample: aplay {} -f s16_le"),
         );
-        if win.open.just_now() {
+        if self.open.just_now() {
             re.request_focus();
         }
         ui.add_enabled(
             app.hex_ui.selection().is_some(),
-            egui::Checkbox::new(&mut win.selection_only, "Selection only"),
+            egui::Checkbox::new(&mut self.selection_only, "Selection only"),
         );
-        ui.checkbox(&mut win.inherited_streams, "Inherited stdout/stderr")
+        ui.checkbox(&mut self.inherited_streams, "Inherited stdout/stderr")
             .on_hover_text(
                 "Use this for large amounts of data that could block child processes, like music players, etc."
             );
-        let exec_enabled = win.child.is_none();
+        let exec_enabled = self.child.is_none();
         if ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
-            win.open.set(false);
+            self.open.set(false);
         }
         if ui
             .add_enabled(exec_enabled, egui::Button::new("Execute (ctrl+E)"))
             .clicked()
             || (exec_enabled
                 && ((ui.input(|inp| {
-                    inp.key_pressed(egui::Key::E) && inp.modifiers.ctrl && !win.open.just_now()
-                })) || win.auto_exec))
+                    inp.key_pressed(egui::Key::E) && inp.modifiers.ctrl && !self.open.just_now()
+                })) || self.auto_exec))
         {
             let res: anyhow::Result<()> = try {
                 // Parse args
-                let (cmd, args) = parse(&win.cmd_str)?;
+                let (cmd, args) = parse(&self.cmd_str)?;
                 // Generate temp file
-                let range = if win.selection_only
+                let range = if self.selection_only
                     && let Some(sel) = app.hex_ui.selection()
                 {
                     sel.begin..=sel.end
@@ -91,7 +90,7 @@ impl ExternalCommandWindow {
                 // Spawn process
                 let mut cmd = Command::new(cmd);
                 cmd.args(resolve_args(args, &path));
-                if win.inherited_streams {
+                if self.inherited_streams {
                     cmd.stdout(Stdio::inherit());
                     cmd.stderr(Stdio::inherit());
                 } else {
@@ -99,13 +98,13 @@ impl ExternalCommandWindow {
                     cmd.stderr(Stdio::piped());
                 }
                 let handle = cmd.spawn()?;
-                win.child = Some(handle);
+                self.child = Some(handle);
             };
             msg_if_fail(res, "Failed to spawn command", &mut gui.msg_dialog);
         }
-        ui.checkbox(&mut win.auto_exec, "Auto execute")
+        ui.checkbox(&mut self.auto_exec, "Auto execute")
             .on_hover_text("Execute again after process finishes");
-        if let Some(child) = &mut win.child {
+        if let Some(child) = &mut self.child {
             ui.horizontal(|ui| {
                 ui.label(format!("{} running", child.id()));
                 if ui.button("Kill").clicked() {
@@ -116,46 +115,46 @@ impl ExternalCommandWindow {
                 Ok(opt_status) => {
                     if let Some(status) = opt_status {
                         if let Some(stdout) = &mut child.stdout {
-                            win.stdout.clear();
-                            if let Err(e) = stdout.read_to_string(&mut win.stdout) {
-                                win.stdout = format!("<Error reading stdout: {e}>");
+                            self.stdout.clear();
+                            if let Err(e) = stdout.read_to_string(&mut self.stdout) {
+                                self.stdout = format!("<Error reading stdout: {e}>");
                             }
                         }
                         if let Some(stderr) = &mut child.stderr {
-                            win.stderr.clear();
-                            if let Err(e) = stderr.read_to_string(&mut win.stderr) {
-                                win.stderr = format!("<Error reading stderr: {e}>");
+                            self.stderr.clear();
+                            if let Err(e) = stderr.read_to_string(&mut self.stderr) {
+                                self.stderr = format!("<Error reading stderr: {e}>");
                             }
                         }
-                        win.child = None;
-                        win.exit_status = Some(status)
+                        self.child = None;
+                        self.exit_status = Some(status)
                     }
                 }
-                Err(e) => win.err_msg = e.to_string(),
+                Err(e) => self.err_msg = e.to_string(),
             }
         }
-        if !win.err_msg.is_empty() {
-            ui.label(egui::RichText::new(&win.err_msg).color(egui::Color32::RED));
+        if !self.err_msg.is_empty() {
+            ui.label(egui::RichText::new(&self.err_msg).color(egui::Color32::RED));
         }
-        if !win.stdout.is_empty() {
+        if !self.stdout.is_empty() {
             ui.label("stdout");
             egui::ScrollArea::vertical()
                 .id_source("stdout")
                 .max_height(200.0)
                 .show(ui, |ui| {
-                    ui.text_edit_multiline(&mut &win.stdout[..]);
+                    ui.text_edit_multiline(&mut &self.stdout[..]);
                 });
         }
-        if !win.stderr.is_empty() {
+        if !self.stderr.is_empty() {
             ui.label("stderr");
             egui::ScrollArea::vertical()
                 .id_source("stderr")
                 .max_height(200.0)
                 .show(ui, |ui| {
-                    ui.text_edit_multiline(&mut &win.stderr[..]);
+                    ui.text_edit_multiline(&mut &self.stderr[..]);
                 });
         }
-        win.open.post_ui();
+        self.open.post_ui();
     }
 }
 
