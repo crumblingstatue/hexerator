@@ -1,8 +1,7 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
         app::App,
-        gui::window_open::WindowOpen,
         layout::{default_margin, Layout},
         meta::{LayoutKey, MetaLow, NamedView, ViewKey, ViewMap},
         view::{HexData, View, ViewKind},

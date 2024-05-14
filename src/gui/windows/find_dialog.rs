@@ -1,11 +1,10 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
         app::{get_clipboard_string, set_clipboard_string},
         damage_region::DamageRegion,
         gui::{
             message_dialog::{Icon, MessageDialog},
-            window_open::WindowOpen,
             windows::region_context_menu,
         },
         meta::{

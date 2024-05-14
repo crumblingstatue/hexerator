@@ -1,6 +1,6 @@
 use {
-    super::WinCtx,
-    crate::{gui::window_open::WindowOpen, shell::msg_fail},
+    super::{WinCtx, WindowOpen},
+    crate::shell::msg_fail,
     egui_extras::{Column, TableBuilder},
 };
 

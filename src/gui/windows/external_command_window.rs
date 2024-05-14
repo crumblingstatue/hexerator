@@ -1,6 +1,6 @@
 use {
-    super::WinCtx,
-    crate::{gui::window_open::WindowOpen, shell::msg_if_fail},
+    super::{WinCtx, WindowOpen},
+    crate::shell::msg_if_fail,
     anyhow::Context,
     std::{
         ffi::OsString,

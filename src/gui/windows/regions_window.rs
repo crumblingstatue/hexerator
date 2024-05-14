@@ -1,11 +1,8 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
         app::command::{Cmd, CommandQueue},
-        gui::{
-            command::{GCmd, GCommandQueue},
-            window_open::WindowOpen,
-        },
+        gui::command::{GCmd, GCommandQueue},
         meta::{Meta, NamedRegion, RegionKey},
     },
     egui_extras::{Column, TableBuilder},

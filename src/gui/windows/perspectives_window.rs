@@ -1,9 +1,7 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
-        app::command::Cmd,
-        gui::{window_open::WindowOpen, windows::regions_window::region_context_menu},
-        meta::PerspectiveKey,
+        app::command::Cmd, gui::windows::regions_window::region_context_menu, meta::PerspectiveKey,
     },
     egui_extras::{Column, TableBuilder},
     slotmap::Key,

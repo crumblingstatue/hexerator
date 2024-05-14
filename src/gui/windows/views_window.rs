@@ -1,8 +1,8 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
         app::{command::Cmd, App},
-        gui::{window_open::WindowOpen, windows::regions_window::region_context_menu},
+        gui::windows::regions_window::region_context_menu,
         meta::ViewKey,
         view::{HexData, TextData, TextKind, ViewKind},
     },

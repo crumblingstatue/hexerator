@@ -1,6 +1,6 @@
 use {
-    super::WinCtx,
-    crate::{gui::window_open::WindowOpen, scripting::*},
+    super::{WinCtx, WindowOpen},
+    crate::scripting::*,
     egui::Color32,
 };
 

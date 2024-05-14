@@ -1,12 +1,9 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
         app::{edit_state::EditState, set_clipboard_string},
         damage_region::DamageRegion,
-        gui::{
-            message_dialog::MessageDialog, window_open::WindowOpen,
-            windows::regions_window::region_context_menu,
-        },
+        gui::{message_dialog::MessageDialog, windows::regions_window::region_context_menu},
         meta::{
             find_most_specific_region_for_offset,
             value_type::{

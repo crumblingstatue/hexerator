@@ -1,9 +1,6 @@
 use {
-    super::WinCtx,
-    crate::{
-        gui::window_open::WindowOpen,
-        meta::{VarEntry, VarVal},
-    },
+    super::{WinCtx, WindowOpen},
+    crate::meta::{VarEntry, VarVal},
     egui::TextBuffer,
     egui_extras::Column,
 };

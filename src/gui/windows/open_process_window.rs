@@ -1,7 +1,7 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
-        gui::{message_dialog::MessageDialog, window_open::WindowOpen},
+        gui::message_dialog::MessageDialog,
         shell::{msg_fail, msg_if_fail},
         util::human_size,
     },

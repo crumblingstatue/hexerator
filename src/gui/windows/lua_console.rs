@@ -1,8 +1,6 @@
 use {
-    super::WinCtx,
-    crate::{
-        gui::window_open::WindowOpen, meta::ScriptKey, scripting::exec_lua, shell::msg_if_fail,
-    },
+    super::{WinCtx, WindowOpen},
+    crate::{meta::ScriptKey, scripting::exec_lua, shell::msg_if_fail},
     std::collections::HashMap,
 };
 

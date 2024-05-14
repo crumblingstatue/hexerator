@@ -41,7 +41,6 @@ mod ops;
 pub mod selection_menu;
 pub mod top_menu;
 mod top_panel;
-mod window_open;
 pub mod windows;
 
 type Dialogs = HashMap<TypeId, Box<dyn Dialog>>;

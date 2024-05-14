@@ -1,8 +1,8 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
         app::App,
-        gui::{window_open::WindowOpen, Gui},
+        gui::Gui,
         meta::{ScriptKey, ScriptMap},
         scripting::exec_lua,
         shell::msg_if_fail,

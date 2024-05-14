@@ -1,12 +1,9 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
         app::App,
         config::{self, Config},
-        gui::{
-            message_dialog::{Icon, MessageDialog},
-            window_open::WindowOpen,
-        },
+        gui::message_dialog::{Icon, MessageDialog},
     },
     egui_fontcfg::{CustomFontPaths, FontCfgUi, FontDefsUiMsg},
     egui_sfml::sfml::graphics::RenderWindow,

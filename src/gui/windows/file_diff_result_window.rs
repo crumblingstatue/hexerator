@@ -1,8 +1,8 @@
 use {
-    super::WinCtx,
+    super::{WinCtx, WindowOpen},
     crate::{
         app::read_source_to_buf,
-        gui::{window_open::WindowOpen, windows::regions_window::region_context_menu},
+        gui::windows::regions_window::region_context_menu,
         meta::{
             find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta, RegionKey,
         },
