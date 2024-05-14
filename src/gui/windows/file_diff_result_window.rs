@@ -35,8 +35,8 @@ impl Default for FileDiffResultWindow {
         }
     }
 }
-impl FileDiffResultWindow {
-    pub(crate) fn ui(
+impl super::Window for FileDiffResultWindow {
+    fn ui(
         &mut self,
         WindowCtxt {
             ui, gui, app, font, ..

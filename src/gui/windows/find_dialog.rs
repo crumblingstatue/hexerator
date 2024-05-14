@@ -104,8 +104,8 @@ pub struct FindDialog {
     pub selection_only: bool,
 }
 
-impl FindDialog {
-    pub fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+impl super::Window for FindDialog {
+    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.horizontal(|ui| {
             egui::ComboBox::new("type_combo", "Data type")
                 .selected_text(<&str>::from(&self.find_type))

@@ -21,8 +21,8 @@ struct PtrEntry {
     execute: bool,
 }
 
-impl FindMemoryPointersWindow {
-    pub fn ui(
+impl super::Window for FindMemoryPointersWindow {
+    fn ui(
         &mut self,
         WindowCtxt {
             ui, gui, app, font, ..

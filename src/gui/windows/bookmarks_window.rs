@@ -35,8 +35,8 @@ pub struct BookmarksWindow {
     name_filter_string: String,
 }
 
-impl BookmarksWindow {
-    pub fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+impl super::Window for BookmarksWindow {
+    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         ui.horizontal(|ui| {
             ui.add(

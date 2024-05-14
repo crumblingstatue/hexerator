@@ -39,8 +39,8 @@ impl Tab {
     }
 }
 
-impl PreferencesWindow {
-    pub fn ui(
+impl super::Window for PreferencesWindow {
+    fn ui(
         &mut self,
         WindowCtxt {
             ui, gui, app, rwin, ..

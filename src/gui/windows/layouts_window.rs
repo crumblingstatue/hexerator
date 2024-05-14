@@ -17,8 +17,8 @@ pub struct LayoutsWindow {
     swap_a: ViewKey,
     edit_name: bool,
 }
-impl LayoutsWindow {
-    pub(crate) fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+impl super::Window for LayoutsWindow {
+    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         if self.open.just_now() {
             self.selected = app.hex_ui.current_layout;
         }

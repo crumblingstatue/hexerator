@@ -59,8 +59,8 @@ pub fn region_context_menu(
     }
 }
 
-impl RegionsWindow {
-    pub fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+impl super::Window for RegionsWindow {
+    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         let button = egui::Button::new("Add selection as region");
         match app.hex_ui.selection() {

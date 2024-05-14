@@ -36,8 +36,8 @@ macro_rules! optenv {
     };
 }
 
-impl AboutWindow {
-    pub fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+impl super::Window for AboutWindow {
+    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         if self.open.just_now() {
             self.sys.refresh_cpu();

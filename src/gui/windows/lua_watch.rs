@@ -1,7 +1,4 @@
-use {
-    crate::{app::App, gui::Gui, scripting::exec_lua},
-    egui_sfml::sfml::graphics::Font,
-};
+use {super::WindowCtxt, crate::scripting::exec_lua};
 
 pub struct LuaWatchWindow {
     pub name: String,
@@ -19,14 +16,17 @@ impl Default for LuaWatchWindow {
     }
 }
 
-impl LuaWatchWindow {
-    pub fn ui(
+impl super::Window for LuaWatchWindow {
+    fn ui(
         &mut self,
-        ui: &mut egui::Ui,
-        gui: &mut Gui,
-        app: &mut App,
-        lua: &mlua::Lua,
-        font: &Font,
+        WindowCtxt {
+            ui,
+            gui,
+            app,
+            lua,
+            font,
+            ..
+        }: WindowCtxt,
     ) {
         ui.text_edit_singleline(&mut self.name);
         ui.text_edit_singleline(&mut self.expr);

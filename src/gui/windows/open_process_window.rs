@@ -118,8 +118,8 @@ struct RunCommand {
     file_dialog: FileDialog,
 }
 
-impl OpenProcessWindow {
-    pub(crate) fn ui(
+impl super::Window for OpenProcessWindow {
+    fn ui(
         &mut self,
         WindowCtxt {
             ui, gui, app, font, ..

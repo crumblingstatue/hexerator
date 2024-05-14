@@ -10,8 +10,8 @@ pub struct LuaHelpWindow {
     pub filter: String,
 }
 
-impl LuaHelpWindow {
-    pub fn ui(&mut self, WindowCtxt { ui, .. }: WindowCtxt) {
+impl super::Window for LuaHelpWindow {
+    fn ui(&mut self, WindowCtxt { ui, .. }: WindowCtxt) {
         ui.add(egui::TextEdit::singleline(&mut self.filter).hint_text("🔍 Filter"));
         egui::ScrollArea::vertical()
             .max_height(500.0)

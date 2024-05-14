@@ -75,6 +75,10 @@ pub struct WindowCtxt<'a> {
     font: &'a Font,
 }
 
+trait Window {
+    fn ui(&mut self, ctx: WindowCtxt);
+}
+
 impl Windows {
     pub(crate) fn update(
         ctx: &egui::Context,
@@ -118,5 +122,27 @@ impl Windows {
             "Script manager",          script_manager;
             "About Hexerator",         about;
         }
+
+        let mut watch_windows = std::mem::take(&mut gui.win.lua_watch);
+        let mut i = 0;
+        watch_windows.retain_mut(|win| {
+            let mut retain = true;
+            egui::Window::new(&win.name)
+                .id(egui::Id::new("watch_w").with(i))
+                .open(&mut retain)
+                .show(ctx, |ui| {
+                    win.ui(WindowCtxt {
+                        ui,
+                        gui,
+                        app,
+                        rwin,
+                        lua,
+                        font,
+                    })
+                });
+            i += 1;
+            retain
+        });
+        std::mem::swap(&mut gui.win.lua_watch, &mut watch_windows);
     }
 }

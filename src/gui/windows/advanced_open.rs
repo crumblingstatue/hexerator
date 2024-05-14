@@ -30,8 +30,8 @@ fn opt<V: Default>(
     .inner
 }
 
-impl AdvancedOpenWindow {
-    pub(crate) fn ui(
+impl super::Window for AdvancedOpenWindow {
+    fn ui(
         &mut self,
         WindowCtxt {
             ui, gui, app, font, ..

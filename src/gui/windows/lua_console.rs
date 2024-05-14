@@ -49,8 +49,8 @@ pub enum ConMsg {
     },
 }
 
-impl LuaConsoleWindow {
-    pub fn ui(
+impl super::Window for LuaConsoleWindow {
+    fn ui(
         &mut self,
         WindowCtxt {
             ui,

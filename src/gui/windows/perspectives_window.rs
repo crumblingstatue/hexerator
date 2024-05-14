@@ -14,8 +14,8 @@ pub struct PerspectivesWindow {
     pub open: WindowOpen,
     pub rename_idx: PerspectiveKey,
 }
-impl PerspectivesWindow {
-    pub(crate) fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
+impl super::Window for PerspectivesWindow {
+    fn ui(&mut self, WindowCtxt { ui, gui, app, .. }: WindowCtxt) {
         ui.style_mut().wrap = Some(false);
         TableBuilder::new(ui)
             .columns(Column::auto(), 3)

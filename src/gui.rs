@@ -130,18 +130,6 @@ pub fn do_egui(
     gui.msg_dialog.show(ctx, &mut app.clipboard, &mut app.cmd);
     app.flush_command_queue(gui, lua, font);
     self::Windows::update(ctx, gui, app, rwin, lua, font);
-    let mut watch_windows = std::mem::take(&mut gui.win.lua_watch);
-    let mut i = 0;
-    watch_windows.retain_mut(|win| {
-        let mut retain = true;
-        Window::new(&win.name)
-            .id(egui::Id::new("watch_w").with(i))
-            .open(&mut retain)
-            .show(ctx, |ui| win.ui(ui, gui, app, lua, font));
-        i += 1;
-        retain
-    });
-    std::mem::swap(&mut gui.win.lua_watch, &mut watch_windows);
 
     // Context menu
     if let Some(menu) = &gui.context_menu {

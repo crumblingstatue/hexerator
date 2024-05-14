@@ -18,8 +18,8 @@ pub struct ScriptManagerWindow {
     selected: Option<ScriptKey>,
 }
 
-impl ScriptManagerWindow {
-    pub fn ui(
+impl super::Window for ScriptManagerWindow {
+    fn ui(
         &mut self,
         WindowCtxt {
             ui,
@@ -58,6 +58,9 @@ impl ScriptManagerWindow {
         self.selected_script_ui(ui, gui, app, lua, font, &mut scripts);
         std::mem::swap(&mut app.meta_state.meta.scripts, &mut scripts);
     }
+}
+
+impl ScriptManagerWindow {
     fn selected_script_ui(
         &mut self,
         ui: &mut egui::Ui,
