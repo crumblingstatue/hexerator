@@ -7,8 +7,10 @@ use {
             message_dialog::{Icon, MessageDialog},
             windows::region_context_menu,
         },
+        hex_ui::HexUi,
         meta::{
             find_most_specific_region_for_offset,
+            region::Region,
             value_type::{
                 EndianedPrimitive, F32Be, F32Le, F64Be, F64Le, I16Be, I16Le, I32Be, I32Le, I64Be,
                 I64Le, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8, U8,
@@ -126,7 +128,7 @@ impl super::Window for FindDialog {
         }
         if re.lost_focus() && ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
             if self.reload_before_search {
-                msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
+                self.reload_data(app, gui);
             }
             let (data, offs) = self.data_to_search(app);
             msg_if_fail(
@@ -166,7 +168,7 @@ impl super::Window for FindDialog {
         });
         if self.rapid_eq_filter {
             if self.reload_before_search {
-                msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
+                self.reload_data(app, gui);
             }
             let (data, offset) = self.data_to_search(app);
             eq_filter(self, data, offset);
@@ -458,14 +460,26 @@ impl super::Window for FindDialog {
 }
 
 impl FindDialog {
-    fn data_to_search<'a>(&self, app: &'a crate::app::App) -> (&'a [u8], usize) {
-        if self.selection_only
-            && let Some(sel) = app.hex_ui.selection()
-        {
-            (&app.data[sel.begin..=sel.end], sel.begin)
+    fn search_region(&self, app_hex_ui: &HexUi) -> Option<Region> {
+        if self.selection_only {
+            app_hex_ui.selection()
         } else {
-            (&app.data[..], 0)
+            None
         }
+    }
+    fn data_to_search<'a>(&self, app: &'a crate::app::App) -> (&'a [u8], usize) {
+        match self.search_region(&app.hex_ui) {
+            Some(reg) => (&app.data[reg.begin..=reg.end], reg.begin),
+            None => (&app.data[..], 0),
+        }
+    }
+
+    fn reload_data(&mut self, app: &mut crate::app::App, gui: &mut crate::gui::Gui) {
+        let result = match self.search_region(&app.hex_ui) {
+            Some(reg) => app.reload_range(reg.begin, reg.end),
+            None => app.reload(),
+        };
+        msg_if_fail(result, "Failed to reload", &mut gui.msg_dialog);
     }
 }
 

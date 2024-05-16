@@ -630,7 +630,7 @@ impl App {
         let (lo, hi) = self.visible_byte_range();
         self.reload_range(lo, hi)
     }
-    fn reload_range(&mut self, lo: usize, hi: usize) -> anyhow::Result<()> {
+    pub fn reload_range(&mut self, lo: usize, hi: usize) -> anyhow::Result<()> {
         let Some(src) = &self.source else {
             anyhow::bail!("No source")
         };
