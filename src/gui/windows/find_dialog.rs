@@ -349,11 +349,7 @@ impl super::Window for FindDialog {
                                                     offset: off,
                                                     label: "New bookmark".into(),
                                                     desc: String::new(),
-                                                    value_type: gui
-                                                        .win
-                                                        .find
-                                                        .find_type
-                                                        .to_value_type(),
+                                                    value_type: self.find_type.to_value_type(),
                                                 });
                                                 gui.win.bookmarks.open.set(true);
                                                 gui.win.bookmarks.selected = Some(idx);
@@ -378,10 +374,7 @@ impl super::Window for FindDialog {
                         Action::None => {}
                         Action::RemoveRegionFromResults(key) => {
                             let reg = &app.meta_state.meta.low.regions[key];
-                            gui.win
-                                .find
-                                .results_vec
-                                .retain(|&idx| !reg.region.contains(idx));
+                            self.results_vec.retain(|&idx| !reg.region.contains(idx));
                         }
                         Action::RemoveIdxFromResults(idx) => {
                             self.results_vec.remove(idx);
@@ -417,13 +410,7 @@ impl super::Window for FindDialog {
                 strip.cell(|ui| {
                     ui.horizontal(|ui| {
                         if ui.button("Copy offsets").clicked() {
-                            let s = gui
-                                .win
-                                .find
-                                .results_vec
-                                .iter()
-                                .map(ToString::to_string)
-                                .join(" ");
+                            let s = self.results_vec.iter().map(ToString::to_string).join(" ");
                             set_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog, &s);
                         }
                         if ui.button("Paste offsets").clicked() {
