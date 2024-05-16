@@ -30,6 +30,7 @@ pub struct BookmarksWindow {
     pub focus_text_edit: bool,
     value_type_string_buf: String,
     name_filter_string: String,
+    autoreload: bool,
 }
 
 impl super::Window for BookmarksWindow {
@@ -46,6 +47,8 @@ impl super::Window for BookmarksWindow {
                     gui.highlight_set.insert(bm.offset);
                 }
             }
+            ui.checkbox(&mut self.autoreload, "Autoreload")
+                .on_hover_text("Automatically reload data every frame for the visible bookmarks");
         });
         let mut action = Action::None;
         ScrollArea::vertical().max_height(500.0).show(ui, |ui| {
@@ -132,8 +135,16 @@ impl super::Window for BookmarksWindow {
                             ui.label(app.meta_state.meta.bookmarks[idx].value_type.label());
                         });
                         row.col(|ui| {
+                            let bookmark = &app.meta_state.meta.bookmarks[idx];
+                            let offs = bookmark.offset;
+                            if self.autoreload {
+                                if let Err(e) = app.reload_range(offs, offs) {
+                                    eprintln!("Bookmark autoreload fail: {e}");
+                                }
+                            }
+                            let bookmark = &app.meta_state.meta.bookmarks[idx];
                             let result = value_ui(
-                                &app.meta_state.meta.bookmarks[idx],
+                                bookmark,
                                 &mut app.data,
                                 &mut app.edit_state,
                                 ui,

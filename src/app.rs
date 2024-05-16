@@ -643,7 +643,7 @@ impl App {
                     None => lo,
                 };
                 file.seek(SeekFrom::Start(offset as u64))?;
-                file.read_exact(&mut self.data[lo..hi])?;
+                file.read_exact(&mut self.data[lo..=hi])?;
                 Ok(())
             }
             SourceProvider::Stdin(_) => anyhow::bail!("Not implemented"),
