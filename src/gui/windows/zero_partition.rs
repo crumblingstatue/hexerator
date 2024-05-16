@@ -68,6 +68,9 @@ impl super::Window for ZeroPartition {
             .body(|body| {
                 body.rows(24.0, self.regions.len(), |mut row| {
                     let reg = &self.regions[row.index()];
+                    if reg.contains(app.edit_state.cursor) {
+                        row.set_selected(true);
+                    }
                     row.col(|ui| {
                         if ui
                             .link(reg.begin.to_string())
