@@ -94,6 +94,7 @@ pub struct FindDialog {
     /// When Some, the results list should be scrolled to the offset of that result
     pub scroll_to: Option<usize>,
     pub filter_results: bool,
+    pub rapid_eq_filter: bool,
     pub find_type: FindType,
     /// Used for increased/decreased unknown value search
     pub data_snapshot: Vec<u8>,
@@ -127,13 +128,7 @@ impl super::Window for FindDialog {
             if self.reload_before_search {
                 msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
             }
-            let (data, offs) = if self.selection_only
-                && let Some(sel) = app.hex_ui.selection()
-            {
-                (&app.data[sel.begin..=sel.end], sel.begin)
-            } else {
-                (&app.data[..], 0)
-            };
+            let (data, offs) = self.data_to_search(app);
             msg_if_fail(
                 do_search(data, offs, self, gui),
                 "Search failed",
@@ -160,8 +155,22 @@ impl super::Window for FindDialog {
                 }
             });
         }
-        ui.checkbox(&mut self.filter_results, "Filter results")
-            .on_hover_text("Base search on existing results");
+        ui.horizontal(|ui| {
+            ui.checkbox(&mut self.filter_results, "Filter results")
+                .on_hover_text("Base search on existing results");
+            ui.add_enabled(
+                self.filter_results,
+                egui::Checkbox::new(&mut self.rapid_eq_filter, "Rapid '=' filter"),
+            )
+            .on_hover_text("Filter every frame for data that hasn't changed");
+        });
+        if self.rapid_eq_filter {
+            if self.reload_before_search {
+                msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
+            }
+            let (data, offset) = self.data_to_search(app);
+            eq_filter(self, data, offset);
+        }
         StripBuilder::new(ui)
             .size(Size::initial(400.0))
             .size(Size::exact(20.0))
@@ -448,6 +457,18 @@ impl super::Window for FindDialog {
     }
 }
 
+impl FindDialog {
+    fn data_to_search<'a>(&self, app: &'a crate::app::App) -> (&'a [u8], usize) {
+        if self.selection_only
+            && let Some(sel) = app.hex_ui.selection()
+        {
+            (&app.data[sel.begin..=sel.end], sel.begin)
+        } else {
+            (&app.data[..], 0)
+        }
+    }
+}
+
 trait SliceExt<T> {
     #[expect(dead_code, reason = "Could be useful in the future")]
     fn get_array<const N: usize>(&self, offset: usize) -> Option<&[T; N]>;
@@ -720,18 +741,7 @@ fn find_u8(dia: &mut FindDialog, data: &[u8], initial_offset: usize, msg: &mut M
             dia.data_snapshot = data.to_vec();
         }
         "=" => {
-            if dia.filter_results {
-                dia.results_vec.retain(|&offset| {
-                    data[offset - initial_offset] == dia.data_snapshot[offset - initial_offset]
-                });
-            } else {
-                for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
-                    if new == old {
-                        dia.results_vec.push(i);
-                    }
-                }
-            }
-            dia.data_snapshot = data.to_vec();
+            eq_filter(dia, data, initial_offset);
         }
         "!=" => {
             if dia.filter_results {
@@ -784,6 +794,21 @@ fn find_u8(dia: &mut FindDialog, data: &[u8], initial_offset: usize, msg: &mut M
             Err(e) => msg.open(Icon::Error, "Parse error", e.to_string()),
         },
     }
+}
+
+fn eq_filter(dia: &mut FindDialog, data: &[u8], initial_offset: usize) {
+    if dia.filter_results {
+        dia.results_vec.retain(|&offset| {
+            data[offset - initial_offset] == dia.data_snapshot[offset - initial_offset]
+        });
+    } else {
+        for (i, (&new, &old)) in data.iter().zip(dia.data_snapshot.iter()).enumerate() {
+            if new == old {
+                dia.results_vec.push(i);
+            }
+        }
+    }
+    dia.data_snapshot = data.to_vec();
 }
 
 fn u8_search(
