@@ -45,9 +45,7 @@ impl super::Window for PreferencesWindow {
     ) {
         if self.open.just_now() {
             self.font_defs.families = app.cfg.font_families.clone();
-            gui.win
-                .preferences
-                .temp_custom_font_paths
+            self.temp_custom_font_paths
                 .clone_from(&app.cfg.custom_font_paths);
             let _ = egui_fontcfg::load_custom_fonts(
                 &app.cfg.custom_font_paths,
