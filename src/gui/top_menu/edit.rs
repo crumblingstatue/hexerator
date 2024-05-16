@@ -70,6 +70,20 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
         ui.close_menu();
     }
     ui.separator();
+    if ui
+        .add(Button::new("Inc byte").shortcut_text("Ctrl+="))
+        .clicked()
+    {
+        app.inc_byte_at_cursor();
+        ui.close_menu();
+    }
+    if ui
+        .add(Button::new("Dec byte").shortcut_text("Ctrl+-"))
+        .clicked()
+    {
+        app.inc_byte_at_cursor();
+        ui.close_menu();
+    }
     ui.menu_button("Paste at cursor", |ui| {
         if ui.button("Hex text from clipboard").clicked() {
             ui.close_menu();

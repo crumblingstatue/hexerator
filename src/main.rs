@@ -934,6 +934,8 @@ fn handle_key_pressed(
         Key::Num2 if key_mod.shift => app.hex_ui.select_b = Some(app.edit_state.cursor),
         Key::Tab if key_mod.shift => app.focus_prev_view_in_layout(),
         Key::Tab => app.focus_next_view_in_layout(),
+        Key::Equal if key_mod.ctrl => app.inc_byte_at_cursor(),
+        Key::Hyphen if key_mod.ctrl => app.dec_byte_at_cursor(),
         _ => {}
     }
 }

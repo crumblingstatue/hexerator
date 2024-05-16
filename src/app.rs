@@ -860,6 +860,22 @@ impl App {
         std::mem::swap(&mut self.plugins, &mut plugins);
         result
     }
+
+    pub(crate) fn mod_byte_at_cursor(&mut self, f: impl FnOnce(&mut u8)) {
+        if let Some(byte) = self.data.get_mut(self.edit_state.cursor) {
+            f(byte);
+            self.edit_state
+                .widen_dirty_region(DamageRegion::Single(self.edit_state.cursor));
+        }
+    }
+
+    pub(crate) fn inc_byte_at_cursor(&mut self) {
+        self.mod_byte_at_cursor(|b| *b = b.wrapping_add(1));
+    }
+
+    pub(crate) fn dec_byte_at_cursor(&mut self) {
+        self.mod_byte_at_cursor(|b| *b = b.wrapping_sub(1));
+    }
 }
 
 /// Set up an empty meta with the defaults
