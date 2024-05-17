@@ -10,6 +10,7 @@
 use {
     super::{backend_command::BackendCmd, App},
     crate::{
+        damage_region::DamageRegion,
         gui::Gui,
         meta::{NamedView, PerspectiveKey, RegionKey},
         scripting::exec_lua,
@@ -123,7 +124,10 @@ pub fn perform_command(app: &mut App, cmd: Cmd, gui: &mut Gui, lua: &Lua, font: 
             app.data.resize(new_len, 0);
         }
         Cmd::PasteBytes { at, bytes } => {
-            app.data[at..at + bytes.len()].copy_from_slice(&bytes);
+            let range = at..at + bytes.len();
+            app.data[range.clone()].copy_from_slice(&bytes);
+            app.edit_state
+                .widen_dirty_region(DamageRegion::Range(range));
         }
         Cmd::ProcessSourceChange => {
             app.backend_cmd.push(BackendCmd::SetWindowTitle(format!(
