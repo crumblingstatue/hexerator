@@ -30,6 +30,7 @@ use {
     egui_file_dialog::{DialogState, DirectoryEntry},
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     gui::command::GCmd,
+    std::backtrace::Backtrace,
 };
 
 mod app;
@@ -239,6 +240,8 @@ fn main() {
         };
         let bkpath = app::temp_metafile_backup_path();
         let bkpath = bkpath.display();
+        let btrace = Backtrace::capture();
+        eprintln!("{btrace}");
         do_fatal_error_report(
             "Hexerator panic",
             &format!(
@@ -247,7 +250,9 @@ fn main() {
             Location:\n\
             {file}:{line}:{column}\n\n\
             Meta Backup path:\n\
-            {bkpath}"
+            {bkpath}\n\n\
+            Backtrace:\n\
+            {btrace}"
             ),
         );
     }));
@@ -272,7 +277,11 @@ fn do_fatal_error_report(title: &str, mut desc: &str) {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.heading(title);
                 ui.separator();
-                ui.add(egui::TextEdit::multiline(&mut desc).code_editor());
+                egui::ScrollArea::vertical()
+                    .max_height(400.)
+                    .show(ui, |ui| {
+                        ui.add(egui::TextEdit::multiline(&mut desc).code_editor());
+                    });
                 ui.separator();
                 ui.heading("Close this window to exit");
             });
