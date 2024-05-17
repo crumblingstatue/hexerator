@@ -52,10 +52,20 @@ impl Dialog for LuaExecuteDialog {
             .vertical(|mut strip| {
                 strip.cell(|ui| {
                     egui::ScrollArea::vertical().show(ui, |ui| {
-                        let lua = self
-                            .edit_key
-                            .map(|key| &mut app.meta_state.meta.scripts[key].content)
-                            .unwrap_or(&mut app.meta_state.meta.misc.exec_lua_script);
+                        let lua;
+                        match self.edit_key {
+                            Some(key) => match app.meta_state.meta.scripts.get_mut(key) {
+                                Some(script) => lua = &mut script.content,
+                                None => {
+                                    eprintln!(
+                                        "Edit key is no longer in meta state. Setting to None."
+                                    );
+                                    self.edit_key = None;
+                                    return;
+                                }
+                            },
+                            None => lua = &mut app.meta_state.meta.misc.exec_lua_script,
+                        }
                         CodeEditor::default()
                             .with_syntax(Syntax::lua())
                             .show(ui, lua);
