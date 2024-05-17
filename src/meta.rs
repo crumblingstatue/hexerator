@@ -252,6 +252,13 @@ pub struct NamedView {
 }
 
 impl NamedRegion {
+    pub fn new(name: String, begin: usize, end: usize) -> Self {
+        Self {
+            name,
+            region: Region { begin, end },
+            desc: String::new(),
+        }
+    }
     pub fn new_from_selection(sel: Region) -> Self {
         Self {
             name: format!("New ({}..={})", sel.begin, sel.end),

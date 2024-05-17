@@ -59,17 +59,26 @@ pub fn region_context_menu(
 impl super::Window for RegionsWindow {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         ui.style_mut().wrap = Some(false);
-        let button = egui::Button::new("Add selection as region");
-        match app.hex_ui.selection() {
-            Some(sel) => {
-                if ui.add(button).clicked() {
-                    crate::gui::ops::add_region_from_selection(sel, &mut app.meta_state, self);
+        ui.horizontal(|ui| {
+            let button = egui::Button::new("Add selection as region");
+            match app.hex_ui.selection() {
+                Some(sel) => {
+                    if ui.add(button).clicked() {
+                        crate::gui::ops::add_region_from_selection(sel, &mut app.meta_state, self);
+                    }
+                }
+                None => {
+                    ui.add_enabled(false, button);
                 }
             }
-            None => {
-                ui.add_enabled(false, button);
+            if ui.button("Add file-sized region").clicked() {
+                app.meta_state.meta.low.regions.insert(NamedRegion::new(
+                    "New (file sized)".into(),
+                    0,
+                    app.data.len().saturating_sub(1),
+                ));
             }
-        }
+        });
         if let &Some(key) = &self.selected_key {
             ui.separator();
             let reg = &mut app.meta_state.meta.low.regions[key];
