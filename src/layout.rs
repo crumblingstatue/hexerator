@@ -57,6 +57,23 @@ impl Layout {
         });
     }
 
+    pub(crate) fn remove_dangling(&mut self, map: &ViewMap) {
+        self.view_grid.retain_mut(|row| {
+            row.retain(|view_key| {
+                let mut retain = true;
+                if !map.contains_key(*view_key) {
+                    eprintln!(
+                        "Removed dangling view {:?} from layout {}",
+                        view_key, self.name
+                    );
+                    retain = false;
+                }
+                retain
+            });
+            !row.is_empty()
+        });
+    }
+
     pub(crate) fn change_view_type(&mut self, current: ViewKey, new: ViewKey) {
         if let Some(current_key) = self.view_grid.iter_mut().flatten().find(|k| **k == current) {
             *current_key = new;

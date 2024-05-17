@@ -213,6 +213,28 @@ impl Meta {
             .iter_mut()
             .find_map(|(_k, v)| (v.name == name).then_some(v))
     }
+    /// Remove anything that contains dangling keys
+    pub(crate) fn remove_dangling(&mut self) {
+        self.low.perspectives.retain(|_k, v| {
+            let mut retain = true;
+            if !self.low.regions.contains_key(v.region) {
+                eprintln!("Removed dangling perspective '{}'", v.name);
+                retain = false;
+            }
+            retain
+        });
+        self.views.retain(|_k, v| {
+            let mut retain = true;
+            if !self.low.perspectives.contains_key(v.view.perspective) {
+                eprintln!("Removed dangling view '{}'", v.name);
+                retain = false;
+            }
+            retain
+        });
+        for layout in self.layouts.values_mut() {
+            layout.remove_dangling(&self.views);
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]

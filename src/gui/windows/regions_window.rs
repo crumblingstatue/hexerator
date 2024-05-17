@@ -130,6 +130,7 @@ impl super::Window for RegionsWindow {
             ui.text_edit_multiline(&mut reg.desc);
             if ui.button("Delete").clicked() {
                 app.meta_state.meta.low.regions.remove(key);
+                app.remove_dangling();
                 self.selected_key = None;
             }
         }

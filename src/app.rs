@@ -477,7 +477,9 @@ impl App {
         None
     }
     pub fn view_byte_offset_at_pos(&self, view_key: ViewKey, x: i16, y: i16) -> Option<usize> {
-        let view = &self.meta_state.meta.views[view_key].view;
+        let Some(NamedView { view, .. }) = self.meta_state.meta.views.get(view_key) else {
+            return None;
+        };
         view.row_col_offset_of_pos(
             x,
             y,
@@ -878,6 +880,18 @@ impl App {
 
     pub(crate) fn dec_byte_at_cursor(&mut self) {
         self.mod_byte_at_cursor(|b| *b = b.wrapping_sub(1));
+    }
+
+    pub(crate) fn remove_dangling(&mut self) {
+        self.meta_state.meta.remove_dangling();
+        if self
+            .hex_ui
+            .focused_view
+            .is_some_and(|key| !self.meta_state.meta.views.contains_key(key))
+        {
+            eprintln!("Unset dangling focused view");
+            self.hex_ui.focused_view = None;
+        }
     }
 }
 
