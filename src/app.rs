@@ -643,7 +643,10 @@ impl App {
                     None => lo,
                 };
                 file.seek(SeekFrom::Start(offset as u64))?;
-                file.read_exact(&mut self.data[lo..=hi])?;
+                match self.data.get_mut(lo..=hi) {
+                    Some(buf) => file.read_exact(buf)?,
+                    None => anyhow::bail!("Reload range out of bounds"),
+                }
                 Ok(())
             }
             SourceProvider::Stdin(_) => anyhow::bail!("Not implemented"),
