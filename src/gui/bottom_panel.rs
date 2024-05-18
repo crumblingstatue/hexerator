@@ -3,6 +3,7 @@ use {
     crate::{
         app::{interact_mode::InteractMode, App},
         meta::find_most_specific_region_for_offset,
+        shell::msg_if_fail,
         view::ViewportVec,
     },
     egui::{text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui},
@@ -83,6 +84,24 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
             text = text.color(egui::Color32::GREEN);
         }
         let re = ui.label(text);
+        re.context_menu(|ui| {
+            if ui.button("Copy").clicked() {
+                let result = app.clipboard.set_text(&app.edit_state.cursor.to_string());
+                msg_if_fail(result, "Failed to set clipboard text", msg);
+                ui.close_menu();
+            }
+            if ui
+                .button("Copy absolute")
+                .on_hover_text("Hard seek + cursor")
+                .clicked()
+            {
+                let result = app.clipboard.set_text(
+                    &(app.edit_state.cursor + app.src_args.hard_seek.unwrap_or(0)).to_string(),
+                );
+                msg_if_fail(result, "Failed to set clipboard text", msg);
+                ui.close_menu();
+            }
+        });
         if out_of_bounds {
             re.on_hover_text("Cursor is out of bounds");
         } else if cursor_end {
