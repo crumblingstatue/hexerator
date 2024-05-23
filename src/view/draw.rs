@@ -6,6 +6,7 @@ use {
         dec_conv,
         gui::Gui,
         hex_conv,
+        hex_ui::HexUi,
         meta::{region::Region, PerspectiveMap, RegionMap, ViewKey},
         view::ViewKind,
     },
@@ -36,7 +37,7 @@ fn draw_view(
     app_perspectives: &PerspectiveMap,
     app_regions: &RegionMap,
     app_data: &[u8],
-    app_selection: Option<Region>,
+    app_hex_ui: &HexUi,
     app_ui: &Gui,
     vertex_buffer: &mut Vec<Vertex>,
     mut drawfn: impl FnMut(DrawArgs),
@@ -111,7 +112,7 @@ fn draw_view(
                         data,
                         idx,
                         color: c,
-                        highlight: should_highlight(app_selection, idx, app_ui),
+                        highlight: should_highlight(app_hex_ui.selection(), idx, app_ui),
                     });
                     /*if gamedebug_core::enabled() {
                         #[expect(
@@ -135,6 +136,25 @@ fn draw_view(
                         break 'rows;
                     }
                 }
+            }
+        }
+    }
+    if app_hex_ui.ruler.enabled && !(app_hex_ui.ruler.freq == 0) {
+        let y = view.viewport_rect.y;
+        let h = view.viewport_rect.h;
+        for x in view.scroll_offset.col as i16..view.cols() {
+            if x % app_hex_ui.ruler.freq as i16 == 0 {
+                let x = view.viewport_rect.x + (x * view.col_w as i16)
+                    - view.scroll_offset.pix_xoff
+                    + app_hex_ui.ruler.hoffset;
+                let x = x - (view.scroll_offset.col as i16 * view.col_w as i16);
+                draw_vline(
+                    vertex_buffer,
+                    x as f32,
+                    y as f32,
+                    h as f32,
+                    app_hex_ui.ruler.color.into(),
+                );
             }
         }
     }
@@ -276,6 +296,31 @@ fn draw_rect(vertices: &mut Vec<Vertex>, x: f32, y: f32, w: f32, h: f32, color: 
     ]);
 }
 
+fn draw_vline(vertices: &mut Vec<Vertex>, x: f32, y: f32, h: f32, color: Color) {
+    vertices.extend([
+        Vertex {
+            position: Vector2::new(x, y),
+            color,
+            tex_coords: Vector2::default(),
+        },
+        Vertex {
+            position: Vector2::new(x, y + h),
+            color,
+            tex_coords: Vector2::default(),
+        },
+        Vertex {
+            position: Vector2::new(x + 1.0, y + h),
+            color,
+            tex_coords: Vector2::default(),
+        },
+        Vertex {
+            position: Vector2::new(x + 1.0, y),
+            color,
+            tex_coords: Vector2::default(),
+        },
+    ]);
+}
+
 fn draw_rect_outline(
     vertices: &mut Vec<Vertex>,
     x: f32,
@@ -344,7 +389,7 @@ impl View {
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
-                    app.hex_ui.selection(),
+                    &app.hex_ui,
                     gui,
                     vertex_buffer,
                     |DrawArgs {
@@ -407,7 +452,7 @@ impl View {
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
-                    app.hex_ui.selection(),
+                    &app.hex_ui,
                     gui,
                     vertex_buffer,
                     |DrawArgs {
@@ -470,7 +515,7 @@ impl View {
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
-                    app.hex_ui.selection(),
+                    &app.hex_ui,
                     gui,
                     vertex_buffer,
                     |DrawArgs {
@@ -534,7 +579,7 @@ impl View {
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
-                    app.hex_ui.selection(),
+                    &app.hex_ui,
                     gui,
                     vertex_buffer,
                     |DrawArgs {

@@ -1,6 +1,7 @@
 use {
     crate::{
         app::interact_mode::InteractMode,
+        color::RgbaColor,
         meta::{region::Region, LayoutKey, ViewKey},
         timer::Timer,
         view::ViewportRect,
@@ -27,6 +28,32 @@ pub struct HexUi {
     pub scissor_views: bool,
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
+    pub ruler: Ruler,
+}
+
+pub struct Ruler {
+    pub enabled: bool,
+    pub color: RgbaColor,
+    /// Horizontal offset in pixels
+    pub hoffset: i16,
+    /// Frequency of ruler lines
+    pub freq: u8,
+}
+
+impl Default for Ruler {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            color: RgbaColor {
+                r: 255,
+                g: 255,
+                b: 0,
+                a: 255,
+            },
+            hoffset: 0,
+            freq: 1,
+        }
+    }
 }
 
 impl HexUi {
@@ -81,6 +108,7 @@ impl Default for HexUi {
             hex_iface_rect: ViewportRect::default(),
             show_alt_overlay: false,
             current_layout: LayoutKey::null(),
+            ruler: Ruler::default(),
         }
     }
 }

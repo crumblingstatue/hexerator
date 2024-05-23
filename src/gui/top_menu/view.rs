@@ -15,6 +15,17 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
             }
         }
     });
+    ui.menu_button("Ruler", |ui| {
+        ui.checkbox(&mut app.hex_ui.ruler.enabled, "enabled");
+        ui.label("Color (right or middle click when open)");
+        app.hex_ui.ruler.color.with_as_egui_mut(|c| {
+            ui.color_edit_button_srgba(c);
+        });
+        ui.label("Frequency");
+        ui.add(egui::DragValue::new(&mut app.hex_ui.ruler.freq));
+        ui.label("Horizontal offset");
+        ui.add(egui::DragValue::new(&mut app.hex_ui.ruler.hoffset));
+    });
     if ui
         .add(Button::new("Layouts...").shortcut_text("F5"))
         .clicked()
