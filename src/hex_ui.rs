@@ -20,6 +20,8 @@ pub struct HexUi {
     pub select_b: Option<usize>,
     pub interact_mode: InteractMode,
     pub current_layout: LayoutKey,
+    /// The currently focused view (appears with a yellow border around it)
+    #[doc(alias = "current_view")]
     pub focused_view: Option<ViewKey>,
     /// The rectangle area that's available for the hex interface
     pub hex_iface_rect: ViewportRect,
