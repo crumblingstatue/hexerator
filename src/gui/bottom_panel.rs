@@ -86,7 +86,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
         let re = ui.label(text);
         re.context_menu(|ui| {
             if ui.button("Copy").clicked() {
-                let result = app.clipboard.set_text(&app.edit_state.cursor.to_string());
+                let result = app.clipboard.set_text(app.edit_state.cursor.to_string());
                 msg_if_fail(result, "Failed to set clipboard text", msg);
                 ui.close_menu();
             }
@@ -96,7 +96,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
                 .clicked()
             {
                 let result = app.clipboard.set_text(
-                    &(app.edit_state.cursor + app.src_args.hard_seek.unwrap_or(0)).to_string(),
+                    (app.edit_state.cursor + app.src_args.hard_seek.unwrap_or(0)).to_string(),
                 );
                 msg_if_fail(result, "Failed to set clipboard text", msg);
                 ui.close_menu();

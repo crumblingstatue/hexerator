@@ -139,20 +139,20 @@ fn draw_view(
             }
         }
     }
-    if app_hex_ui.ruler.enabled && !(app_hex_ui.ruler.freq == 0) {
+    if app_hex_ui.ruler.enabled && app_hex_ui.ruler.freq != 0 {
         let y = view.viewport_rect.y;
         let h = view.viewport_rect.h;
         for x in view.scroll_offset.col as i16..view.cols() {
-            if x % app_hex_ui.ruler.freq as i16 == 0 {
+            if x % i16::from(app_hex_ui.ruler.freq) == 0 {
                 let x = view.viewport_rect.x + (x * view.col_w as i16)
                     - view.scroll_offset.pix_xoff
                     + app_hex_ui.ruler.hoffset;
                 let x = x - (view.scroll_offset.col as i16 * view.col_w as i16);
                 draw_vline(
                     vertex_buffer,
-                    x as f32,
-                    y as f32,
-                    h as f32,
+                    x.into(),
+                    y.into(),
+                    h.into(),
                     app_hex_ui.ruler.color.into(),
                 );
             }
