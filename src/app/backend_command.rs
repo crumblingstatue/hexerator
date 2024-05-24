@@ -1,4 +1,4 @@
-//! This module is similar in purpose to [`crate::app:command`].
+//! This module is similar in purpose to [`crate::app::command`].
 //!
 //! See that module for more information.
 
@@ -10,10 +10,10 @@ pub enum BackendCmd {
 
 /// Gui command queue.
 ///
-/// Push operations with `push`, and call [`Gui::flush_command_queue`] when you have
-/// exclusive access to the [`Gui`].
+/// Push operations with `push`, and call [`App::flush_backend_command_queue`] when you have
+/// exclusive access to the [`App`].
 ///
-/// [`Gui::flush_command_queue`] is called automatically every frame, if you don't need to perform the operations sooner.
+/// [`App::flush_backend_command_queue`] is called automatically every frame, if you don't need to perform the operations sooner.
 #[derive(Default)]
 pub struct BackendCommandQueue {
     inner: VecDeque<BackendCmd>,
@@ -26,7 +26,7 @@ impl BackendCommandQueue {
 }
 
 impl App {
-    /// Flush the [`GCommandQueue`] and perform all operations queued up.
+    /// Flush the [`BackendCommandQueue`] and perform all operations queued up.
     ///
     /// Automatically called every frame, but can be called manually if operations need to be
     /// performed sooner.

@@ -1,4 +1,4 @@
-//! This module is similar in purpose to [`crate::app:command`].
+//! This module is similar in purpose to [`crate::app::command`].
 //!
 //! See that module for more information.
 
