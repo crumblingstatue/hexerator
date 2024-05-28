@@ -392,7 +392,7 @@ dependencies = [
 [[package]]
 name = "egui-file-dialog"
 version = "0.5.0"
-source = "git+https://github.com/crumblingstatue/egui-file-dialog.git?branch=hexerator#33ddc1ef33e51c3166f3935e0220ca1a80752dca"
+source = "git+https://github.com/crumblingstatue/egui-file-dialog.git?branch=hexerator#d4a8ecbf58b5252a6606658c210c8cc4efe9d93f"
 dependencies = [
  "directories",
  "egui",
@@ -784,7 +784,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.5",
 ]
 
 [[package]]

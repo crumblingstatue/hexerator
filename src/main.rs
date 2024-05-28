@@ -206,7 +206,7 @@ fn try_main() -> anyhow::Result<()> {
 }
 
 fn transfer_pinned_folders_to_file_dialog(gui: &mut Gui, cfg: &mut Config) {
-    let dia_cfg = &mut gui.fileops.dialog.config;
+    let dia_cfg = gui.fileops.dialog.config_mut();
     // Remove them from the config, as later it will be filled with
     // the pinned dirs from the dialog
     for dir in cfg.pinned_dirs.drain(..) {
