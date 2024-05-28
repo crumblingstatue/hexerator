@@ -228,7 +228,7 @@ impl FileOps {
         if let Some(path) = source_file
             && let Some(parent) = path.parent()
         {
-            self.dialog = FileDialog::new().initial_directory(parent.to_owned());
+            self.dialog.config_mut().initial_directory = parent.to_owned();
         }
         self.dialog.select_file();
         self.op = Some(FileOp::DiffWithFile);
