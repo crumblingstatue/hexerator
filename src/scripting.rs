@@ -330,8 +330,7 @@ fn lua_plugin_value_conv(lval: mlua::Value) -> Option<hexerator_plugin_api::Valu
         mlua::Value::Boolean(_) => todo!(),
         mlua::Value::LightUserData(_) => todo!(),
         mlua::Value::Integer(num) => Some(hexerator_plugin_api::Value::U64(num as u64)),
-        // TODO: Float data type... probably
-        mlua::Value::Number(num) => Some(hexerator_plugin_api::Value::U64(num as u64)),
+        mlua::Value::Number(num) => Some(hexerator_plugin_api::Value::F64(num)),
         mlua::Value::String(_) => todo!(),
         mlua::Value::Table(_) => todo!(),
         mlua::Value::Function(_) => todo!(),
@@ -348,6 +347,7 @@ fn plugin_value_lua_conv(
 ) -> mlua::Result<mlua::Value> {
     match pval {
         hexerator_plugin_api::Value::U64(num) => Ok(mlua::Value::Number(num as f64)),
+        hexerator_plugin_api::Value::F64(num) => Ok(mlua::Value::Number(num)),
         hexerator_plugin_api::Value::String(s) => Ok(mlua::Value::String(lua.create_string(s)?)),
     }
 }

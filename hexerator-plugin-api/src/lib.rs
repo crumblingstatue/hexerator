@@ -31,6 +31,7 @@ pub enum ValueTy {
 
 pub enum Value {
     U64(u64),
+    F64(f64),
     String(String),
 }
 

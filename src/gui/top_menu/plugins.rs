@@ -63,6 +63,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                             let strval = match val {
                                 hexerator_plugin_api::Value::U64(n) => n.to_string(),
                                 hexerator_plugin_api::Value::String(s) => s.to_string(),
+                                hexerator_plugin_api::Value::F64(n) => n.to_string(),
                             };
                             gui.msg_dialog.open(
                                 Icon::Info,
