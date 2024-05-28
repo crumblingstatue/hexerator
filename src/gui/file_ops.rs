@@ -17,10 +17,18 @@ use {
     std::{fs::OpenOptions, io::Write as _, path::Path},
 };
 
-#[derive(Default)]
 pub struct FileOps {
     pub dialog: FileDialog,
     pub op: Option<FileOp>,
+}
+
+impl Default for FileOps {
+    fn default() -> Self {
+        Self {
+            dialog: FileDialog::new().anchor(egui::Align2::CENTER_CENTER, egui::vec2(0., 0.)),
+            op: Default::default(),
+        }
+    }
 }
 
 #[derive(Debug)]
