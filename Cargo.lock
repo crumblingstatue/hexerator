@@ -392,7 +392,7 @@ dependencies = [
 [[package]]
 name = "egui-file-dialog"
 version = "0.5.0"
-source = "git+https://github.com/crumblingstatue/egui-file-dialog.git?branch=hexerator#89698642167471901895894350882bf7aafd6db4"
+source = "git+https://github.com/crumblingstatue/egui-file-dialog.git?branch=hexerator#33ddc1ef33e51c3166f3935e0220ca1a80752dca"
 dependencies = [
  "directories",
  "egui",
@@ -419,7 +419,7 @@ dependencies = [
 [[package]]
 name = "egui-sfml"
 version = "0.4.0"
-source = "git+https://github.com/crumblingstatue/egui-sfml.git#2f9f7e3e19abf54489d9f0d84a09871f1acbae12"
+source = "git+https://github.com/crumblingstatue/egui-sfml.git#a2684bd334168c14fe287364f2f07bbc71520ef3"
 dependencies = [
  "egui",
  "glu-sys",
@@ -784,7 +784,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if",
- "windows-targets 0.52.5",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -1386,13 +1386,12 @@ dependencies = [
 [[package]]
 name = "sfml"
 version = "0.21.0"
-source = "git+https://github.com/jeremyletang/rust-sfml.git#3e275e06f408343c63133108e65009d1f4e6295c"
+source = "git+https://github.com/jeremyletang/rust-sfml.git#88b6f28b4f07559aa54e3c1ccebfba4e430cd2ff"
 dependencies = [
  "bitflags",
  "cc",
  "link-cplusplus",
  "num-traits",
- "once_cell",
  "widestring",
 ]
 
