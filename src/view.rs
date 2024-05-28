@@ -281,7 +281,9 @@ impl View {
         }
         self.viewport_rect.h / (self.row_h as i16)
     }
-    /// Returns the number of columns this view can display
+    /// Returns the number of columns this view can display visibly at once.
+    ///
+    /// This might not be the total number of columns in the perspective this view is attached to.
     #[expect(
         clippy::cast_possible_wrap,
         reason = "block size is never greater than i16::MAX"
