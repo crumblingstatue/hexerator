@@ -142,17 +142,22 @@ fn draw_view(
     if app_hex_ui.ruler.enabled && app_hex_ui.ruler.freq != 0 {
         let y = view.viewport_rect.y;
         let h = view.viewport_rect.h;
-        for x in view.scroll_offset.col as i16..view.cols() {
-            if x % i16::from(app_hex_ui.ruler.freq) == 0 {
-                let x = view.viewport_rect.x + (x * view.col_w as i16)
-                    - view.scroll_offset.pix_xoff
-                    + app_hex_ui.ruler.hoffset;
-                let x = x - (view.scroll_offset.col as i16 * view.col_w as i16);
+        let view_p_cols = view.p_cols(app_perspectives);
+        let view_cols =
+            usize::try_from(view.cols()).expect("Bug: view.cols() returned negative number");
+        let end = view_p_cols.min(view.scroll_offset.col + view_cols);
+        for col in view.scroll_offset.col..end {
+            if col % usize::from(app_hex_ui.ruler.freq) == 0 {
+                let x_offset = i16::try_from(col - view.scroll_offset.col)
+                    .expect("Bug: x offset larger than i16::MAX");
+                let line_x = (x_offset
+                    * i16::try_from(view.col_w).expect("Bug: col_w larger than i16::MAX"))
+                    - view.scroll_offset.pix_xoff;
                 draw_vline(
                     vertex_buffer,
-                    x.into(),
-                    y.into(),
-                    h.into(),
+                    f32::from(line_x + app_hex_ui.ruler.hoffset),
+                    f32::from(y),
+                    f32::from(h),
                     app_hex_ui.ruler.color.into(),
                 );
             }

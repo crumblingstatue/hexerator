@@ -298,6 +298,14 @@ impl View {
         }
     }
 
+    /// Returns the number of columns of the perspective this view is attached to.
+    pub(crate) fn p_cols(&self, perspectives: &PerspectiveMap) -> usize {
+        match perspectives.get(self.perspective) {
+            Some(per) => per.cols,
+            None => 0,
+        }
+    }
+
     pub fn adjust_block_size(&mut self) {
         (self.col_w, self.row_h) = match &self.kind {
             ViewKind::Hex(hex) => (hex.font_size * 2 - 2, hex.font_size),
