@@ -64,6 +64,9 @@ hexerator-plugin-api = { path = "hexerator-plugin-api" }
 [profile.dev.package."*"]
 opt-level = 2
 
+[profile.dev]
+panic = "abort"
+
 [profile.release]
 panic = "abort"
 lto = "thin"
