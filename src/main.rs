@@ -134,6 +134,9 @@ fn try_main() -> anyhow::Result<()> {
     window.set_framerate_limit(cfg.fps_limit);
     window.set_position(Vector2::new(0, 0));
     let mut sf_egui = SfEgui::new(&window);
+    sf_egui.context().options_mut(|opts| {
+        opts.zoom_with_keyboard = false;
+    });
     let mut style = egui::Style::default();
     style.interaction.show_tooltips_only_when_still = true;
     let font = unsafe {
