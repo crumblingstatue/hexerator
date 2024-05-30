@@ -278,6 +278,7 @@ fn do_fatal_error_report(title: &str, mut desc: &str) {
                 ui.heading(title);
                 ui.separator();
                 egui::ScrollArea::vertical()
+                    .auto_shrink(false)
                     .max_height(400.)
                     .show(ui, |ui| {
                         ui.add(egui::TextEdit::multiline(&mut desc).code_editor());
