@@ -494,7 +494,7 @@ pub fn parse_script_args(s: &str) -> Result<HashMap<String, ScriptArg>, ArgParse
 }
 
 #[test]
-#[allow(clippy::unwrap_used)]
+#[expect(clippy::unwrap_used)]
 fn test_parse_script_args() {
     let args = parse_script_args(SCRIPT_ARG_FMT_HELP_STR).unwrap();
     assert_eq!(args.get("mynum"), Some(&ScriptArg::Num(4.5)));
@@ -505,7 +505,7 @@ fn test_parse_script_args() {
 }
 
 #[test]
-#[allow(clippy::unwrap_used)]
+#[expect(clippy::unwrap_used)]
 fn test_parse_script_args_single_quot() {
     let args = parse_script_args(" myval = 'hello world' ").unwrap();
     assert_eq!(

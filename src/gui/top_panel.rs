@@ -164,7 +164,7 @@ fn color_from_hexcode(mut src: &str) -> anyhow::Result<[u8; 3]> {
 }
 
 #[test]
-#[allow(clippy::unwrap_used)]
+#[expect(clippy::unwrap_used)]
 fn test_color_from_hexcode() {
     assert_eq!(color_from_hexcode("#ffffff").unwrap(), [255, 255, 255]);
     assert_eq!(color_from_hexcode("ff00ff").unwrap(), [255, 0, 255]);

@@ -18,7 +18,7 @@
     clippy::cast_possible_wrap,
     clippy::panic
 )]
-#![allow(
+#![expect(
     incomplete_features,
     // It's hard to reconcile lack of partial borrows with few arguments
     clippy::too_many_arguments

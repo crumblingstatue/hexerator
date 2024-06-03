@@ -638,7 +638,7 @@ fn test_find_eq_pattern() {
     );
 }
 
-#[allow(clippy::cast_possible_wrap)]
+#[expect(clippy::cast_possible_wrap)]
 fn ascii_to_diff_pattern(ascii: &[u8]) -> Vec<i8> {
     ascii
         .array_windows()
@@ -646,7 +646,7 @@ fn ascii_to_diff_pattern(ascii: &[u8]) -> Vec<i8> {
         .collect()
 }
 
-#[allow(clippy::cast_possible_wrap)]
+#[expect(clippy::cast_possible_wrap)]
 fn find_diff_pattern(haystack: &[u8], pat: &[i8]) -> Option<usize> {
     assert!(pat.len() <= haystack.len());
     let mut pat_cur = 0;
@@ -676,7 +676,7 @@ fn test_ascii_to_diff_pattern() {
 }
 
 #[test]
-#[allow(clippy::unwrap_used)]
+#[expect(clippy::unwrap_used)]
 fn test_find_diff_pattern() {
     let key = "jonathan";
     let pat = ascii_to_diff_pattern(key.as_bytes());
