@@ -868,8 +868,8 @@ fn handle_key_pressed(
         Key::Delete => {
             if let Some(sel) = app.hex_ui.selection() {
                 app.zero_fill_region(sel);
-            } else {
-                app.data[app.edit_state.cursor] = 0;
+            } else if let Some(byte) = app.data.get_mut(app.edit_state.cursor) {
+                *byte = 0;
             }
         }
         Key::F1 => app.hex_ui.interact_mode = InteractMode::View,
