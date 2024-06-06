@@ -28,7 +28,6 @@ use {
         view::{HexData, TextData, View, ViewKind, ViewportScalar},
     },
     anyhow::{bail, Context},
-    egui_commonmark::CommonMarkCache,
     egui_sfml::sfml::graphics::{Font, RenderWindow},
     gamedebug_core::{per, per_dbg},
     hexerator_plugin_api::MethodResult,
@@ -68,7 +67,6 @@ pub struct App {
     pub hex_ui: HexUi,
     pub meta_state: MetaState,
     pub clipboard: arboard::Clipboard,
-    pub md_cache: CommonMarkCache,
     /// Command queue for queuing up operations to perform on the application state.
     pub cmd: CommandQueue,
     pub backend_cmd: BackendCommandQueue,
@@ -104,7 +102,6 @@ impl App {
             hex_ui: HexUi::default(),
             meta_state: MetaState::default(),
             clipboard: arboard::Clipboard::new()?,
-            md_cache: CommonMarkCache::default(),
             cmd: Default::default(),
             backend_cmd: Default::default(),
             quit_requested: false,

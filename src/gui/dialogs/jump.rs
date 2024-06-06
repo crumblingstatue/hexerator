@@ -5,7 +5,6 @@ use {
         parse_radix::{parse_offset_maybe_relative, Relativity},
         shell::msg_fail,
     },
-    egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
     mlua::Lua,
 };
@@ -42,11 +41,9 @@ impl Dialog for JumpDialog {
             }
         });
         self.just_opened = false;
-        CommonMarkViewer::new("viewer").show(
-            ui,
-            &mut app.md_cache,
+        ui.label(
             "Accepts both decimal and hexadecimal.\nPrefix with `0x` to force hex.\n\
-             Prefix with `+` to add to current offset, `-` to subtract",
+        Prefix with `+` to add to current offset, `-` to subtract",
         );
         if let Some(hard_seek) = app.src_args.hard_seek {
             ui.checkbox(&mut self.absolute, "Absolute")

@@ -1,7 +1,6 @@
 use {
     crate::{app::App, gui::Dialog, shell::msg_if_fail},
     egui_code_editor::{CodeEditor, Syntax},
-    egui_commonmark::CommonMarkViewer,
     egui_sfml::sfml::graphics::Font,
     mlua::{Function, Lua},
     std::time::Instant,
@@ -80,11 +79,7 @@ impl Dialog for LuaFillDialog {
         } else {
             ui.label(egui::RichText::new("No unsaved changes").color(egui::Color32::GREEN).code());
         }
-        CommonMarkViewer::new("viewer").show(
-            ui,
-            &mut app.md_cache,
-            "`ctrl+enter` to execute, `ctrl+s` to save file",
-        );
+        ui.label("ctrl+enter to execute, ctrl+s to save file");
         if !self.result_info_string.is_empty() {
             if self.err {
                 ui.label(egui::RichText::new(&self.result_info_string).color(egui::Color32::RED));
