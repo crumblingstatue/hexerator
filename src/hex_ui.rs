@@ -92,9 +92,7 @@ impl HexUi {
         only a few seconds at most.
         "
         )]
-        self.flash_cursor_timer
-            .overtime()
-            .map(|dur| dur.as_millis() as u32)
+        self.flash_cursor_timer.overtime().map(|dur| dur.as_millis() as u32)
     }
 }
 

@@ -133,9 +133,7 @@ impl super::Window for OpenProcessWindow {
                     run_command.file_dialog.update(ui.ctx());
                     ui.label("Command");
                     if let Some(file_path) = run_command.file_dialog.take_selected() {
-                        run_command
-                            .command
-                            .push_str(&format!("\"{}\"", file_path.display()));
+                        run_command.command.push_str(&format!("\"{}\"", file_path.display()));
                     }
                     let re = ui.text_edit_singleline(&mut run_command.command);
                     if run_command.just_opened {
@@ -413,14 +411,15 @@ impl super::Window for OpenProcessWindow {
                         }
                     });
                     row.col(|ui| {
-                        ui.add(egui::Label::new("r/w/x").sense(egui::Sense::click()))
-                            .context_menu(|ui| {
+                        ui.add(egui::Label::new("r/w/x").sense(egui::Sense::click())).context_menu(
+                            |ui| {
                                 ui.label("Filter");
                                 ui.separator();
                                 ui.checkbox(&mut self.filters.perms.read, "Read");
                                 ui.checkbox(&mut self.filters.perms.write, "Write");
                                 ui.checkbox(&mut self.filters.perms.execute, "Execute");
-                            });
+                            },
+                        );
                     });
                     row.col(|ui| {
                         ui.horizontal(|ui| {
@@ -428,11 +427,7 @@ impl super::Window for OpenProcessWindow {
                                 egui::TextEdit::singleline(&mut self.filters.path)
                                     .hint_text("🔎 Path"),
                             );
-                            if ui
-                                .button("🗑")
-                                .on_hover_text("Remove filtered paths")
-                                .clicked()
-                            {
+                            if ui.button("🗑").on_hover_text("Remove filtered paths").clicked() {
                                 self.map_ranges.retain(|range| {
                                     let mut retain = true;
                                     if let Some(filename) = range.filename() {

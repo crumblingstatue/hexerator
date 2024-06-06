@@ -5,24 +5,15 @@ use {
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
-    if ui
-        .add(Button::new("Regions...").shortcut_text("F8"))
-        .clicked()
-    {
+    if ui.add(Button::new("Regions...").shortcut_text("F8")).clicked() {
         gui.win.regions.open.toggle();
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Bookmarks...").shortcut_text("F9"))
-        .clicked()
-    {
+    if ui.add(Button::new("Bookmarks...").shortcut_text("F9")).clicked() {
         gui.win.bookmarks.open.toggle();
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Variables").shortcut_text("F10"))
-        .clicked()
-    {
+    if ui.add(Button::new("Variables").shortcut_text("F10")).clicked() {
         gui.win.vars.open.toggle();
         ui.close_menu();
     }

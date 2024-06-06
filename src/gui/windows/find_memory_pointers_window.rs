@@ -34,11 +34,7 @@ impl super::Window for FindMemoryPointersWindow {
             return;
         };
         if self.open.just_now() {
-            for (i, wnd) in app
-                .data
-                .array_windows::<{ (usize::BITS / 8) as usize }>()
-                .enumerate()
-            {
+            for (i, wnd) in app.data.array_windows::<{ (usize::BITS / 8) as usize }>().enumerate() {
                 let ptr = usize::from_le_bytes(*wnd);
                 if let Some(pos) = gui.win.open_process.map_ranges.iter().position(|range| {
                     range.is_read() && range.start() <= ptr && range.start() + range.size() >= ptr
@@ -106,12 +102,9 @@ impl super::Window for FindMemoryPointersWindow {
                     row.col(|ui| {
                         let range = &gui.win.open_process.map_ranges[en.range_idx];
                         ui.label(
-                            range
-                                .filename()
-                                .map(|p| p.display().to_string())
-                                .unwrap_or_else(|| {
-                                    format!("<anon> @ {:X} (size: {})", range.start(), range.size())
-                                }),
+                            range.filename().map(|p| p.display().to_string()).unwrap_or_else(
+                                || format!("<anon> @ {:X} (size: {})", range.start(), range.size()),
+                            ),
                         );
                     });
                     row.col(|ui| {

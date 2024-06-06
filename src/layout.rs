@@ -28,13 +28,10 @@ impl Layout {
     }
 
     pub(crate) fn idx_of_key(&self, key: ViewKey) -> Option<(usize, usize)> {
-        self.view_grid
-            .iter()
-            .enumerate()
-            .find_map(|(row_idx, row)| {
-                let col_pos = row.iter().position(|k| *k == key)?;
-                Some((row_idx, col_pos))
-            })
+        self.view_grid.iter().enumerate().find_map(|(row_idx, row)| {
+            let col_pos = row.iter().position(|k| *k == key)?;
+            Some((row_idx, col_pos))
+        })
     }
 
     pub(crate) fn view_containing_region(

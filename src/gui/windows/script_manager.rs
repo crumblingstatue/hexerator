@@ -35,13 +35,9 @@ impl super::Window for ScriptManagerWindow {
             let mut retain = true;
             ui.horizontal(|ui| {
                 if app.meta_state.meta.onload_script == Some(key) {
-                    ui.label("⚡")
-                        .on_hover_text("This script executes on document load");
+                    ui.label("⚡").on_hover_text("This script executes on document load");
                 }
-                if ui
-                    .selectable_label(self.selected == Some(key), &script.name)
-                    .clicked()
-                {
+                if ui.selectable_label(self.selected == Some(key), &script.name).clicked() {
                     self.selected = Some(key);
                 }
                 if ui.button("⚡ Execute").clicked() {
@@ -82,9 +78,7 @@ impl ScriptManagerWindow {
         ui.text_edit_multiline(&mut scr.desc);
         ui.label("Code");
         egui::ScrollArea::vertical().show(ui, |ui| {
-            CodeEditor::default()
-                .with_syntax(Syntax::lua())
-                .show(ui, &mut scr.content);
+            CodeEditor::default().with_syntax(Syntax::lua()).show(ui, &mut scr.content);
         });
         if ui.button("⚡ Execute").clicked() {
             let result = exec_lua(lua, &scr.content, app, gui, font, "", Some(key));

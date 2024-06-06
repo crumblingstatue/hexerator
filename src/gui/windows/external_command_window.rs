@@ -65,9 +65,7 @@ impl super::Window for ExternalCommandWindow {
         if ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
             self.open.set(false);
         }
-        if ui
-            .add_enabled(exec_enabled, egui::Button::new("Execute (ctrl+E)"))
-            .clicked()
+        if ui.add_enabled(exec_enabled, egui::Button::new("Execute (ctrl+E)")).clicked()
             || (exec_enabled
                 && ((ui.input(|inp| {
                     inp.key_pressed(egui::Key::E) && inp.modifiers.ctrl && !self.open.just_now()

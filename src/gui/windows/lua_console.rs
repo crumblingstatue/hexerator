@@ -19,10 +19,7 @@ pub struct LuaConsoleWindow {
 impl LuaConsoleWindow {
     fn msg_buf(&mut self) -> &mut MsgBuf {
         match self.active_msg_buf {
-            Some(key) => self
-                .msg_bufs
-                .get_mut(&key)
-                .unwrap_or(&mut self.default_msg_buf),
+            Some(key) => self.msg_bufs.get_mut(&key).unwrap_or(&mut self.default_msg_buf),
             None => &mut self.default_msg_buf,
         }
     }
@@ -60,10 +57,7 @@ impl super::Window for LuaConsoleWindow {
         }: WinCtx,
     ) {
         ui.horizontal(|ui| {
-            if ui
-                .selectable_label(self.active_msg_buf.is_none(), "Default")
-                .clicked()
-            {
+            if ui.selectable_label(self.active_msg_buf.is_none(), "Default").clicked() {
                 self.active_msg_buf = None;
             }
             for k in self.msg_bufs.keys() {
@@ -119,29 +113,27 @@ impl super::Window for LuaConsoleWindow {
             }
         });
         ui.separator();
-        egui::ScrollArea::vertical()
-            .auto_shrink([false, true])
-            .show(ui, |ui| {
-                for msg in &*self.msg_buf() {
-                    match msg {
-                        ConMsg::Plain(text) => {
-                            ui.label(text);
+        egui::ScrollArea::vertical().auto_shrink([false, true]).show(ui, |ui| {
+            for msg in &*self.msg_buf() {
+                match msg {
+                    ConMsg::Plain(text) => {
+                        ui.label(text);
+                    }
+                    ConMsg::OffsetLink { text, offset } => {
+                        if ui.link(text).clicked() {
+                            app.search_focus(*offset);
                         }
-                        ConMsg::OffsetLink { text, offset } => {
-                            if ui.link(text).clicked() {
-                                app.search_focus(*offset);
-                            }
-                        }
-                        ConMsg::RangeLink { text, start, end } => {
-                            if ui.link(text).clicked() {
-                                app.hex_ui.select_a = Some(*start);
-                                app.hex_ui.select_b = Some(*end);
-                                app.search_focus(*start);
-                            }
+                    }
+                    ConMsg::RangeLink { text, start, end } => {
+                        if ui.link(text).clicked() {
+                            app.hex_ui.select_a = Some(*start);
+                            app.hex_ui.select_b = Some(*end);
+                            app.search_focus(*start);
                         }
                     }
                 }
-            });
+            }
+        });
     }
 
     fn title(&self) -> &str {

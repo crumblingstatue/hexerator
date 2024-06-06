@@ -7,14 +7,7 @@ use {
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
-    if ui
-        .add(
-            Button::new("Perspectives...")
-                .wrap(false)
-                .shortcut_text("F7"),
-        )
-        .clicked()
-    {
+    if ui.add(Button::new("Perspectives...").wrap(false).shortcut_text("F7")).clicked() {
         gui.win.perspectives.open.toggle();
         ui.close_menu();
     }

@@ -40,9 +40,7 @@ impl Perspective {
     /// Whether the columns are within `cols` and the calculated offset is within the region
     pub(crate) fn row_col_within_bound(&self, row: usize, col: usize, rmap: &RegionMap) -> bool {
         col < self.cols
-            && rmap[self.region]
-                .region
-                .contains(self.byte_offset_of_row_col(row, col, rmap))
+            && rmap[self.region].region.contains(self.byte_offset_of_row_col(row, col, rmap))
     }
     pub(crate) fn clamp_cols(&mut self, rmap: &RegionMap) {
         self.cols = self.cols.clamp(1, rmap[self.region].region.len())

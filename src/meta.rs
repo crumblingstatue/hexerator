@@ -183,16 +183,11 @@ impl Meta {
         meta_bookmarks: &Bookmarks,
         off: usize,
     ) -> Option<(usize, &Bookmark)> {
-        meta_bookmarks
-            .iter()
-            .enumerate()
-            .find(|(_i, b)| b.offset == off)
+        meta_bookmarks.iter().enumerate().find(|(_i, b)| b.offset == off)
     }
 
     pub(crate) fn add_region_from_selection(&mut self, sel: Region) -> RegionKey {
-        self.low
-            .regions
-            .insert(NamedRegion::new_from_selection(sel))
+        self.low.regions.insert(NamedRegion::new_from_selection(sel))
     }
 
     pub(crate) fn remove_view(&mut self, rem_key: ViewKey) {
@@ -208,10 +203,7 @@ impl Meta {
     }
 
     pub(crate) fn region_by_name_mut(&mut self, name: &str) -> Option<&mut NamedRegion> {
-        self.low
-            .regions
-            .iter_mut()
-            .find_map(|(_k, v)| (v.name == name).then_some(v))
+        self.low.regions.iter_mut().find_map(|(_k, v)| (v.name == name).then_some(v))
     }
     /// Remove anything that contains dangling keys
     pub(crate) fn remove_dangling(&mut self) {

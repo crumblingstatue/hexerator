@@ -417,9 +417,8 @@ impl View {
                             )
                         }
                         let mut gx = x;
-                        for (i, mut d) in hex_conv::byte_to_hex_digits(data[0])
-                            .into_iter()
-                            .enumerate()
+                        for (i, mut d) in
+                            hex_conv::byte_to_hex_digits(data[0]).into_iter().enumerate()
                         {
                             if idx == app.edit_state.cursor && hex.edit_buf.dirty {
                                 d = hex.edit_buf.buf[i];
@@ -480,9 +479,8 @@ impl View {
                             )
                         }
                         let mut gx = x;
-                        for (i, mut d) in dec_conv::byte_to_dec_digits(data[0])
-                            .into_iter()
-                            .enumerate()
+                        for (i, mut d) in
+                            dec_conv::byte_to_dec_digits(data[0]).into_iter().enumerate()
                         {
                             if idx == app.edit_state.cursor && dec.edit_buf.dirty {
                                 d = dec.edit_buf.buf[i];

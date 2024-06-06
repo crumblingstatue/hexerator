@@ -96,21 +96,19 @@ impl super::Window for RegionsWindow {
             });
             ui.horizontal(|ui| {
                 ui.label("First byte");
-                ui.add(egui::DragValue::new(&mut reg.region.begin))
-                    .context_menu(|ui| {
-                        if ui.button("Set to cursor").clicked() {
-                            reg.region.begin = app.edit_state.cursor;
-                            ui.close_menu();
-                        }
-                    });
+                ui.add(egui::DragValue::new(&mut reg.region.begin)).context_menu(|ui| {
+                    if ui.button("Set to cursor").clicked() {
+                        reg.region.begin = app.edit_state.cursor;
+                        ui.close_menu();
+                    }
+                });
                 ui.label("Last byte");
-                ui.add(egui::DragValue::new(&mut reg.region.end))
-                    .context_menu(|ui| {
-                        if ui.button("Set to cursor").clicked() {
-                            reg.region.end = app.edit_state.cursor;
-                            ui.close_menu();
-                        }
-                    });
+                ui.add(egui::DragValue::new(&mut reg.region.end)).context_menu(|ui| {
+                    if ui.button("Set to cursor").clicked() {
+                        reg.region.end = app.edit_state.cursor;
+                        ui.close_menu();
+                    }
+                });
             });
             if self.select_active {
                 app.hex_ui.select_a = Some(reg.region.begin);
@@ -127,11 +125,7 @@ impl super::Window for RegionsWindow {
             } else {
                 ui.add_enabled(false, egui::Button::new("Set to selection"));
             }
-            if ui
-                .button("Reset")
-                .on_hover_text("Encompass the whole document")
-                .clicked()
-            {
+            if ui.button("Reset").on_hover_text("Encompass the whole document").clicked() {
                 reg.region.begin = 0;
                 reg.region.end = app.data.len() - 1;
             }

@@ -31,12 +31,13 @@ impl super::Window for VarsWindow {
                 ui.text_edit_singleline(&mut self.new_var_name);
                 ui.label("Type");
                 let sel_txt = var_val_label(&self.new_val_val);
-                egui::ComboBox::new("type_select", "Type")
-                    .selected_text(sel_txt)
-                    .show_ui(ui, |ui| {
+                egui::ComboBox::new("type_select", "Type").selected_text(sel_txt).show_ui(
+                    ui,
+                    |ui| {
                         ui.selectable_value(&mut self.new_val_val, VarVal::U64(0), "U64");
                         ui.selectable_value(&mut self.new_val_val, VarVal::I64(0), "I64");
-                    });
+                    },
+                );
                 if ui.button("Add").clicked() {
                     app.meta_state.meta.vars.insert(
                         self.new_var_name.take(),

@@ -110,19 +110,14 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
                     let col = &mut arr.0[byte as usize];
                     ui.color_edit_button_srgb(col);
                     ui.label("Byte color");
-                    if ui
-                        .button("#")
-                        .on_hover_text("From hex code on clipboard")
-                        .clicked()
-                    {
+                    if ui.button("#").on_hover_text("From hex code on clipboard").clicked() {
                         match color_from_hexcode(&crate::app::get_clipboard_string(
                             &mut app.clipboard,
                             &mut gui.msg_dialog,
                         )) {
                             Ok(new) => *col = new,
                             Err(e) => {
-                                gui.msg_dialog
-                                    .open(Icon::Error, "Color parse error", e.to_string())
+                                gui.msg_dialog.open(Icon::Error, "Color parse error", e.to_string())
                             }
                         }
                     }

@@ -373,9 +373,7 @@ impl View {
                     }
                 }
                 ViewKind::Text(text) => {
-                    if text
-                        .edit_buf
-                        .enter_byte((unicode as u8).wrapping_add_signed(-text.offset))
+                    if text.edit_buf.enter_byte((unicode as u8).wrapping_add_signed(-text.offset))
                         || preferences.quick_edit
                     {
                         self.finish_editing(edit_state, data, preferences, msg);

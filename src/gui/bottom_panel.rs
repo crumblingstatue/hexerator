@@ -32,13 +32,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
         if data_len != 0 {
             if let Some(view_key) = app.hex_ui.focused_view {
                 let view = &app.meta_state.meta.views[view_key].view;
-                let per = match app
-                    .meta_state
-                    .meta
-                    .low
-                    .perspectives
-                    .get_mut(view.perspective)
-                {
+                let per = match app.meta_state.meta.low.perspectives.get_mut(view.perspective) {
                     Some(per) => per,
                     None => {
                         ui.label("Invalid perspective key");
@@ -90,11 +84,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
                 msg_if_fail(result, "Failed to set clipboard text", msg);
                 ui.close_menu();
             }
-            if ui
-                .button("Copy absolute")
-                .on_hover_text("Hard seek + cursor")
-                .clicked()
-            {
+            if ui.button("Copy absolute").on_hover_text("Hard seek + cursor").clicked() {
                 let result = app.clipboard.set_text(
                     (app.edit_state.cursor + app.src_args.hard_seek.unwrap_or(0)).to_string(),
                 );

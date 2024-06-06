@@ -34,24 +34,22 @@ impl Dialog for X86AsmDialog {
         _font: &Font,
     ) -> bool {
         let mut retain = true;
-        egui::ScrollArea::vertical()
-            .max_height(320.0)
-            .show(ui, |ui| {
-                egui::Grid::new("asm_grid").num_columns(2).show(ui, |ui| {
-                    for instr in &self.decoded {
-                        let Some(sel_begin) = app.hex_ui.selection().map(|sel| sel.begin) else {
-                            ui.label("No selection");
-                            return;
-                        };
-                        let instr_off = instr.offset + sel_begin;
-                        if ui.link(instr_off.to_string()).clicked() {
-                            app.search_focus(instr_off);
-                        }
-                        ui.label(&instr.string);
-                        ui.end_row();
+        egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {
+            egui::Grid::new("asm_grid").num_columns(2).show(ui, |ui| {
+                for instr in &self.decoded {
+                    let Some(sel_begin) = app.hex_ui.selection().map(|sel| sel.begin) else {
+                        ui.label("No selection");
+                        return;
+                    };
+                    let instr_off = instr.offset + sel_begin;
+                    if ui.link(instr_off.to_string()).clicked() {
+                        app.search_focus(instr_off);
                     }
-                });
+                    ui.label(&instr.string);
+                    ui.end_row();
+                }
             });
+        });
         ui.separator();
         match app.hex_ui.selection() {
             Some(sel) => {

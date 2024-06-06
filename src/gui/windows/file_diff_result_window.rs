@@ -68,11 +68,7 @@ impl super::Window for FileDiffResultWindow {
                     }
                 }
             }
-            if ui
-                .button("🖹 Diff with...")
-                .on_hover_text("Diff with another file")
-                .clicked()
-            {
+            if ui.button("🖹 Diff with...").on_hover_text("Diff with another file").clicked() {
                 gui.fileops.diff_with_file(app.source_file());
             }
         });
@@ -85,8 +81,7 @@ impl super::Window for FileDiffResultWindow {
             {
                 let result: anyhow::Result<()> = try {
                     let file_data = read_source_to_buf(&self.path, &app.src_args)?;
-                    self.offsets
-                        .retain(|&offs| self.file_data[offs] == file_data[offs]);
+                    self.offsets.retain(|&offs| self.file_data[offs] == file_data[offs]);
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
@@ -97,8 +92,7 @@ impl super::Window for FileDiffResultWindow {
             {
                 let result: anyhow::Result<()> = try {
                     let file_data = read_source_to_buf(&self.path, &app.src_args)?;
-                    self.offsets
-                        .retain(|&offs| self.file_data[offs] != file_data[offs]);
+                    self.offsets.retain(|&offs| self.file_data[offs] != file_data[offs]);
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
@@ -243,10 +237,7 @@ impl super::Window for FileDiffResultWindow {
                             .find(|(_i, b)| b.offset == offs)
                         {
                             Some((idx, bookmark)) => {
-                                if ui
-                                    .link(&bookmark.label)
-                                    .on_hover_text(&bookmark.desc)
-                                    .clicked()
+                                if ui.link(&bookmark.label).on_hover_text(&bookmark.desc).clicked()
                                 {
                                     gui.win.bookmarks.open.set(true);
                                     gui.win.bookmarks.selected = Some(idx);

@@ -464,11 +464,7 @@ impl App {
     //
     // Also returns the index of the view the position is from
     pub fn byte_offset_at_pos(&self, x: i16, y: i16) -> Option<(usize, ViewKey)> {
-        let layout = self
-            .meta_state
-            .meta
-            .layouts
-            .get(self.hex_ui.current_layout)?;
+        let layout = self.meta_state.meta.layouts.get(self.hex_ui.current_layout)?;
         for view_key in layout.iter() {
             if let Some(pos) = self.view_byte_offset_at_pos(view_key, x, y) {
                 return Some((pos, view_key));
@@ -668,10 +664,7 @@ impl App {
             );
             let lo = offsets.byte;
             min_lo = std::cmp::min(min_lo, lo);
-            let hi = lo
-                + view
-                    .view
-                    .bytes_per_page(&self.meta_state.meta.low.perspectives);
+            let hi = lo + view.view.bytes_per_page(&self.meta_state.meta.low.perspectives);
             max_hi = std::cmp::max(max_hi, hi);
         }
         (
@@ -728,11 +721,7 @@ impl App {
     pub(crate) fn switch_layout(app_hex_ui: &mut HexUi, app_meta: &Meta, k: LayoutKey) {
         app_hex_ui.current_layout = k;
         // Set focused view to the first available view in the layout
-        if let Some(view_key) = app_meta.layouts[k]
-            .view_grid
-            .first()
-            .and_then(|row| row.first())
-        {
+        if let Some(view_key) = app_meta.layouts[k].view_grid.first().and_then(|row| row.first()) {
             app_hex_ui.focused_view = Some(*view_key);
         }
     }
@@ -841,8 +830,7 @@ impl App {
         let range = region.begin..=region.end;
         if let Some(data) = self.data.get_mut(range.clone()) {
             data.fill(0);
-            self.edit_state
-                .widen_dirty_region(DamageRegion::RangeInclusive(range));
+            self.edit_state.widen_dirty_region(DamageRegion::RangeInclusive(range));
         }
     }
     pub(crate) fn call_plugin_method(
@@ -867,8 +855,7 @@ impl App {
     pub(crate) fn mod_byte_at_cursor(&mut self, f: impl FnOnce(&mut u8)) {
         if let Some(byte) = self.data.get_mut(self.edit_state.cursor) {
             f(byte);
-            self.edit_state
-                .widen_dirty_region(DamageRegion::Single(self.edit_state.cursor));
+            self.edit_state.widen_dirty_region(DamageRegion::Single(self.edit_state.cursor));
         }
     }
 

@@ -143,10 +143,7 @@ fn try_main() -> anyhow::Result<()> {
         Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
     };
     let mut gui = Gui::default();
-    gui.win
-        .open_process
-        .default_meta_path
-        .clone_from(&args.meta);
+    gui.win.open_process.default_meta_path.clone_from(&args.meta);
     transfer_pinned_folders_to_file_dialog(&mut gui, &mut cfg);
     if !args.spawn_command.is_empty() {
         gui.cmd.push(GCmd::SpawnCommand {
@@ -161,15 +158,14 @@ fn try_main() -> anyhow::Result<()> {
             format!("Old config failed to load with error: {e}.\n\
                      If you don't want to overwrite the old config, you should probably not continue."),
         );
-        gui.msg_dialog
-            .custom_button_row_ui(Box::new(|ui, modal, _cmd| {
-                if ui.button("⚠️ Continue").clicked() {
-                    modal.close();
-                }
-                if ui.button("Abort").clicked() {
-                    std::process::abort();
-                }
-            }));
+        gui.msg_dialog.custom_button_row_ui(Box::new(|ui, modal, _cmd| {
+            if ui.button("⚠️ Continue").clicked() {
+                modal.close();
+            }
+            if ui.button("Abort").clicked() {
+                std::process::abort();
+            }
+        }));
     }
     let mut font_defs = egui::FontDefinitions::default();
     egui_fontcfg::load_custom_fonts(&cfg.custom_font_paths, &mut font_defs.font_data)?;
@@ -213,10 +209,7 @@ fn transfer_pinned_folders_to_file_dialog(gui: &mut Gui, cfg: &mut Config) {
     // Remove them from the config, as later it will be filled with
     // the pinned dirs from the dialog
     for dir in cfg.pinned_dirs.drain(..) {
-        dia_cfg
-            .storage
-            .pinned_folders
-            .push(DirectoryEntry::from_path(dia_cfg, &dir));
+        dia_cfg.storage.pinned_folders.push(DirectoryEntry::from_path(dia_cfg, &dir));
     }
 }
 
@@ -280,12 +273,9 @@ fn do_fatal_error_report(title: &str, mut desc: &str) {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.heading(title);
                 ui.separator();
-                egui::ScrollArea::vertical()
-                    .auto_shrink(false)
-                    .max_height(400.)
-                    .show(ui, |ui| {
-                        ui.add(egui::TextEdit::multiline(&mut desc).code_editor());
-                    });
+                egui::ScrollArea::vertical().auto_shrink(false).max_height(400.).show(ui, |ui| {
+                    ui.add(egui::TextEdit::multiline(&mut desc).code_editor());
+                });
                 ui.separator();
                 ui.heading("Close this window to exit");
             });
@@ -328,13 +318,7 @@ fn do_frame(
     ));
     draw(app, gui, window, font, vertex_buffer);
     if let Some((offs, _view)) = app.byte_offset_at_pos(mp.x, mp.y) {
-        if let Some(bm) = app
-            .meta_state
-            .meta
-            .bookmarks
-            .iter()
-            .find(|bm| bm.offset == offs)
-        {
+        if let Some(bm) = app.meta_state.meta.bookmarks.iter().find(|bm| bm.offset == offs) {
             let mut txt = Text::new(&bm.label, font, 20);
             txt.set_position((f32::from(mp.x), f32::from(mp.y + 15)));
             window.draw(&txt);
@@ -429,9 +413,8 @@ fn update(app: &mut App, egui_wants_kb: bool) {
                 view.scroll_offset.pix_xoff = 0;
             }
             if view.scroll_offset.row + 1 > per.n_rows(&app.meta_state.meta.low.regions) {
-                view.scroll_offset.row = per
-                    .n_rows(&app.meta_state.meta.low.regions)
-                    .saturating_sub(1);
+                view.scroll_offset.row =
+                    per.n_rows(&app.meta_state.meta.low.regions).saturating_sub(1);
                 view.scroll_offset.pix_yoff = 0;
             }
         }
@@ -662,10 +645,9 @@ fn handle_key_pressed(
                 if let Some(view_key) = app.hex_ui.focused_view {
                     let view = &mut app.meta_state.meta.views[view_key].view;
                     view.undirty_edit_buffer();
-                    app.edit_state
-                        .set_cursor_no_history(app.edit_state.cursor.saturating_sub(
-                            app.meta_state.meta.low.perspectives[view.perspective].cols,
-                        ));
+                    app.edit_state.set_cursor_no_history(app.edit_state.cursor.saturating_sub(
+                        app.meta_state.meta.low.perspectives[view.perspective].cols,
+                    ));
                     keep_cursor_in_view(
                         view,
                         &app.meta_state.meta.low.perspectives,
@@ -923,9 +905,7 @@ fn handle_key_pressed(
                     );
                 }
             }
-            None => gui
-                .msg_dialog
-                .open(Icon::Warn, "Cannot save", "No source opened"),
+            None => gui.msg_dialog.open(Icon::Warn, "Cannot save", "No source opened"),
         },
         Key::R if key_mod.ctrl => {
             msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);

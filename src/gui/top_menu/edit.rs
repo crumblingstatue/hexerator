@@ -13,10 +13,7 @@ use {
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
-    if ui
-        .add(Button::new("Find...").shortcut_text("Ctrl+F"))
-        .clicked()
-    {
+    if ui.add(Button::new("Find...").shortcut_text("Ctrl+F")).clicked() {
         gui.win.find.open.toggle();
         ui.close_menu();
     }
@@ -40,47 +37,29 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
             ui.label("<No selection>");
         }
     }
-    if ui
-        .add(Button::new("Set select a").shortcut_text("shift+1"))
-        .clicked()
-    {
+    if ui.add(Button::new("Set select a").shortcut_text("shift+1")).clicked() {
         app.hex_ui.select_a = Some(app.edit_state.cursor);
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Set select b").shortcut_text("shift+2"))
-        .clicked()
-    {
+    if ui.add(Button::new("Set select b").shortcut_text("shift+2")).clicked() {
         app.hex_ui.select_b = Some(app.edit_state.cursor);
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Select all in view").shortcut_text("Ctrl+A"))
-        .clicked()
-    {
+    if ui.add(Button::new("Select all in view").shortcut_text("Ctrl+A")).clicked() {
         app.focused_view_select_all();
         ui.close_menu();
     }
     ui.separator();
-    if ui
-        .add(Button::new("External command...").shortcut_text("Ctrl+E"))
-        .clicked()
-    {
+    if ui.add(Button::new("External command...").shortcut_text("Ctrl+E")).clicked() {
         gui.win.external_command.open.toggle();
         ui.close_menu();
     }
     ui.separator();
-    if ui
-        .add(Button::new("Inc byte").shortcut_text("Ctrl+="))
-        .clicked()
-    {
+    if ui.add(Button::new("Inc byte").shortcut_text("Ctrl+=")).clicked() {
         app.inc_byte_at_cursor();
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Dec byte").shortcut_text("Ctrl+-"))
-        .clicked()
-    {
+    if ui.add(Button::new("Dec byte").shortcut_text("Ctrl+-")).clicked() {
         app.inc_byte_at_cursor();
         ui.close_menu();
     }
@@ -102,22 +81,21 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
                         "Prompt",
                         "Paste overflows the document. What do do?",
                     );
-                    gui.msg_dialog
-                        .custom_button_row_ui(Box::new(move |ui, modal, cmd| {
-                            if ui.button("Cancel paste").clicked() {
-                                modal.close();
-                            } else if ui.button("Extend document").clicked() {
-                                cmd.push(Cmd::ExtendDocument {
-                                    new_len: cursor + bytes.len(),
-                                });
-                                cmd.push(Cmd::PasteBytes {
-                                    at: cursor,
-                                    bytes: bytes.clone(),
-                                });
-                                modal.close();
-                            } else if ui.button("Shorten paste").clicked() {
-                            }
-                        }));
+                    gui.msg_dialog.custom_button_row_ui(Box::new(move |ui, modal, cmd| {
+                        if ui.button("Cancel paste").clicked() {
+                            modal.close();
+                        } else if ui.button("Extend document").clicked() {
+                            cmd.push(Cmd::ExtendDocument {
+                                new_len: cursor + bytes.len(),
+                            });
+                            cmd.push(Cmd::PasteBytes {
+                                at: cursor,
+                                bytes: bytes.clone(),
+                            });
+                            modal.close();
+                        } else if ui.button("Shorten paste").clicked() {
+                        }
+                    }));
                 }
             };
             msg_if_fail(result, "Hex text paste error", &mut gui.msg_dialog);
@@ -130,11 +108,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
                         Otherwise, block cursor is moved. Can use ctrl+cursor keys for
                         the other behavior.",
         );
-    ui.checkbox(&mut app.preferences.quick_edit, "Quick edit")
-        .on_hover_text(
-            "Immediately apply editing results, instead of having to type a \
+    ui.checkbox(&mut app.preferences.quick_edit, "Quick edit").on_hover_text(
+        "Immediately apply editing results, instead of having to type a \
                         value to completion or press enter",
-        );
+    );
     ui.checkbox(&mut app.preferences.sticky_edit, "Sticky edit")
         .on_hover_text("Don't automatically move cursor after editing is finished");
     ui.separator();

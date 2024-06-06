@@ -28,19 +28,13 @@ pub fn selection_menu(
 ) -> bool {
     let mut clicked = false;
     ui.menu_button(title, |ui| {
-        if ui
-            .add(Button::new("Unselect").shortcut_text("Esc"))
-            .clicked()
-        {
+        if ui.add(Button::new("Unselect").shortcut_text("Esc")).clicked() {
             app.hex_ui.select_a = None;
             app.hex_ui.select_b = None;
             ui.close_menu();
             clicked = true;
         }
-        if ui
-            .add(Button::new("Zero fill").shortcut_text("Del"))
-            .clicked()
-        {
+        if ui.add(Button::new("Zero fill").shortcut_text("Del")).clicked() {
             app.zero_fill_region(sel);
             ui.close_menu();
             clicked = true;
@@ -58,8 +52,7 @@ pub fn selection_menu(
         if ui.button("Random fill").clicked() {
             let range = sel.begin..=sel.end;
             rand::thread_rng().fill_bytes(&mut app.data[range.clone()]);
-            app.edit_state
-                .widen_dirty_region(DamageRegion::RangeInclusive(range));
+            app.edit_state.widen_dirty_region(DamageRegion::RangeInclusive(range));
             ui.close_menu();
             clicked = true;
         }

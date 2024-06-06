@@ -56,11 +56,7 @@ impl super::Window for AboutWindow {
                 ),
                 (
                     "Build date",
-                    optenv!("VERGEN_BUILD_TIMESTAMP")
-                        .split('T')
-                        .next()
-                        .unwrap_or("error")
-                        .into(),
+                    optenv!("VERGEN_BUILD_TIMESTAMP").split('T').next().unwrap_or("error").into(),
                 ),
                 ("Target", optenv!("VERGEN_CARGO_TARGET_TRIPLE")),
                 ("Debug", optenv!("VERGEN_CARGO_DEBUG")),

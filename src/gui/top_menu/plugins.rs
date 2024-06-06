@@ -11,8 +11,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     plugins.retain_mut(|plugin| {
         let mut retain = true;
         ui.horizontal(|ui| {
-            ui.label(plugin.plugin.name())
-                .on_hover_text(plugin.plugin.desc());
+            ui.label(plugin.plugin.name()).on_hover_text(plugin.plugin.desc());
             if ui.button("🗑").on_hover_text("Unload").clicked() {
                 retain = false;
                 ui.close_menu();
@@ -37,19 +36,11 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                             .strong()
                             .color(egui::Color32::WHITE),
                     );
-                    ui.label(
-                        egui::RichText::new("(")
-                            .strong()
-                            .color(egui::Color32::WHITE),
-                    );
+                    ui.label(egui::RichText::new("(").strong().color(egui::Color32::WHITE));
                     for param in method.params {
                         ui.label(format!("{}: {},", param.name, param.ty.label()));
                     }
-                    ui.label(
-                        egui::RichText::new(")")
-                            .strong()
-                            .color(egui::Color32::WHITE),
-                    );
+                    ui.label(egui::RichText::new(")").strong().color(egui::Color32::WHITE));
                 });
                 ui.indent("indent", |ui| {
                     ui.label(method.desc);

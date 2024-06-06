@@ -72,9 +72,7 @@ impl MessageDialog {
         cb: &mut arboard::Clipboard,
         cmd: &mut CommandQueue,
     ) {
-        let modal = self
-            .modal
-            .get_or_insert_with(|| Modal::new(ctx, "modal_message_dialog"));
+        let modal = self.modal.get_or_insert_with(|| Modal::new(ctx, "modal_message_dialog"));
         if self.open_modal {
             modal.open();
             self.open_modal = false;

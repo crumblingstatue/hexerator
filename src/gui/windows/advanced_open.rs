@@ -102,10 +102,7 @@ impl super::Window for AdvancedOpenWindow {
             gui.fileops.advanced_open_pick_metafile();
         }
         ui.separator();
-        if ui
-            .add_enabled(src_args.file.is_some(), egui::Button::new("Load"))
-            .clicked()
-        {
+        if ui.add_enabled(src_args.file.is_some(), egui::Button::new("Load")).clicked() {
             msg_if_fail(
                 app.load_file_args(
                     src_args.clone(),

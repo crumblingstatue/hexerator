@@ -284,38 +284,36 @@ fn view_combo(
     font: &Font,
 ) -> bool {
     let mut changed = false;
-    egui::ComboBox::new(id, "kind")
-        .selected_text(kind.name())
-        .show_ui(ui, |ui| {
-            if ui
-                .selectable_label(kind.name() == ViewKind::HEX_NAME, ViewKind::HEX_NAME)
-                .clicked()
-            {
-                *kind = ViewKind::Hex(HexData::default());
-                changed = true;
-            }
-            if ui
-                .selectable_label(kind.name() == ViewKind::DEC_NAME, ViewKind::DEC_NAME)
-                .clicked()
-            {
-                *kind = ViewKind::Dec(HexData::default());
-                changed = true;
-            }
-            if ui
-                .selectable_label(kind.name() == ViewKind::TEXT_NAME, ViewKind::TEXT_NAME)
-                .clicked()
-            {
-                *kind = ViewKind::Text(TextData::default_from_font(font, 14));
-                changed = true;
-            }
-            if ui
-                .selectable_label(kind.name() == ViewKind::BLOCK_NAME, ViewKind::BLOCK_NAME)
-                .clicked()
-            {
-                *kind = ViewKind::Block;
-                changed = true;
-            }
-        });
+    egui::ComboBox::new(id, "kind").selected_text(kind.name()).show_ui(ui, |ui| {
+        if ui
+            .selectable_label(kind.name() == ViewKind::HEX_NAME, ViewKind::HEX_NAME)
+            .clicked()
+        {
+            *kind = ViewKind::Hex(HexData::default());
+            changed = true;
+        }
+        if ui
+            .selectable_label(kind.name() == ViewKind::DEC_NAME, ViewKind::DEC_NAME)
+            .clicked()
+        {
+            *kind = ViewKind::Dec(HexData::default());
+            changed = true;
+        }
+        if ui
+            .selectable_label(kind.name() == ViewKind::TEXT_NAME, ViewKind::TEXT_NAME)
+            .clicked()
+        {
+            *kind = ViewKind::Text(TextData::default_from_font(font, 14));
+            changed = true;
+        }
+        if ui
+            .selectable_label(kind.name() == ViewKind::BLOCK_NAME, ViewKind::BLOCK_NAME)
+            .clicked()
+        {
+            *kind = ViewKind::Block;
+            changed = true;
+        }
+    });
     changed
 }
 

@@ -45,8 +45,7 @@ impl super::Window for PreferencesWindow {
     ) {
         if self.open.just_now() {
             self.font_defs = ui.ctx().fonts(|f| f.lock().fonts.definitions().clone());
-            self.temp_custom_font_paths
-                .clone_from(&app.cfg.custom_font_paths);
+            self.temp_custom_font_paths.clone_from(&app.cfg.custom_font_paths);
             let _ = egui_fontcfg::load_custom_fonts(
                 &app.cfg.custom_font_paths,
                 &mut self.font_defs.font_data,

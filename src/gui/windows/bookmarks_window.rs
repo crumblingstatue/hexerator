@@ -204,9 +204,7 @@ impl super::Window for BookmarksWindow {
                     }
                     if self.focus_text_edit {
                         out.response.request_focus();
-                        out.state
-                            .cursor
-                            .set_range(Some(CursorRange::select_all(&out.galley)));
+                        out.state.cursor.set_range(Some(CursorRange::select_all(&out.galley)));
                         out.state.store(ui.ctx(), out.response.id);
                         self.focus_text_edit = false;
                     }
@@ -226,11 +224,7 @@ impl super::Window for BookmarksWindow {
             ui.horizontal(|ui| {
                 ui.label("Offset");
                 ui.add(egui::DragValue::new(&mut mark.offset));
-                if ui
-                    .button("👆")
-                    .on_hover_text("Set to cursor position")
-                    .clicked()
-                {
+                if ui.button("👆").on_hover_text("Set to cursor position").clicked() {
                     mark.offset = app.edit_state.cursor;
                 }
             });
@@ -325,12 +319,12 @@ impl super::Window for BookmarksWindow {
                 _ => {}
             }
             ui.heading("Description");
-            egui::ScrollArea::vertical()
-                .id_source("desc_scroll")
-                .max_height(200.0)
-                .show(ui, |ui| {
+            egui::ScrollArea::vertical().id_source("desc_scroll").max_height(200.0).show(
+                ui,
+                |ui| {
                     ui.add(egui::TextEdit::multiline(&mut mark.desc).code_editor());
-                });
+                },
+            );
             if ui.button("Delete").clicked() {
                 app.meta_state.meta.bookmarks.remove(idx);
                 self.selected = None;
@@ -371,8 +365,7 @@ fn value_ui(
 ) -> anyhow::Result<Action> {
     macro_rules! val_ui_dispatch {
         ($i:ident) => {
-            $i.value_ui_for_self(bm, data, edit_state, ui, cb, msg)
-                .to_action()
+            $i.value_ui_for_self(bm, data, edit_state, ui, cb, msg).to_action()
         };
     }
     Ok(match &bm.value_type {
@@ -530,15 +523,13 @@ impl ValueTrait for StringMap {
             &s
         });
         let mut changed = false;
-        egui::ComboBox::new("val_combo", "")
-            .selected_text(label)
-            .show_ui(ui, |ui| {
-                for (k, v) in self {
-                    if ui.selectable_value(val, *k, v).clicked() {
-                        changed = true;
-                    }
+        egui::ComboBox::new("val_combo", "").selected_text(label).show_ui(ui, |ui| {
+            for (k, v) in self {
+                if ui.selectable_value(val, *k, v).clicked() {
+                    changed = true;
                 }
-            });
+            }
+        });
         ValueUiOutput {
             changed,
             action: UiAction::None,

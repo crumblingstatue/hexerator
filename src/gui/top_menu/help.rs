@@ -13,10 +13,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui) {
         );
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Debug panel...").shortcut_text("F12"))
-        .clicked()
-    {
+    if ui.add(Button::new("Debug panel...").shortcut_text("F12")).clicked() {
         ui.close_menu();
         IMMEDIATE.toggle();
         PERSISTENT.toggle();

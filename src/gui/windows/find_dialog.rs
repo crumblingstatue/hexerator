@@ -640,10 +640,7 @@ fn test_find_eq_pattern() {
 
 #[expect(clippy::cast_possible_wrap)]
 fn ascii_to_diff_pattern(ascii: &[u8]) -> Vec<i8> {
-    ascii
-        .array_windows()
-        .map(|[a, b]| *b as i8 - *a as i8)
-        .collect()
+    ascii.array_windows().map(|[a, b]| *b as i8 - *a as i8).collect()
 }
 
 #[expect(clippy::cast_possible_wrap)]

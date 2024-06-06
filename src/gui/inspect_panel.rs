@@ -568,10 +568,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
         }
     }
     ui.horizontal(|ui| {
-        if ui
-            .checkbox(&mut gui.inspect_panel.big_endian, "Big endian")
-            .clicked()
-        {
+        if ui.checkbox(&mut gui.inspect_panel.big_endian, "Big endian").clicked() {
             // Changing this should refresh everything
             gui.inspect_panel.changed_one = true;
         }
@@ -610,12 +607,11 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                         app.edit_state.set_cursor(offset);
                     }
                     SeekRelativity::HardSeek => {
-                        app.edit_state
-                            .set_cursor(offset - app.src_args.hard_seek.unwrap_or(0));
+                        app.edit_state.set_cursor(offset - app.src_args.hard_seek.unwrap_or(0));
                     }
-                    SeekRelativity::User => app
-                        .edit_state
-                        .set_cursor(offset - gui.inspect_panel.seek_user_offs),
+                    SeekRelativity::User => {
+                        app.edit_state.set_cursor(offset - gui.inspect_panel.seek_user_offs)
+                    }
                 }
                 app.center_view_on_offset(app.edit_state.cursor);
                 app.hex_ui.flash_cursor();
@@ -642,17 +638,16 @@ fn edit_offset(app: &mut App, gui: &mut crate::gui::Gui, ui: &mut Ui) -> usize {
             off += gui.inspect_panel.seek_user_offs;
         }
     }
-    ui.link(format!("offset: {off} ({off:x}h)"))
-        .context_menu(|ui| {
-            if ui.button("Copy to clipboard").clicked() {
-                crate::app::set_clipboard_string(
-                    &mut app.clipboard,
-                    &mut gui.msg_dialog,
-                    &format!("{off:x}"),
-                );
-                ui.close_menu();
-            }
-        });
+    ui.link(format!("offset: {off} ({off:x}h)")).context_menu(|ui| {
+        if ui.button("Copy to clipboard").clicked() {
+            crate::app::set_clipboard_string(
+                &mut app.clipboard,
+                &mut gui.msg_dialog,
+                &format!("{off:x}"),
+            );
+            ui.close_menu();
+        }
+    });
     app.edit_state.cursor
 }
 

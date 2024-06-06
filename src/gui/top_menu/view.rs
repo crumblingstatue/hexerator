@@ -6,10 +6,7 @@ use {
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     ui.menu_button("Layout", |ui| {
         for (k, v) in &app.meta_state.meta.layouts {
-            if ui
-                .selectable_label(app.hex_ui.current_layout == k, &v.name)
-                .clicked()
-            {
+            if ui.selectable_label(app.hex_ui.current_layout == k, &v.name).clicked() {
                 App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, k);
                 ui.close_menu();
             }
@@ -26,31 +23,19 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         ui.label("Horizontal offset");
         ui.add(egui::DragValue::new(&mut app.hex_ui.ruler.hoffset));
     });
-    if ui
-        .add(Button::new("Layouts...").shortcut_text("F5"))
-        .clicked()
-    {
+    if ui.add(Button::new("Layouts...").shortcut_text("F5")).clicked() {
         gui.win.layouts.open.toggle();
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Prev view").shortcut_text("Shift+Tab"))
-        .clicked()
-    {
+    if ui.add(Button::new("Prev view").shortcut_text("Shift+Tab")).clicked() {
         app.focus_prev_view_in_layout();
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Next view").shortcut_text("Tab"))
-        .clicked()
-    {
+    if ui.add(Button::new("Next view").shortcut_text("Tab")).clicked() {
         app.focus_next_view_in_layout();
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Views...").shortcut_text("F6"))
-        .clicked()
-    {
+    if ui.add(Button::new("Views...").shortcut_text("F6")).clicked() {
         gui.win.views.open.toggle();
         ui.close_menu();
     }

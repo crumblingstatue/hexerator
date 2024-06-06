@@ -51,13 +51,11 @@ impl Dialog for PatternFillDialog {
                         return false;
                     };
                     data_slice.pattern_fill(&values);
-                    app.edit_state
-                        .widen_dirty_region(DamageRegion::RangeInclusive(range));
+                    app.edit_state.widen_dirty_region(DamageRegion::RangeInclusive(range));
                     false
                 }
                 Err(e) => {
-                    gui.msg_dialog
-                        .open(Icon::Error, "Fill parse error", e.to_string());
+                    gui.msg_dialog.open(Icon::Error, "Fill parse error", e.to_string());
                     true
                 }
             }
@@ -71,8 +69,5 @@ impl Dialog for PatternFillDialog {
 }
 
 pub fn parse_pattern_string(string: &str) -> Result<Vec<u8>, std::num::ParseIntError> {
-    string
-        .split(' ')
-        .map(|token| u8::from_str_radix(token, 16))
-        .collect()
+    string.split(' ').map(|token| u8::from_str_radix(token, 16)).collect()
 }

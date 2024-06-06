@@ -9,10 +9,7 @@ use {
 };
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
-    if ui
-        .add(Button::new("Open...").shortcut_text("Ctrl+O"))
-        .clicked()
-    {
+    if ui.add(Button::new("Open...").shortcut_text("Ctrl+O")).clicked() {
         gui.fileops.load_file(app.source_file());
         ui.close_menu();
     }
@@ -65,10 +62,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         ui.separator();
         ui.horizontal(|ui| {
             let mut cap = app.cfg.recent.capacity();
-            if ui
-                .add(egui::DragValue::new(&mut cap).prefix("list capacity: "))
-                .changed()
-            {
+            if ui.add(egui::DragValue::new(&mut cap).prefix("list capacity: ")).changed() {
                 app.cfg.recent.set_capacity(cap);
             }
             ui.separator();
@@ -106,10 +100,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     if ui.button("Save as...").clicked() {
         gui.fileops.save_file_as();
     }
-    if ui
-        .add(Button::new("Reload").shortcut_text("Ctrl+R"))
-        .clicked()
-    {
+    if ui.add(Button::new("Reload").shortcut_text("Ctrl+R")).clicked() {
         msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
         ui.close_menu();
     }
@@ -140,10 +131,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         ui.close_menu();
     }
     ui.separator();
-    if ui
-        .add(Button::new("Close").shortcut_text("Ctrl+W"))
-        .clicked()
-    {
+    if ui.add(Button::new("Close").shortcut_text("Ctrl+W")).clicked() {
         app.close_file();
         ui.close_menu();
     }

@@ -46,10 +46,8 @@ impl Dialog for LuaExecuteDialog {
                 &mut gui.msg_dialog,
             );
         }
-        StripBuilder::new(ui)
-            .size(Size::remainder())
-            .size(Size::exact(300.0))
-            .vertical(|mut strip| {
+        StripBuilder::new(ui).size(Size::remainder()).size(Size::exact(300.0)).vertical(
+            |mut strip| {
                 strip.cell(|ui| {
                     egui::ScrollArea::vertical().show(ui, |ui| {
                         let lua;
@@ -66,18 +64,13 @@ impl Dialog for LuaExecuteDialog {
                             },
                             None => lua = &mut app.meta_state.meta.misc.exec_lua_script,
                         }
-                        CodeEditor::default()
-                            .with_syntax(Syntax::lua())
-                            .show(ui, lua);
+                        CodeEditor::default().with_syntax(Syntax::lua()).show(ui, lua);
                     });
                 });
                 strip.cell(|ui| {
                     ui.separator();
                     ui.horizontal(|ui| {
-                        if ui
-                            .button("⚡ Execute")
-                            .on_hover_text("Ctrl+Enter")
-                            .clicked()
+                        if ui.button("⚡ Execute").on_hover_text("Ctrl+Enter").clicked()
                             || ctrl_enter
                         {
                             self.exec_lua(app, lua, gui, font);
@@ -89,9 +82,9 @@ impl Dialog for LuaExecuteDialog {
                             }
                             None => "<Unnamed>",
                         };
-                        egui::ComboBox::from_label("Script")
-                            .selected_text(script_label)
-                            .show_ui(ui, |ui| {
+                        egui::ComboBox::from_label("Script").selected_text(script_label).show_ui(
+                            ui,
+                            |ui| {
                                 if ui
                                     .selectable_label(self.edit_key.is_none(), "<Unnamed>")
                                     .clicked()
@@ -107,7 +100,8 @@ impl Dialog for LuaExecuteDialog {
                                         self.edit_key = Some(k);
                                     }
                                 }
-                            });
+                            },
+                        );
                         if ui.button("🖴 Load from file...").clicked() {
                             gui.fileops.load_lua_script();
                         }
@@ -162,7 +156,8 @@ impl Dialog for LuaExecuteDialog {
                         }
                     }
                 });
-            });
+            },
+        );
         true
     }
     fn has_close_button(&self) -> bool {

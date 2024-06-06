@@ -15,10 +15,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         app.set_cursor_init();
         ui.close_menu();
     }
-    if ui
-        .add(Button::new("Jump...").shortcut_text("Ctrl+J"))
-        .clicked()
-    {
+    if ui.add(Button::new("Jump...").shortcut_text("Ctrl+J")).clicked() {
         ui.close_menu();
         Gui::add_dialog(&mut gui.dialogs, JumpDialog::default());
     }
@@ -33,10 +30,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         app.hex_ui.flash_cursor();
         ui.close_menu();
     }
-    if ui
-        .checkbox(&mut app.preferences.hide_cursor, "Hide cursor")
-        .clicked()
-    {
+    if ui.checkbox(&mut app.preferences.hide_cursor, "Hide cursor").clicked() {
         ui.close_menu();
     }
 }

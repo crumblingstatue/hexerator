@@ -78,11 +78,7 @@ impl Dialog for LuaFillDialog {
                     .code(),
             );
         } else {
-            ui.label(
-                egui::RichText::new("No unsaved changes")
-                    .color(egui::Color32::GREEN)
-                    .code(),
-            );
+            ui.label(egui::RichText::new("No unsaved changes").color(egui::Color32::GREEN).code());
         }
         CommonMarkViewer::new("viewer").show(
             ui,
