@@ -1,5 +1,8 @@
 use {
-    crate::color::{RgbColor, RgbaColor},
+    crate::{
+        color::{RgbColor, RgbaColor},
+        view::{ViewportScalar, ViewportVec},
+    },
     egui_sfml::sfml::graphics::Color,
 };
 
@@ -23,5 +26,16 @@ impl From<RgbColor> for Color {
             b: src.b,
             a: 255,
         }
+    }
+}
+
+impl TryFrom<egui_sfml::sfml::system::Vector2<i32>> for ViewportVec {
+    type Error = <ViewportScalar as std::convert::TryFrom<i32>>::Error;
+
+    fn try_from(sf_vec: egui_sfml::sfml::system::Vector2<i32>) -> Result<Self, Self::Error> {
+        Ok(Self {
+            x: sf_vec.x.try_into()?,
+            y: sf_vec.y.try_into()?,
+        })
     }
 }

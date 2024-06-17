@@ -623,17 +623,6 @@ pub struct ViewportVec {
     pub y: ViewportScalar,
 }
 
-impl TryFrom<egui_sfml::sfml::system::Vector2<i32>> for ViewportVec {
-    type Error = <ViewportScalar as std::convert::TryFrom<i32>>::Error;
-
-    fn try_from(sf_vec: egui_sfml::sfml::system::Vector2<i32>) -> Result<Self, Self::Error> {
-        Ok(Self {
-            x: sf_vec.x.try_into()?,
-            y: sf_vec.y.try_into()?,
-        })
-    }
-}
-
 impl TryFrom<(i32, i32)> for ViewportVec {
     type Error = <ViewportScalar as std::convert::TryFrom<i32>>::Error;
 
