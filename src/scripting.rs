@@ -10,16 +10,16 @@ use {
         slice_ext::SliceExt as _,
     },
     anyhow::Context,
-    egui_sfml::sfml::graphics::Font,
     mlua::{ExternalError as _, ExternalResult as _, IntoLuaMulti, Lua, UserData},
     std::collections::HashMap,
 };
 
-pub struct LuaExecContext<'app, 'gui, 'font> {
+pub struct LuaExecContext<'app, 'gui> {
     pub app: &'app mut App,
     pub gui: &'gui mut Gui,
-    pub font: &'font Font,
     pub key: Option<ScriptKey>,
+    pub font_size: u16,
+    pub line_spacing: u16,
 }
 
 pub(crate) trait Method<'lua> {
@@ -68,7 +68,7 @@ def_method! {
     "Loads a file"
     load_file(_lua, exec, path: String) -> () {
         exec.app
-            .load_file(path.into(), true, exec.font, &mut exec.gui.msg_dialog)
+            .load_file(path.into(), true, &mut exec.gui.msg_dialog, exec.font_size, exec.line_spacing)
             .map_err(|e| e.into_lua_err())?;
         Ok(())
     }
@@ -305,7 +305,7 @@ def_method! {
         let args = args.as_deref().unwrap_or("");
         if let Some((key, scr)) = exec.app.meta_state.meta.scripts.iter().find(|(_key, scr)| scr.name == name) {
             let script = scr.content.clone();
-            exec_lua(lua, &script, exec.app, exec.gui, exec.font, args, Some(key)).into_lua_err()?;
+            exec_lua(lua, &script, exec.app, exec.gui,  args, Some(key), exec.font_size, exec.line_spacing).into_lua_err()?;
         }
         Ok(())
     }
@@ -382,7 +382,7 @@ macro_rules! for_each_method {
 }
 pub(super) use for_each_method;
 
-impl<'app, 'gui, 'font> UserData for LuaExecContext<'app, 'gui, 'font> {
+impl<'app, 'gui> UserData for LuaExecContext<'app, 'gui> {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         macro_rules! add_method {
             ($t:ty) => {
@@ -406,9 +406,10 @@ pub fn exec_lua(
     lua_script: &str,
     app: &mut App,
     gui: &mut Gui,
-    font: &Font,
     args: &str,
     key: Option<ScriptKey>,
+    font_size: u16,
+    line_spacing: u16,
 ) -> Result<Option<String>, ExecLuaError> {
     let args_table = lua.create_table()?;
     if !args.is_empty() {
@@ -427,8 +428,9 @@ pub fn exec_lua(
         let app = scope.create_nonstatic_userdata(LuaExecContext {
             app: &mut *app,
             gui,
-            font,
             key,
+            font_size,
+            line_spacing,
         })?;
         if let Some(env) = fun.environment() {
             env.set("hx", app)?;

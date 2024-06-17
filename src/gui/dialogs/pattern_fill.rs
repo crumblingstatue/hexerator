@@ -5,7 +5,6 @@ use {
         gui::{message_dialog::Icon, Dialog},
         slice_ext::SliceExt,
     },
-    egui_sfml::sfml::graphics::Font,
     mlua::Lua,
 };
 
@@ -30,7 +29,8 @@ impl Dialog for PatternFillDialog {
         app: &mut App,
         gui: &mut crate::gui::Gui,
         _lua: &Lua,
-        _font: &Font,
+        _font_size: u16,
+        _line_spacing: u16,
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");

@@ -8,11 +8,17 @@ use {
         shell::msg_if_fail,
     },
     egui::Button,
-    egui_sfml::sfml::graphics::Font,
     mlua::Lua,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
+pub fn ui(
+    ui: &mut egui::Ui,
+    gui: &mut Gui,
+    app: &mut App,
+    lua: &Lua,
+    font_size: u16,
+    line_spacing: u16,
+) {
     if ui.add(Button::new("Find...").shortcut_text("Ctrl+F")).clicked() {
         gui.win.find.open.toggle();
         ui.close_menu();
@@ -74,7 +80,14 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Fon
                     .map(|s| u8::from_str_radix(s, 16))
                     .collect::<Result<Vec<_>, _>>()?;
                 if cursor + bytes.len() < app.data.len() {
-                    perform_command(app, Cmd::PasteBytes { at: cursor, bytes }, gui, lua, font);
+                    perform_command(
+                        app,
+                        Cmd::PasteBytes { at: cursor, bytes },
+                        gui,
+                        lua,
+                        font_size,
+                        line_spacing,
+                    );
                 } else {
                     gui.msg_dialog.open(
                         Icon::Warn,

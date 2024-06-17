@@ -185,9 +185,9 @@ fn try_main() -> anyhow::Result<()> {
             &mut gui,
             &mut sf_egui,
             &mut window,
-            &font,
             &mut vertex_buffer,
             &lua,
+            &font,
         )? {
             return Ok(());
         }
@@ -291,16 +291,23 @@ fn do_frame(
     gui: &mut Gui,
     sf_egui: &mut SfEgui,
     window: &mut RenderWindow,
-    font: &Font,
     vertex_buffer: &mut Vec<Vertex>,
     lua: &Lua,
+    font: &Font,
 ) -> anyhow::Result<bool> {
+    let font_size = 14;
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "It's extremely unlikely that the line spacing is not between 0..u16::MAX"
+    )]
+    let line_spacing = font.line_spacing(u32::from(font_size)) as u16;
     // Handle window events
-    handle_events(gui, app, window, sf_egui, font);
+    handle_events(gui, app, window, sf_egui, font_size, line_spacing);
     update(app, sf_egui.context().wants_keyboard_input());
-    app.update(gui, window, lua, font);
+    app.update(gui, window, lua, font_size, line_spacing);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
-    if !gui::do_egui(sf_egui, gui, app, mp, font, lua, window)? {
+    if !gui::do_egui(sf_egui, gui, app, mp, lua, window, font_size, line_spacing)? {
         return Ok(false);
     }
     // Here we flush GUI command queue every frame
@@ -447,7 +454,8 @@ fn handle_events(
     app: &mut App,
     window: &mut RenderWindow,
     sf_egui: &mut SfEgui,
-    font: &Font,
+    font_size: u16,
+    line_spacing: u16,
 ) {
     while let Some(event) = window.poll_event() {
         let egui_ctx = sf_egui.context();
@@ -475,7 +483,15 @@ fn handle_events(
                 ctrl,
                 alt,
                 ..
-            } => handle_key_pressed(code, gui, app, KeyMod { ctrl, shift, alt }, font, wants_kb),
+            } => handle_key_pressed(
+                code,
+                gui,
+                app,
+                KeyMod { ctrl, shift, alt },
+                wants_kb,
+                font_size,
+                line_spacing,
+            ),
             Event::TextEntered { unicode } => {
                 handle_text_entered(app, unicode, &mut gui.msg_dialog)
             }
@@ -607,8 +623,9 @@ fn handle_key_pressed(
     gui: &mut crate::gui::Gui,
     app: &mut App,
     key_mod: KeyMod,
-    font: &Font,
     egui_wants_kb: bool,
+    font_size: u16,
+    line_spacing: u16,
 ) {
     if code == Key::F12 && !key_mod.shift && !key_mod.ctrl && !key_mod.alt {
         IMMEDIATE.toggle();
@@ -915,7 +932,7 @@ fn handle_key_pressed(
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 msg_if_fail(
-                    app.load_file_args(args, None, font, &mut gui.msg_dialog),
+                    app.load_file_args(args, None, &mut gui.msg_dialog, font_size, line_spacing),
                     "Failed to load file",
                     &mut gui.msg_dialog,
                 );

@@ -9,7 +9,6 @@ use {
     egui::TextBuffer,
     egui_code_editor::{CodeEditor, Syntax},
     egui_extras::{Size, StripBuilder},
-    egui_sfml::sfml::graphics::Font,
     mlua::Lua,
     std::time::Instant,
 };
@@ -34,7 +33,8 @@ impl Dialog for LuaExecuteDialog {
         app: &mut App,
         gui: &mut crate::gui::Gui,
         lua: &Lua,
-        font: &Font,
+        font_size: u16,
+        line_spacing: u16,
     ) -> bool {
         let ctrl_enter =
             ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::Enter));
@@ -73,7 +73,7 @@ impl Dialog for LuaExecuteDialog {
                         if ui.button("⚡ Execute").on_hover_text("Ctrl+Enter").clicked()
                             || ctrl_enter
                         {
-                            self.exec_lua(app, lua, gui, font);
+                            self.exec_lua(app, lua, gui, font_size, line_spacing);
                         }
                         let script_label = match &self.edit_key {
                             Some(key) => {
@@ -166,7 +166,14 @@ impl Dialog for LuaExecuteDialog {
 }
 
 impl LuaExecuteDialog {
-    fn exec_lua(&mut self, app: &mut App, lua: &Lua, gui: &mut Gui, font: &Font) {
+    fn exec_lua(
+        &mut self,
+        app: &mut App,
+        lua: &Lua,
+        gui: &mut Gui,
+        font_size: u16,
+        line_spacing: u16,
+    ) {
         let start_time = Instant::now();
         let lua_script = self
             .edit_key
@@ -178,9 +185,10 @@ impl LuaExecuteDialog {
             &lua_script,
             app,
             gui,
-            font,
             &self.args_string,
             self.edit_key,
+            font_size,
+            line_spacing,
         );
         if let Err(e) = result {
             self.result_info_string = e.to_string();

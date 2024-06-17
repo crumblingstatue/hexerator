@@ -25,7 +25,12 @@ impl super::Window for FindMemoryPointersWindow {
     fn ui(
         &mut self,
         WinCtx {
-            ui, gui, app, font, ..
+            ui,
+            gui,
+            app,
+            font_size,
+            line_spacing,
+            ..
         }: WinCtx,
     ) {
         ui.style_mut().wrap = Some(false);
@@ -123,8 +128,9 @@ impl super::Window for FindMemoryPointersWindow {
                                 range.start(),
                                 range.size(),
                                 range.is_write(),
-                                font,
                                 &mut gui.msg_dialog,
+                                font_size,
+                                line_spacing,
                             ) {
                                 Ok(()) => action = Action::Goto(en.ptr - range.start()),
                                 Err(e) => {

@@ -1,7 +1,6 @@
 use {
     crate::{app::App, gui::Dialog, shell::msg_if_fail},
     egui_code_editor::{CodeEditor, Syntax},
-    egui_sfml::sfml::graphics::Font,
     mlua::{Function, Lua},
     std::time::Instant,
 };
@@ -23,7 +22,8 @@ impl Dialog for LuaFillDialog {
         app: &mut App,
         gui: &mut crate::gui::Gui,
         lua: &Lua,
-        _font: &Font,
+        _font_size: u16,
+        _line_spacing: u16,
     ) -> bool {
         let Some(sel) = app.hex_ui.selection() else {
             ui.heading("No active selection");

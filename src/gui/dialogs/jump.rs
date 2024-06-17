@@ -5,7 +5,6 @@ use {
         parse_radix::{parse_offset_maybe_relative, Relativity},
         shell::msg_fail,
     },
-    egui_sfml::sfml::graphics::Font,
     mlua::Lua,
 };
 
@@ -31,7 +30,8 @@ impl Dialog for JumpDialog {
         app: &mut App,
         gui: &mut crate::gui::Gui,
         _lua: &Lua,
-        _font: &Font,
+        _font_size: u16,
+        _line_spacing: u16,
     ) -> bool {
         ui.horizontal(|ui| {
             ui.label("Offset");

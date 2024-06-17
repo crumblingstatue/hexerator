@@ -39,7 +39,12 @@ impl super::Window for FileDiffResultWindow {
     fn ui(
         &mut self,
         WinCtx {
-            ui, gui, app, font, ..
+            ui,
+            gui,
+            app,
+            font_size,
+            line_spacing,
+            ..
         }: WinCtx,
     ) {
         if self.offsets.is_empty() {
@@ -56,7 +61,13 @@ impl super::Window for FileDiffResultWindow {
                 let prev_pref = app.preferences.keep_meta;
                 let prev_path = app.src_args.file.clone();
                 app.preferences.keep_meta = true;
-                let result = app.load_file(self.path.clone(), false, font, &mut gui.msg_dialog);
+                let result = app.load_file(
+                    self.path.clone(),
+                    false,
+                    &mut gui.msg_dialog,
+                    font_size,
+                    line_spacing,
+                );
                 app.preferences.keep_meta = prev_pref;
                 if msg_if_fail(result, "Failed to load file", &mut gui.msg_dialog).is_none() {
                     if let Some(path) = prev_path {

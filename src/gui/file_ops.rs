@@ -13,7 +13,7 @@ use {
     },
     anyhow::Context,
     egui_file_dialog::FileDialog,
-    egui_sfml::sfml::graphics::{Font, Image},
+    egui_sfml::sfml::graphics::Image,
     std::{fs::OpenOptions, io::Write as _, path::Path},
 };
 
@@ -56,7 +56,8 @@ impl FileOps {
         msg: &mut MessageDialog,
         advanced_open_window: &mut AdvancedOpenWindow,
         file_diff_result_window: &mut FileDiffResultWindow,
-        font: &Font,
+        font_size: u16,
+        line_spacing: u16,
     ) {
         self.dialog.update(ctx);
         if let Some(path) = self.dialog.take_selected()
@@ -79,7 +80,7 @@ impl FileOps {
                 FileOp::LoadFile => {
                     let write = OpenOptions::new().write(true).open(&path).is_ok();
                     msg_if_fail(
-                        app.load_file(path, !write, font, msg),
+                        app.load_file(path, !write, msg, font_size, line_spacing),
                         "Failed to load file (read-write)",
                         msg,
                     );

@@ -34,7 +34,12 @@ impl super::Window for AdvancedOpenWindow {
     fn ui(
         &mut self,
         WinCtx {
-            ui, gui, app, font, ..
+            ui,
+            gui,
+            app,
+            font_size,
+            line_spacing,
+            ..
         }: WinCtx,
     ) {
         let src_args = &mut self.src_args;
@@ -107,8 +112,9 @@ impl super::Window for AdvancedOpenWindow {
                 app.load_file_args(
                     src_args.clone(),
                     self.path_to_meta.clone(),
-                    font,
                     &mut gui.msg_dialog,
+                    font_size,
+                    line_spacing,
                 ),
                 "Failed to load file",
                 &mut gui.msg_dialog,

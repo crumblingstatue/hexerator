@@ -1,7 +1,6 @@
 use {
     crate::{app::App, gui::Dialog},
     egui::Button,
-    egui_sfml::sfml::graphics::Font,
     iced_x86::{Decoder, Formatter, NasmFormatter},
     mlua::Lua,
 };
@@ -31,7 +30,8 @@ impl Dialog for X86AsmDialog {
         app: &mut App,
         _gui: &mut crate::gui::Gui,
         _lua: &Lua,
-        _font: &Font,
+        _font_size: u16,
+        _line_spacing: u16,
     ) -> bool {
         let mut retain = true;
         egui::ScrollArea::vertical().max_height(320.0).show(ui, |ui| {

@@ -122,7 +122,12 @@ impl super::Window for OpenProcessWindow {
     fn ui(
         &mut self,
         WinCtx {
-            ui, gui, app, font, ..
+            ui,
+            gui,
+            app,
+            font_size,
+            line_spacing,
+            ..
         }: WinCtx,
     ) {
         ui.style_mut().wrap = Some(false);
@@ -230,8 +235,9 @@ impl super::Window for OpenProcessWindow {
                                     range.start(),
                                     range.size(),
                                     range.is_write(),
-                                    font,
                                     &mut gui.msg_dialog,
+                                    font_size,
+                                    line_spacing,
                                 ) {
                                     Ok(()) => {
                                         let mut offsets = Vec::new();
@@ -254,8 +260,9 @@ impl super::Window for OpenProcessWindow {
                                     result.map.start(),
                                     result.map.size(),
                                     result.map.is_write(),
-                                    font,
                                     &mut gui.msg_dialog,
+                                    font_size,
+                                    line_spacing,
                                 ) {
                                     Ok(()) => {
                                         result.offsets.retain(|offset| {
@@ -304,8 +311,9 @@ impl super::Window for OpenProcessWindow {
                                                 result.map.start(),
                                                 result.map.size(),
                                                 result.map.is_write(),
-                                                font,
                                                 &mut gui.msg_dialog,
+                                                font_size,
+                                                line_spacing,
                                             ) {
                                                 Ok(()) => {
                                                     app.search_focus(*offset);
@@ -499,8 +507,9 @@ impl super::Window for OpenProcessWindow {
                                         map_range.start(),
                                         map_range.size(),
                                         map_range.is_write(),
-                                        font,
                                         &mut gui.msg_dialog,
+                                        font_size,
+                                        line_spacing,
                                     ),
                                     "Failed to load process memory",
                                     &mut gui.msg_dialog,

@@ -7,7 +7,7 @@ use {
         view::{HexData, TextData, TextKind, ViewKind},
     },
     egui_extras::{Column, TableBuilder},
-    egui_sfml::{egui::emath::Numeric, sfml::graphics::Font},
+    egui_sfml::egui::emath::Numeric,
     slotmap::Key,
     std::{hash::Hash, ops::RangeInclusive},
 };
@@ -41,7 +41,12 @@ impl super::Window for ViewsWindow {
     fn ui(
         &mut self,
         WinCtx {
-            ui, gui, app, font, ..
+            ui,
+            gui,
+            app,
+            font_size,
+            line_spacing,
+            ..
         }: WinCtx,
     ) {
         ui.style_mut().wrap = Some(false);
@@ -166,7 +171,13 @@ impl super::Window for ViewsWindow {
                 if ui.button("✏").on_hover_text("Rename").clicked() {
                     self.rename ^= true;
                 }
-                if view_combo(egui::Id::new("view_combo"), &mut view.view.kind, ui, font) {
+                if view_combo(
+                    egui::Id::new("view_combo"),
+                    &mut view.view.kind,
+                    ui,
+                    font_size,
+                    line_spacing,
+                ) {
                     view.view.adjust_state_to_kind();
                 }
             });
@@ -241,13 +252,8 @@ impl super::Window for ViewsWindow {
                 }
                 if adjust_block_size {
                     view.view.adjust_block_size();
-                    #[expect(
-                        clippy::cast_possible_truncation,
-                        clippy::cast_sign_loss,
-                        reason = "It's extremely unlikely line spacing is not between 0 and i16::MAX"
-                    )]
                     if let ViewKind::Text(data) = &mut view.view.kind {
-                        data.line_spacing = font.line_spacing(u32::from(data.font_size)) as u16;
+                        data.line_spacing = line_spacing
                     }
                 }
                 ui.horizontal(|ui| {
@@ -281,7 +287,8 @@ fn view_combo(
     id: impl Hash,
     kind: &mut crate::view::ViewKind,
     ui: &mut egui::Ui,
-    font: &Font,
+    font_size: u16,
+    line_spacing: u16,
 ) -> bool {
     let mut changed = false;
     egui::ComboBox::new(id, "kind").selected_text(kind.name()).show_ui(ui, |ui| {
@@ -303,7 +310,7 @@ fn view_combo(
             .selectable_label(kind.name() == ViewKind::TEXT_NAME, ViewKind::TEXT_NAME)
             .clicked()
         {
-            *kind = ViewKind::Text(TextData::default_from_font(font, 14));
+            *kind = ViewKind::Text(TextData::default_from_font(line_spacing, font_size));
             changed = true;
         }
         if ui

@@ -52,7 +52,8 @@ impl super::Window for LuaConsoleWindow {
             gui,
             app,
             lua,
-            font,
+            font_size,
+            line_spacing,
             ..
         }: WinCtx,
     ) {
@@ -82,7 +83,16 @@ impl super::Window for LuaConsoleWindow {
                 || (ui.input(|inp| inp.key_pressed(egui::Key::Enter)) && re.lost_focus())
             {
                 let code = &self.eval_buf.clone();
-                if let Err(e) = exec_lua(lua, code, app, gui, font, "", self.active_msg_buf) {
+                if let Err(e) = exec_lua(
+                    lua,
+                    code,
+                    app,
+                    gui,
+                    "",
+                    self.active_msg_buf,
+                    font_size,
+                    line_spacing,
+                ) {
                     self.msg_buf().push(ConMsg::Plain(e.to_string()));
                 }
             }

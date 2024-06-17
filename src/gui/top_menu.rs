@@ -13,7 +13,7 @@ mod view;
 
 use {
     crate::{app::App, source::SourceProvider},
-    egui_sfml::{egui::Layout, sfml::graphics::Font},
+    egui_sfml::egui::Layout,
 };
 
 pub fn top_menu(
@@ -21,17 +21,22 @@ pub fn top_menu(
     gui: &mut crate::gui::Gui,
     app: &mut App,
     lua: &Lua,
-    font: &Font,
+    font_size: u16,
+    line_spacing: u16,
 ) {
     ui.horizontal(|ui| {
-        ui.menu_button("File", |ui| file::ui(ui, gui, app, font));
-        ui.menu_button("Edit", |ui| edit::ui(ui, gui, app, lua, font));
+        ui.menu_button("File", |ui| file::ui(ui, gui, app, font_size, line_spacing));
+        ui.menu_button("Edit", |ui| {
+            edit::ui(ui, gui, app, lua, font_size, line_spacing)
+        });
         ui.menu_button("Cursor", |ui| cursor::ui(ui, gui, app));
         ui.menu_button("View", |ui| view::ui(ui, gui, app));
         ui.menu_button("Perspective", |ui| perspective::ui(ui, gui, app));
-        ui.menu_button("Meta", |ui| meta::ui(ui, gui, app, font));
+        ui.menu_button("Meta", |ui| meta::ui(ui, gui, app, font_size, line_spacing));
         ui.menu_button("Analysis", |ui| analysis::ui(ui, gui, app));
-        ui.menu_button("Scripting", |ui| scripting::ui(ui, gui, app, lua, font));
+        ui.menu_button("Scripting", |ui| {
+            scripting::ui(ui, gui, app, lua, font_size, line_spacing)
+        });
         ui.menu_button("Plugins", |ui| plugins::ui(ui, gui, app));
         ui.menu_button("Help", |ui| help::ui(ui, gui));
         ui.with_layout(

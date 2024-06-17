@@ -20,7 +20,7 @@ use {
             TextStyle::{Body, Button, Heading, Monospace, Small},
             TopBottomPanel, Window,
         },
-        sfml::graphics::{Font, RenderWindow},
+        sfml::graphics::RenderWindow,
         SfEgui,
     },
     gamedebug_core::{IMMEDIATE, PERSISTENT},
@@ -88,7 +88,8 @@ pub trait Dialog {
         app: &mut App,
         gui: &mut crate::gui::Gui,
         lua: &Lua,
-        font: &Font,
+        font_size: u16,
+        line_spacing: u16,
     ) -> bool;
     /// Called when dialog is opened. Can be used to set just-opened flag, etc.
     fn on_open(&mut self) {}
@@ -110,9 +111,10 @@ pub fn do_egui(
     gui: &mut crate::gui::Gui,
     app: &mut App,
     mouse_pos: ViewportVec,
-    font: &Font,
     lua: &Lua,
     rwin: &mut RenderWindow,
+    font_size: u16,
+    line_spacing: u16,
 ) -> anyhow::Result<bool> {
     sf_egui.begin_frame();
     let ctx = sf_egui.context();
@@ -125,8 +127,8 @@ pub fn do_egui(
         PERSISTENT.toggle();
     }
     gui.msg_dialog.show(ctx, &mut app.clipboard, &mut app.cmd);
-    app.flush_command_queue(gui, lua, font);
-    self::Windows::update(ctx, gui, app, rwin, lua, font);
+    app.flush_command_queue(gui, lua, font_size, line_spacing);
+    self::Windows::update(ctx, gui, app, rwin, lua, font_size, line_spacing);
 
     // Context menu
     if let Some(menu) = &gui.context_menu {
@@ -247,8 +249,9 @@ pub fn do_egui(
         }
     }
     // Panels
-    let top_re =
-        TopBottomPanel::top("top_panel").show(ctx, |ui| top_panel::ui(ui, gui, app, lua, font));
+    let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| {
+        top_panel::ui(ui, gui, app, lua, font_size, line_spacing)
+    });
     let bot_re = TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
         bottom_panel::ui(ui, app, mouse_pos, &mut gui.msg_dialog)
     });
@@ -289,7 +292,7 @@ pub fn do_egui(
             win = win.open(&mut open)
         }
         win.show(ctx, |ui| {
-            retain = dialog.ui(ui, app, gui, lua, font);
+            retain = dialog.ui(ui, app, gui, lua, font_size, line_spacing);
         });
         if !open {
             retain = false;
@@ -304,7 +307,8 @@ pub fn do_egui(
         &mut gui.msg_dialog,
         &mut gui.win.advanced_open,
         &mut gui.win.file_diff_result,
-        font,
+        font_size,
+        line_spacing,
     );
     sf_egui.end_frame(rwin)?;
     Ok(true)

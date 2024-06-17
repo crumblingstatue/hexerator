@@ -1,10 +1,9 @@
 use {
     crate::{app::App, gui::Gui, shell::msg_if_fail},
     egui::Button,
-    egui_sfml::sfml::graphics::Font,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_spacing: u16) {
     if ui.add(Button::new("Regions...").shortcut_text("F8")).clicked() {
         gui.win.regions.open.toggle();
         ui.close_menu();
@@ -66,7 +65,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
         .on_hover_text("Replace current meta with default one")
         .clicked()
     {
-        app.set_new_clean_meta(font);
+        app.set_new_clean_meta(font_size, line_spacing);
         ui.close_menu();
     }
     ui.separator();

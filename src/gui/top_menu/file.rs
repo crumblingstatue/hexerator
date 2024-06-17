@@ -5,10 +5,9 @@ use {
         shell::msg_if_fail,
     },
     egui::Button,
-    egui_sfml::sfml::graphics::Font,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_spacing: u16) {
     if ui.add(Button::new("Open...").shortcut_text("Ctrl+O")).clicked() {
         gui.fileops.load_file(app.source_file());
         ui.close_menu();
@@ -76,7 +75,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font: &Font) {
     });
     if let Some(args) = load {
         msg_if_fail(
-            app.load_file_args(args, None, font, &mut gui.msg_dialog),
+            app.load_file_args(args, None, &mut gui.msg_dialog, font_size, line_spacing),
             "Failed to load file",
             &mut gui.msg_dialog,
         );

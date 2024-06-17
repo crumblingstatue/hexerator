@@ -24,7 +24,8 @@ impl super::Window for LuaWatchWindow {
             gui,
             app,
             lua,
-            font,
+            font_size,
+            line_spacing,
             ..
         }: WinCtx,
     ) {
@@ -32,7 +33,7 @@ impl super::Window for LuaWatchWindow {
         ui.text_edit_singleline(&mut self.expr);
         ui.checkbox(&mut self.watch, "watch");
         if self.watch {
-            match exec_lua(lua, &self.expr, app, gui, font, "", None) {
+            match exec_lua(lua, &self.expr, app, gui, "", None, font_size, line_spacing) {
                 Ok(ret) => {
                     if let Some(s) = ret {
                         ui.label(s);

@@ -17,7 +17,6 @@ use {
         shell::msg_if_fail,
         view::{HexData, View, ViewKind},
     },
-    egui_sfml::sfml::graphics::Font,
     mlua::Lua,
     std::{collections::VecDeque, path::Path},
 };
@@ -73,16 +72,29 @@ impl App {
     ///
     /// Automatically called every frame, but can be called manually if operations need to be
     /// performed sooner.
-    pub fn flush_command_queue(&mut self, gui: &mut Gui, lua: &Lua, font: &Font) {
+    pub fn flush_command_queue(
+        &mut self,
+        gui: &mut Gui,
+        lua: &Lua,
+        font_size: u16,
+        line_spacing: u16,
+    ) {
         while let Some(cmd) = self.cmd.inner.pop_front() {
-            perform_command(self, cmd, gui, lua, font);
+            perform_command(self, cmd, gui, lua, font_size, line_spacing);
         }
     }
 }
 
 /// Perform a command. Called by `App::flush_command_queue`, but can be called manually if you
 /// have a `Cmd` you would like you perform.
-pub fn perform_command(app: &mut App, cmd: Cmd, gui: &mut Gui, lua: &Lua, font: &Font) {
+pub fn perform_command(
+    app: &mut App,
+    cmd: Cmd,
+    gui: &mut Gui,
+    lua: &Lua,
+    font_size: u16,
+    line_spacing: u16,
+) {
     match cmd {
         Cmd::CreatePerspective { region_key, name } => {
             app.add_perspective_from_region(region_key, name)
@@ -136,7 +148,16 @@ pub fn perform_command(app: &mut App, cmd: Cmd, gui: &mut Gui, lua: &Lua, font: 
             if let Some(key) = &app.meta_state.meta.onload_script {
                 let scr = &app.meta_state.meta.scripts[*key];
                 let content = scr.content.clone();
-                let result = exec_lua(lua, &content, app, gui, font, "", Some(*key));
+                let result = exec_lua(
+                    lua,
+                    &content,
+                    app,
+                    gui,
+                    "",
+                    Some(*key),
+                    font_size,
+                    line_spacing,
+                );
                 msg_if_fail(
                     result,
                     "Failed to execute onload lua script",

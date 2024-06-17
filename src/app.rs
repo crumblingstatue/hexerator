@@ -122,9 +122,16 @@ impl App {
             this.preferences.auto_reload_interval_ms = interval_ms;
         }
         // Set a clean meta, for an empty document
-        this.set_new_clean_meta(font);
+        let font_size = 14;
+        #[expect(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "It's extremely unlikely that the line spacing is not between 0..u16::MAX"
+        )]
+        let line_spacing = font.line_spacing(u32::from(font_size)) as u16;
+        this.set_new_clean_meta(font_size, line_spacing);
         msg_if_fail(
-            this.load_file_args(args.src, args.meta, font, msg),
+            this.load_file_args(args.src, args.meta, msg, font_size, line_spacing),
             "Failed to load file",
             msg,
         );
@@ -340,8 +347,9 @@ impl App {
         &mut self,
         path: PathBuf,
         read_only: bool,
-        font: &Font,
         msg: &mut MessageDialog,
+        font_size: u16,
+        line_spacing: u16,
     ) -> Result<(), anyhow::Error> {
         self.load_file_args(
             SourceArgs {
@@ -353,17 +361,23 @@ impl App {
                 stream: false,
             },
             None,
-            font,
             msg,
+            font_size,
+            line_spacing,
         )
     }
 
     /// Set a new clean meta for the current data, and switch to default layout
-    pub fn set_new_clean_meta(&mut self, font: &Font) {
+    pub fn set_new_clean_meta(&mut self, font_size: u16, line_spacing: u16) {
         per!("Setting up new clean meta");
         self.meta_state.current_meta_path.clear();
         self.meta_state.meta = Meta::default();
-        let layout_key = setup_empty_meta(self.data.len(), font, &mut self.meta_state.meta);
+        let layout_key = setup_empty_meta(
+            self.data.len(),
+            &mut self.meta_state.meta,
+            font_size,
+            line_spacing,
+        );
         self.meta_state.clean_meta = self.meta_state.meta.clone();
         App::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
     }
@@ -522,8 +536,9 @@ impl App {
         &mut self,
         mut src_args: SourceArgs,
         meta_path: Option<PathBuf>,
-        font: &Font,
         msg: &mut MessageDialog,
+        font_size: u16,
+        line_spacing: u16,
     ) -> anyhow::Result<()> {
         if load_file_from_src_args(
             &mut src_args,
@@ -539,7 +554,7 @@ impl App {
             if !self.preferences.keep_meta {
                 if let Some(meta_path) = meta_path {
                     if let Err(e) = self.consume_meta_from_file(meta_path.clone()) {
-                        self.set_new_clean_meta(font);
+                        self.set_new_clean_meta(font_size, line_spacing);
                         msg_fail(&e, "Failed to load metafile", msg);
                     }
                 } else if let Some(src_path) = per_dbg!(&src_args.file)
@@ -558,7 +573,7 @@ impl App {
                 } else {
                     // We didn't load any meta, but we're loading a new file.
                     // Set up a new clean meta for it.
-                    self.set_new_clean_meta(font);
+                    self.set_new_clean_meta(font_size, line_spacing);
                 }
             }
             self.src_args = src_args;
@@ -571,7 +586,14 @@ impl App {
         Ok(())
     }
     /// Called every frame
-    pub(crate) fn update(&mut self, gui: &mut Gui, rw: &mut RenderWindow, lua: &Lua, font: &Font) {
+    pub(crate) fn update(
+        &mut self,
+        gui: &mut Gui,
+        rw: &mut RenderWindow,
+        lua: &Lua,
+        font_size: u16,
+        line_spacing: u16,
+    ) {
         if !self.hex_ui.current_layout.is_null() {
             let layout = &self.meta_state.meta.layouts[self.hex_ui.current_layout];
             do_auto_layout(
@@ -615,7 +637,7 @@ impl App {
             self.last_reload = Instant::now();
         }
         // Here we perform all queued up `Command`s.
-        self.flush_command_queue(gui, lua, font);
+        self.flush_command_queue(gui, lua, font_size, line_spacing);
         self.flush_backend_command_queue(rw);
     }
     /// Reload only what's visible on the screen (current layout)
@@ -776,11 +798,21 @@ impl App {
         start: usize,
         size: usize,
         is_write: bool,
-        font: &Font,
         msg: &mut MessageDialog,
+        font_size: u16,
+        line_spacing: u16,
     ) -> anyhow::Result<()> {
         #[cfg(target_os = "linux")]
-        return load_proc_memory_linux(self, pid, start, size, is_write, font, msg);
+        return load_proc_memory_linux(
+            self,
+            pid,
+            start,
+            size,
+            is_write,
+            msg,
+            font_size,
+            line_spacing,
+        );
         #[cfg(windows)]
         return crate::windows::load_proc_memory(self, pid, start, size, is_write, font);
         #[cfg(target_os = "macos")]
@@ -878,7 +910,12 @@ impl App {
 }
 
 /// Set up an empty meta with the defaults
-pub fn setup_empty_meta(data_len: usize, font: &Font, meta: &mut Meta) -> LayoutKey {
+pub fn setup_empty_meta(
+    data_len: usize,
+    meta: &mut Meta,
+    font_size: u16,
+    line_spacing: u16,
+) -> LayoutKey {
     let def_region = meta.low.regions.insert(NamedRegion {
         name: "default".into(),
         region: Region {
@@ -898,7 +935,7 @@ pub fn setup_empty_meta(data_len: usize, font: &Font, meta: &mut Meta) -> Layout
         view_grid: vec![vec![]],
         margin: default_margin(),
     };
-    for view in default_views(font, default_perspective) {
+    for view in default_views(default_perspective, font_size, line_spacing) {
         let k = meta.views.insert(view);
         layout.view_grid[0].push(k);
     }
@@ -930,8 +967,9 @@ fn load_proc_memory_linux(
     start: usize,
     size: usize,
     is_write: bool,
-    font: &Font,
     msg: &mut MessageDialog,
+    font_size: u16,
+    line_spacing: u16,
 ) -> anyhow::Result<()> {
     app.load_file_args(
         SourceArgs {
@@ -943,8 +981,9 @@ fn load_proc_memory_linux(
             stream: false,
         },
         None,
-        font,
         msg,
+        font_size,
+        line_spacing,
     )
 }
 
@@ -1015,7 +1054,11 @@ pub fn col_change_impl_view_perspective(
     view.scroll_to_byte_offset(prev_offset.byte, perspectives, regions, lock_x, lock_y);
 }
 
-pub fn default_views(font: &Font, perspective: PerspectiveKey) -> Vec<NamedView> {
+pub fn default_views(
+    perspective: PerspectiveKey,
+    font_size: u16,
+    line_spacing: u16,
+) -> Vec<NamedView> {
     vec![
         NamedView {
             view: View::new(ViewKind::Hex(HexData::default()), perspective),
@@ -1023,7 +1066,7 @@ pub fn default_views(font: &Font, perspective: PerspectiveKey) -> Vec<NamedView>
         },
         NamedView {
             view: View::new(
-                ViewKind::Text(TextData::default_from_font(font, 14)),
+                ViewKind::Text(TextData::default_from_font(line_spacing, font_size)),
                 perspective,
             ),
             name: "Default text".into(),

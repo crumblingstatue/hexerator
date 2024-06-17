@@ -6,15 +6,12 @@ use {
         value_color::{ColorMethod, Palette},
     },
     anyhow::Context,
-    egui_sfml::{
-        egui::{ComboBox, Layout, Ui},
-        sfml::graphics::Font,
-    },
+    egui_sfml::egui::{ComboBox, Layout, Ui},
     mlua::Lua,
 };
 
-pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font: &Font) {
-    top_menu(ui, gui, app, lua, font);
+pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, line_spacing: u16) {
+    top_menu(ui, gui, app, lua, font_size, line_spacing);
     ui.horizontal(|ui| {
         if app.hex_ui.select_a.is_some() || app.hex_ui.select_b.is_some() {
             ui.label("Selection");

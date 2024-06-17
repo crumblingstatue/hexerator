@@ -8,8 +8,7 @@ use {
         meta::{region::Region, PerspectiveKey, PerspectiveMap, RegionMap},
         preferences::Preferences,
     },
-    egui_sfml::sfml::graphics::Font,
-    gamedebug_core::{per, per_dbg},
+    gamedebug_core::per,
     serde::{Deserialize, Serialize},
     slotmap::Key,
 };
@@ -703,15 +702,10 @@ impl Default for HexData {
 }
 
 impl TextData {
-    #[expect(
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss,
-        reason = "It's extremely unlikely that the line spacing is not between 0..u16::MAX"
-    )]
-    pub fn default_from_font(font: &Font, font_size: u16) -> Self {
+    pub fn default_from_font(line_spacing: u16, font_size: u16) -> Self {
         Self {
             text_kind: TextKind::Ascii,
-            line_spacing: per_dbg!(font.line_spacing(u32::from(font_size)) as u16),
+            line_spacing,
             edit_buf: EditBuffer::default(),
             font_size,
             offset: 0,

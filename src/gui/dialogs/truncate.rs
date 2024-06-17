@@ -1,7 +1,6 @@
 use {
     crate::{app::App, gui::Dialog, meta::region::Region},
     egui::{Button, DragValue},
-    egui_sfml::sfml::graphics::Font,
     mlua::Lua,
 };
 
@@ -31,7 +30,8 @@ impl Dialog for TruncateDialog {
         app: &mut App,
         _gui: &mut crate::gui::Gui,
         _lua: &Lua,
-        _font: &Font,
+        _font_size: u16,
+        _line_spacing: u16,
     ) -> bool {
         ui.horizontal(|ui| {
             ui.label("Begin");
