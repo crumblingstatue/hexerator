@@ -13,16 +13,13 @@ use {
         },
         view::{ViewportScalar, ViewportVec},
     },
-    egui_sfml::{
-        egui::{
-            FontFamily::{self, Proportional},
-            FontId,
-            TextStyle::{Body, Button, Heading, Monospace, Small},
-            TopBottomPanel, Window,
-        },
-        sfml::graphics::RenderWindow,
-        SfEgui,
+    egui::{
+        FontFamily::{self, Proportional},
+        FontId,
+        TextStyle::{Body, Button, Heading, Monospace, Small},
+        TopBottomPanel, Window,
     },
+    egui_sfml::{sfml::graphics::RenderWindow, SfEgui},
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     mlua::Lua,
     std::{

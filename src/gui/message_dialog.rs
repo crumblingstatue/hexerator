@@ -1,4 +1,4 @@
-use {crate::app::command::CommandQueue, egui_modal::Modal, egui_sfml::egui::Color32};
+use {crate::app::command::CommandQueue, egui::Color32, egui_modal::Modal};
 
 #[derive(Default)]
 pub struct MessageDialog {

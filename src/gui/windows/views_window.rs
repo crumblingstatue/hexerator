@@ -6,8 +6,8 @@ use {
         meta::ViewKey,
         view::{HexData, TextData, TextKind, ViewKind},
     },
+    egui::emath::Numeric,
     egui_extras::{Column, TableBuilder},
-    egui_sfml::egui::emath::Numeric,
     slotmap::Key,
     std::{hash::Hash, ops::RangeInclusive},
 };

@@ -6,7 +6,7 @@ use {
         value_color::{ColorMethod, Palette},
     },
     anyhow::Context,
-    egui_sfml::egui::{ComboBox, Layout, Ui},
+    egui::{ComboBox, Layout, Ui},
     mlua::Lua,
 };
 

@@ -13,7 +13,7 @@ mod view;
 
 use {
     crate::{app::App, source::SourceProvider},
-    egui_sfml::egui::Layout,
+    egui::Layout,
 };
 
 pub fn top_menu(
