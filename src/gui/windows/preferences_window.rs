@@ -1,12 +1,11 @@
 use {
     super::{WinCtx, WindowOpen},
     crate::{
-        app::App,
+        app::{backend_command::BackendCmd, App},
         config::{self, Config},
         gui::message_dialog::{Icon, MessageDialog},
     },
     egui_fontcfg::{CustomFontPaths, FontCfgUi, FontDefsUiMsg},
-    egui_sfml::sfml::graphics::RenderWindow,
 };
 
 #[derive(Default)]
@@ -37,12 +36,7 @@ impl Tab {
 }
 
 impl super::Window for PreferencesWindow {
-    fn ui(
-        &mut self,
-        WinCtx {
-            ui, gui, app, rwin, ..
-        }: WinCtx,
-    ) {
+    fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         if self.open.just_now() {
             self.font_defs = ui.ctx().fonts(|f| f.lock().fonts.definitions().clone());
             self.temp_custom_font_paths.clone_from(&app.cfg.custom_font_paths);
@@ -58,7 +52,7 @@ impl super::Window for PreferencesWindow {
         });
         ui.separator();
         match self.tab {
-            Tab::Video => video_ui(ui, app, rwin),
+            Tab::Video => video_ui(ui, app),
             Tab::Style => style_ui(app, ui),
             Tab::Fonts => fonts_ui(
                 ui,
@@ -76,15 +70,15 @@ impl super::Window for PreferencesWindow {
     }
 }
 
-fn video_ui(ui: &mut egui::Ui, app: &mut App, rwin: &mut RenderWindow) {
+fn video_ui(ui: &mut egui::Ui, app: &mut App) {
     if ui.checkbox(&mut app.cfg.vsync, "Vsync").clicked() {
-        rwin.set_vertical_sync_enabled(app.cfg.vsync);
+        app.backend_cmd.push(BackendCmd::ApplyVsyncCfg);
     }
     ui.horizontal(|ui| {
         ui.label("FPS limit (0 to disable)");
         ui.add(egui::DragValue::new(&mut app.cfg.fps_limit));
         if ui.button("Set").clicked() {
-            rwin.set_framerate_limit(app.cfg.fps_limit);
+            app.backend_cmd.push(BackendCmd::ApplyFpsLimit);
         }
     });
 }

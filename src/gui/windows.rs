@@ -16,7 +16,6 @@ use {
     },
     super::Gui,
     crate::app::App,
-    egui_sfml::sfml::graphics::RenderWindow,
 };
 
 mod about;
@@ -100,7 +99,6 @@ struct WinCtx<'a> {
     ui: &'a mut egui::Ui,
     gui: &'a mut crate::gui::Gui,
     app: &'a mut crate::app::App,
-    rwin: &'a mut RenderWindow,
     lua: &'a mlua::Lua,
     font_size: u16,
     line_spacing: u16,
@@ -116,7 +114,6 @@ impl Windows {
         ctx: &egui::Context,
         gui: &mut Gui,
         app: &mut App,
-        rwin: &mut RenderWindow,
         lua: &mlua::Lua,
         font_size: u16,
         line_spacing: u16,
@@ -127,7 +124,7 @@ impl Windows {
                 $(
                     let mut win = std::mem::take(&mut gui.win.$field);
                     open = win.open.is();
-                    egui::Window::new(win.title()).open(&mut open).show(ctx, |ui| win.ui(WinCtx{ ui, gui, app, rwin, lua, font_size, line_spacing }));
+                    egui::Window::new(win.title()).open(&mut open).show(ctx, |ui| win.ui(WinCtx{ ui, gui, app, lua, font_size, line_spacing }));
                     win.open.just_opened = false;
                     if !open {
                         win.open.set(false);
@@ -170,7 +167,6 @@ impl Windows {
                         ui,
                         gui,
                         app,
-                        rwin,
                         lua,
                         font_size,
                         line_spacing,

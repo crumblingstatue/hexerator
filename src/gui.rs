@@ -128,7 +128,7 @@ pub fn do_egui(
     }
     gui.msg_dialog.show(ctx, &mut app.clipboard, &mut app.cmd);
     app.flush_command_queue(gui, lua, font_size, line_spacing);
-    self::Windows::update(ctx, gui, app, rwin, lua, font_size, line_spacing);
+    self::Windows::update(ctx, gui, app, lua, font_size, line_spacing);
 
     // Context menu
     if let Some(menu) = &gui.context_menu {

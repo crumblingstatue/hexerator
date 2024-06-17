@@ -2,10 +2,15 @@
 //!
 //! See that module for more information.
 
-use {super::App, egui_sfml::sfml::graphics::RenderWindow, std::collections::VecDeque};
+use {
+    super::App, crate::config::Config, egui_sfml::sfml::graphics::RenderWindow,
+    std::collections::VecDeque,
+};
 
 pub enum BackendCmd {
     SetWindowTitle(String),
+    ApplyVsyncCfg,
+    ApplyFpsLimit,
 }
 
 /// Gui command queue.
@@ -32,13 +37,19 @@ impl App {
     /// performed sooner.
     pub fn flush_backend_command_queue(&mut self, rw: &mut RenderWindow) {
         while let Some(cmd) = self.backend_cmd.inner.pop_front() {
-            perform_command(cmd, rw);
+            perform_command(cmd, rw, &self.cfg);
         }
     }
 }
 
-fn perform_command(cmd: BackendCmd, rw: &mut RenderWindow) {
+fn perform_command(cmd: BackendCmd, rw: &mut RenderWindow, cfg: &Config) {
     match cmd {
         BackendCmd::SetWindowTitle(title) => rw.set_title(&title),
+        BackendCmd::ApplyVsyncCfg => {
+            rw.set_vertical_sync_enabled(cfg.vsync);
+        }
+        BackendCmd::ApplyFpsLimit => {
+            rw.set_framerate_limit(cfg.fps_limit);
+        }
     }
 }

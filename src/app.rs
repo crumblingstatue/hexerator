@@ -44,7 +44,7 @@ use {
     },
 };
 
-mod backend_command;
+pub mod backend_command;
 pub mod command;
 pub mod edit_state;
 pub mod interact_mode;
