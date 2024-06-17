@@ -49,6 +49,7 @@ smart-default = "0.7.1"
 egui-fontcfg = { git = "https://github.com/crumblingstatue/egui-fontcfg.git" }
 libloading = "0.8.3"
 hexerator-plugin-api = { path = "hexerator-plugin-api" }
+image = "0.25"
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.52.0"

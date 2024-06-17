@@ -13,7 +13,6 @@ use {
     },
     anyhow::Context,
     egui_file_dialog::FileDialog,
-    egui_sfml::sfml::graphics::Image,
     std::{fs::OpenOptions, io::Write as _, path::Path},
 };
 
@@ -98,18 +97,17 @@ impl FileOps {
                         return;
                     };
                     let result: anyhow::Result<()> = try {
-                        let img = Image::from_file(
-                            path.to_str().context("Failed to convert path to utf-8")?,
-                        )
-                        .context("Failed to load image")?;
-                        let size = img.size();
+                        let img = image::open(path).context("Failed to load image")?.to_rgb8();
+                        let (width, height) = (img.width(), img.height());
                         let sel = app.hex_ui.selection().context("Missing app selection")?;
                         let mut i = 0;
-                        for y in 0..size.y {
-                            for x in 0..size.x {
-                                let color = unsafe { img.pixel_at_unchecked(x, y) };
-                                let byte = app.data[sel.begin + i];
-                                pal.0[byte as usize] = [color.r, color.g, color.b];
+                        for y in 0..height {
+                            for x in 0..width {
+                                let &image::Rgb(rgb) = img.get_pixel(x, y);
+                                let Some(byte) = app.data.get(sel.begin + i) else {
+                                    break;
+                                };
+                                pal.0[*byte as usize] = rgb;
                                 i += 1;
                             }
                         }
