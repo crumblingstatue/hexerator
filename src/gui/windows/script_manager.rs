@@ -24,10 +24,10 @@ impl super::Window for ScriptManagerWindow {
             ui,
             gui,
             app,
-            rwin: _,
             lua,
             font_size,
             line_spacing,
+            ..
         }: WinCtx,
     ) {
         let mut scripts = std::mem::take(&mut app.meta_state.meta.scripts);
