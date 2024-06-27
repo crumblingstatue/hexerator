@@ -1,5 +1,4 @@
 #![feature(
-    lint_reasons,
     try_blocks,
     array_chunks,
     let_chains,
