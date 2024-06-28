@@ -676,7 +676,7 @@ impl View {
             }
         }
         if let Some(text) = overlay_text {
-            window.draw(&text);
+            window.draw_text(&text, &RenderStates::DEFAULT);
         }
     }
 }

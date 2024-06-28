@@ -27,6 +27,7 @@
 use {
     config::LoadedConfig,
     egui_file_dialog::{DialogState, DirectoryEntry},
+    egui_sfml::sfml::graphics::RenderStates,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     gui::command::GCmd,
     std::backtrace::Backtrace,
@@ -327,7 +328,7 @@ fn do_frame(
         if let Some(bm) = app.meta_state.meta.bookmarks.iter().find(|bm| bm.offset == offs) {
             let mut txt = Text::new(&bm.label, font, 20);
             txt.set_position((f32::from(mp.x), f32::from(mp.y + 15)));
-            window.draw(&txt);
+            window.draw_text(&txt, &RenderStates::DEFAULT);
         }
     }
     sf_egui.draw(window, None);
@@ -440,7 +441,7 @@ fn draw(
             f32::from(app.hex_ui.hex_iface_rect.x),
             f32::from(app.hex_ui.hex_iface_rect.y),
         ));
-        window.draw(&t);
+        window.draw_text(&t, &RenderStates::DEFAULT);
         return;
     }
     for view_key in app.meta_state.meta.layouts[app.hex_ui.current_layout].iter() {
