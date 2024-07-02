@@ -384,7 +384,7 @@ impl View {
     ) {
         vertex_buffer.clear();
         let mut rs = RenderStates::default();
-        let Some(this) = &app.meta_state.meta.views.get(key) else {
+        let Some(this) = app.meta_state.meta.views.get(key) else {
             return;
         };
         match &this.view.kind {
