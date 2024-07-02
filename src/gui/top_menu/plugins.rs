@@ -8,6 +8,9 @@ use crate::{
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     let mut plugins = std::mem::take(&mut app.plugins);
     let mut reload = None;
+    if plugins.is_empty() {
+        ui.add_enabled(false, egui::Label::new("No plugins loaded"));
+    }
     plugins.retain_mut(|plugin| {
         let mut retain = true;
         ui.horizontal(|ui| {
