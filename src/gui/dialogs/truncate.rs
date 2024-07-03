@@ -35,7 +35,7 @@ impl Dialog for TruncateDialog {
     ) -> bool {
         ui.horizontal(|ui| {
             ui.label("Begin");
-            ui.add(DragValue::new(&mut self.begin).clamp_range(0..=self.end.saturating_sub(1)));
+            ui.add(DragValue::new(&mut self.begin).range(0..=self.end.saturating_sub(1)));
             if ui
                 .add_enabled(
                     self.begin != app.edit_state.cursor,

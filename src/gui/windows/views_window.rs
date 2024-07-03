@@ -49,7 +49,7 @@ impl super::Window for ViewsWindow {
             ..
         }: WinCtx,
     ) {
-        ui.style_mut().wrap = Some(false);
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         if self.open.just_now() &&
            // Don't override selected key if there already is one
            // For example, it could be set by the context menu "view properties".
@@ -207,7 +207,7 @@ impl super::Window for ViewsWindow {
                             if ui
                                 .add(
                                     egui::DragValue::new(font_size)
-                                        .clamp_range(MIN_FONT_SIZE..=MAX_FONT_SIZE),
+                                        .range(MIN_FONT_SIZE..=MAX_FONT_SIZE),
                                 )
                                 .changed()
                             {
@@ -334,7 +334,7 @@ fn labelled_drag<T: Numeric>(
         ui.label(label);
         let mut dv = egui::DragValue::new(val);
         if let Some(range) = range.into() {
-            dv = dv.clamp_range(range);
+            dv = dv.range(range);
         }
         ui.add(dv)
     })

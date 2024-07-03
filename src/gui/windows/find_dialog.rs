@@ -179,7 +179,7 @@ impl super::Window for FindDialog {
             .size(Size::exact(20.0))
             .vertical(|mut strip| {
                 strip.cell(|ui| {
-                    ui.style_mut().wrap = Some(false);
+                    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                     let mut action = Action::None;
                     TableBuilder::new(ui)
                         .striped(true)
@@ -383,7 +383,9 @@ impl super::Window for FindDialog {
                 });
                 strip.cell(|ui| {
                     ui.horizontal(|ui| {
-                        ui.set_enabled(!self.results_vec.is_empty());
+                        if self.results_vec.is_empty() {
+                            ui.disable();
+                        }
                         if (ui.button("Previous (P)").clicked()
                             || ui.input(|inp| inp.key_pressed(egui::Key::P)))
                             && self.result_cursor > 0

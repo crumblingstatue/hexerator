@@ -518,21 +518,23 @@ dependencies = [
 
 [[package]]
 name = "ecolor"
-version = "0.27.2"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20930a432bbd57a6d55e07976089708d4893f3d556cf42a0d79e9e321fa73b10"
+checksum = "d2cabe0a45c3736c274bc650ca02ab293eb2ad1a3870f6033590ca7a3ee9963c"
 dependencies = [
+ "emath",
  "serde",
 ]
 
 [[package]]
 name = "egui"
-version = "0.27.2"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "584c5d1bf9a67b25778a3323af222dbe1a1feb532190e103901187f92c7fe29a"
+checksum = "9dce16991290ee6395f3780b9b0db15bf0368bce2f31f2e9ba276d26e4b09cda"
 dependencies = [
  "accesskit",
  "ahash",
+ "emath",
  "epaint",
  "nohash-hasher",
  "serde",
@@ -541,7 +543,7 @@ dependencies = [
 [[package]]
 name = "egui-file-dialog"
 version = "0.5.0"
-source = "git+https://github.com/fluxxcode/egui-file-dialog.git?branch=develop#1cdbb9a58e0d4863064506519fd39434a8476845"
+source = "git+https://github.com/crumblingstatue/egui-file-dialog.git?branch=develop#96e26ce04d90840e063331d6d25aee8bfb894f7d"
 dependencies = [
  "directories",
  "egui",
@@ -552,7 +554,7 @@ dependencies = [
 [[package]]
 name = "egui-fontcfg"
 version = "0.1.0"
-source = "git+https://github.com/crumblingstatue/egui-fontcfg.git#6e6705a8b939c5601351086450dc1755c57bdfdd"
+source = "git+https://github.com/crumblingstatue/egui-fontcfg.git#452a12c089dddbcbf797139330a8ef921b46711c"
 dependencies = [
  "egui",
 ]
@@ -560,7 +562,7 @@ dependencies = [
 [[package]]
 name = "egui-modal"
 version = "0.3.6"
-source = "git+https://github.com/n00kii/egui-modal.git#4aa823eb217122d889b81864dbbffd0d6259bd5d"
+source = "git+https://github.com/crumblingstatue/egui-modal.git?branch=egui-0.28#01f101e28c7909e45cffb53ea4c3bd5f21bc9253"
 dependencies = [
  "egui",
 ]
@@ -568,7 +570,7 @@ dependencies = [
 [[package]]
 name = "egui-sfml"
 version = "0.4.0"
-source = "git+https://github.com/crumblingstatue/egui-sfml.git#a2684bd334168c14fe287364f2f07bbc71520ef3"
+source = "git+https://github.com/crumblingstatue/egui-sfml.git#baee97b437780f9f3b976fc3d6d40f1dc690077b"
 dependencies = [
  "egui",
  "glu-sys",
@@ -578,21 +580,21 @@ dependencies = [
 [[package]]
 name = "egui_code_editor"
 version = "0.2.7"
-source = "git+https://github.com/p4ymak/egui_code_editor.git#0b84b359b6d36866b39c92a0f7535566ff435085"
+source = "git+https://github.com/crumblingstatue/egui_code_editor.git?branch=egui-0.28#bc5ab2ccd13ba2b940195ce2a810ab55a97663e9"
 dependencies = [
  "egui",
 ]
 
 [[package]]
 name = "egui_extras"
-version = "0.27.2"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b78779f35ded1a853786c9ce0b43fe1053e10a21ea3b23ebea411805ce41593"
+checksum = "de9caa162e2d75084e637fbb46637fb864b7411e8ce772425a0e7e4746f81368"
 dependencies = [
+ "ahash",
  "egui",
  "enum-map",
  "log",
- "serde",
 ]
 
 [[package]]
@@ -603,9 +605,9 @@ checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
 
 [[package]]
 name = "emath"
-version = "0.27.2"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4c3a552cfca14630702449d35f41c84a0d15963273771c6059175a803620f3f"
+checksum = "275f98c04af8359eeef56af16dfafd2bc7a65d9c0e5f2f00918057ca90a9fba8"
 dependencies = [
  "serde",
 ]
@@ -644,9 +646,9 @@ dependencies = [
 
 [[package]]
 name = "epaint"
-version = "0.27.2"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b381f8b149657a4acf837095351839f32cd5c4aec1817fc4df84e18d76334176"
+checksum = "205d6fcd02317e3e06cb32d28f821dd549b14ab12da6ff283dda57c4ebe4cb45"
 dependencies = [
  "ab_glyph",
  "ahash",
@@ -2522,18 +2524,18 @@ checksum = "ec107c4503ea0b4a98ef47356329af139c0a4f7750e621cf2973cd3385ebcb3d"
 
 [[package]]
 name = "zerocopy"
-version = "0.7.34"
+version = "0.7.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae87e3fcd617500e5d106f0380cf7b77f3c6092aae37191433159dda23cfb087"
+checksum = "1b9b4fd18abc82b8136838da5d50bae7bdea537c574d8dc1a34ed098d6c166f0"
 dependencies = [
  "zerocopy-derive",
 ]
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.7.34"
+version = "0.7.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15e934569e47891f7d9411f1a451d947a60e000ab3bd24fbb970f000387d1b3b"
+checksum = "fa4f8080344d4671fb4e831a13ad1e68092748387dfc4f55e356242fae12ce3e"
 dependencies = [
  "proc-macro2",
  "quote",

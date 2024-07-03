@@ -14,7 +14,7 @@ pub struct PerspectivesWindow {
 }
 impl super::Window for PerspectivesWindow {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
-        ui.style_mut().wrap = Some(false);
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         TableBuilder::new(ui)
             .columns(Column::auto(), 3)
             .column(Column::remainder())

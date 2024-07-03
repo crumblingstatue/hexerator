@@ -23,7 +23,7 @@ impl Default for VarsWindow {
 
 impl super::Window for VarsWindow {
     fn ui(&mut self, WinCtx { ui, app, .. }: WinCtx) {
-        ui.style_mut().wrap = Some(false);
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         ui.group(|ui| {
             ui.label("New");
             ui.horizontal(|ui| {

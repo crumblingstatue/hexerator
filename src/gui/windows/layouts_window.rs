@@ -162,7 +162,7 @@ impl super::Window for LayoutsWindow {
             });
             ui.horizontal(|ui| {
                 ui.label("Margin");
-                ui.add(egui::DragValue::new(&mut layout.margin).clamp_range(3..=64));
+                ui.add(egui::DragValue::new(&mut layout.margin).range(3..=64));
             });
         }
         ui.separator();

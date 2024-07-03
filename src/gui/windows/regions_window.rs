@@ -58,7 +58,7 @@ pub fn region_context_menu(
 
 impl super::Window for RegionsWindow {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
-        ui.style_mut().wrap = Some(false);
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         ui.horizontal(|ui| {
             let button = egui::Button::new("Add selection as region");
             match app.hex_ui.selection() {

@@ -130,7 +130,7 @@ impl super::Window for OpenProcessWindow {
             ..
         }: WinCtx,
     ) {
-        ui.style_mut().wrap = Some(false);
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         if let Some(modal) = &mut self.modal {
             let mut close_modal = false;
             ui.horizontal(|ui| match modal {
@@ -186,7 +186,7 @@ impl super::Window for OpenProcessWindow {
             if close_modal {
                 self.modal = None;
             }
-            ui.set_enabled(false);
+            ui.disable();
         }
         ui.horizontal(|ui| {
             match self.selected_pid {

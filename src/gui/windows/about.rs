@@ -38,7 +38,7 @@ macro_rules! optenv {
 
 impl super::Window for AboutWindow {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
-        ui.style_mut().wrap = Some(false);
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         if self.open.just_now() {
             self.sys.refresh_cpu();
             self.sys.refresh_memory();

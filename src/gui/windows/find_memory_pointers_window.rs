@@ -33,7 +33,7 @@ impl super::Window for FindMemoryPointersWindow {
             ..
         }: WinCtx,
     ) {
-        ui.style_mut().wrap = Some(false);
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         let Some(pid) = gui.win.open_process.selected_pid else {
             ui.label("No selected pid.");
             return;
