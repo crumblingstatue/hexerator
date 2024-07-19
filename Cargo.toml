@@ -74,7 +74,7 @@ lto = "thin"
 codegen-units = 1
 
 [build-dependencies]
-vergen = { version = "8.3.1", default-features = false, features = ["build", "cargo", "git", "gitcl", "rustc"] }
+vergen-gitcl = { version = "1.0.0", default-features = false, features = ["build", "cargo", "rustc"] }
 
 [workspace]
 members = ["hexerator-plugin-api", "plugins/hello-world"]
