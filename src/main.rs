@@ -167,7 +167,14 @@ fn try_main() -> anyhow::Result<()> {
         font_defs.families = cfg.font_families.clone();
     }
     sf_egui.context().set_fonts(font_defs);
-    let mut app = App::new(args, cfg, &font, &mut gui.msg_dialog)?;
+    let font_size = 14;
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "It's extremely unlikely that the line spacing is not between 0..u16::MAX"
+    )]
+    let line_spacing = font.line_spacing(u32::from(font_size)) as u16;
+    let mut app = App::new(args, cfg, font_size, line_spacing, &mut gui.msg_dialog)?;
     let lua = Lua::default();
     crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);

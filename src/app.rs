@@ -28,7 +28,7 @@ use {
         view::{HexData, TextData, View, ViewKind, ViewportScalar},
     },
     anyhow::{bail, Context},
-    egui_sfml::sfml::graphics::{Font, RenderWindow},
+    egui_sfml::sfml::graphics::RenderWindow,
     gamedebug_core::{per, per_dbg},
     hexerator_plugin_api::MethodResult,
     mlua::Lua,
@@ -79,7 +79,8 @@ impl App {
     pub(crate) fn new(
         mut args: Args,
         cfg: Config,
-        font: &Font,
+        font_size: u16,
+        line_spacing: u16,
         msg: &mut MessageDialog,
     ) -> anyhow::Result<Self> {
         if args.recent
@@ -122,13 +123,6 @@ impl App {
             this.preferences.auto_reload_interval_ms = interval_ms;
         }
         // Set a clean meta, for an empty document
-        let font_size = 14;
-        #[expect(
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss,
-            reason = "It's extremely unlikely that the line spacing is not between 0..u16::MAX"
-        )]
-        let line_spacing = font.line_spacing(u32::from(font_size)) as u16;
         this.set_new_clean_meta(font_size, line_spacing);
         msg_if_fail(
             this.load_file_args(args.src, args.meta, msg, font_size, line_spacing),
