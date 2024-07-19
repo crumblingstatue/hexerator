@@ -88,16 +88,10 @@ use {
     },
     meta::{NamedView, PerspectiveMap, RegionMap},
     mlua::Lua,
-    serde::{Deserialize, Serialize},
     shell::msg_if_fail,
     slotmap::Key as _,
     std::{fmt::Display, time::Duration},
 };
-
-#[derive(Serialize, Deserialize, Debug)]
-struct InstanceRequest {
-    args: Args,
-}
 
 fn print_version_info() {
     eprintln!(
