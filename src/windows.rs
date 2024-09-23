@@ -14,7 +14,8 @@ pub fn load_proc_memory(
     start: usize,
     size: usize,
     _is_write: bool,
-    font: &Font,
+    font_size: u16,
+    line_spacing: u16,
 ) -> anyhow::Result<()> {
     let handle;
     unsafe {
@@ -24,7 +25,7 @@ pub fn load_proc_memory(
         if handle == 0 {
             bail!("Failed to open process.");
         }
-        load_proc_memory_inner(app, handle, start, size, font)
+        load_proc_memory_inner(app, handle, start, size, font_size, line_spacing)
     }
 }
 
@@ -33,7 +34,8 @@ unsafe fn load_proc_memory_inner(
     handle: windows_sys::Win32::Foundation::HANDLE,
     start: usize,
     size: usize,
-    font: &Font,
+    font_size: u16,
+    line_spacing: u16,
 ) -> anyhow::Result<()> {
     read_proc_memory(handle, &mut app.data, start, size)?;
     app.source = Some(Source {
@@ -49,7 +51,7 @@ unsafe fn load_proc_memory_inner(
         state: SourceState::default(),
     });
     if !app.preferences.keep_meta {
-        app.set_new_clean_meta(font);
+        app.set_new_clean_meta(font_size, line_spacing);
     }
     app.src_args.hard_seek = Some(start);
     app.src_args.take = Some(size);

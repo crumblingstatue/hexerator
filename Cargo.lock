@@ -1591,9 +1591,9 @@ dependencies = [
 
 [[package]]
 name = "pkg-config"
-version = "0.3.30"
+version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
+checksum = "953ec861398dccce10c670dfeaf3ec4911ca479e9c02154b3a215178c5f566f2"
 
 [[package]]
 name = "png"
@@ -2000,7 +2000,7 @@ dependencies = [
 [[package]]
 name = "sfml"
 version = "0.22.0"
-source = "git+https://github.com/jeremyletang/rust-sfml.git?branch=vendored-sfml#0614a8db0b04d87bb73e4f8f66effe82e69e3cc6"
+source = "git+https://github.com/jeremyletang/rust-sfml.git?branch=vendored-sfml#2d7df6f10a1985849a94c44ca1dc7fdfc776e795"
 dependencies = [
  "bitflags 2.6.0",
  "cc",
