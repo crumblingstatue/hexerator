@@ -660,7 +660,7 @@ impl App {
             }
             SourceProvider::Stdin(_) => anyhow::bail!("Not implemented"),
             #[cfg(windows)]
-            SourceProvider::WinProc{..} => anyhow::bail!("Not implemented"),
+            SourceProvider::WinProc { .. } => anyhow::bail!("Not implemented"),
         }
     }
     /// Iterator over the views in the current layout
@@ -810,7 +810,15 @@ impl App {
             line_spacing,
         );
         #[cfg(windows)]
-        return crate::windows::load_proc_memory(self, pid, start, size, is_write, font_size, line_spacing);
+        return crate::windows::load_proc_memory(
+            self,
+            pid,
+            start,
+            size,
+            is_write,
+            font_size,
+            line_spacing,
+        );
         #[cfg(target_os = "macos")]
         return load_proc_memory_macos(self, pid, start, size, is_write, font, msg);
     }
