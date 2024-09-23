@@ -624,8 +624,7 @@ dependencies = [
 [[package]]
 name = "egui-file-dialog"
 version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32eeabfc7f7204e6bb45d3394d16c2611a858f742e910d9e2e0a31dae65779e4"
+source = "git+https://github.com/fluxxcode/egui-file-dialog.git?branch=develop#698e35bc016c6395445d4adb5bb1ba57d02974d1"
 dependencies = [
  "directories",
  "egui",
