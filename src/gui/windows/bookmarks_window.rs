@@ -319,12 +319,12 @@ impl super::Window for BookmarksWindow {
                 _ => {}
             }
             ui.heading("Description");
-            egui::ScrollArea::vertical().id_source("desc_scroll").max_height(200.0).show(
-                ui,
-                |ui| {
+            egui::ScrollArea::vertical()
+                .id_salt("desc_scroll")
+                .max_height(200.0)
+                .show(ui, |ui| {
                     ui.add(egui::TextEdit::multiline(&mut mark.desc).code_editor());
-                },
-            );
+                });
             if ui.button("Delete").clicked() {
                 app.meta_state.meta.bookmarks.remove(idx);
                 self.selected = None;

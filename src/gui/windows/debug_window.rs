@@ -21,7 +21,7 @@ pub fn ui(ui: &mut Ui) {
     IMMEDIATE.clear();
     ui.separator();
     egui::ScrollArea::vertical()
-        .id_source("per_scroll")
+        .id_salt("per_scroll")
         .max_height(500.0)
         .show(ui, |ui| {
             egui::Grid::new("per_grid").striped(true).show(ui, |ui| {

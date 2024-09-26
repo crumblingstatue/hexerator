@@ -113,7 +113,7 @@ pub fn do_egui(
     font_size: u16,
     line_spacing: u16,
 ) -> anyhow::Result<bool> {
-    sf_egui.begin_frame();
+    sf_egui.begin_pass();
     let ctx = sf_egui.context();
 
     let mut open = IMMEDIATE.enabled() || PERSISTENT.enabled();
@@ -307,7 +307,7 @@ pub fn do_egui(
         font_size,
         line_spacing,
     );
-    sf_egui.end_frame(rwin)?;
+    sf_egui.end_pass(rwin)?;
     Ok(true)
 }
 

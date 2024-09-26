@@ -270,7 +270,7 @@ fn do_fatal_error_report(title: &str, mut desc: &str) {
             }
         }
         rw.clear(Color::BLACK);
-        let _ = sf_egui.do_frame(&mut rw, |ctx| {
+        let _ = sf_egui.do_pass(&mut rw, |ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.heading(title);
                 ui.separator();

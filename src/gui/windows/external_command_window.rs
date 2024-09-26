@@ -136,21 +136,15 @@ impl super::Window for ExternalCommandWindow {
         }
         if !self.stdout.is_empty() {
             ui.label("stdout");
-            egui::ScrollArea::vertical()
-                .id_source("stdout")
-                .max_height(200.0)
-                .show(ui, |ui| {
-                    ui.text_edit_multiline(&mut &self.stdout[..]);
-                });
+            egui::ScrollArea::vertical().id_salt("stdout").max_height(200.0).show(ui, |ui| {
+                ui.text_edit_multiline(&mut &self.stdout[..]);
+            });
         }
         if !self.stderr.is_empty() {
             ui.label("stderr");
-            egui::ScrollArea::vertical()
-                .id_source("stderr")
-                .max_height(200.0)
-                .show(ui, |ui| {
-                    ui.text_edit_multiline(&mut &self.stderr[..]);
-                });
+            egui::ScrollArea::vertical().id_salt("stderr").max_height(200.0).show(ui, |ui| {
+                ui.text_edit_multiline(&mut &self.stderr[..]);
+            });
         }
     }
 
