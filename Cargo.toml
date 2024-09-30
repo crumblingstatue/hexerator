@@ -78,3 +78,6 @@ vergen-gitcl = { version = "1.0.0", default-features = false, features = ["build
 
 [workspace]
 members = ["hexerator-plugin-api", "plugins/hello-world"]
+
+[patch.crates-io.egui]
+git = "https://github.com/emilk/egui.git"
