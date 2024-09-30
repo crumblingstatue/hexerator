@@ -40,7 +40,7 @@ impl super::Window for AboutWindow {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         if self.open.just_now() {
-            self.sys.refresh_cpu();
+            self.sys.refresh_cpu_all();
             self.sys.refresh_memory();
             self.info = [
                 ("Hexerator", String::new()),

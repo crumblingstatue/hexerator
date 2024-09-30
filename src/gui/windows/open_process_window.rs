@@ -10,7 +10,7 @@ use {
     proc_maps::MapRange,
     smart_default::SmartDefault,
     std::{path::PathBuf, process::Command},
-    sysinfo::Signal,
+    sysinfo::{ProcessesToUpdate, Signal},
 };
 
 type MapRanges = Vec<proc_maps::MapRange>;
@@ -161,7 +161,7 @@ impl super::Window for OpenProcessWindow {
                                                 &mut gui.msg_dialog,
                                             );
                                             // Make sure this process is visible for sysinfo to kill/stop/etc.
-                                            self.sys.refresh_processes();
+                                            self.sys.refresh_processes(ProcessesToUpdate::All);
                                             close_modal = true;
                                         }
                                         Err(e) => {
@@ -192,7 +192,7 @@ impl super::Window for OpenProcessWindow {
             match self.selected_pid {
                 None => {
                     if self.open.just_now() || ui.button("Refresh processes").clicked() {
-                        self.sys.refresh_processes();
+                        self.sys.refresh_processes(ProcessesToUpdate::All);
                     }
                 }
                 Some(pid) => {
@@ -360,7 +360,7 @@ impl super::Window for OpenProcessWindow {
             }
             ui.heading(format!("Virtual memory maps for pid {pid}"));
             if ui.link("Back to process list").clicked() {
-                self.sys.refresh_processes();
+                self.sys.refresh_processes(ProcessesToUpdate::All);
                 self.selected_pid = None;
             }
             if let Some(proc) = self.sys.process(pid) {
@@ -606,7 +606,13 @@ impl super::Window for OpenProcessWindow {
                     let filt_str = self.filters.proc_name.to_ascii_lowercase();
                     let mut pids: Vec<&sysinfo::Pid> = procs
                         .keys()
-                        .filter(|&pid| procs[pid].name().to_ascii_lowercase().contains(&filt_str))
+                        .filter(|&pid| {
+                            procs[pid]
+                                .name()
+                                .to_string_lossy()
+                                .to_ascii_lowercase()
+                                .contains(&filt_str)
+                        })
                         .collect();
                     pids.sort_by(|pid1, pid2| match self.pid_sort {
                         Sort::Ascending => pid1.cmp(pid2),
@@ -635,7 +641,7 @@ impl super::Window for OpenProcessWindow {
                             }
                         });
                         row.col(|ui| {
-                            ui.label(procs[pid].name());
+                            ui.label(procs[pid].name().to_string_lossy());
                         });
                     });
                 });

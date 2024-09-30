@@ -30,7 +30,7 @@ serde-big-array = "0.5.1"
 egui = { version = "0.29", features = ["serde"] }
 egui_extras = { version = "0.29", default-features = false }
 itertools = "0.13"
-sysinfo = { version = "0.30.8", default-features = false }
+sysinfo = { version = "0.31", default-features = false, features = ["system"] }
 proc-maps = "0.3.2"
 open = "5.1.2"
 egui-modal = { git = "https://github.com/crumblingstatue/egui-modal.git", branch = "egui-0.29" }
