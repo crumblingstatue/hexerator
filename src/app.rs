@@ -135,10 +135,12 @@ impl App {
                         .read(true)
                         .write(true)
                         .open(&path)?;
+                    f.set_len(new_len as u64)?;
                     this.source = Some(Source::file(f));
                     this.src_args.file = Some(path);
                 }
                 this.data = vec![0; new_len];
+                this.orig_data_len = new_len;
                 // Set clean meta for the newly allocated buffer
                 this.set_new_clean_meta(font_size, line_spacing);
             }
