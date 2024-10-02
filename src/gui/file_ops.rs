@@ -24,7 +24,9 @@ pub struct FileOps {
 impl Default for FileOps {
     fn default() -> Self {
         Self {
-            dialog: FileDialog::new().anchor(egui::Align2::CENTER_CENTER, egui::vec2(0., 0.)),
+            dialog: FileDialog::new()
+                .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0., 0.))
+                .allow_path_edit_to_save_file_without_extension(true),
             op: Default::default(),
         }
     }
