@@ -30,7 +30,7 @@ use {
     egui_sfml::sfml::graphics::RenderStates,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     gui::command::GCmd,
-    std::backtrace::Backtrace,
+    std::{backtrace::Backtrace, io::IsTerminal},
 };
 
 mod app;
@@ -259,6 +259,11 @@ fn main() {
 }
 
 fn do_fatal_error_report(title: &str, mut desc: &str) {
+    if std::io::stderr().is_terminal() {
+        eprintln!("== {title} ==");
+        eprintln!("{desc}");
+        return;
+    }
     let mut rw = RenderWindow::new((640, 480), title, Style::CLOSE, &ContextSettings::default());
     rw.set_vertical_sync_enabled(true);
     let mut sf_egui = SfEgui::new(&rw);
