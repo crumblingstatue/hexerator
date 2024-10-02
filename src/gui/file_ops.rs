@@ -8,7 +8,7 @@ use {
         },
         meta::{region::Region, ViewKey},
         shell::{msg_fail, msg_if_fail},
-        source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
+        source::Source,
         value_color::{self, ColorMethod},
     },
     anyhow::Context,
@@ -147,14 +147,7 @@ impl FileOps {
                             .write(true)
                             .open(&path)?;
                         f.write_all(&app.data)?;
-                        app.source = Some(Source {
-                            provider: SourceProvider::File(f),
-                            attr: SourceAttributes {
-                                stream: false,
-                                permissions: SourcePermissions { write: true },
-                            },
-                            state: SourceState::default(),
-                        });
+                        app.source = Some(Source::file(f));
                         app.src_args.file = Some(path);
                         app.cfg.recent.use_(SourceArgs {
                             file: app.src_args.file.clone(),

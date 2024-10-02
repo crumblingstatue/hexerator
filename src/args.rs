@@ -44,6 +44,9 @@ pub struct Args {
     #[arg(long)]
     /// Load a dynamic library plugin at startup
     pub load_plugin: Vec<PathBuf>,
+    /// Allocate a new (zero-filled) buffer. Also creates the provided file argument if it doesn't exist.
+    #[arg(long, value_name = "length")]
+    pub new: Option<usize>,
 }
 
 /// Arguments for opening a source (file/stream/process/etc)

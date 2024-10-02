@@ -122,13 +122,36 @@ impl App {
             }
             this.preferences.auto_reload_interval_ms = interval_ms;
         }
-        // Set a clean meta, for an empty document
-        this.set_new_clean_meta(font_size, line_spacing);
-        msg_if_fail(
-            this.load_file_args(args.src, args.meta, msg, font_size, line_spacing),
-            "Failed to load file",
-            msg,
-        );
+        match args.new {
+            Some(new_len) => {
+                if let Some(path) = args.src.file {
+                    if path.exists() {
+                        bail!("Can't use --new for {path:?}: File already exists");
+                    }
+                    // Set up source for this new file
+                    let f = std::fs::OpenOptions::new()
+                        .create(true)
+                        .truncate(false)
+                        .read(true)
+                        .write(true)
+                        .open(&path)?;
+                    this.source = Some(Source::file(f));
+                    this.src_args.file = Some(path);
+                }
+                this.data = vec![0; new_len];
+                // Set clean meta for the newly allocated buffer
+                this.set_new_clean_meta(font_size, line_spacing);
+            }
+            None => {
+                // Set a clean meta, for an empty document
+                this.set_new_clean_meta(font_size, line_spacing);
+                msg_if_fail(
+                    this.load_file_args(args.src, args.meta, msg, font_size, line_spacing),
+                    "Failed to load file",
+                    msg,
+                );
+            }
+        }
         if let Some(name) = args.layout {
             if !Self::switch_layout_by_name(&mut this.hex_ui, &this.meta_state.meta, &name) {
                 let err = anyhow::anyhow!("No layout with name '{name}' found.");

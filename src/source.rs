@@ -22,6 +22,19 @@ pub struct Source {
     pub state: SourceState,
 }
 
+impl Source {
+    pub fn file(f: File) -> Self {
+        Self {
+            provider: SourceProvider::File(f),
+            attr: SourceAttributes {
+                stream: false,
+                permissions: SourcePermissions { write: true },
+            },
+            state: SourceState::default(),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct SourceAttributes {
     /// Whether reading should be done by streaming
