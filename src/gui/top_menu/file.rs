@@ -98,6 +98,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
     }
     if ui.button("Save as...").clicked() {
         gui.fileops.save_file_as();
+        ui.close_menu();
     }
     if ui.add(Button::new("Reload").shortcut_text("Ctrl+R")).clicked() {
         msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
