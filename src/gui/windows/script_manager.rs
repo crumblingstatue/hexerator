@@ -71,7 +71,7 @@ impl super::Window for ScriptManagerWindow {
 
 impl ScriptManagerWindow {
     fn selected_script_ui(
-        &mut self,
+        &self,
         ui: &mut egui::Ui,
         gui: &mut Gui,
         app: &mut App,

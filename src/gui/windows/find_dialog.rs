@@ -463,7 +463,7 @@ impl FindDialog {
         }
     }
 
-    fn reload_data(&mut self, app: &mut crate::app::App, gui: &mut crate::gui::Gui) {
+    fn reload_data(&self, app: &mut crate::app::App, gui: &mut crate::gui::Gui) {
         let result = match self.search_region(&app.hex_ui) {
             Some(reg) => app.reload_range(reg.begin, reg.end),
             None => app.reload(),

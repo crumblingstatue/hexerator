@@ -4,7 +4,7 @@ use crate::{
     shell::msg_if_fail,
 };
 
-pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
+pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
     if ui.button("Determine data mime type under cursor").clicked() {
         gui.msg_dialog.open(
             Icon::Info,

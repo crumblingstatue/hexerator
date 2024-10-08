@@ -728,7 +728,7 @@ impl App {
     }
 
     pub(crate) fn diff_with_file(
-        &mut self,
+        &self,
         path: PathBuf,
         file_diff_result_window: &mut FileDiffResultWindow,
     ) -> anyhow::Result<()> {

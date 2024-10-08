@@ -16,7 +16,8 @@
     clippy::cast_precision_loss,
     clippy::cast_sign_loss,
     clippy::cast_possible_wrap,
-    clippy::panic
+    clippy::panic,
+    clippy::needless_pass_by_ref_mut
 )]
 #![expect(
     incomplete_features,
