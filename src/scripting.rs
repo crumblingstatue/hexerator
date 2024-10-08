@@ -382,7 +382,7 @@ macro_rules! for_each_method {
 }
 pub(super) use for_each_method;
 
-impl<'app, 'gui> UserData for LuaExecContext<'app, 'gui> {
+impl UserData for LuaExecContext<'_, '_> {
     fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         macro_rules! add_method {
             ($t:ty) => {
