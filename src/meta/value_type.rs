@@ -232,7 +232,7 @@ macro_rules! impl_for_num {
                 fn label(&self) -> &'static str {
                     concat!(stringify!($prim), "-", stringify!($en))
                 }
-                }
+            }
         )*
     }
 }
