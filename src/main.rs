@@ -3,7 +3,8 @@
     array_chunks,
     let_chains,
     array_windows,
-    generic_const_exprs
+    generic_const_exprs,
+    macro_metavar_expr_concat
 )]
 #![warn(
     trivial_casts,
