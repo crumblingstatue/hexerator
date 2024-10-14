@@ -121,7 +121,7 @@ fn try_main() -> anyhow::Result<()> {
         "Hexerator",
         Style::RESIZE | Style::CLOSE,
         &ContextSettings::default(),
-    );
+    )?;
     let LoadedConfig {
         config: mut cfg,
         old_config_err,
@@ -266,7 +266,14 @@ fn do_fatal_error_report(title: &str, mut desc: &str) {
         eprintln!("{desc}");
         return;
     }
-    let mut rw = RenderWindow::new((640, 480), title, Style::CLOSE, &ContextSettings::default());
+    let mut rw =
+        match RenderWindow::new((640, 480), title, Style::CLOSE, &ContextSettings::default()) {
+            Ok(rw) => rw,
+            Err(e) => {
+                eprintln!("Failed to create RenderWindow: {e}");
+                return;
+            }
+        };
     rw.set_vertical_sync_enabled(true);
     let mut sf_egui = SfEgui::new(&rw);
     while rw.is_open() {
@@ -277,7 +284,7 @@ fn do_fatal_error_report(title: &str, mut desc: &str) {
             }
         }
         rw.clear(Color::BLACK);
-        let _ = sf_egui.do_pass(&mut rw, |ctx| {
+        let _ = sf_egui.run(&mut rw, |_rw, ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.heading(title);
                 ui.separator();
