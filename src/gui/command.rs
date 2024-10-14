@@ -64,7 +64,10 @@ fn perform_command(gui: &mut Gui, cmd: GCmd) {
                     gui.win.open_process.open.set(true);
                     match look_for_proc {
                         Some(procname) => {
-                            gui.win.open_process.sys.refresh_processes(ProcessesToUpdate::All);
+                            gui.win
+                                .open_process
+                                .sys
+                                .refresh_processes(ProcessesToUpdate::All, true);
                             gui.win.open_process.filters.proc_name = procname;
                         }
                         None => {

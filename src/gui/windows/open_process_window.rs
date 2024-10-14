@@ -161,7 +161,8 @@ impl super::Window for OpenProcessWindow {
                                                 &mut gui.msg_dialog,
                                             );
                                             // Make sure this process is visible for sysinfo to kill/stop/etc.
-                                            self.sys.refresh_processes(ProcessesToUpdate::All);
+                                            self.sys
+                                                .refresh_processes(ProcessesToUpdate::All, true);
                                             close_modal = true;
                                         }
                                         Err(e) => {
@@ -192,7 +193,7 @@ impl super::Window for OpenProcessWindow {
             match self.selected_pid {
                 None => {
                     if self.open.just_now() || ui.button("Refresh processes").clicked() {
-                        self.sys.refresh_processes(ProcessesToUpdate::All);
+                        self.sys.refresh_processes(ProcessesToUpdate::All, true);
                     }
                 }
                 Some(pid) => {
@@ -360,7 +361,7 @@ impl super::Window for OpenProcessWindow {
             }
             ui.heading(format!("Virtual memory maps for pid {pid}"));
             if ui.link("Back to process list").clicked() {
-                self.sys.refresh_processes(ProcessesToUpdate::All);
+                self.sys.refresh_processes(ProcessesToUpdate::All, true);
                 self.selected_pid = None;
             }
             if let Some(proc) = self.sys.process(pid) {
