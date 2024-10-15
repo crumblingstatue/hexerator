@@ -1,4 +1,4 @@
 [toolchain]
-channel = "nightly"
+#channel = "nightly"
 # Lock to a specific nightly before release
-#channel = "nightly-2024-04-15"
+channel = "nightly-2024-10-14"
