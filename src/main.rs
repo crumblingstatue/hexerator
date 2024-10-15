@@ -189,7 +189,6 @@ fn try_main() -> anyhow::Result<()> {
         if path.exists() {
             match std::fs::read(path) {
                 Ok(data) => {
-                    eprintln!("Okay, reading theme");
                     let mut chunks = data.array_chunks().copied();
                     let theme = std::array::from_fn(|_| {
                         ThemeColor::Custom(chunks.next().unwrap_or_default())
