@@ -5,6 +5,7 @@ use {
         meta::{Script, ScriptKey},
         scripting::SCRIPT_ARG_FMT_HELP_STR,
         shell::msg_if_fail,
+        str_ext::StrExt,
     },
     egui::TextBuffer,
     egui_code_editor::{CodeEditor, Syntax},
@@ -117,7 +118,13 @@ impl Dialog for LuaExecuteDialog {
                             egui::TextEdit::singleline(&mut self.new_script_name)
                                 .hint_text("New script name"),
                         );
-                        if ui.button("Add named script").clicked() {
+                        if ui
+                            .add_enabled(
+                                !self.new_script_name.is_empty_or_ws_only(),
+                                egui::Button::new("Add named script"),
+                            )
+                            .clicked()
+                        {
                             let key = app.meta_state.meta.scripts.insert(Script {
                                 name: self.new_script_name.take(),
                                 desc: String::new(),

@@ -58,6 +58,7 @@ mod scripting;
 mod shell;
 mod slice_ext;
 mod source;
+mod str_ext;
 mod timer;
 mod util;
 mod value_color;
