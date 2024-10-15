@@ -33,7 +33,7 @@ pub struct ContextMenuData {
 #[must_use]
 pub(super) fn show(menu: &ContextMenu, ctx: &egui::Context, app: &mut App, gui: &mut Gui) -> bool {
     let mut close = false;
-    egui::Area::new("rootless_ctx_menu".into()).fixed_pos(menu.pos).show(ctx, |ui| {
+    egui::Area::new("root_ctx_menu".into()).fixed_pos(menu.pos).show(ctx, |ui| {
         ui.set_max_width(180.0);
         egui::Frame::menu(ui.style()).inner_margin(2.0).show(ui, |ui| {
             if let Some(sel) = app.hex_ui.selection() {
