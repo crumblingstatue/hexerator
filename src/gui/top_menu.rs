@@ -114,7 +114,7 @@ pub fn top_menu(
                         }
                         #[cfg(windows)]
                         SourceProvider::WinProc { handle, .. } => {
-                            ui.label(format!("Windows process: {}", handle));
+                            ui.label(format!("Windows process: {:p}", handle));
                         }
                     }
                     if src.attr.stream {

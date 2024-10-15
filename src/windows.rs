@@ -4,7 +4,6 @@ use {
         App,
     },
     anyhow::bail,
-    egui_sfml::sfml::graphics::Font,
     windows_sys::Win32::System::Threading::*,
 };
 
@@ -16,13 +15,14 @@ pub fn load_proc_memory(
     _is_write: bool,
     font_size: u16,
     line_spacing: u16,
+    _msg: &mut crate::MessageDialog,
 ) -> anyhow::Result<()> {
     let handle;
     unsafe {
         let access =
             PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION;
         handle = windows_sys::Win32::System::Threading::OpenProcess(access, 0, pid.as_u32());
-        if handle == 0 {
+        if handle.is_null() {
             bail!("Failed to open process.");
         }
         load_proc_memory_inner(app, handle, start, size, font_size, line_spacing)
@@ -37,7 +37,7 @@ unsafe fn load_proc_memory_inner(
     font_size: u16,
     line_spacing: u16,
 ) -> anyhow::Result<()> {
-    read_proc_memory(handle, &mut app.data, start, size)?;
+    unsafe { read_proc_memory(handle, &mut app.data, start, size) }?;
     app.source = Some(Source {
         attr: SourceAttributes {
             permissions: SourcePermissions { write: true },
@@ -66,18 +66,19 @@ pub unsafe fn read_proc_memory(
 ) -> anyhow::Result<()> {
     let mut n_read: usize = 0;
     data.resize(size, 0);
-    if windows_sys::Win32::System::Diagnostics::Debug::ReadProcessMemory(
-        handle,
-        start as _,
-        data.as_mut_ptr() as *mut std::ffi::c_void,
-        size,
-        &mut n_read,
-    ) == 0
+    if unsafe {
+        windows_sys::Win32::System::Diagnostics::Debug::ReadProcessMemory(
+            handle,
+            start as _,
+            data.as_mut_ptr() as *mut std::ffi::c_void,
+            size,
+            &mut n_read,
+        )
+    } == 0
     {
-        bail!(
-            "Failed to load process memory. Code: {}",
+        bail!("Failed to load process memory. Code: {}", unsafe {
             windows_sys::Win32::Foundation::GetLastError()
-        );
+        });
     }
     Ok(())
 }

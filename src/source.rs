@@ -15,6 +15,10 @@ pub enum SourceProvider {
     },
 }
 
+/// FIXME: Prove this is actually safe
+#[cfg(windows)]
+unsafe impl Send for SourceProvider {}
+
 #[derive(Debug)]
 pub struct Source {
     pub provider: SourceProvider,

@@ -843,6 +843,7 @@ impl App {
             is_write,
             font_size,
             line_spacing,
+            msg,
         );
         #[cfg(target_os = "macos")]
         return load_proc_memory_macos(self, pid, start, size, is_write, font, msg);
