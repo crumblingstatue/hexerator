@@ -93,6 +93,7 @@ For now, see the `hexerator_plugin_api` crate inside the repo.
 - Add feature to autoreload only visible part (as opposed to whole file)
 - Replace blocking file dialog with nonblocking egui file dialog
 - Update egui to 0.29
+- Experimental support for custom color themes (See `Preferences` -> `Style`)
 - Various bug fixes and minor improvements, too many to list individually
 
 ## [0.2.0] - 2023-01-27
