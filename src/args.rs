@@ -5,7 +5,7 @@ use {
     std::path::PathBuf,
 };
 
-/// Arguments given to hexerator on startup
+/// Hexerator: Versatile hex editor
 #[derive(Parser, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Default)]
 pub struct Args {
     /// Arguments relating to the source to open
