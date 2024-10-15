@@ -76,8 +76,8 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
                         );
                         ui.selectable_value(
                             &mut presentation.color_method,
-                            ColorMethod::Grayscale,
-                            ColorMethod::Grayscale.name(),
+                            ColorMethod::BrightScale(RgbColor::WHITE),
+                            ColorMethod::BrightScale(RgbColor::WHITE).name(),
                         );
                         if ui
                             .selectable_label(
@@ -101,7 +101,9 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
                     });
                 ui.color_edit_button_rgb(&mut app.preferences.bg_color);
                 ui.label("Bg color");
-                if let ColorMethod::Mono(color) = &mut presentation.color_method {
+                if let ColorMethod::Mono(color) | ColorMethod::BrightScale(color) =
+                    &mut presentation.color_method
+                {
                     let mut rgb = [color.r, color.g, color.b];
                     ui.color_edit_button_srgb(&mut rgb);
                     [color.r, color.g, color.b] = rgb;

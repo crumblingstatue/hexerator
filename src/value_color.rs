@@ -12,7 +12,7 @@ pub enum ColorMethod {
     Pure,
     Rgb332,
     Vga13h,
-    Grayscale,
+    BrightScale(RgbColor),
     Custom(Box<Palette>),
 }
 
@@ -45,7 +45,7 @@ impl ColorMethod {
             ColorMethod::Pure => hue_color(byte),
             ColorMethod::Rgb332 => rgb332_color(byte),
             ColorMethod::Vga13h => vga_13h_color(byte),
-            ColorMethod::Grayscale => rgb(byte, byte, byte),
+            ColorMethod::BrightScale(color) => color.cap_brightness(byte),
             ColorMethod::Custom(pal) => {
                 let [r, g, b] = pal.0[byte as usize];
                 rgb(r, g, b)
@@ -65,7 +65,7 @@ impl ColorMethod {
             ColorMethod::Pure => "pure hue",
             ColorMethod::Rgb332 => "rgb 3-3-2",
             ColorMethod::Vga13h => "VGA 13h",
-            ColorMethod::Grayscale => "grayscale",
+            ColorMethod::BrightScale(_) => "brightness scale",
             ColorMethod::Custom(_) => "custom",
         }
     }

@@ -43,6 +43,14 @@ impl RgbColor {
     pub fn invert(&self) -> Self {
         rgb(!self.r, !self.g, !self.b)
     }
+
+    pub(crate) fn cap_brightness(&self, limit: u8) -> Self {
+        Self {
+            r: self.r.min(limit),
+            g: self.g.min(limit),
+            b: self.b.min(limit),
+        }
+    }
 }
 
 pub const fn rgb(r: u8, g: u8, b: u8) -> RgbColor {
