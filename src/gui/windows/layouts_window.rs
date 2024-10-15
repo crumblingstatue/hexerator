@@ -29,7 +29,10 @@ impl super::Window for LayoutsWindow {
         }
         if !self.selected.is_null() {
             ui.separator();
-            let layout = &mut app.meta_state.meta.layouts[self.selected];
+            let Some(layout) = app.meta_state.meta.layouts.get_mut(self.selected) else {
+                self.selected = LayoutKey::null();
+                return;
+            };
             ui.horizontal(|ui| {
                 if self.edit_name {
                     if ui.text_edit_singleline(&mut layout.name).lost_focus() {
