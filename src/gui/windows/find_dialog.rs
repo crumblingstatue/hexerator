@@ -82,6 +82,43 @@ impl FindType {
             FindType::HexString => ValueType::U8(U8),
         }
     }
+    fn help_str(&self) -> &'static str {
+        match self {
+            FindType::I8 => "signed 8 bit integer",
+            FindType::U8 => "unsigned 8 bit integer",
+            FindType::I16Le => "signed 16 bit integer (little endian)",
+            FindType::I16Be => "signed 16 bit integer (big endian)",
+            FindType::U16Le => "unsigned 16 bit integer (little endian)",
+            FindType::U16Be => "unsigned 16 bit integer (big endian)",
+            FindType::I32Le => "signed 32 bit integer (little endian)",
+            FindType::I32Be => "signed 32 bit integer (big endian)",
+            FindType::U32Le => "unsigned 32 bit integer (little endian)",
+            FindType::U32Be => "unsigned 32 bit integer (big endian)",
+            FindType::I64Le => "signed 64 bit integer (little endian)",
+            FindType::I64Be => "signed 64 bit integer (big endian)",
+            FindType::U64Le => "unsigned 64 bit integer (little endian)",
+            FindType::U64Be => "unsigned 64 bit integer (big endian)",
+            FindType::F32Le => "32 bit float (little endian)",
+            FindType::F32Be => "32 bit float (big endian)",
+            FindType::F64Le => "64 bit float (little endian)",
+            FindType::F64Be => "64 bit float (big endian)",
+            FindType::Ascii => "Ascii string",
+            FindType::StringDiff => {
+                "Searches the string difference pattern of your ascii input
+
+Useful to find alphabetic data in non-ascii character encodings.
+
+Takes advantage of the fact that A-Z and 0-9, etc, are usually
+next to each other regardless of the encoding."
+            }
+            FindType::EqPattern => {
+                "Searches the byte equivalence pattern of your ascii input
+For example if you type `aabbca`
+then it will match inputs like `00 00 FF FF CC 00`"
+            }
+            FindType::HexString => "Search a hex string e.g. `ff 00 ff`",
+        }
+    }
 }
 
 #[derive(Default)]
@@ -109,14 +146,17 @@ pub struct FindDialog {
 impl super::Window for FindDialog {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         ui.horizontal(|ui| {
-            egui::ComboBox::new("type_combo", "Data type")
+            let re = egui::ComboBox::new("type_combo", "Data type")
                 .selected_text(<&str>::from(&self.find_type))
                 .show_ui(ui, |ui| {
                     for type_ in FindType::iter() {
                         let label = <&str>::from(&type_);
-                        ui.selectable_value(&mut self.find_type, type_, label);
+                        let help = type_.help_str();
+                        let re = ui.selectable_value(&mut self.find_type, type_, label);
+                        re.on_hover_text(help);
                     }
                 });
+            re.response.on_hover_text(self.find_type.help_str());
             ui.checkbox(&mut self.reload_before_search, "Reload")
                 .on_hover_text("Reload source before every search");
             ui.checkbox(&mut self.selection_only, "Selection only")
