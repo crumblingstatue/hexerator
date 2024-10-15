@@ -126,7 +126,7 @@ impl Config {
     }
 }
 
-fn project_dirs() -> Option<ProjectDirs> {
+pub fn project_dirs() -> Option<ProjectDirs> {
     ProjectDirs::from("", "crumblingstatue", "hexerator")
 }
 

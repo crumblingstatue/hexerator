@@ -51,6 +51,26 @@ impl super::Window for PreferencesWindow {
             ui.selectable_value(&mut self.tab, Tab::Video, Tab::Video.label());
             ui.selectable_value(&mut self.tab, Tab::Style, Tab::Style.label());
             ui.selectable_value(&mut self.tab, Tab::Fonts, Tab::Fonts.label());
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if ui.button("Open config dir").clicked() {
+                    match crate::config::project_dirs() {
+                        Some(dirs) => {
+                            if let Err(e) = open::that(dirs.config_dir()) {
+                                gui.msg_dialog.open(
+                                    Icon::Error,
+                                    "Error opening config dir",
+                                    e.to_string(),
+                                );
+                            }
+                        }
+                        None => gui.msg_dialog.open(
+                            Icon::Error,
+                            "Error opening config dir",
+                            "Missing config dir",
+                        ),
+                    }
+                }
+            });
         });
         ui.separator();
         match self.tab {
