@@ -1,27 +1,99 @@
 # Changelog
 
-## Unreleased
+## [0.3.0] - TBA
 
-### Added
+### UI changes
+
+**Hex Editor:**
+
+- `Del` key zeroes out the byte at cursor
+
+**Bookmarks window:**
+
+- Jump-to button in detail view
+- Value edit input in detail view
 - Context menu option to copy a bookmark's offset
-- Jump-to button in detail view for bookmarks
-- Value edit input in detail view for bookmarks
-- Update egui to 0.21
-- "Highlight all" button in file diff window to highlight all differences
-- Add "Open this" and "Diff with..." buttons to file diff window to speed up diffing
+- Add right click menu option to reoffset all bookmarks based on a known offset (read help label)
+
+**File diff window:**
+
+- Now takes the value types of bookmarks into account, showing the whole values of
+  bookmarks instead of just raw bytes.
+- Add "Highlight all" button to highlight all differences
+- Add "Open this" and "Diff with..." buttons to speed up diffing
   subsequent versions of a file
 
-### Changed
+**Find dialog:**
 
+- Add help hover popups for the find type dropdown
+- Add "string diff" and "pattern equivalence" find types. See the help popups ;)
+- Add basic replace functionality to Ascii find
+
+**X86 assembly dialog:**
+
+- Add ability to jump to offset of decoded instructions
+
+**Root context menu:**
+
+- Add "copy selection as utf-8 text"
+- Add "zero fill" (Shortcut: `Del`)
+
+**External command window:**
+
+- Now openable with `Ctrl+E`
+- Allow closing with `Esc` key
+- Add "selection only" toggle to only pass selection to external command
+
+**Open process window:**
+- Add UI to launch a child process in order to view its memory (hexerator doesn't have to be root)
 - The virtual memory map window now makes it more clear that you're no longer
   looking at the list of processes, but the maps for a process.
-- File diff now takes the value types of bookmarks into account, showing the whole values of
-  bookmarks instead of just raw bytes.
 
-### Fixed
+**Jump dialog:**
+
+- Replace (broken) "relative" option with "absolute"
+
+**Preferences window:**
+
+- Make the ui tabbed
+- Small ui improvements
+
+### Lua scripting
+
+- Replaced LuaJIT with Lua 5.4, because LuaJIT is incompatible with `panic=abort`.
+- Add Lua syntax highlighting in most places
+- Add Lua API help window (`Scripting - Lua help`)
+- Add a bunch more API items (see `Scripting -> Lua help`)
+- Allow saving named scripts, and add script manager window to overview them
+- Add Lua console window for quick evaluation and "watching" expressions
+- Scripts can now take arguments (`args` table, e.g. `args.foo`)
+
+### Plugins
+
+New feature. Allow loading dylib plugins. Documentation to be added.
+For now, see the `hexerator_plugin_api` crate inside the repo.
+
+### Command line
+
+- Add `--version` flag
+- Add `--debug` flag to start with debug logging enabled and debug window open
+- Add `--spawn-command <command>...` flag to spawn a child process and open it in process list (hexerator doesn't have to be root)
+- Add `--autosave` and `--autoreload [<interval>]` to enable autosave/autoreaload through CLI
+- Add `--layout <name>` to switch to a layout at startup
+- Add `--new <length>` option to create a new (zero-filled) buffer
+
+### Fixes
 
 - Loading process memory on windows now correctly sets relative offset
 - When failing to load a file via command line arg, error reason is now properly displayed
+
+### Other
+
+- `Analysis -> Zero partition` for "zero-partitioning" files that contain large zeroed out sections (like process memory).
+- Add feature to autoreload only visible part (as opposed to whole file)
+- Replace blocking file dialog with nonblocking egui file dialog
+- Update egui to 0.29
+- Various bug fixes and minor improvements, too many to list individually
 
 ## [0.2.0] - 2023-01-27
 
@@ -86,3 +158,5 @@
 Initial release.
 
 [0.1.0]: https://github.com/crumblingstatue/hexerator/releases/tag/v0.1.0
+[0.2.0]: https://github.com/crumblingstatue/hexerator/releases/tag/v0.2.0
+[0.3.0]: https://github.com/crumblingstatue/hexerator/releases/tag/v0.3.0
