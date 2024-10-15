@@ -130,4 +130,14 @@ pub fn project_dirs() -> Option<ProjectDirs> {
     ProjectDirs::from("", "crumblingstatue", "hexerator")
 }
 
+pub trait ProjectDirsExt {
+    fn color_theme_path(&self) -> PathBuf;
+}
+
+impl ProjectDirsExt for ProjectDirs {
+    fn color_theme_path(&self) -> PathBuf {
+        self.config_dir().join("egui_colors_theme.pal")
+    }
+}
+
 const FILENAME: &str = "hexerator.cfg";

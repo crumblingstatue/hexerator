@@ -27,7 +27,8 @@
 #![windows_subsystem = "windows"]
 
 use {
-    config::LoadedConfig,
+    config::{LoadedConfig, ProjectDirsExt as _},
+    egui_colors::{tokens::ThemeColor, Colorix},
     egui_file_dialog::{DialogState, DirectoryEntry},
     egui_sfml::sfml::graphics::RenderStates,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
@@ -182,6 +183,25 @@ fn try_main() -> anyhow::Result<()> {
     let lua = Lua::default();
     crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);
+    // Custom egui_colors theme load
+    if let Some(project_dirs) = crate::config::project_dirs() {
+        let path = project_dirs.color_theme_path();
+        if path.exists() {
+            match std::fs::read(path) {
+                Ok(data) => {
+                    eprintln!("Okay, reading theme");
+                    let mut chunks = data.array_chunks().copied();
+                    let theme = std::array::from_fn(|_| {
+                        ThemeColor::Custom(chunks.next().unwrap_or_default())
+                    });
+                    gui.colorix = Some(Colorix::init(sf_egui.context(), theme));
+                }
+                Err(e) => {
+                    eprintln!("Failed to load custom theme: {e}");
+                }
+            }
+        }
+    }
     let mut vertex_buffer = Vec::new();
 
     while window.is_open() {

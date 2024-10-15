@@ -54,7 +54,7 @@ pub struct Gui {
     pub cmd: GCommandQueue,
     pub fileops: FileOps,
     pub win: Windows,
-    colorix: Option<Colorix>,
+    pub colorix: Option<Colorix>,
 }
 
 pub trait Dialog {

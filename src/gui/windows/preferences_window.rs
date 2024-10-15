@@ -2,7 +2,7 @@ use {
     super::{WinCtx, WindowOpen},
     crate::{
         app::{backend_command::BackendCmd, App},
-        config::{self, Config},
+        config::{self, Config, ProjectDirsExt},
         gui::message_dialog::{Icon, MessageDialog},
     },
     egui_colors::{tokens::ThemeColor, Colorix},
@@ -75,7 +75,7 @@ impl super::Window for PreferencesWindow {
         ui.separator();
         match self.tab {
             Tab::Video => video_ui(ui, app),
-            Tab::Style => style_ui(app, ui, &mut gui.colorix),
+            Tab::Style => style_ui(app, ui, &mut gui.colorix, &mut gui.msg_dialog),
             Tab::Fonts => fonts_ui(
                 ui,
                 &mut self.font_cfg,
@@ -105,7 +105,12 @@ fn video_ui(ui: &mut egui::Ui, app: &mut App) {
     });
 }
 
-fn style_ui(app: &mut App, ui: &mut egui::Ui, opt_colorix: &mut Option<Colorix>) {
+fn style_ui(
+    app: &mut App,
+    ui: &mut egui::Ui,
+    opt_colorix: &mut Option<Colorix>,
+    msg_dia: &mut MessageDialog,
+) {
     ui.group(|ui| {
         let style = &mut app.cfg.style;
         ui.heading("Font sizes");
@@ -173,11 +178,26 @@ fn style_ui(app: &mut App, ui: &mut egui::Ui, opt_colorix: &mut Option<Colorix>)
                     std::array::from_fn(|_| ThemeColor::Custom(rng.gen::<[u8; 3]>())),
                 );
             }
-            if ui.button("Reset to default (dark)").clicked() {
-                clear = true;
-            }
         });
+        ui.separator();
         colorix.ui_combo_12(ui);
+        if let Some(dirs) = crate::config::project_dirs() {
+            ui.separator();
+            ui.horizontal(|ui| {
+                if ui.button("Save").clicked() {
+                    let data: [[u8; 3]; 12] = colorix.theme().map(|theme| theme.rgb());
+                    if let Err(e) = std::fs::write(dirs.color_theme_path(), data.as_flattened()) {
+                        msg_dia.open(Icon::Error, "Failed to save theme", e.to_string());
+                    }
+                };
+                if ui.button("Remove custom colors").clicked() {
+                    if let Err(e) = std::fs::remove_file(dirs.color_theme_path()) {
+                        msg_dia.open(Icon::Error, "Failed to delete theme file", e.to_string());
+                    }
+                    clear = true;
+                }
+            });
+        }
         if clear {
             ui.ctx().set_visuals(egui::Visuals::dark());
             *opt_colorix = None;
