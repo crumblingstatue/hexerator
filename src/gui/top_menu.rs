@@ -34,7 +34,7 @@ pub fn top_menu(
         ui.menu_button("Perspective", |ui| perspective::ui(ui, gui, app));
         ui.menu_button("Meta", |ui| meta::ui(ui, gui, app, font_size, line_spacing));
         ui.menu_button("Analysis", |ui| analysis::ui(ui, gui, app));
-        ui.menu_button("Scripting", |ui| {
+        ui.menu_button("Lua scripting", |ui| {
             scripting::ui(ui, gui, app, lua, font_size, line_spacing)
         });
         ui.menu_button("Plugins", |ui| plugins::ui(ui, gui, app));

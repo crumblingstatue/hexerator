@@ -15,11 +15,7 @@ pub fn ui(
     font_size: u16,
     line_spacing: u16,
 ) {
-    if ui.button("🖳 Lua console").clicked() {
-        gui.win.lua_console.open.toggle();
-        ui.close_menu();
-    }
-    if ui.button("🖹 Execute script...").clicked() {
+    if ui.button("🖹 Lua editor").clicked() {
         Gui::add_dialog(&mut gui.dialogs, LuaExecuteDialog::default());
         ui.close_menu();
     }
@@ -27,11 +23,15 @@ pub fn ui(
         gui.win.script_manager.open.toggle();
         ui.close_menu();
     }
-    if ui.button("New watch window").clicked() {
+    if ui.button("🖳 Quick eval window").clicked() {
+        gui.win.lua_console.open.toggle();
+        ui.close_menu();
+    }
+    if ui.button("👁 New watch window").clicked() {
         gui.win.add_lua_watch_window();
         ui.close_menu();
     }
-    if ui.button("？ Lua help").clicked() {
+    if ui.button("？ Hexerator Lua API").clicked() {
         gui.win.lua_help.open.toggle();
         ui.close_menu();
     }

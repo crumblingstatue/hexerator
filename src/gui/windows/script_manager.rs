@@ -62,7 +62,7 @@ impl super::Window for ScriptManagerWindow {
         if scripts.is_empty() {
             ui.label("There are no saved scripts.");
         }
-        if ui.link("Open execute lua window").clicked() {
+        if ui.link("Open lua editor").clicked() {
             Gui::add_dialog(&mut gui.dialogs, LuaExecuteDialog::default());
         }
         ui.separator();

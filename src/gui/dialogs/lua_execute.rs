@@ -25,7 +25,7 @@ pub struct LuaExecuteDialog {
 
 impl Dialog for LuaExecuteDialog {
     fn title(&self) -> &str {
-        "Execute Lua"
+        "Lua Editor"
     }
 
     fn ui(
