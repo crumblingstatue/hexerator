@@ -77,7 +77,7 @@ impl super::Window for ScriptManagerWindow {
 
 impl ScriptManagerWindow {
     fn selected_script_ui(
-        &self,
+        &mut self,
         ui: &mut egui::Ui,
         gui: &mut Gui,
         app: &mut App,
@@ -89,7 +89,10 @@ impl ScriptManagerWindow {
         let Some(key) = self.selected else {
             return;
         };
-        let scr = &mut scripts[key];
+        let Some(scr) = scripts.get_mut(key) else {
+            self.selected = None;
+            return;
+        };
         ui.label("Description");
         ui.text_edit_multiline(&mut scr.desc);
         ui.label("Code");
