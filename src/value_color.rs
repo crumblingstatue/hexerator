@@ -7,7 +7,7 @@ use {
 
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 pub enum ColorMethod {
-    Mono,
+    Mono(RgbColor),
     Default,
     Pure,
     Rgb332,
@@ -40,7 +40,7 @@ impl ColorMethod {
     #[must_use]
     pub fn byte_color(&self, byte: u8, invert: bool) -> RgbColor {
         let color = match self {
-            ColorMethod::Mono => RgbColor::WHITE,
+            ColorMethod::Mono(color) => *color,
             ColorMethod::Default => default_color(byte),
             ColorMethod::Pure => hue_color(byte),
             ColorMethod::Rgb332 => rgb332_color(byte),
@@ -60,7 +60,7 @@ impl ColorMethod {
 
     pub(crate) fn name(&self) -> &str {
         match self {
-            ColorMethod::Mono => "monochrome (white)",
+            ColorMethod::Mono(_) => "monochrome",
             ColorMethod::Default => "default",
             ColorMethod::Pure => "pure hue",
             ColorMethod::Rgb332 => "rgb 3-3-2",
