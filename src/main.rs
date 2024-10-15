@@ -87,7 +87,8 @@ use {
     gui::{
         dialogs::JumpDialog,
         message_dialog::{Icon, MessageDialog},
-        ContextMenu, ContextMenuData, Gui,
+        root_ctx_menu::{ContextMenu, ContextMenuData},
+        Gui,
     },
     meta::{NamedView, PerspectiveMap, RegionMap},
     mlua::Lua,
