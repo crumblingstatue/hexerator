@@ -2,7 +2,7 @@ use {
     super::{WinCtx, WindowOpen},
     crate::{
         app::App,
-        gui::Gui,
+        gui::{dialogs::LuaExecuteDialog, Gui},
         meta::{ScriptKey, ScriptMap},
         scripting::exec_lua,
         shell::msg_if_fail,
@@ -59,6 +59,12 @@ impl super::Window for ScriptManagerWindow {
             });
             retain
         });
+        if scripts.is_empty() {
+            ui.label("There are no saved scripts.");
+        }
+        if ui.link("Open execute lua window").clicked() {
+            Gui::add_dialog(&mut gui.dialogs, LuaExecuteDialog::default());
+        }
         ui.separator();
         self.selected_script_ui(ui, gui, app, lua, &mut scripts, font_size, line_spacing);
         std::mem::swap(&mut app.meta_state.meta.scripts, &mut scripts);
