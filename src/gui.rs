@@ -15,6 +15,7 @@ use {
         TextStyle::{Body, Button, Heading, Monospace, Small},
         TopBottomPanel, Window,
     },
+    egui_colors::Colorix,
     egui_sfml::{sfml::graphics::RenderWindow, SfEgui},
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     mlua::Lua,
@@ -53,6 +54,7 @@ pub struct Gui {
     pub cmd: GCommandQueue,
     pub fileops: FileOps,
     pub win: Windows,
+    colorix: Option<Colorix>,
 }
 
 pub trait Dialog {

@@ -5,7 +5,9 @@ use {
         config::{self, Config},
         gui::message_dialog::{Icon, MessageDialog},
     },
+    egui_colors::{tokens::ThemeColor, Colorix},
     egui_fontcfg::{CustomFontPaths, FontCfgUi, FontDefsUiMsg},
+    rand::Rng,
 };
 
 #[derive(Default)]
@@ -53,7 +55,7 @@ impl super::Window for PreferencesWindow {
         ui.separator();
         match self.tab {
             Tab::Video => video_ui(ui, app),
-            Tab::Style => style_ui(app, ui),
+            Tab::Style => style_ui(app, ui, &mut gui.colorix),
             Tab::Fonts => fonts_ui(
                 ui,
                 &mut self.font_cfg,
@@ -83,7 +85,7 @@ fn video_ui(ui: &mut egui::Ui, app: &mut App) {
     });
 }
 
-fn style_ui(app: &mut App, ui: &mut egui::Ui) {
+fn style_ui(app: &mut App, ui: &mut egui::Ui, opt_colorix: &mut Option<Colorix>) {
     ui.group(|ui| {
         let style = &mut app.cfg.style;
         ui.heading("Font sizes");
@@ -124,6 +126,41 @@ fn style_ui(app: &mut App, ui: &mut egui::Ui) {
         }
         if any_changed {
             crate::gui::set_font_sizes_ctx(ui.ctx(), style);
+        }
+    });
+    ui.group(|ui| {
+        let colorix = match opt_colorix {
+            Some(colorix) => colorix,
+            None => {
+                if ui.button("Activate custom colors").clicked() {
+                    opt_colorix.insert(Colorix::init(ui.ctx(), egui_colors::utils::EGUI_THEME))
+                } else {
+                    return;
+                }
+            }
+        };
+        let mut clear = false;
+        ui.horizontal(|ui| {
+            colorix.themes_dropdown(ui, None, false);
+            ui.group(|ui| {
+                ui.label("light dark toggle");
+                colorix.light_dark_toggle_button(ui);
+            });
+            if ui.button("Random theme").clicked() {
+                let mut rng = rand::thread_rng();
+                *colorix = Colorix::init(
+                    ui.ctx(),
+                    std::array::from_fn(|_| ThemeColor::Custom(rng.gen::<[u8; 3]>())),
+                );
+            }
+            if ui.button("Reset to default (dark)").clicked() {
+                clear = true;
+            }
+        });
+        colorix.ui_combo_12(ui);
+        if clear {
+            ui.ctx().set_visuals(egui::Visuals::dark());
+            *opt_colorix = None;
         }
     });
 }
