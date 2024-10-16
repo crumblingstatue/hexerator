@@ -36,7 +36,10 @@ impl Dialog for PatternFillDialog {
             ui.heading("No active selection");
             return true;
         };
-        let re = ui.text_edit_singleline(&mut self.pattern_string);
+        let re = ui.add(
+            egui::TextEdit::singleline(&mut self.pattern_string)
+                .hint_text("Hex pattern (e.g. `00 ff 00`)"),
+        );
         if self.just_opened {
             re.request_focus();
         }
