@@ -182,13 +182,13 @@ fn add_new_view_menu(ui: &mut egui::Ui, low: &MetaLow, views: &mut ViewMap) -> O
     let mut ret_key = None;
     ui.separator();
     ui.menu_button("New from perspective", |ui| {
-        for (k, per) in &low.perspectives {
+        for (per_key, per) in &low.perspectives {
             if ui.button(&per.name).clicked() {
-                let key = views.insert(NamedView {
-                    view: View::new(ViewKind::Hex(HexData::default()), k),
-                    name: per.name.to_owned(),
+                let view_key = views.insert_with_key(|new_key| NamedView {
+                    view: View::new(ViewKind::Hex(HexData::default()), per_key),
+                    name: format!("View {:?} @ {}", new_key.data(), per.name),
                 });
-                ret_key = Some(key);
+                ret_key = Some(view_key);
             }
         }
     });
