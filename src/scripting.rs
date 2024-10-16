@@ -9,7 +9,7 @@ use {
         },
         slice_ext::SliceExt as _,
     },
-    anyhow::Context,
+    anyhow::Context as _,
     mlua::{ExternalError as _, ExternalResult as _, IntoLuaMulti, Lua, UserData},
     std::collections::HashMap,
 };

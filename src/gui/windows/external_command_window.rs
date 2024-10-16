@@ -2,13 +2,13 @@ use {
     super::{WinCtx, WindowOpen},
     crate::{
         shell::{msg_fail, msg_if_fail},
-        str_ext::StrExt,
+        str_ext::StrExt as _,
     },
-    anyhow::Context,
+    anyhow::Context as _,
     core::f32,
     std::{
         ffi::OsString,
-        io::Read,
+        io::Read as _,
         process::{Child, Command, ExitStatus, Stdio},
     },
 };

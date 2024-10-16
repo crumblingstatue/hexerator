@@ -1,7 +1,7 @@
 use {
     super::{WinCtx, WindowOpen},
     crate::meta::{VarEntry, VarVal},
-    egui::TextBuffer,
+    egui::TextBuffer as _,
     egui_extras::Column,
 };
 

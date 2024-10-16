@@ -11,7 +11,7 @@ use {
         source::Source,
         value_color::{self, ColorMethod},
     },
-    anyhow::Context,
+    anyhow::Context as _,
     egui_file_dialog::FileDialog,
     std::{fs::OpenOptions, io::Write as _, path::Path},
 };

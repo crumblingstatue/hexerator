@@ -12,14 +12,14 @@ use {
     },
     egui_sfml::sfml::{
         graphics::{
-            Color, Font, PrimitiveType, RenderStates, RenderTarget, RenderWindow, Text,
-            Transformable, Vertex,
+            Color, Font, PrimitiveType, RenderStates, RenderTarget as _, RenderWindow, Text,
+            Transformable as _, Vertex,
         },
         system::Vector2,
     },
     either::Either,
     glu_sys::GLint,
-    slotmap::Key,
+    slotmap::Key as _,
 };
 
 struct DrawArgs<'vert, 'data> {

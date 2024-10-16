@@ -8,7 +8,7 @@ use {
     },
     egui::emath::Numeric,
     egui_extras::{Column, TableBuilder},
-    slotmap::Key,
+    slotmap::Key as _,
     std::{hash::Hash, ops::RangeInclusive},
 };
 

@@ -5,7 +5,7 @@ use {
         meta::{LayoutKey, LayoutMapExt as _, MetaLow, NamedView, ViewKey, ViewMap},
         view::{HexData, View, ViewKind},
     },
-    slotmap::Key,
+    slotmap::Key as _,
 };
 
 #[derive(Default)]

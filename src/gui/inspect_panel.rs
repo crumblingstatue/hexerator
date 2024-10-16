@@ -8,7 +8,7 @@ use {
     },
     anyhow::bail,
     egui::Ui,
-    slotmap::Key,
+    slotmap::Key as _,
     std::{array::TryFromSliceError, marker::PhantomData},
     thiserror::Error,
 };

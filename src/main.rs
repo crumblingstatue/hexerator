@@ -19,7 +19,8 @@
     clippy::panic,
     clippy::needless_pass_by_ref_mut,
     clippy::semicolon_if_nothing_returned,
-    clippy::items_after_statements
+    clippy::items_after_statements,
+    clippy::unused_trait_names
 )]
 #![expect(
     incomplete_features,
@@ -38,7 +39,7 @@ use {
     gui::command::GCmd,
     std::{
         backtrace::{Backtrace, BacktraceStatus},
-        io::IsTerminal,
+        io::IsTerminal as _,
     },
 };
 
@@ -75,15 +76,16 @@ mod windows;
 
 use {
     crate::{app::App, view::ViewportVec},
-    anyhow::Context,
+    anyhow::Context as _,
     app::interact_mode::InteractMode,
     args::Args,
-    clap::Parser,
+    clap::Parser as _,
     config::Config,
     egui_sfml::{
         sfml::{
             graphics::{
-                Color, Font, Rect, RenderTarget, RenderWindow, Text, Transformable, Vertex, View,
+                Color, Font, Rect, RenderTarget as _, RenderWindow, Text, Transformable as _,
+                Vertex, View,
             },
             system::Vector2,
             window::{mouse, ContextSettings, Event, Key, Style, VideoMode},

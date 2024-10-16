@@ -2,12 +2,12 @@ use {
     super::{WinCtx, WindowOpen},
     crate::{
         app::{backend_command::BackendCmd, App},
-        config::{self, Config, ProjectDirsExt},
+        config::{self, Config, ProjectDirsExt as _},
         gui::message_dialog::{Icon, MessageDialog},
     },
     egui_colors::{tokens::ThemeColor, Colorix},
     egui_fontcfg::{CustomFontPaths, FontCfgUi, FontDefsUiMsg},
-    rand::Rng,
+    rand::Rng as _,
 };
 
 #[derive(Default)]

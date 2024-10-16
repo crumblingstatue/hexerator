@@ -1,7 +1,7 @@
 use {
     super::{WinCtx, WindowOpen},
     crate::{
-        gui::egui_ui_ext::EguiResponseExt, meta::region::Region, shell::msg_if_fail,
+        gui::egui_ui_ext::EguiResponseExt as _, meta::region::Region, shell::msg_if_fail,
         util::human_size,
     },
     egui_extras::{Column, TableBuilder},

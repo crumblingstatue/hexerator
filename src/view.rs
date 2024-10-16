@@ -10,7 +10,7 @@ use {
     },
     gamedebug_core::per,
     serde::{Deserialize, Serialize},
-    slotmap::Key,
+    slotmap::Key as _,
 };
 
 mod draw;

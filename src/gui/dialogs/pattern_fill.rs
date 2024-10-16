@@ -3,7 +3,7 @@ use {
         app::App,
         damage_region::DamageRegion,
         gui::{message_dialog::Icon, Dialog},
-        slice_ext::SliceExt,
+        slice_ext::SliceExt as _,
     },
     mlua::Lua,
 };

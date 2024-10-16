@@ -7,7 +7,7 @@ use {
             ViewKey,
         },
     },
-    itertools::{EitherOrBoth, Itertools},
+    itertools::{EitherOrBoth, Itertools as _},
     slotmap::SlotMap,
     std::fmt::Debug,
 };

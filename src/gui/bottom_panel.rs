@@ -8,7 +8,7 @@ use {
         view::ViewportVec,
     },
     egui::{text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui},
-    slotmap::Key,
+    slotmap::Key as _,
 };
 
 pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {

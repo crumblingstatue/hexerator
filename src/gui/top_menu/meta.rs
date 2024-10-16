@@ -1,7 +1,7 @@
 use {
     crate::{
         app::App,
-        gui::{egui_ui_ext::EguiResponseExt, Gui},
+        gui::{egui_ui_ext::EguiResponseExt as _, Gui},
         shell::msg_if_fail,
     },
     egui::Button,

@@ -5,7 +5,7 @@ use {
     slotmap::{new_key_type, SlotMap},
     std::{
         collections::HashMap,
-        io::{ErrorKind, Write},
+        io::{ErrorKind, Write as _},
     },
 };
 

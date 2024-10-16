@@ -1,7 +1,7 @@
 use {
     crate::{app::App, gui::Dialog},
     egui::Button,
-    iced_x86::{Decoder, Formatter, NasmFormatter},
+    iced_x86::{Decoder, Formatter as _, NasmFormatter},
     mlua::Lua,
 };
 

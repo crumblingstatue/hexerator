@@ -6,7 +6,7 @@ use {
         timer::Timer,
         view::ViewportRect,
     },
-    slotmap::Key,
+    slotmap::Key as _,
     std::time::Duration,
 };
 

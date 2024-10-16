@@ -1,6 +1,6 @@
 use {
     super::{
-        dialogs::LuaColorDialog, egui_ui_ext::EguiResponseExt, message_dialog::Icon,
+        dialogs::LuaColorDialog, egui_ui_ext::EguiResponseExt as _, message_dialog::Icon,
         top_menu::top_menu, Gui,
     },
     crate::{
@@ -9,7 +9,7 @@ use {
         util::human_size,
         value_color::{ColorMethod, Palette},
     },
-    anyhow::Context,
+    anyhow::Context as _,
     egui::{ComboBox, Layout, Ui},
     mlua::Lua,
 };

@@ -2,7 +2,7 @@ use {
     super::{WinCtx, WindowOpen},
     crate::shell::msg_if_fail,
     egui_extras::{Column, TableBuilder},
-    std::fmt::Write,
+    std::fmt::Write as _,
     sysinfo::System,
 };
 

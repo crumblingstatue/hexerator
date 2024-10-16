@@ -1,6 +1,6 @@
 use {
     crate::args::SourceArgs,
-    anyhow::Context,
+    anyhow::Context as _,
     directories::ProjectDirs,
     egui_fontcfg::CustomFontPaths,
     recently_used_list::RecentlyUsedList,

@@ -22,9 +22,9 @@ use {
     },
     egui::{Align, Ui},
     egui_extras::{Column, Size, StripBuilder, TableBuilder},
-    itertools::Itertools,
+    itertools::Itertools as _,
     std::{collections::HashMap, error::Error, str::FromStr},
-    strum::{EnumIter, IntoEnumIterator, IntoStaticStr},
+    strum::{EnumIter, IntoEnumIterator as _, IntoStaticStr},
 };
 
 #[derive(Default, Debug, PartialEq, Eq, EnumIter, IntoStaticStr)]

@@ -4,7 +4,7 @@ use {
         app::command::Cmd, gui::windows::regions_window::region_context_menu, meta::PerspectiveKey,
     },
     egui_extras::{Column, TableBuilder},
-    slotmap::Key,
+    slotmap::Key as _,
 };
 
 #[derive(Default)]

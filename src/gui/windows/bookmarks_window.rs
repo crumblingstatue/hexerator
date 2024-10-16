@@ -14,7 +14,7 @@ use {
         },
         shell::{msg_fail, msg_if_fail},
     },
-    anyhow::Context,
+    anyhow::Context as _,
     egui::{text::CursorRange, ScrollArea, Ui},
     egui_extras::{Column, TableBuilder},
     gamedebug_core::per,

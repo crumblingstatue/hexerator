@@ -11,8 +11,8 @@ use {
         },
     },
     egui::Button,
-    rand::RngCore,
-    std::fmt::Write,
+    rand::RngCore as _,
+    std::fmt::Write as _,
 };
 
 /// Returns whether anything was clicked

@@ -1,5 +1,5 @@
 use {
-    crate::{app::App, gui::Gui, meta::LayoutMapExt},
+    crate::{app::App, gui::Gui, meta::LayoutMapExt as _},
     egui::Button,
 };
 
