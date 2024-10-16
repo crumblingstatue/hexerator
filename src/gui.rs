@@ -150,7 +150,10 @@ pub fn do_egui(
         let mut dialogs = std::mem::take(&mut gui.dialogs);
         dialogs.retain(|_k, dialog| {
             let mut retain = true;
-            let mut win = Window::new(dialog.title());
+            let mut win = Window::new(dialog.title())
+                .collapsible(false)
+                .resizable(false)
+                .anchor(egui::Align2::CENTER_CENTER, [0., 0.]);
             let mut open = true;
             if dialog.has_close_button() {
                 win = win.open(&mut open)
