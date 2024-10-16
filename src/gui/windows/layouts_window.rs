@@ -99,27 +99,24 @@ impl super::Window for LayoutsWindow {
 
                         retain
                     });
-                    ui.add_enabled_ui(!unused_views.is_empty(), |ui| {
-                        ui.menu_button("✚", |ui| {
-                            for &k in &unused_views {
-                                if ui.button(&app.meta_state.meta.views[k].name).clicked() {
-                                    row.push(k);
-                                    ui.close_menu();
-                                }
-                            }
-                            if let Some(k) = add_new_view_menu(
-                                ui,
-                                &app.meta_state.meta.low,
-                                &mut app.meta_state.meta.views,
-                            ) {
+                    ui.menu_button("✚", |ui| {
+                        for &k in &unused_views {
+                            if ui.button(&app.meta_state.meta.views[k].name).clicked() {
                                 row.push(k);
                                 ui.close_menu();
                             }
-                        })
-                        .response
-                        .on_hover_text("Add view")
-                        .on_disabled_hover_text("No views to add (all added)");
-                    });
+                        }
+                        if let Some(k) = add_new_view_menu(
+                            ui,
+                            &app.meta_state.meta.low,
+                            &mut app.meta_state.meta.views,
+                        ) {
+                            row.push(k);
+                            ui.close_menu();
+                        }
+                    })
+                    .response
+                    .on_hover_text("Add view");
                     if ui.button("🗑").on_hover_text("Delete row").clicked() {
                         retain_row = false;
                     }
@@ -141,27 +138,24 @@ impl super::Window for LayoutsWindow {
                         }
                     }
                 }
-                ui.add_enabled_ui(!unused_views.is_empty(), |ui| {
-                    ui.menu_button("✚", |ui| {
-                        for &k in &unused_views {
-                            if ui.button(&app.meta_state.meta.views[k].name).clicked() {
-                                layout.view_grid.push(vec![k]);
-                                ui.close_menu();
-                            }
-                        }
-                        if let Some(k) = add_new_view_menu(
-                            ui,
-                            &app.meta_state.meta.low,
-                            &mut app.meta_state.meta.views,
-                        ) {
+                ui.menu_button("✚", |ui| {
+                    for &k in &unused_views {
+                        if ui.button(&app.meta_state.meta.views[k].name).clicked() {
                             layout.view_grid.push(vec![k]);
                             ui.close_menu();
                         }
-                    })
-                    .response
-                    .on_hover_text("Add view")
-                    .on_disabled_hover_text("No views to add (all added)");
-                });
+                    }
+                    if let Some(k) = add_new_view_menu(
+                        ui,
+                        &app.meta_state.meta.low,
+                        &mut app.meta_state.meta.views,
+                    ) {
+                        layout.view_grid.push(vec![k]);
+                        ui.close_menu();
+                    }
+                })
+                .response
+                .on_hover_text("Add view")
             });
             ui.horizontal(|ui| {
                 ui.label("Margin");
