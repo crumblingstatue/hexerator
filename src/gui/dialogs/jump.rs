@@ -52,6 +52,10 @@ impl Dialog for JumpDialog {
             ui.text_edit_multiline(&mut &label[..]);
         }
         if ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
+            // Just close the dialog without error on empty text input
+            if self.string_buf.trim().is_empty() {
+                return false;
+            }
             match parse_offset_maybe_relative(&self.string_buf) {
                 Ok((offset, relativity)) => {
                     let offset = match relativity {
