@@ -61,6 +61,7 @@ impl super::Window for ViewsWindow {
         let mut removed_idx = None;
         if app.meta_state.meta.views.is_empty() {
             ui.label("No views");
+            new_from_perspective_button(ui, app);
             return;
         }
         TableBuilder::new(ui)
@@ -144,17 +145,7 @@ impl super::Window for ViewsWindow {
                 });
             });
         ui.separator();
-        ui.menu_button("New from perspective", |ui| {
-            for (key, perspective) in app.meta_state.meta.low.perspectives.iter() {
-                if ui.button(&perspective.name).clicked() {
-                    ui.close_menu();
-                    app.cmd.push(Cmd::CreateView {
-                        perspective_key: key,
-                        name: perspective.name.to_owned(),
-                    });
-                }
-            }
-        });
+        new_from_perspective_button(ui, app);
         ui.separator();
         if let Some(view) = app.meta_state.meta.views.get_mut(self.selected) {
             ui.horizontal(|ui| {
@@ -280,6 +271,20 @@ impl super::Window for ViewsWindow {
     fn title(&self) -> &str {
         "Views"
     }
+}
+
+fn new_from_perspective_button(ui: &mut egui::Ui, app: &mut App) {
+    ui.menu_button("New from perspective", |ui| {
+        for (key, perspective) in app.meta_state.meta.low.perspectives.iter() {
+            if ui.button(&perspective.name).clicked() {
+                ui.close_menu();
+                app.cmd.push(Cmd::CreateView {
+                    perspective_key: key,
+                    name: perspective.name.to_owned(),
+                });
+            }
+        }
+    });
 }
 
 /// Returns whether the value was changed
