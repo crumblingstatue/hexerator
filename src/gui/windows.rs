@@ -16,6 +16,7 @@ use {
     },
     super::Gui,
     crate::app::App,
+    lua_editor::LuaEditorWindow,
 };
 
 mod about;
@@ -28,6 +29,7 @@ mod find_dialog;
 mod find_memory_pointers_window;
 mod layouts_window;
 mod lua_console;
+mod lua_editor;
 mod lua_help;
 mod lua_watch;
 mod meta_diff_window;
@@ -56,6 +58,7 @@ pub struct Windows {
     pub preferences: PreferencesWindow,
     pub about: AboutWindow,
     pub vars: VarsWindow,
+    pub lua_editor: LuaEditorWindow,
     pub lua_help: LuaHelpWindow,
     pub lua_console: LuaConsoleWindow,
     pub lua_watch: Vec<LuaWatchWindow>,
@@ -148,6 +151,7 @@ impl Windows {
             advanced_open,
             external_command,
             preferences,
+            lua_editor,
             lua_help,
             lua_console,
             script_manager,

@@ -1,9 +1,5 @@
 use {
-    crate::{
-        app::App,
-        gui::{dialogs::LuaExecuteDialog, Gui},
-        shell::msg_if_fail,
-    },
+    crate::{app::App, gui::Gui, shell::msg_if_fail},
     mlua::Lua,
 };
 
@@ -16,7 +12,7 @@ pub fn ui(
     line_spacing: u16,
 ) {
     if ui.button("🖹 Lua editor").clicked() {
-        Gui::add_dialog(&mut gui.dialogs, LuaExecuteDialog::default());
+        gui.win.lua_editor.open.toggle();
         ui.close_menu();
     }
     if ui.button("📃 Script manager").clicked() {

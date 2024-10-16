@@ -1,7 +1,8 @@
 use {
+    super::{WinCtx, WindowOpen},
     crate::{
         app::App,
-        gui::{Dialog, Gui},
+        gui::Gui,
         meta::{Script, ScriptKey},
         scripting::SCRIPT_ARG_FMT_HELP_STR,
         shell::msg_if_fail,
@@ -14,8 +15,9 @@ use {
     std::time::Instant,
 };
 
-#[derive(Debug, Default)]
-pub struct LuaExecuteDialog {
+#[derive(Default)]
+pub struct LuaEditorWindow {
+    pub open: WindowOpen,
     result_info_string: String,
     err: bool,
     new_script_name: String,
@@ -23,20 +25,16 @@ pub struct LuaExecuteDialog {
     edit_key: Option<ScriptKey>,
 }
 
-impl Dialog for LuaExecuteDialog {
-    fn title(&self) -> &str {
-        "Lua Editor"
-    }
-
-    fn ui(
-        &mut self,
-        ui: &mut egui::Ui,
-        app: &mut App,
-        gui: &mut crate::gui::Gui,
-        lua: &Lua,
-        font_size: u16,
-        line_spacing: u16,
-    ) -> bool {
+impl super::Window for LuaEditorWindow {
+    fn ui(&mut self, ctx: super::WinCtx) {
+        let WinCtx {
+            ui,
+            gui,
+            app,
+            lua,
+            font_size,
+            line_spacing,
+        } = ctx;
         let ctrl_enter =
             ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::Enter));
         let ctrl_s = ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::S));
@@ -165,14 +163,14 @@ impl Dialog for LuaExecuteDialog {
                 });
             },
         );
-        true
     }
-    fn has_close_button(&self) -> bool {
-        true
+
+    fn title(&self) -> &str {
+        "Lua Editor"
     }
 }
 
-impl LuaExecuteDialog {
+impl LuaEditorWindow {
     fn exec_lua(
         &mut self,
         app: &mut App,

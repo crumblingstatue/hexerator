@@ -2,7 +2,7 @@ use {
     super::{WinCtx, WindowOpen},
     crate::{
         app::App,
-        gui::{dialogs::LuaExecuteDialog, Gui},
+        gui::Gui,
         meta::{ScriptKey, ScriptMap},
         scripting::exec_lua,
         shell::msg_if_fail,
@@ -63,7 +63,7 @@ impl super::Window for ScriptManagerWindow {
             ui.label("There are no saved scripts.");
         }
         if ui.link("Open lua editor").clicked() {
-            Gui::add_dialog(&mut gui.dialogs, LuaExecuteDialog::default());
+            gui.win.lua_editor.open.set(true);
         }
         ui.separator();
         self.selected_script_ui(ui, gui, app, lua, &mut scripts, font_size, line_spacing);
