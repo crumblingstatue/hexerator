@@ -146,7 +146,7 @@ impl super::Window for ExternalCommandWindow {
                             }
                         }
                         self.child = None;
-                        self.exit_status = Some(status)
+                        self.exit_status = Some(status);
                     }
                 }
                 Err(e) => self.err_msg = e.to_string(),

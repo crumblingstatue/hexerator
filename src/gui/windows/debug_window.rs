@@ -16,7 +16,7 @@ pub fn ui(ui: &mut Ui) {
         .show(ui, |ui| {
             IMMEDIATE.for_each(|msg| {
                 ui.label(msg);
-            })
+            });
         });
     IMMEDIATE.clear();
     ui.separator();

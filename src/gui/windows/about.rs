@@ -133,7 +133,7 @@ fn info_table(ui: &mut egui::Ui, info: &[InfoPair]) {
                         row.col(|ui| {
                             ui.label(v);
                         });
-                    })
+                    });
                 }
             });
     });

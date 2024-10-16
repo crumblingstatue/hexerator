@@ -126,7 +126,11 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
                         )) {
                             Ok(new) => *col = new,
                             Err(e) => {
-                                gui.msg_dialog.open(Icon::Error, "Color parse error", e.to_string())
+                                gui.msg_dialog.open(
+                                    Icon::Error,
+                                    "Color parse error",
+                                    e.to_string(),
+                                );
                             }
                         }
                     }

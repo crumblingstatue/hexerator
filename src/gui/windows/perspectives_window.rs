@@ -92,7 +92,7 @@ impl super::Window for PerspectivesWindow {
                                 &app.meta_state.meta,
                                 &mut app.cmd,
                                 &mut gui.cmd,
-                            )
+                            );
                         });
                         if re.clicked() {
                             gui.win.regions.open.set(true);

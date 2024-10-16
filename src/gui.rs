@@ -115,7 +115,7 @@ pub fn do_egui(
         }
         // Panels
         let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            top_panel::ui(ui, gui, app, lua, font_size, line_spacing)
+            top_panel::ui(ui, gui, app, lua, font_size, line_spacing);
         });
         let bot_re = TopBottomPanel::bottom("bottom_panel")
             .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos, gui));
@@ -156,7 +156,7 @@ pub fn do_egui(
                 .anchor(egui::Align2::CENTER_CENTER, [0., 0.]);
             let mut open = true;
             if dialog.has_close_button() {
-                win = win.open(&mut open)
+                win = win.open(&mut open);
             }
             win.show(ctx, |ui| {
                 retain = dialog.ui(ui, app, gui, lua, font_size, line_spacing);

@@ -97,7 +97,7 @@ pub fn perform_command(
 ) {
     match cmd {
         Cmd::CreatePerspective { region_key, name } => {
-            app.add_perspective_from_region(region_key, name)
+            app.add_perspective_from_region(region_key, name);
         }
         Cmd::SetSelection(a, b) => {
             app.hex_ui.select_a = Some(a);

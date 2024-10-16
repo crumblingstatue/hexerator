@@ -22,12 +22,11 @@ fn opt<V: Default>(
         let mut checked = val.is_some();
         ui.checkbox(&mut checked, label).on_hover_text(desc);
         if checked {
-            f(ui, val.get_or_insert_with(Default::default))
+            f(ui, val.get_or_insert_with(Default::default));
         } else {
             *val = None;
         }
-    })
-    .inner
+    });
 }
 
 impl super::Window for AdvancedOpenWindow {

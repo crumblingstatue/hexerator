@@ -610,7 +610,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                         app.edit_state.set_cursor(offset - app.src_args.hard_seek.unwrap_or(0));
                     }
                     SeekRelativity::User => {
-                        app.edit_state.set_cursor(offset - gui.inspect_panel.seek_user_offs)
+                        app.edit_state.set_cursor(offset - gui.inspect_panel.seek_user_offs);
                     }
                 }
                 app.center_view_on_offset(app.edit_state.cursor);

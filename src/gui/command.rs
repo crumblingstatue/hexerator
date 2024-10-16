@@ -72,7 +72,7 @@ fn perform_command(gui: &mut Gui, cmd: GCmd) {
                         }
                         None => {
                             gui.win.open_process.selected_pid =
-                                Some(sysinfo::Pid::from_u32(child.id()))
+                                Some(sysinfo::Pid::from_u32(child.id()));
                         }
                     }
                 }

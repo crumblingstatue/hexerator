@@ -134,7 +134,7 @@ impl super::Window for FindMemoryPointersWindow {
                             ) {
                                 Ok(()) => action = Action::Goto(en.ptr - range.start()),
                                 Err(e) => {
-                                    msg_fail(&e, "failed to load proc memory", &mut gui.msg_dialog)
+                                    msg_fail(&e, "failed to load proc memory", &mut gui.msg_dialog);
                                 }
                             }
                         }

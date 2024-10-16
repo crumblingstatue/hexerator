@@ -462,7 +462,7 @@ impl super::Window for FindDialog {
                             match offsets {
                                 Ok(offs) => self.results_vec = offs,
                                 Err(e) => {
-                                    msg_fail(&e, "failed to parse offsets", &mut gui.msg_dialog)
+                                    msg_fail(&e, "failed to parse offsets", &mut gui.msg_dialog);
                                 }
                             }
                         }
@@ -750,7 +750,7 @@ where
     let n: N::Primitive = input.parse()?;
     let bytes = N::to_bytes(n);
     for offset in memchr::memmem::find_iter(data, &bytes) {
-        f(offset)
+        f(offset);
     }
     Ok(())
 }

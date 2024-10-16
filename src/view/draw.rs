@@ -414,7 +414,7 @@ impl View {
                                 f32::from(this.view.col_w),
                                 f32::from(this.view.row_h),
                                 this.view.presentation.sel_color.into(),
-                            )
+                            );
                         }
                         let mut gx = x;
                         for (i, mut d) in
@@ -476,7 +476,7 @@ impl View {
                                 f32::from(this.view.col_w),
                                 f32::from(this.view.row_h),
                                 this.view.presentation.sel_color.into(),
-                            )
+                            );
                         }
                         let mut gx = x;
                         for (i, mut d) in
@@ -538,7 +538,7 @@ impl View {
                                 f32::from(this.view.col_w),
                                 f32::from(this.view.row_h),
                                 this.view.presentation.sel_color.into(),
-                            )
+                            );
                         }
                         let raw_data = match text.text_kind {
                             crate::view::TextKind::Ascii => {

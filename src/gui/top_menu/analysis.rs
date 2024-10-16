@@ -63,7 +63,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
         .clicked()
     {
         gui.win.find_memory_pointers.open.toggle();
-        ui.close_menu()
+        ui.close_menu();
     }
     if ui
         .button("Zero partition...")

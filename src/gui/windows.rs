@@ -174,7 +174,7 @@ impl Windows {
                         lua,
                         font_size,
                         line_spacing,
-                    })
+                    });
                 });
             i += 1;
             retain
@@ -182,6 +182,6 @@ impl Windows {
         std::mem::swap(&mut gui.win.lua_watch, &mut watch_windows);
     }
     pub fn add_lua_watch_window(&mut self) {
-        self.lua_watch.push(LuaWatchWindow::default())
+        self.lua_watch.push(LuaWatchWindow::default());
     }
 }

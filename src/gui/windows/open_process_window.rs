@@ -166,7 +166,7 @@ impl super::Window for OpenProcessWindow {
                                             close_modal = true;
                                         }
                                         Err(e) => {
-                                            msg_fail(&e, "Run command error", &mut gui.msg_dialog)
+                                            msg_fail(&e, "Run command error", &mut gui.msg_dialog);
                                         }
                                     }
                                 }
@@ -320,7 +320,7 @@ impl super::Window for OpenProcessWindow {
                                                     app.search_focus(*offset);
                                                 }
                                                 Err(e) => {
-                                                    msg_fail(&e, "Error", &mut gui.msg_dialog)
+                                                    msg_fail(&e, "Error", &mut gui.msg_dialog);
                                                 }
                                             }
                                             if let Some(path) = &self.default_meta_path
@@ -592,7 +592,7 @@ impl super::Window for OpenProcessWindow {
                 .header(20.0, |mut row| {
                     row.col(|ui| {
                         if sort_button(ui, "pid", true, self.pid_sort).clicked() {
-                            self.pid_sort.flip()
+                            self.pid_sort.flip();
                         }
                     });
                     row.col(|ui| {

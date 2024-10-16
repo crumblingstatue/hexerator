@@ -133,7 +133,7 @@ impl super::Window for ViewsWindow {
                                 &app.meta_state.meta,
                                 &mut app.cmd,
                                 &mut gui.cmd,
-                            )
+                            );
                         };
                         let re = ui.link(&reg.name).on_hover_text(&reg.desc);
                         re.context_menu(ctx_menu);
@@ -244,7 +244,7 @@ impl super::Window for ViewsWindow {
                 if adjust_block_size {
                     view.view.adjust_block_size();
                     if let ViewKind::Text(data) = &mut view.view.kind {
-                        data.line_spacing = line_spacing
+                        data.line_spacing = line_spacing;
                     }
                 }
                 ui.horizontal(|ui| {

@@ -102,7 +102,7 @@ impl super::Window for ZeroPartition {
                             app.hex_ui.select_b = Some(reg.end);
                         }
                     });
-                })
+                });
             });
     }
 

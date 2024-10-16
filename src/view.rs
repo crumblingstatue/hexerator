@@ -86,7 +86,7 @@ impl View {
             &mut self.scroll_offset.pix_xoff,
             self.col_w as i16,
             amount,
-        )
+        );
     }
     pub fn scroll_y(&mut self, amount: i16) {
         #[expect(
@@ -98,7 +98,7 @@ impl View {
             &mut self.scroll_offset.pix_yoff,
             self.row_h as i16,
             amount,
-        )
+        );
     }
 
     pub(crate) fn sync_to(
@@ -448,7 +448,7 @@ impl View {
             ViewKind::Block => {}
         }
         if edit_state.cursor + 1 < data.len() && !preferences.sticky_edit {
-            edit_state.step_cursor_forward()
+            edit_state.step_cursor_forward();
         }
         self.reset_edit_buf();
     }
@@ -459,13 +459,13 @@ impl View {
 
     pub fn reset_edit_buf(&mut self) {
         if let Some(edit_buf) = self.edit_buffer_mut() {
-            edit_buf.reset()
+            edit_buf.reset();
         }
     }
 
     pub(crate) fn undirty_edit_buffer(&mut self) {
         if let Some(edit_buf) = self.edit_buffer_mut() {
-            edit_buf.dirty = false
+            edit_buf.dirty = false;
         }
     }
 

@@ -175,7 +175,7 @@ impl super::Window for RegionsWindow {
                                 &app.meta_state.meta,
                                 &mut app.cmd,
                                 &mut gui.cmd,
-                            )
+                            );
                         };
                         let re = ui
                             .selectable_label(self.selected_key == Some(k), &reg.name)
@@ -234,10 +234,10 @@ impl super::Window for RegionsWindow {
                         app.hex_ui.flash_cursor();
                     }
                     Action::SetRegionBegin { key, begin } => {
-                        app.meta_state.meta.low.regions[key].region.begin = begin
+                        app.meta_state.meta.low.regions[key].region.begin = begin;
                     }
                     Action::SetRegionEnd { key, end } => {
-                        app.meta_state.meta.low.regions[key].region.end = end
+                        app.meta_state.meta.low.regions[key].region.end = end;
                     }
                 }
             });

@@ -230,7 +230,7 @@ impl super::Window for FileDiffResultWindow {
                                         &app.meta_state.meta,
                                         &mut app.cmd,
                                         &mut gui.cmd,
-                                    )
+                                    );
                                 });
                             }
                             None => {

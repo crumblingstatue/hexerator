@@ -27,7 +27,7 @@ pub fn top_menu(
     ui.horizontal(|ui| {
         ui.menu_button("File", |ui| file::ui(ui, gui, app, font_size, line_spacing));
         ui.menu_button("Edit", |ui| {
-            edit::ui(ui, gui, app, lua, font_size, line_spacing)
+            edit::ui(ui, gui, app, lua, font_size, line_spacing);
         });
         ui.menu_button("Cursor", |ui| cursor::ui(ui, gui, app));
         ui.menu_button("View", |ui| view::ui(ui, gui, app));
@@ -35,7 +35,7 @@ pub fn top_menu(
         ui.menu_button("Meta", |ui| meta::ui(ui, gui, app, font_size, line_spacing));
         ui.menu_button("Analysis", |ui| analysis::ui(ui, gui, app));
         ui.menu_button("Lua scripting", |ui| {
-            scripting::ui(ui, gui, app, lua, font_size, line_spacing)
+            scripting::ui(ui, gui, app, lua, font_size, line_spacing);
         });
         ui.menu_button("Plugins", |ui| plugins::ui(ui, gui, app));
         ui.menu_button("Help", |ui| help::ui(ui, gui));

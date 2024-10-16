@@ -17,7 +17,8 @@
     clippy::cast_sign_loss,
     clippy::cast_possible_wrap,
     clippy::panic,
-    clippy::needless_pass_by_ref_mut
+    clippy::needless_pass_by_ref_mut,
+    clippy::semicolon_if_nothing_returned
 )]
 #![expect(
     incomplete_features,
@@ -311,7 +312,7 @@ fn do_fatal_error_report(title: &str, mut desc: &str, backtrace: &Backtrace) {
         while let Some(ev) = rw.poll_event() {
             sf_egui.add_event(&ev);
             if ev == Event::Closed {
-                rw.close()
+                rw.close();
             }
         }
         rw.clear(Color::BLACK);
@@ -558,7 +559,7 @@ fn handle_events(
                 line_spacing,
             ),
             Event::TextEntered { unicode } => {
-                handle_text_entered(app, unicode, &mut gui.msg_dialog)
+                handle_text_entered(app, unicode, &mut gui.msg_dialog);
             }
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
                 let mp = try_conv_mp_zero((x, y));
@@ -585,7 +586,7 @@ fn handle_events(
                                         view: Some(view_key),
                                         byte_off: Some(pos),
                                     },
-                                ))
+                                ));
                             }
                             None => {
                                 gui.context_menu = Some(ContextMenu::new(
@@ -595,7 +596,7 @@ fn handle_events(
                                         view: Some(view_key),
                                         byte_off: None,
                                     },
-                                ))
+                                ));
                             }
                         },
                         None => {
@@ -606,7 +607,7 @@ fn handle_events(
                                     view: None,
                                     byte_off: None,
                                 },
-                            ))
+                            ));
                         }
                     }
                 }

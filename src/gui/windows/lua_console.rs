@@ -105,13 +105,13 @@ impl super::Window for LuaConsoleWindow {
                     match msg {
                         ConMsg::Plain(s) => {
                             buf.push_str(s);
-                            buf.push('\n')
+                            buf.push('\n');
                         }
                         ConMsg::OffsetLink { text, offset } => {
-                            buf.push_str(&format!("{offset}: {text}\n"))
+                            buf.push_str(&format!("{offset}: {text}\n"));
                         }
                         ConMsg::RangeLink { text, start, end } => {
-                            buf.push_str(&format!("{start}..={end}: {text}\n"))
+                            buf.push_str(&format!("{start}..={end}: {text}\n"));
                         }
                     }
                 }

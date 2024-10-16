@@ -108,7 +108,7 @@ impl super::Window for LuaEditorWindow {
                             gui.fileops.save_lua_script();
                         }
                         if ui.button("？ Help").clicked() {
-                            gui.win.lua_help.open.toggle()
+                            gui.win.lua_help.open.toggle();
                         }
                     });
                     ui.horizontal(|ui| {
