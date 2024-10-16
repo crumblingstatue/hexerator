@@ -126,6 +126,7 @@ impl super::Window for ExternalCommandWindow {
             ui.horizontal(|ui| {
                 ui.label(format!("{} running", child.id()));
                 if ui.button("Kill").clicked() {
+                    self.auto_exec = false;
                     msg_if_fail(child.kill(), "Failed to kill child", &mut gui.msg_dialog);
                 }
             });
