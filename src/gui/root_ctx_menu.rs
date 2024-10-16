@@ -36,6 +36,7 @@ fn set_menu_style(style: &mut egui::Style) {
     style.visuals.widgets.hovered.bg_stroke = egui::Stroke::NONE;
     style.visuals.widgets.inactive.weak_bg_fill = egui::Color32::TRANSPARENT;
     style.visuals.widgets.inactive.bg_stroke = egui::Stroke::NONE;
+    style.wrap_mode = Some(egui::TextWrapMode::Extend);
 }
 
 /// Returns whether to keep root context menu open
@@ -94,6 +95,7 @@ fn menu_inner_ui(
             *close = true;
         }
         ui.menu_button("Change this view to 🖱⏵", |ui| {
+            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
             let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout)
             else {
                 return;
