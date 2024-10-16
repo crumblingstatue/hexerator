@@ -18,7 +18,8 @@
     clippy::cast_possible_wrap,
     clippy::panic,
     clippy::needless_pass_by_ref_mut,
-    clippy::semicolon_if_nothing_returned
+    clippy::semicolon_if_nothing_returned,
+    clippy::items_after_statements
 )]
 #![expect(
     incomplete_features,
@@ -620,13 +621,14 @@ fn handle_events(
                 mut width,
                 mut height,
             } => {
-                let mut needs_window_resize = false;
                 const MIN_WINDOW_W: u32 = 920;
+                const MIN_WINDOW_H: u32 = 620;
+
+                let mut needs_window_resize = false;
                 if width < MIN_WINDOW_W {
                     width = MIN_WINDOW_W;
                     needs_window_resize = true;
                 }
-                const MIN_WINDOW_H: u32 = 620;
                 if height < MIN_WINDOW_H {
                     height = MIN_WINDOW_H;
                     needs_window_resize = true;
