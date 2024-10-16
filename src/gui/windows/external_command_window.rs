@@ -1,6 +1,9 @@
 use {
     super::{WinCtx, WindowOpen},
-    crate::shell::{msg_fail, msg_if_fail},
+    crate::{
+        shell::{msg_fail, msg_if_fail},
+        str_ext::StrExt,
+    },
     anyhow::Context,
     core::f32,
     std::{
@@ -58,6 +61,10 @@ impl super::Window for ExternalCommandWindow {
             re.request_focus();
         }
         ui.horizontal(|ui| {
+            ui.label("Temp file name");
+            ui.text_edit_singleline(&mut self.temp_file_name);
+        });
+        ui.horizontal(|ui| {
             ui.add_enabled(
                 app.hex_ui.selection().is_some(),
                 egui::Checkbox::new(&mut self.selection_only, "Selection only"),
@@ -67,7 +74,7 @@ impl super::Window for ExternalCommandWindow {
                     "Use this for large amounts of data that could block child processes, like music players, etc."
                 );
         });
-        let exec_enabled = self.child.is_none();
+        let exec_enabled = self.child.is_none() && !self.temp_file_name.is_empty_or_ws_only();
         if ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
             self.open.set(false);
         }
