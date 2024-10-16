@@ -69,7 +69,7 @@ fn menu_inner_ui(
     if let Some(sel) = app.hex_ui.selection() {
         ui.separator();
         if crate::gui::selection_menu::selection_menu(
-            "Selection... ⏷",
+            "Selection 🖱⏵",
             ui,
             app,
             &mut gui.dialogs,
