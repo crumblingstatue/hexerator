@@ -1,5 +1,5 @@
 use {
-    super::{egui_ui_ext::EguiResponseExt as _, message_dialog::MessageDialog},
+    super::{dialogs::JumpDialog, egui_ui_ext::EguiResponseExt as _, Gui},
     crate::{
         app::{interact_mode::InteractMode, App},
         meta::find_most_specific_region_for_offset,
@@ -11,7 +11,7 @@ use {
     slotmap::Key,
 };
 
-pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageDialog) {
+pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
     ui.horizontal(|ui| {
         let job = key_label(ui, "F1", "View");
         if ui
@@ -83,17 +83,20 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
         re.context_menu(|ui| {
             if ui.button("Copy").clicked() {
                 let result = app.clipboard.set_text(app.edit_state.cursor.to_string());
-                msg_if_fail(result, "Failed to set clipboard text", msg);
+                msg_if_fail(result, "Failed to set clipboard text", &mut gui.msg_dialog);
                 ui.close_menu();
             }
             if ui.button("Copy absolute").on_hover_text("Hard seek + cursor").clicked() {
                 let result = app.clipboard.set_text(
                     (app.edit_state.cursor + app.src_args.hard_seek.unwrap_or(0)).to_string(),
                 );
-                msg_if_fail(result, "Failed to set clipboard text", msg);
+                msg_if_fail(result, "Failed to set clipboard text", &mut gui.msg_dialog);
                 ui.close_menu();
             }
         });
+        if re.clicked() {
+            Gui::add_dialog(&mut gui.dialogs, JumpDialog::default());
+        }
         if out_of_bounds {
             re.on_hover_text("Cursor is out of bounds");
         } else if cursor_end {
@@ -157,7 +160,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
             if label_re.clicked() {
                 crate::app::set_clipboard_string(
                     &mut app.clipboard,
-                    msg,
+                    &mut gui.msg_dialog,
                     &app.data.len().to_string(),
                 );
             }

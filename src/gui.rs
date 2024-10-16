@@ -117,9 +117,8 @@ pub fn do_egui(
         let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| {
             top_panel::ui(ui, gui, app, lua, font_size, line_spacing)
         });
-        let bot_re = TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
-            bottom_panel::ui(ui, app, mouse_pos, &mut gui.msg_dialog)
-        });
+        let bot_re = TopBottomPanel::bottom("bottom_panel")
+            .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos, gui));
         let right_re = egui::SidePanel::right("right_panel")
             .show(ctx, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
             .response;
