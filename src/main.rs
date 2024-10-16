@@ -305,7 +305,7 @@ fn do_fatal_error_report(title: &str, mut desc: &str) {
             }
         }
         rw.clear(Color::BLACK);
-        let _ = sf_egui.run(&mut rw, |_rw, ctx| {
+        let _ = sf_egui.run(&mut rw, |rw, ctx| {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.heading(title);
                 ui.separator();
@@ -313,7 +313,14 @@ fn do_fatal_error_report(title: &str, mut desc: &str) {
                     ui.add(egui::TextEdit::multiline(&mut desc).code_editor());
                 });
                 ui.separator();
-                ui.heading("Close this window to exit");
+                ui.horizontal(|ui| {
+                    if ui.button("Copy to clipboard").clicked() {
+                        ui.output_mut(|out| out.copied_text = desc.to_owned());
+                    }
+                    if ui.button("Close").clicked() {
+                        rw.close();
+                    }
+                });
             });
         });
         sf_egui.draw(&mut rw, None);
