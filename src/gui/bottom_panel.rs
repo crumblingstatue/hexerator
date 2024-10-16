@@ -1,9 +1,10 @@
 use {
-    super::message_dialog::MessageDialog,
+    super::{egui_ui_ext::EguiResponseExt as _, message_dialog::MessageDialog},
     crate::{
         app::{interact_mode::InteractMode, App},
         meta::find_most_specific_region_for_offset,
         shell::msg_if_fail,
+        util::human_size,
         view::ViewportVec,
     },
     egui::{text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui},
@@ -59,7 +60,8 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
                     offsets.col,
                     offsets.byte,
                     (offsets.byte as f64 / data_len as f64) * 100.0
-                ));
+                ))
+                .on_hover_text_deferred(|| human_size(offsets.byte));
             }
         }
         ui.separator();
@@ -98,6 +100,8 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
             re.on_hover_text("Cursor is at end of document");
         } else if cursor_begin {
             re.on_hover_text("Cursor is at beginning");
+        } else {
+            re.on_hover_text_deferred(|| human_size(app.edit_state.cursor));
         }
         if let Some(label) = app
             .meta_state

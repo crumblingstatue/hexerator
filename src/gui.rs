@@ -29,6 +29,7 @@ use {
 mod bottom_panel;
 pub mod command;
 pub mod dialogs;
+mod egui_ui_ext;
 pub mod file_ops;
 pub mod inspect_panel;
 pub mod message_dialog;
