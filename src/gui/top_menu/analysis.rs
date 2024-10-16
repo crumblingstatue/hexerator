@@ -13,6 +13,16 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
         );
         ui.close_menu();
     }
+    if let Some(region) = app.hex_ui.selection() {
+        if ui.button("Determine data mime type of selection").clicked() {
+            gui.msg_dialog.open(
+                Icon::Info,
+                "Data mime type under cursor",
+                tree_magic_mini::from_u8(&app.data[region.begin..=region.end]).to_string(),
+            );
+            ui.close_menu();
+        }
+    }
     ui.separator();
     if ui.button("Diff with file...").clicked() {
         gui.fileops.diff_with_file(app.source_file());
