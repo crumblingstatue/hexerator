@@ -150,8 +150,9 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, msg: &mut MessageD
                 ));
             });
             if truncated {
-                label_re =
-                    label_re.on_hover_text(format!("Length changed, orig.: {}", app.orig_data_len));
+                label_re = label_re.on_hover_text_deferred(|| {
+                    format!("Length changed, orig.: {}", app.orig_data_len)
+                });
             }
             if label_re.clicked() {
                 crate::app::set_clipboard_string(

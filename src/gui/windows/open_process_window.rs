@@ -1,7 +1,7 @@
 use {
     super::{WinCtx, WindowOpen},
     crate::{
-        gui::message_dialog::MessageDialog,
+        gui::{egui_ui_ext::EguiResponseExt, message_dialog::MessageDialog},
         shell::{msg_fail, msg_if_fail},
         util::human_size,
     },
@@ -537,7 +537,7 @@ impl super::Window for OpenProcessWindow {
                             let size = map_range.size();
                             let txt = size.to_string();
                             ui.add(egui::Label::new(&txt).sense(egui::Sense::click()))
-                                .on_hover_text(human_size(size))
+                                .on_hover_text_deferred(|| human_size(size))
                                 .context_menu(|ui| {
                                     if ui.button("📋 Copy to clipboard").clicked() {
                                         crate::app::set_clipboard_string(
