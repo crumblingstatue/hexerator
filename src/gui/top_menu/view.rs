@@ -1,5 +1,5 @@
 use {
-    crate::{app::App, gui::Gui},
+    crate::{app::App, gui::Gui, meta::LayoutMapExt},
     egui::Button,
 };
 
@@ -10,6 +10,12 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                 App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, k);
                 ui.close_menu();
             }
+        }
+        ui.separator();
+        if ui.button("➕ Add new layout").clicked() {
+            app.hex_ui.current_layout = app.meta_state.meta.layouts.add_new_default();
+            gui.win.layouts.open.set(true);
+            ui.close_menu();
         }
     });
     ui.menu_button("Ruler", |ui| {

@@ -28,6 +28,20 @@ pub type LayoutMap = SlotMap<LayoutKey, Layout>;
 pub type ScriptMap = SlotMap<ScriptKey, Script>;
 pub type Bookmarks = Vec<Bookmark>;
 
+pub trait LayoutMapExt {
+    fn add_new_default(&mut self) -> LayoutKey;
+}
+
+impl LayoutMapExt for LayoutMap {
+    fn add_new_default(&mut self) -> LayoutKey {
+        self.insert(Layout {
+            name: "New layout".into(),
+            view_grid: Vec::new(),
+            margin: crate::layout::default_margin(),
+        })
+    }
+}
+
 /// A bookmark for an offset in a file
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Bookmark {

@@ -2,8 +2,7 @@ use {
     super::{WinCtx, WindowOpen},
     crate::{
         app::App,
-        layout::{default_margin, Layout},
-        meta::{LayoutKey, MetaLow, NamedView, ViewKey, ViewMap},
+        meta::{LayoutKey, LayoutMapExt as _, MetaLow, NamedView, ViewKey, ViewMap},
         view::{HexData, View, ViewKind},
     },
     slotmap::Key,
@@ -16,6 +15,7 @@ pub struct LayoutsWindow {
     swap_a: ViewKey,
     edit_name: bool,
 }
+
 impl super::Window for LayoutsWindow {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         if self.open.just_now() {
@@ -173,11 +173,7 @@ impl super::Window for LayoutsWindow {
         }
         ui.separator();
         if ui.button("New layout").clicked() {
-            let key = app.meta_state.meta.layouts.insert(Layout {
-                name: "New layout".into(),
-                view_grid: Vec::new(),
-                margin: default_margin(),
-            });
+            let key = app.meta_state.meta.layouts.add_new_default();
             self.selected = key;
             App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, key);
         }
