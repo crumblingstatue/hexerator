@@ -28,12 +28,16 @@
 
 use {
     config::{LoadedConfig, ProjectDirsExt as _},
+    core::f32,
     egui_colors::{tokens::ThemeColor, Colorix},
     egui_file_dialog::{DialogState, DirectoryEntry},
     egui_sfml::sfml::graphics::RenderStates,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     gui::command::GCmd,
-    std::{backtrace::Backtrace, io::IsTerminal},
+    std::{
+        backtrace::{Backtrace, BacktraceStatus},
+        io::IsTerminal,
+    },
 };
 
 mod app;
@@ -261,7 +265,6 @@ fn main() {
         let bkpath = app::temp_metafile_backup_path();
         let bkpath = bkpath.display();
         let btrace = Backtrace::force_capture();
-        eprintln!("{btrace}");
         do_fatal_error_report(
             "Hexerator panic",
             &format!(
@@ -270,25 +273,32 @@ fn main() {
             Location:\n\
             {file}:{line}:{column}\n\n\
             Meta Backup path:\n\
-            {bkpath}\n\n\
-            Backtrace:\n\
-            {btrace}"
+            {bkpath}",
             ),
+            &btrace,
         );
     }));
     if let Err(e) = try_main() {
-        do_fatal_error_report("Fatal error", &e.to_string());
+        do_fatal_error_report("Fatal error", &e.to_string(), e.backtrace());
     }
 }
 
-fn do_fatal_error_report(title: &str, mut desc: &str) {
+fn do_fatal_error_report(title: &str, mut desc: &str, backtrace: &Backtrace) {
     if std::io::stderr().is_terminal() {
         eprintln!("== {title} ==");
         eprintln!("{desc}");
+        if backtrace.status() == BacktraceStatus::Captured {
+            eprintln!("Backtrace:\n{backtrace}");
+        }
         return;
     }
+    let bt_string = if backtrace.status() == BacktraceStatus::Captured {
+        backtrace.to_string()
+    } else {
+        String::new()
+    };
     let mut rw =
-        match RenderWindow::new((640, 480), title, Style::CLOSE, &ContextSettings::default()) {
+        match RenderWindow::new((800, 600), title, Style::CLOSE, &ContextSettings::default()) {
             Ok(rw) => rw,
             Err(e) => {
                 eprintln!("Failed to create RenderWindow: {e}");
@@ -309,8 +319,20 @@ fn do_fatal_error_report(title: &str, mut desc: &str) {
             egui::CentralPanel::default().show(ctx, |ui| {
                 ui.heading(title);
                 ui.separator();
-                egui::ScrollArea::vertical().auto_shrink(false).max_height(400.).show(ui, |ui| {
-                    ui.add(egui::TextEdit::multiline(&mut desc).code_editor());
+                egui::ScrollArea::vertical().auto_shrink(false).max_height(500.).show(ui, |ui| {
+                    ui.add(
+                        egui::TextEdit::multiline(&mut desc)
+                            .code_editor()
+                            .desired_width(f32::INFINITY),
+                    );
+                    if !bt_string.is_empty() {
+                        ui.heading("Backtrace");
+                        ui.add(
+                            egui::TextEdit::multiline(&mut bt_string.as_str())
+                                .code_editor()
+                                .desired_width(f32::INFINITY),
+                        );
+                    }
                 });
                 ui.separator();
                 ui.horizontal(|ui| {
