@@ -1,7 +1,8 @@
 use {
     super::{WinCtx, WindowOpen},
-    crate::shell::msg_if_fail,
+    crate::shell::{msg_fail, msg_if_fail},
     anyhow::Context,
+    core::f32,
     std::{
         ffi::OsString,
         io::Read,
@@ -20,6 +21,7 @@ pub struct ExternalCommandWindow {
     auto_exec: bool,
     inherited_streams: bool,
     selection_only: bool,
+    temp_file_name: String,
 }
 
 impl Default for ExternalCommandWindow {
@@ -35,6 +37,7 @@ impl Default for ExternalCommandWindow {
             auto_exec: Default::default(),
             inherited_streams: Default::default(),
             selection_only: true,
+            temp_file_name: String::from("hexerator_data_tmp.bin"),
         }
     }
 }
@@ -48,60 +51,69 @@ impl super::Window for ExternalCommandWindow {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         let re = ui.add(
             egui::TextEdit::multiline(&mut self.cmd_str)
-                .hint_text("Use {} to substitute filename.\nExample: aplay {} -f s16_le"),
+                .hint_text("Use {} to substitute filename.\nExample: aplay {} -f s16_le")
+                .desired_width(f32::INFINITY),
         );
         if self.open.just_now() {
             re.request_focus();
         }
-        ui.add_enabled(
-            app.hex_ui.selection().is_some(),
-            egui::Checkbox::new(&mut self.selection_only, "Selection only"),
-        );
-        ui.checkbox(&mut self.inherited_streams, "Inherited stdout/stderr")
-            .on_hover_text(
-                "Use this for large amounts of data that could block child processes, like music players, etc."
+        ui.horizontal(|ui| {
+            ui.add_enabled(
+                app.hex_ui.selection().is_some(),
+                egui::Checkbox::new(&mut self.selection_only, "Selection only"),
             );
+            ui.checkbox(&mut self.inherited_streams, "Inherited stdout/stderr")
+                .on_hover_text(
+                    "Use this for large amounts of data that could block child processes, like music players, etc."
+                );
+        });
         let exec_enabled = self.child.is_none();
         if ui.input(|inp| inp.key_pressed(egui::Key::Escape)) {
             self.open.set(false);
         }
-        if ui.add_enabled(exec_enabled, egui::Button::new("Execute (ctrl+E)")).clicked()
-            || (exec_enabled
-                && ((ui.input(|inp| {
-                    inp.key_pressed(egui::Key::E) && inp.modifiers.ctrl && !self.open.just_now()
-                })) || self.auto_exec))
-        {
-            let res: anyhow::Result<()> = try {
-                // Parse args
-                let (cmd, args) = parse(&self.cmd_str)?;
-                // Generate temp file
-                let range = if self.selection_only
-                    && let Some(sel) = app.hex_ui.selection()
-                {
-                    sel.begin..=sel.end
-                } else {
-                    0..=app.data.len() - 1
+        ui.horizontal(|ui| {
+            if ui.add_enabled(exec_enabled, egui::Button::new("Execute (ctrl+E)")).clicked()
+                || (exec_enabled
+                    && ((ui.input(|inp| {
+                        inp.key_pressed(egui::Key::E) && inp.modifiers.ctrl && !self.open.just_now()
+                    })) || self.auto_exec))
+            {
+                let res: anyhow::Result<()> = try {
+                    // Parse args
+                    let (cmd, args) = parse(&self.cmd_str)?;
+                    // Generate temp file
+                    let range = if self.selection_only
+                        && let Some(sel) = app.hex_ui.selection()
+                    {
+                        sel.begin..=sel.end
+                    } else {
+                        0..=app.data.len() - 1
+                    };
+                    let path = std::env::temp_dir().join(&self.temp_file_name);
+                    let data = app.data.get(range).context("Range out of bounds")?;
+                    std::fs::write(&path, data)?;
+                    // Spawn process
+                    let mut cmd = Command::new(cmd);
+                    cmd.args(resolve_args(args, &path));
+                    if self.inherited_streams {
+                        cmd.stdout(Stdio::inherit());
+                        cmd.stderr(Stdio::inherit());
+                    } else {
+                        cmd.stdout(Stdio::piped());
+                        cmd.stderr(Stdio::piped());
+                    }
+                    let handle = cmd.spawn()?;
+                    self.child = Some(handle);
                 };
-                let path = std::env::temp_dir().join("hexerator_data_tmp.bin");
-                let data = app.data.get(range).context("Range out of bounds")?;
-                std::fs::write(&path, data)?;
-                // Spawn process
-                let mut cmd = Command::new(cmd);
-                cmd.args(resolve_args(args, &path));
-                if self.inherited_streams {
-                    cmd.stdout(Stdio::inherit());
-                    cmd.stderr(Stdio::inherit());
-                } else {
-                    cmd.stdout(Stdio::piped());
-                    cmd.stderr(Stdio::piped());
+                if let Err(e) = res {
+                    msg_fail(&e, "Failed to spawn command", &mut gui.msg_dialog);
+                    self.auto_exec = false;
                 }
-                let handle = cmd.spawn()?;
-                self.child = Some(handle);
-            };
-            msg_if_fail(res, "Failed to spawn command", &mut gui.msg_dialog);
-        }
-        ui.checkbox(&mut self.auto_exec, "Auto execute")
-            .on_hover_text("Execute again after process finishes");
+            }
+            ui.checkbox(&mut self.auto_exec, "Auto execute")
+                .on_hover_text("Execute again after process finishes");
+        });
+
         if let Some(child) = &mut self.child {
             ui.horizontal(|ui| {
                 ui.label(format!("{} running", child.id()));
