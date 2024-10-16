@@ -165,7 +165,10 @@ impl super::Window for LayoutsWindow {
             });
             ui.horizontal(|ui| {
                 ui.label("Margin");
-                ui.add(egui::DragValue::new(&mut layout.margin).range(3..=64));
+                ui.label("x");
+                ui.add(egui::DragValue::new(&mut layout.margin.x).range(3..=64));
+                ui.label("y");
+                ui.add(egui::DragValue::new(&mut layout.margin.y).range(3..=64));
             });
         }
         ui.separator();

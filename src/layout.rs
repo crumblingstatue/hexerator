@@ -1,7 +1,7 @@
 use {
     crate::{
         meta::{region::Region, PerspectiveMap, RegionMap, ViewKey, ViewMap},
-        view::{ViewportRect, ViewportScalar},
+        view::{ViewportRect, ViewportVec},
     },
     serde::{Deserialize, Serialize},
     std::cmp::{max, min},
@@ -14,11 +14,11 @@ pub struct Layout {
     pub view_grid: Vec<Vec<ViewKey>>,
     /// Margin around views
     #[serde(default = "default_margin")]
-    pub margin: ViewportScalar,
+    pub margin: ViewportVec,
 }
 
-pub const fn default_margin() -> ViewportScalar {
-    6
+pub const fn default_margin() -> ViewportVec {
+    ViewportVec { x: 6, y: 6 }
 }
 
 impl Layout {
@@ -90,13 +90,13 @@ pub fn do_auto_layout(
     // Determine sizes
     for row in &layout.view_grid {
         let max_allowed_h =
-            (hex_iface_rect.h - (layout.margin * (layout_n_rows + 1))) / layout_n_rows;
+            (hex_iface_rect.h - (layout.margin.y * (layout_n_rows + 1))) / layout_n_rows;
         let row_n_cols = i16::try_from(row.len()).expect("Too many columns in layout");
         let mut total_row_w = 0;
         let mut max_h = 0;
         for &view_key in row {
             let max_allowed_w =
-                (hex_iface_rect.w - (layout.margin * (row_n_cols + 1))) / row_n_cols;
+                (hex_iface_rect.w - (layout.margin.x * (row_n_cols + 1))) / row_n_cols;
             let view = &mut view_map[view_key].view;
             let max_needed_size = view.max_needed_size(perspectives, regions);
             let w = min(max_needed_size.x, max_allowed_w);
@@ -108,7 +108,7 @@ pub fn do_auto_layout(
         }
         total_h += max_h;
         // Distribute remaining width to views in order
-        let w_to_fill_viewport = hex_iface_rect.w - (layout.margin * (row_n_cols + 1));
+        let w_to_fill_viewport = hex_iface_rect.w - (layout.margin.x * (row_n_cols + 1));
         let mut w_remaining = w_to_fill_viewport - total_row_w;
         for &view_key in row {
             if w_remaining <= 0 {
@@ -123,7 +123,7 @@ pub fn do_auto_layout(
         }
     }
     // Distribute remaining height to rows in order
-    let h_to_fill_viewport = hex_iface_rect.h - (layout.margin * (layout_n_rows + 1));
+    let h_to_fill_viewport = hex_iface_rect.h - (layout.margin.y * (layout_n_rows + 1));
     let mut h_remaining = h_to_fill_viewport - total_h;
     for row in &layout.view_grid {
         if h_remaining <= 0 {
@@ -141,18 +141,18 @@ pub fn do_auto_layout(
         h_remaining -= max_can_add;
     }
     // Lay out
-    let mut x_cursor = hex_iface_rect.x + layout.margin;
-    let mut y_cursor = hex_iface_rect.y + layout.margin;
+    let mut x_cursor = hex_iface_rect.x + layout.margin.x;
+    let mut y_cursor = hex_iface_rect.y + layout.margin.y;
     for row in &layout.view_grid {
         let mut max_h = 0;
         for &view_key in row {
             let view = &mut view_map[view_key].view;
             view.viewport_rect.x = x_cursor;
             view.viewport_rect.y = y_cursor;
-            x_cursor += view.viewport_rect.w + layout.margin;
+            x_cursor += view.viewport_rect.w + layout.margin.x;
             max_h = max(max_h, view.viewport_rect.h);
         }
-        x_cursor = hex_iface_rect.x + layout.margin;
-        y_cursor += max_h + layout.margin;
+        x_cursor = hex_iface_rect.x + layout.margin.x;
+        y_cursor += max_h + layout.margin.y;
     }
 }

@@ -617,7 +617,7 @@ pub struct ViewportRect {
     pub h: ViewportScalar,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ViewportVec {
     pub x: ViewportScalar,
     pub y: ViewportScalar,
