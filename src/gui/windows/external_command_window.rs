@@ -96,12 +96,13 @@ impl super::Window for ExternalCommandWindow {
                     } else {
                         0..=app.data.len() - 1
                     };
-                    let path = std::env::temp_dir().join(&self.temp_file_name);
+                    let temp_dir = std::env::temp_dir();
+                    let path = temp_dir.join(&self.temp_file_name);
                     let data = app.data.get(range).context("Range out of bounds")?;
                     std::fs::write(&path, data)?;
                     // Spawn process
                     let mut cmd = Command::new(cmd);
-                    cmd.args(resolve_args(args, &path));
+                    cmd.current_dir(temp_dir).args(resolve_args(args, &path));
                     if self.inherited_streams {
                         cmd.stdout(Stdio::inherit());
                         cmd.stderr(Stdio::inherit());
