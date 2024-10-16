@@ -1,3 +1,5 @@
+cargo-features = ["trim-paths"]
+
 [package]
 name = "hexerator"
 version = "0.3.0"
@@ -68,10 +70,12 @@ opt-level = 2
 
 [profile.dev]
 panic = "abort"
+trim-paths = "all"
 
 [profile.release]
 panic = "abort"
 lto = "thin"
+trim-paths = "all"
 codegen-units = 1
 
 [build-dependencies]

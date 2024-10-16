@@ -23,4 +23,11 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui) {
         gui.win.about.open.toggle();
         ui.close_menu();
     }
+    ui.separator();
+    ui.menu_button("Debug", |ui| {
+        #[expect(clippy::panic)]
+        if ui.button("Simulate panic (crash hexerator)").clicked() {
+            panic!("User induced panic!");
+        }
+    });
 }

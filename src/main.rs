@@ -260,7 +260,7 @@ fn main() {
         };
         let bkpath = app::temp_metafile_backup_path();
         let bkpath = bkpath.display();
-        let btrace = Backtrace::capture();
+        let btrace = Backtrace::force_capture();
         eprintln!("{btrace}");
         do_fatal_error_report(
             "Hexerator panic",
