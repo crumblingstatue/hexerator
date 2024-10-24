@@ -84,7 +84,7 @@ impl Gui {
     }
 }
 
-#[must_use = "Returns false if application should quit"]
+/// The bool indicates whether the application should continue running
 pub fn do_egui(
     sf_egui: &mut SfEgui,
     gui: &mut crate::gui::Gui,
@@ -94,8 +94,8 @@ pub fn do_egui(
     rwin: &mut RenderWindow,
     font_size: u16,
     line_spacing: u16,
-) -> anyhow::Result<bool> {
-    sf_egui.run(rwin, |_rwin, ctx| {
+) -> anyhow::Result<(egui_sfml::DrawInput, bool)> {
+    let di = sf_egui.run(rwin, |_rwin, ctx| {
         let mut open = IMMEDIATE.enabled() || PERSISTENT.enabled();
         let was_open = open;
         Window::new("Debug").open(&mut open).show(ctx, windows::debug_window::ui);
@@ -178,7 +178,7 @@ pub fn do_egui(
             line_spacing,
         );
     })?;
-    Ok(true)
+    Ok((di, true))
 }
 
 pub fn set_font_sizes_ctx(ctx: &egui::Context, style: &Style) {

@@ -644,8 +644,7 @@ dependencies = [
 [[package]]
 name = "egui-sfml"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f56d752addd1955819d547ae5d60c6520039e014f28fd72115c93e2602142c21"
+source = "git+https://github.com/crumblingstatue/egui-sfml.git#80c8100a7bab657d27cf5ed80f4cfc8555ed4b80"
 dependencies = [
  "egui",
  "glu-sys",
@@ -2067,15 +2066,15 @@ dependencies = [
 
 [[package]]
 name = "sfml"
-version = "0.23.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12aaf39186c88af472facf8c5ac113cf19cbe2587f1295aff9ac469cf95a89b9"
+version = "0.24.0-alpha.1"
+source = "git+https://github.com/jeremyletang/rust-sfml.git#8380032676dfdb18538c26ca365f905507792c08"
 dependencies = [
  "bitflags 2.6.0",
  "cc",
  "cmake",
  "link-cplusplus",
  "num-traits",
+ "pkg-config",
  "widestring",
 ]
 

@@ -319,37 +319,43 @@ fn do_fatal_error_report(title: &str, mut desc: &str, backtrace: &Backtrace) {
             }
         }
         rw.clear(Color::BLACK);
-        let _ = sf_egui.run(&mut rw, |rw, ctx| {
-            egui::CentralPanel::default().show(ctx, |ui| {
-                ui.heading(title);
-                ui.separator();
-                egui::ScrollArea::vertical().auto_shrink(false).max_height(500.).show(ui, |ui| {
-                    ui.add(
-                        egui::TextEdit::multiline(&mut desc)
-                            .code_editor()
-                            .desired_width(f32::INFINITY),
+        #[expect(clippy::unwrap_used)]
+        let di = sf_egui
+            .run(&mut rw, |rw, ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    ui.heading(title);
+                    ui.separator();
+                    egui::ScrollArea::vertical().auto_shrink(false).max_height(500.).show(
+                        ui,
+                        |ui| {
+                            ui.add(
+                                egui::TextEdit::multiline(&mut desc)
+                                    .code_editor()
+                                    .desired_width(f32::INFINITY),
+                            );
+                            if !bt_string.is_empty() {
+                                ui.heading("Backtrace");
+                                ui.add(
+                                    egui::TextEdit::multiline(&mut bt_string.as_str())
+                                        .code_editor()
+                                        .desired_width(f32::INFINITY),
+                                );
+                            }
+                        },
                     );
-                    if !bt_string.is_empty() {
-                        ui.heading("Backtrace");
-                        ui.add(
-                            egui::TextEdit::multiline(&mut bt_string.as_str())
-                                .code_editor()
-                                .desired_width(f32::INFINITY),
-                        );
-                    }
+                    ui.separator();
+                    ui.horizontal(|ui| {
+                        if ui.button("Copy to clipboard").clicked() {
+                            ui.output_mut(|out| out.copied_text = desc.to_owned());
+                        }
+                        if ui.button("Close").clicked() {
+                            rw.close();
+                        }
+                    });
                 });
-                ui.separator();
-                ui.horizontal(|ui| {
-                    if ui.button("Copy to clipboard").clicked() {
-                        ui.output_mut(|out| out.copied_text = desc.to_owned());
-                    }
-                    if ui.button("Close").clicked() {
-                        rw.close();
-                    }
-                });
-            });
-        });
-        sf_egui.draw(&mut rw, None);
+            })
+            .unwrap();
+        sf_egui.draw(di, &mut rw, None);
         rw.display();
     }
 }
@@ -376,7 +382,8 @@ fn do_frame(
     update(app, sf_egui.context().wants_keyboard_input());
     app.update(gui, window, lua, font_size, line_spacing);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
-    if !gui::do_egui(sf_egui, gui, app, mp, lua, window, font_size, line_spacing)? {
+    let (di, cont) = gui::do_egui(sf_egui, gui, app, mp, lua, window, font_size, line_spacing)?;
+    if !cont {
         return Ok(false);
     }
     // Here we flush GUI command queue every frame
@@ -400,7 +407,7 @@ fn do_frame(
             window.draw_text(&txt, &RenderStates::DEFAULT);
         }
     }
-    sf_egui.draw(window, None);
+    sf_egui.draw(di, window, None);
     window.display();
     // Should only be true on the frame right after reloading
     app.just_reloaded = false;
@@ -642,12 +649,12 @@ fn handle_events(
                     clippy::cast_precision_loss,
                     reason = "Window sizes larger than i16::MAX aren't supported."
                 )]
-                window.set_view(&View::from_rect(Rect::new(
-                    0.,
-                    0.,
-                    width as f32,
-                    height as f32,
-                )));
+                match View::from_rect(Rect::new(0., 0., width as f32, height as f32)) {
+                    Ok(view) => window.set_view(&view),
+                    Err(e) => {
+                        gamedebug_core::per!("Failed to create view: {e}");
+                    }
+                }
             }
             _ => {}
         }

@@ -448,7 +448,7 @@ impl View {
                         }
                     },
                 );
-                rs.set_texture(Some(font.texture(hex.font_size.into())));
+                rs.texture = Some(font.texture(hex.font_size.into()));
             }
             ViewKind::Dec(dec) => {
                 draw_view(
@@ -510,7 +510,7 @@ impl View {
                         }
                     },
                 );
-                rs.set_texture(Some(font.texture(dec.font_size.into())));
+                rs.texture = Some(font.texture(dec.font_size.into()));
             }
             ViewKind::Text(text) => {
                 draw_view(
@@ -574,7 +574,7 @@ impl View {
                         }
                     },
                 );
-                rs.set_texture(Some(font.texture(text.font_size.into())));
+                rs.texture = Some(font.texture(text.font_size.into()));
             }
             ViewKind::Block => {
                 draw_view(
