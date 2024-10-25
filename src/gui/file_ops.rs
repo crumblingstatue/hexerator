@@ -9,16 +9,27 @@ use {
         meta::{region::Region, ViewKey},
         shell::{msg_fail, msg_if_fail},
         source::Source,
+        util::human_size_u64,
         value_color::{self, ColorMethod},
     },
     anyhow::Context as _,
     egui_file_dialog::FileDialog,
-    std::{fs::OpenOptions, io::Write as _, path::Path},
+    std::{
+        fs::OpenOptions,
+        io::Write as _,
+        path::{Path, PathBuf},
+    },
 };
+
+struct EntInfo {
+    meta: std::io::Result<std::fs::Metadata>,
+    mime: Option<&'static str>,
+}
 
 pub struct FileOps {
     pub dialog: FileDialog,
     pub op: Option<FileOp>,
+    preview_cache: PathCache<EntInfo>,
 }
 
 impl Default for FileOps {
@@ -28,6 +39,35 @@ impl Default for FileOps {
                 .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0., 0.))
                 .allow_path_edit_to_save_file_without_extension(true),
             op: Default::default(),
+            preview_cache: PathCache::default(),
+        }
+    }
+}
+
+pub struct PathCache<V> {
+    key: PathBuf,
+    value: Option<V>,
+}
+
+impl<V> Default for PathCache<V> {
+    fn default() -> Self {
+        Self {
+            key: PathBuf::default(),
+            value: None,
+        }
+    }
+}
+
+impl<V> PathCache<V> {
+    fn get_or_compute<F: FnOnce(&Path) -> V>(&mut self, k: &Path, f: F) -> &V {
+        if self.key != k {
+            self.key = k.to_path_buf();
+            self.value.insert(f(k))
+        } else {
+            self.value.get_or_insert_with(|| {
+                self.key = k.to_path_buf();
+                f(k)
+            })
         }
     }
 }
@@ -60,7 +100,47 @@ impl FileOps {
         font_size: u16,
         line_spacing: u16,
     ) {
-        self.dialog.update(ctx);
+        self.dialog.update_with_custom_right_panel(ctx, &mut |ui, dia| {
+            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
+            if let Some(highlight) = dia.active_entry() {
+                if let Some(parent) = highlight.as_path().parent() {
+                    ui.label(egui::RichText::new(parent.display().to_string()).small());
+                }
+                if let Some(filename) = highlight.as_path().file_name() {
+                    ui.label(filename.to_string_lossy());
+                }
+                ui.separator();
+                let ent_info =
+                    self.preview_cache.get_or_compute(highlight.as_path(), |path| EntInfo {
+                        meta: std::fs::metadata(path),
+                        mime: tree_magic_mini::from_filepath(path),
+                    });
+                if let Some(mime) = ent_info.mime {
+                    ui.label(mime);
+                }
+                match &ent_info.meta {
+                    Ok(meta) => {
+                        let ft = meta.file_type();
+                        if ft.is_file() {
+                            ui.label(format!("Size: {}", human_size_u64(meta.len())));
+                        }
+                        if ft.is_symlink() {
+                            ui.label("Symbolic link");
+                        }
+                    }
+                    Err(e) => {
+                        ui.label(e.to_string());
+                    }
+                }
+                if ui.button("📋 Copy path to clipboard").clicked() {
+                    ui.output_mut(|out| {
+                        out.copied_text = highlight.as_path().display().to_string();
+                    });
+                }
+            } else {
+                ui.heading("Hexerator");
+            }
+        });
         if let Some(path) = self.dialog.take_selected()
             && let Some(op) = self.op.take()
         {
