@@ -15,7 +15,6 @@ use {
     anyhow::Context as _,
     egui_file_dialog::FileDialog,
     std::{
-        fs::OpenOptions,
         io::Write as _,
         path::{Path, PathBuf},
     },
@@ -30,6 +29,7 @@ pub struct FileOps {
     pub dialog: FileDialog,
     pub op: Option<FileOp>,
     preview_cache: PathCache<EntInfo>,
+    file_dialog_source_args: SourceArgs,
 }
 
 impl Default for FileOps {
@@ -40,6 +40,7 @@ impl Default for FileOps {
                 .allow_path_edit_to_save_file_without_extension(true),
             op: Default::default(),
             preview_cache: PathCache::default(),
+            file_dialog_source_args: SourceArgs::default(),
         }
     }
 }
@@ -127,6 +128,9 @@ impl FileOps {
                         if ft.is_symlink() {
                             ui.label("Symbolic link");
                         }
+                        if !(ft.is_file() || ft.is_dir()) {
+                            ui.label(format!("Special (size: {})", meta.len()));
+                        }
                     }
                     Err(e) => {
                         ui.label(e.to_string());
@@ -140,6 +144,9 @@ impl FileOps {
             } else {
                 ui.heading("Hexerator");
             }
+            ui.separator();
+            ui.checkbox(&mut self.file_dialog_source_args.stream, "stream");
+            ui.checkbox(&mut self.file_dialog_source_args.read_only, "read-only");
         });
         if let Some(path) = self.dialog.take_selected()
             && let Some(op) = self.op.take()
@@ -159,9 +166,15 @@ impl FileOps {
                     advanced_open_window.path_to_meta = Some(path);
                 }
                 FileOp::LoadFile => {
-                    let write = OpenOptions::new().write(true).open(&path).is_ok();
+                    self.file_dialog_source_args.file = Some(path);
                     msg_if_fail(
-                        app.load_file(path, !write, msg, font_size, line_spacing),
+                        app.load_file_args(
+                            self.file_dialog_source_args.clone(),
+                            None,
+                            msg,
+                            font_size,
+                            line_spacing,
+                        ),
                         "Failed to load file (read-write)",
                         msg,
                     );

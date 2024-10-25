@@ -616,7 +616,7 @@ dependencies = [
 [[package]]
 name = "egui-file-dialog"
 version = "0.7.0"
-source = "git+https://github.com/crumblingstatue/egui-file-dialog.git?branch=active-entry#5f313b386b423b3ba4350b0ced44566a36e6fc16"
+source = "git+https://github.com/crumblingstatue/egui-file-dialog.git?branch=hexerator#25299058a9b827579848eb24278d8b9cc7d2493d"
 dependencies = [
  "directories",
  "egui",
