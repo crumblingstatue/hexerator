@@ -100,7 +100,7 @@ impl FileOps {
         font_size: u16,
         line_spacing: u16,
     ) {
-        self.dialog.update_with_custom_right_panel(ctx, &mut |ui, dia| {
+        self.dialog.update_with_right_panel_ui(ctx, &mut |ui, dia| {
             ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
             if let Some(highlight) = dia.active_entry() {
                 if let Some(parent) = highlight.as_path().parent() {
