@@ -11,24 +11,6 @@ pub struct AdvancedOpenWindow {
     pub path_to_meta: Option<PathBuf>,
 }
 
-fn opt<V: Default>(
-    ui: &mut egui::Ui,
-    val: &mut Option<V>,
-    label: &str,
-    desc: &str,
-    f: impl FnOnce(&mut egui::Ui, &mut V),
-) {
-    ui.horizontal(|ui| {
-        let mut checked = val.is_some();
-        ui.checkbox(&mut checked, label).on_hover_text(desc);
-        if checked {
-            f(ui, val.get_or_insert_with(Default::default));
-        } else {
-            *val = None;
-        }
-    });
-}
-
 impl super::Window for AdvancedOpenWindow {
     fn ui(
         &mut self,
@@ -54,45 +36,7 @@ impl super::Window for AdvancedOpenWindow {
         if ui.button("Select file...").clicked() {
             gui.fileops.advanced_open_pick_file();
         }
-        opt(
-            ui,
-            &mut src_args.jump,
-            "jump",
-            "Jump to offset on startup",
-            |ui, jump| {
-                ui.add(egui::DragValue::new(jump));
-            },
-        );
-        opt(
-            ui,
-            &mut src_args.hard_seek,
-            "hard seek",
-            "Seek to offset, consider it beginning of the file in the editor",
-            |ui, hard_seek| {
-                ui.add(egui::DragValue::new(hard_seek));
-            },
-        );
-        opt(
-            ui,
-            &mut src_args.take,
-            "take",
-            "Read only this many bytes",
-            |ui, take| {
-                ui.add(egui::DragValue::new(take));
-            },
-        );
-        ui.checkbox(&mut src_args.read_only, "read-only")
-            .on_hover_text("Open file as read-only");
-        if ui
-            .checkbox(&mut src_args.stream, "stream")
-            .on_hover_text(
-                "Specify source as a streaming source (for example, standard streams).\n\
-             Sets read-only attribute",
-            )
-            .changed()
-        {
-            src_args.read_only = src_args.stream;
-        }
+        crate::gui::src_args_ui(ui, src_args);
         ui.heading("Meta");
         match &self.path_to_meta {
             Some(file) => {

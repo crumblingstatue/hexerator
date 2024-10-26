@@ -145,8 +145,7 @@ impl FileOps {
                 ui.heading("Hexerator");
             }
             ui.separator();
-            ui.checkbox(&mut self.file_dialog_source_args.stream, "stream");
-            ui.checkbox(&mut self.file_dialog_source_args.read_only, "read-only");
+            crate::gui::src_args_ui(ui, &mut self.file_dialog_source_args);
         });
         if let Some(path) = self.dialog.take_selected()
             && let Some(op) = self.op.take()
