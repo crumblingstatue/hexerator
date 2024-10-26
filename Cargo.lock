@@ -616,7 +616,7 @@ dependencies = [
 [[package]]
 name = "egui-file-dialog"
 version = "0.7.0"
-source = "git+https://github.com/fluxxcode/egui-file-dialog.git?branch=develop#0c585c164c0a8f85249f46f184d38c247ce1bed4"
+source = "git+https://github.com/fluxxcode/egui-file-dialog.git?branch=develop#89f8f0014a963d2717b5ffc0e1eb5eeed3eeced1"
 dependencies = [
  "directories",
  "egui",
@@ -1292,14 +1292,15 @@ dependencies = [
 
 [[package]]
 name = "mlua"
-version = "0.9.9"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d111deb18a9c9bd33e1541309f4742523bfab01d276bfa9a27519f6de9c11dc7"
+checksum = "0f6ddbd668297c46be4bdea6c599dcc1f001a129586272d53170b7ac0a62961e"
 dependencies = [
  "bstr",
+ "either",
  "mlua-sys",
  "num-traits",
- "once_cell",
+ "parking_lot",
  "rustc-hash 2.0.0",
 ]
 

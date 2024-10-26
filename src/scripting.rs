@@ -22,7 +22,7 @@ pub struct LuaExecContext<'app, 'gui> {
     pub line_spacing: u16,
 }
 
-pub(crate) trait Method<'lua> {
+pub(crate) trait Method {
     /// Name of the method
     const NAME: &'static str;
     /// Help text for the method
@@ -32,22 +32,21 @@ pub(crate) trait Method<'lua> {
     /// Arguments the method takes when called
     type Args;
     /// Return type
-    type Ret: IntoLuaMulti<'lua>;
+    type Ret: IntoLuaMulti;
     /// The function that gets called
-    fn call(lua: &'lua Lua, exec: &mut LuaExecContext, args: Self::Args)
-        -> mlua::Result<Self::Ret>;
+    fn call(lua: &Lua, exec: &mut LuaExecContext, args: Self::Args) -> mlua::Result<Self::Ret>;
 }
 
 macro_rules! def_method {
     ($help:literal $name:ident($lua:ident, $exec:ident, $($argname:ident: $argty:ty),*) -> $ret:ty $block:block) => {
         #[allow(non_camel_case_types)] pub(crate) enum $name {}
-        impl<'lua> Method<'lua> for $name {
+        impl Method for $name {
             const NAME: &'static str = stringify!($name);
             const HELP: &'static str = $help;
             const API_SIG: &'static str = concat!(stringify!($name), "(", $(stringify!($argname), ": ", stringify!($argty), ", ",)* ")", " -> ", stringify!($ret));
             type Args = ($($argty,)*);
             type Ret = $ret;
-            fn call($lua: &'lua Lua, $exec: &mut LuaExecContext, ($($argname,)*): ($($argty,)*)) -> mlua::Result<$ret> $block
+            fn call($lua: &Lua, $exec: &mut LuaExecContext, ($($argname,)*): ($($argty,)*)) -> mlua::Result<$ret> $block
         }
     };
 }
@@ -292,7 +291,7 @@ def_method! {
 
 def_method! {
     "Gets a named script as a callable function. `hx:require('myscript')()`"
-    require(lua, exec, name: String) -> mlua::Function<'lua> {
+    require(lua, exec, name: String) -> mlua::Function {
         let s = exec.app.meta_state.meta.scripts.values().find(|scr| scr.name == name).ok_or_else(|| "no such script".into_lua_err())?;
         let chunk = lua.load(&s.content);
         chunk.into_function()
@@ -313,7 +312,7 @@ def_method! {
 
 def_method! {
     "Calls a plugin method"
-    call_plugin(lua, exec, plugin_name: String, method_name: String, args: mlua::Variadic<mlua::Value<'lua>>) -> mlua::Value<'lua> {
+    call_plugin(lua, exec, plugin_name: String, method_name: String, args: mlua::Variadic<mlua::Value>) -> mlua::Value {
         let method_args: Vec<_> = args.into_iter().map(lua_plugin_value_conv).collect();
         let val = exec.app.call_plugin_method(&plugin_name, &method_name, &method_args).into_lua_err()?;
         match val {
@@ -337,6 +336,7 @@ fn lua_plugin_value_conv(lval: mlua::Value) -> Option<hexerator_plugin_api::Valu
         mlua::Value::Thread(_) => todo!(),
         mlua::Value::UserData(_) => todo!(),
         mlua::Value::Error(_) => todo!(),
+        _ => todo!(),
     }
 }
 
@@ -383,7 +383,7 @@ macro_rules! for_each_method {
 pub(super) use for_each_method;
 
 impl UserData for LuaExecContext<'_, '_> {
-    fn add_methods<'lua, T: mlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+    fn add_methods<T: mlua::UserDataMethods<Self>>(methods: &mut T) {
         macro_rules! add_method {
             ($t:ty) => {
                 methods.add_method_mut(<$t>::NAME, <$t>::call)
@@ -425,7 +425,7 @@ pub fn exec_lua(
     lua.scope(|scope| {
         let chunk = lua.load(lua_script);
         let fun = chunk.into_function()?;
-        let app = scope.create_nonstatic_userdata(LuaExecContext {
+        let app = scope.create_userdata(LuaExecContext {
             app: &mut *app,
             gui,
             key,
