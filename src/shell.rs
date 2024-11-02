@@ -1,6 +1,9 @@
-use crate::{
-    app::App,
-    gui::message_dialog::{Icon, MessageDialog},
+use {
+    crate::{
+        app::App,
+        gui::message_dialog::{Icon, MessageDialog},
+    },
+    std::backtrace::Backtrace,
 };
 
 pub fn open_previous(app: &App, load: &mut Option<crate::args::SourceArgs>) {
@@ -24,4 +27,5 @@ pub fn msg_if_fail<T, E: std::fmt::Debug>(
 
 pub fn msg_fail<E: std::fmt::Debug>(e: &E, prefix: &str, msg: &mut MessageDialog) {
     msg.open(Icon::Error, "Error", format!("{prefix}: {e:?}"));
+    msg.backtrace = Some(Backtrace::force_capture());
 }

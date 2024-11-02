@@ -1,4 +1,7 @@
-use {crate::app::command::CommandQueue, egui::Color32, egui_modal::Modal};
+use {
+    crate::app::command::CommandQueue, core::f32, egui::Color32, egui_modal::Modal,
+    std::backtrace::Backtrace,
+};
 
 #[derive(Default)]
 pub struct MessageDialog {
@@ -9,6 +12,8 @@ pub struct MessageDialog {
     /// If set, it will open modal on next call of show()
     open_modal: bool,
     buttons_ui_fn: Option<Box<UiFn>>,
+    pub backtrace: Option<Backtrace>,
+    show_backtrace: bool,
 }
 
 #[derive(Default)]
@@ -100,6 +105,21 @@ impl MessageDialog {
                     }
                     ui.label(&self.desc);
                 });
+                if let Some(bt) = &self.backtrace {
+                    ui.with_layout(egui::Layout::top_down(egui::Align::Min), |ui| {
+                        ui.checkbox(&mut self.show_backtrace, "Show backtrace");
+                        if self.show_backtrace {
+                            let bt = bt.to_string();
+                            egui::ScrollArea::both().max_height(300.0).show(ui, |ui| {
+                                ui.add(
+                                    egui::TextEdit::multiline(&mut bt.as_str())
+                                        .code_editor()
+                                        .desired_width(f32::INFINITY),
+                                );
+                            });
+                        }
+                    });
+                }
                 let (enter_pressed, esc_pressed) = ui.input_mut(|inp| {
                     (
                         // Consume enter and escape, so when the dialog is closed
@@ -115,6 +135,7 @@ impl MessageDialog {
                     Some(f) => f(ui, modal, cmd),
                     None => {
                         if ui.button("Ok").clicked() || enter_pressed || esc_pressed {
+                            self.backtrace = None;
                             modal.close();
                         }
                     }
