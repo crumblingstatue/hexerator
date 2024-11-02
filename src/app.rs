@@ -588,8 +588,10 @@ impl App {
                             meta_path.display()
                         );
                         let meta_path = meta_path.clone();
-                        self.consume_meta_from_file(meta_path.clone())
-                            .with_context(|| format!("Failed to load metafile {meta_path:?}"))?;
+                        if let Err(e) = self.consume_meta_from_file(meta_path.clone()) {
+                            self.set_new_clean_meta(font_size, line_spacing);
+                            msg_fail(&e, &format!("Failed to load metafile {meta_path:?}"), msg);
+                        }
                     }
                 } else {
                     // We didn't load any meta, but we're loading a new file.
