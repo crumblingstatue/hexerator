@@ -20,6 +20,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         gui.win.vars.open.toggle();
         ui.close_menu();
     }
+    if ui.add(Button::new("Structs")).clicked() {
+        gui.win.structs.open.toggle();
+        ui.close_menu();
+    }
     ui.separator();
     if ui
         .button("Diff with clean meta")

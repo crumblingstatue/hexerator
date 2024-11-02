@@ -53,6 +53,7 @@ egui_colors = { git = "https://github.com/frankvgompel/egui_colors.git" }
 libloading = "0.8.3"
 hexerator-plugin-api = { path = "hexerator-plugin-api" }
 image = "0.25"
+structparse = { git = "https://github.com/crumblingstatue/structparse.git" }
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.59.0"
