@@ -854,7 +854,7 @@ impl App {
     pub fn consume_meta_from_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
         per!("Consuming metafile: {}", path.display());
         let data = std::fs::read(&path)?;
-        let meta = rmp_serde::from_slice(&data)?;
+        let meta = rmp_serde::from_slice(&data).context("Deserialization error")?;
         self.hex_ui.clear_meta_refs();
         self.meta_state.meta = meta;
         self.meta_state.clean_meta = self.meta_state.meta.clone();
