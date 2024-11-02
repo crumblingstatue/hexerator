@@ -587,7 +587,9 @@ impl App {
                             self.meta_state.current_meta_path.display(),
                             meta_path.display()
                         );
-                        self.consume_meta_from_file(meta_path.clone())?;
+                        let meta_path = meta_path.clone();
+                        self.consume_meta_from_file(meta_path.clone())
+                            .with_context(|| format!("Failed to load metafile {meta_path:?}"))?;
                     }
                 } else {
                     // We didn't load any meta, but we're loading a new file.
