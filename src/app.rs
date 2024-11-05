@@ -73,7 +73,11 @@ pub struct App {
     /// A quit was requested
     pub quit_requested: bool,
     pub plugins: Vec<PluginContainer>,
+    /// Size of the buffer used for streaming reads
+    pub stream_buffer_size: usize,
 }
+
+const DEFAULT_STREAM_BUFFER_SIZE: usize = 65_536;
 
 impl App {
     pub(crate) fn new(
@@ -107,6 +111,7 @@ impl App {
             backend_cmd: Default::default(),
             quit_requested: false,
             plugins: Vec::new(),
+            stream_buffer_size: args.src.stream_buffer_size.unwrap_or(DEFAULT_STREAM_BUFFER_SIZE),
         };
         for path in args.load_plugin {
             this.plugins.push(unsafe { PluginContainer::new(path)? });
@@ -378,6 +383,7 @@ impl App {
                 take: None,
                 read_only,
                 stream: false,
+                stream_buffer_size: None,
             },
             None,
             msg,
@@ -475,8 +481,8 @@ impl App {
                 let (tx, rx) = std::sync::mpsc::channel();
                 let mut src_clone = src.provider.clone();
                 self.stream_read_recv = Some(rx);
+                let buffer_size = self.stream_buffer_size;
                 thread::spawn(move || {
-                    let buffer_size = 1024;
                     let mut buf = vec![0; buffer_size];
                     let result: anyhow::Result<()> = try {
                         let amount = src_clone.read(&mut buf)?;
@@ -1013,6 +1019,7 @@ fn load_proc_memory_linux(
             take: Some(size),
             read_only: !is_write,
             stream: false,
+            stream_buffer_size: None,
         },
         None,
         msg,

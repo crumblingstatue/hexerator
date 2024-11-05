@@ -250,6 +250,7 @@ impl FileOps {
                             take: None,
                             read_only: false,
                             stream: false,
+                            stream_buffer_size: None,
                         });
                     };
                     msg_if_fail(result, "Failed to save as", msg);

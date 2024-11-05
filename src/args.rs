@@ -66,8 +66,12 @@ pub struct SourceArgs {
     /// Open file as read-only, without writing privileges
     #[arg(long)]
     pub read_only: bool,
-    #[arg(long)]
     /// Specify source as a streaming source (for example, standard streams).
     /// Sets read-only attribute.
+    #[arg(long)]
     pub stream: bool,
+    /// The buffer size in bytes to use for reading when streaming
+    #[arg(long)]
+    #[serde(default)]
+    pub stream_buffer_size: Option<usize>,
 }
