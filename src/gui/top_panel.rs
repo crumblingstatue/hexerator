@@ -20,11 +20,13 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
         if app.hex_ui.select_a.is_some() || app.hex_ui.select_b.is_some() {
             ui.label("Selection");
         }
-        if let Some(a) = app.hex_ui.select_a {
-            ui.label(format!("a: {a}"));
+        if let Some(a) = &mut app.hex_ui.select_a {
+            ui.label("a");
+            ui.add(egui::DragValue::new(a));
         }
-        if let Some(b) = app.hex_ui.select_b {
-            ui.label(format!("b: {b}"));
+        if let Some(b) = &mut app.hex_ui.select_b {
+            ui.label("b");
+            ui.add(egui::DragValue::new(b));
         }
         if let Some(sel) = app.hex_ui.selection()
             && let Some(view_key) = app.hex_ui.focused_view
