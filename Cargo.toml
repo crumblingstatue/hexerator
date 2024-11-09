@@ -21,7 +21,7 @@ directories = "5.0.1"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 memchr = "2.7.2"
 glu-sys = "0.1.4"
-thiserror = "1.0.58"
+thiserror = "2"
 either = "1.10.0"
 tree_magic_mini = { version = "3.1.4", features = ["tree_magic_db"] }
 bytemuck = "1.15.0"
