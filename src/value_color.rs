@@ -1,5 +1,5 @@
 use {
-    crate::color::{rgb, RgbColor},
+    crate::color::{RgbColor, rgb},
     serde::{Deserialize, Serialize},
     serde_big_array::BigArray,
     std::path::Path,
@@ -51,11 +51,7 @@ impl ColorMethod {
                 rgb(r, g, b)
             }
         };
-        if invert {
-            color.invert()
-        } else {
-            color
-        }
+        if invert { color.invert() } else { color }
     }
 
     pub(crate) fn name(&self) -> &str {

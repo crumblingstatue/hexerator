@@ -39,13 +39,10 @@ impl super::Window for VarsWindow {
                     },
                 );
                 if ui.button("Add").clicked() {
-                    app.meta_state.meta.vars.insert(
-                        self.new_var_name.take(),
-                        VarEntry {
-                            val: self.new_val_val.clone(),
-                            desc: String::new(),
-                        },
-                    );
+                    app.meta_state.meta.vars.insert(self.new_var_name.take(), VarEntry {
+                        val: self.new_val_val.clone(),
+                        desc: String::new(),
+                    });
                 }
             });
         });

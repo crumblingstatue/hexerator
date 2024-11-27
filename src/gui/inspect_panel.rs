@@ -1,7 +1,7 @@
 use {
     super::message_dialog::{Icon, MessageDialog},
     crate::{
-        app::{interact_mode::InteractMode, App},
+        app::{App, interact_mode::InteractMode},
         damage_region::DamageRegion,
         shell::msg_if_fail,
         view::ViewportVec,

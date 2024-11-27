@@ -137,7 +137,7 @@ impl super::Window for OpenProcessWindow {
                 Modal::RunCommand(run_command) => {
                     run_command.file_dialog.update(ui.ctx());
                     ui.label("Command");
-                    if let Some(file_path) = run_command.file_dialog.take_selected() {
+                    if let Some(file_path) = run_command.file_dialog.take_picked() {
                         run_command.command.push_str(&format!("\"{}\"", file_path.display()));
                     }
                     let re = ui.text_edit_singleline(&mut run_command.command);
@@ -177,7 +177,7 @@ impl super::Window for OpenProcessWindow {
                         }
                     }
                     if ui.button("Add file...").clicked() {
-                        run_command.file_dialog.select_file();
+                        run_command.file_dialog.pick_file();
                     }
                     if ui.button("Cancel").clicked() {
                         close_modal = true;

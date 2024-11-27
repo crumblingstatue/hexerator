@@ -9,16 +9,16 @@ use {
         config::Config,
         damage_region::DamageRegion,
         gui::{
+            Gui,
             message_dialog::{Icon, MessageDialog},
             windows::FileDiffResultWindow,
-            Gui,
         },
         hex_ui::HexUi,
         input::Input,
-        layout::{default_margin, do_auto_layout, Layout},
+        layout::{Layout, default_margin, do_auto_layout},
         meta::{
-            perspective::Perspective, region::Region, LayoutKey, Meta, NamedRegion, NamedView,
-            PerspectiveKey, PerspectiveMap, RegionKey, RegionMap, ViewKey,
+            LayoutKey, Meta, NamedRegion, NamedView, PerspectiveKey, PerspectiveMap, RegionKey,
+            RegionMap, ViewKey, perspective::Perspective, region::Region,
         },
         meta_state::MetaState,
         plugin::PluginContainer,
@@ -27,7 +27,7 @@ use {
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
         view::{HexData, TextData, View, ViewKind, ViewportScalar},
     },
-    anyhow::{bail, Context as _},
+    anyhow::{Context as _, bail},
     egui_sfml::sfml::graphics::RenderWindow,
     gamedebug_core::{per, per_dbg},
     hexerator_plugin_api::MethodResult,
@@ -680,7 +680,7 @@ impl App {
         };
         anyhow::ensure!(lo <= hi);
         match &src.provider {
-            SourceProvider::File(ref file) => {
+            SourceProvider::File(file) => {
                 let mut file = file;
                 let offset = match self.src_args.hard_seek {
                     Some(hs) => hs + lo,

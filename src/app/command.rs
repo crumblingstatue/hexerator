@@ -8,7 +8,7 @@
 //! we have exclusive access, and then perform it.
 
 use {
-    super::{backend_command::BackendCmd, App},
+    super::{App, backend_command::BackendCmd},
     crate::{
         damage_region::DamageRegion,
         gui::Gui,

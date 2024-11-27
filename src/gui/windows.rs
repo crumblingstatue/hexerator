@@ -2,7 +2,7 @@ pub use self::{
     advanced_open::AdvancedOpenWindow,
     file_diff_result_window::FileDiffResultWindow,
     lua_console::{ConMsg, LuaConsoleWindow},
-    regions_window::{region_context_menu, RegionsWindow},
+    regions_window::{RegionsWindow, region_context_menu},
 };
 use {
     self::{

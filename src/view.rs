@@ -5,7 +5,7 @@ use {
         edit_buffer::EditBuffer,
         gui::message_dialog::{Icon, MessageDialog},
         hex_conv::merge_hex_halves,
-        meta::{region::Region, PerspectiveKey, PerspectiveMap, RegionMap},
+        meta::{PerspectiveKey, PerspectiveMap, RegionMap, region::Region},
         preferences::Preferences,
     },
     gamedebug_core::per,

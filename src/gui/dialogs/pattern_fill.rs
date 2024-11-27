@@ -2,7 +2,7 @@ use {
     crate::{
         app::App,
         damage_region::DamageRegion,
-        gui::{message_dialog::Icon, Dialog},
+        gui::{Dialog, message_dialog::Icon},
         slice_ext::SliceExt as _,
     },
     mlua::Lua,

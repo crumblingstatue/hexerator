@@ -1,13 +1,13 @@
 use {
-    super::{dialogs::JumpDialog, egui_ui_ext::EguiResponseExt as _, Gui},
+    super::{Gui, dialogs::JumpDialog, egui_ui_ext::EguiResponseExt as _},
     crate::{
-        app::{interact_mode::InteractMode, App},
+        app::{App, interact_mode::InteractMode},
         meta::find_most_specific_region_for_offset,
         shell::msg_if_fail,
         util::human_size,
         view::ViewportVec,
     },
-    egui::{text::LayoutJob, Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui},
+    egui::{Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui, text::LayoutJob},
     slotmap::Key as _,
 };
 
@@ -180,20 +180,16 @@ fn key_label(ui: &Ui, key_text: &str, label_text: &str) -> LayoutJob {
     let mut job = LayoutJob::default();
     let style = ui.style();
     let body_font = TextStyle::Body.resolve(style);
-    job.append(
-        key_text,
-        0.0,
-        TextFormat {
-            font_id: body_font.clone(),
-            color: style.visuals.widgets.active.fg_stroke.color,
-            background: style.visuals.code_bg_color,
-            italics: false,
-            underline: Stroke::NONE,
-            strikethrough: Stroke::NONE,
-            valign: Align::Center,
-            ..Default::default()
-        },
-    );
+    job.append(key_text, 0.0, TextFormat {
+        font_id: body_font.clone(),
+        color: style.visuals.widgets.active.fg_stroke.color,
+        background: style.visuals.code_bg_color,
+        italics: false,
+        underline: Stroke::NONE,
+        strikethrough: Stroke::NONE,
+        valign: Align::Center,
+        ..Default::default()
+    });
     job.append(
         label_text,
         10.0,

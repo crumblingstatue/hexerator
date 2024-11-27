@@ -1,6 +1,6 @@
 use {
     crate::{
-        app::{col_change_impl_view_perspective, App},
+        app::{App, col_change_impl_view_perspective},
         gui::Gui,
     },
     egui::Button,

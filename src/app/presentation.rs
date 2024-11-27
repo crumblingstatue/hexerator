@@ -1,6 +1,6 @@
 use {
     crate::{
-        color::{rgba, RgbaColor},
+        color::{RgbaColor, rgba},
         value_color::ColorMethod,
     },
     serde::{Deserialize, Serialize},

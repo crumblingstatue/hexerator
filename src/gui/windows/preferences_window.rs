@@ -1,11 +1,11 @@
 use {
     super::{WinCtx, WindowOpen},
     crate::{
-        app::{backend_command::BackendCmd, App},
+        app::{App, backend_command::BackendCmd},
         config::{self, Config, ProjectDirsExt as _},
         gui::message_dialog::{Icon, MessageDialog},
     },
-    egui_colors::{tokens::ThemeColor, Colorix},
+    egui_colors::{Colorix, tokens::ThemeColor},
     egui_fontcfg::{CustomFontPaths, FontCfgUi, FontDefsUiMsg},
     rand::Rng as _,
 };
@@ -175,7 +175,7 @@ fn style_ui(
                 let mut rng = rand::thread_rng();
                 *colorix = Colorix::init(
                     ui.ctx(),
-                    std::array::from_fn(|_| ThemeColor::Custom(rng.gen::<[u8; 3]>())),
+                    std::array::from_fn(|_| ThemeColor::Custom(rng.r#gen::<[u8; 3]>())),
                 );
             }
         });

@@ -3,11 +3,11 @@ use {
         app::App,
         damage_region::DamageRegion,
         gui::{
+            Gui,
             dialogs::{LuaFillDialog, PatternFillDialog, X86AsmDialog},
             file_ops::FileOps,
             message_dialog::MessageDialog,
             windows::RegionsWindow,
-            Gui,
         },
     },
     egui::Button,

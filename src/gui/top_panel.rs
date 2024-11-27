@@ -1,7 +1,7 @@
 use {
     super::{
-        dialogs::LuaColorDialog, egui_ui_ext::EguiResponseExt as _, message_dialog::Icon,
-        top_menu::top_menu, Gui,
+        Gui, dialogs::LuaColorDialog, egui_ui_ext::EguiResponseExt as _, message_dialog::Icon,
+        top_menu::top_menu,
     },
     crate::{
         app::App,

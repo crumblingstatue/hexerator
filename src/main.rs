@@ -32,7 +32,7 @@
 use {
     config::{LoadedConfig, ProjectDirsExt as _},
     core::f32,
-    egui_colors::{tokens::ThemeColor, Colorix},
+    egui_colors::{Colorix, tokens::ThemeColor},
     egui_file_dialog::{DialogState, DirectoryEntry},
     egui_sfml::sfml::graphics::RenderStates,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
@@ -83,22 +83,22 @@ use {
     clap::Parser as _,
     config::Config,
     egui_sfml::{
+        SfEgui,
         sfml::{
             graphics::{
                 Color, Font, Rect, RenderTarget as _, RenderWindow, Text, Transformable as _,
                 Vertex, View,
             },
             system::Vector2,
-            window::{mouse, ContextSettings, Event, Key, Style, VideoMode},
+            window::{ContextSettings, Event, Key, Style, VideoMode, mouse},
         },
-        SfEgui,
     },
     gamedebug_core::per,
     gui::{
+        Gui,
         dialogs::JumpDialog,
         message_dialog::{Icon, MessageDialog},
         root_ctx_menu::{ContextMenu, ContextMenuData},
-        Gui,
     },
     meta::{NamedView, PerspectiveMap, RegionMap},
     mlua::Lua,
@@ -429,7 +429,10 @@ where
     match src.try_into() {
         Ok(mp) => mp,
         Err(e) => {
-            per!("Mouse position conversion error: {}\nHexerator doesn't support extremely high (>32700) mouse positions.", e);
+            per!(
+                "Mouse position conversion error: {}\nHexerator doesn't support extremely high (>32700) mouse positions.",
+                e
+            );
             ViewportVec { x: 0, y: 0 }
         }
     }
@@ -590,35 +593,26 @@ fn handle_events(
                     match app.view_at_pos(mp.x, mp.y) {
                         Some(view_key) => match app.view_byte_offset_at_pos(view_key, mp.x, mp.y) {
                             Some(pos) => {
-                                gui.context_menu = Some(ContextMenu::new(
-                                    mp.x,
-                                    mp.y,
-                                    ContextMenuData {
+                                gui.context_menu =
+                                    Some(ContextMenu::new(mp.x, mp.y, ContextMenuData {
                                         view: Some(view_key),
                                         byte_off: Some(pos),
-                                    },
-                                ));
+                                    }));
                             }
                             None => {
-                                gui.context_menu = Some(ContextMenu::new(
-                                    mp.x,
-                                    mp.y,
-                                    ContextMenuData {
+                                gui.context_menu =
+                                    Some(ContextMenu::new(mp.x, mp.y, ContextMenuData {
                                         view: Some(view_key),
                                         byte_off: None,
-                                    },
-                                ));
+                                    }));
                             }
                         },
                         None => {
-                            gui.context_menu = Some(ContextMenu::new(
-                                mp.x,
-                                mp.y,
-                                ContextMenuData {
+                            gui.context_menu =
+                                Some(ContextMenu::new(mp.x, mp.y, ContextMenuData {
                                     view: None,
                                     byte_off: None,
-                                },
-                            ));
+                                }));
                         }
                     }
                 }

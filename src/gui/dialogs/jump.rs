@@ -2,7 +2,7 @@ use {
     crate::{
         app::App,
         gui::Dialog,
-        parse_radix::{parse_offset_maybe_relative, Relativity},
+        parse_radix::{Relativity, parse_offset_maybe_relative},
         shell::msg_fail,
     },
     mlua::Lua,

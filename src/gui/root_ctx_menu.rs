@@ -3,8 +3,8 @@ use {
     crate::{
         app::App,
         meta::{
-            value_type::{self, ValueType},
             Bookmark, ViewKey,
+            value_type::{self, ValueType},
         },
         view::ViewportScalar,
     },

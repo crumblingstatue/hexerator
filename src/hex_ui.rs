@@ -2,7 +2,7 @@ use {
     crate::{
         app::interact_mode::InteractMode,
         color::RgbaColor,
-        meta::{region::Region, LayoutKey, ViewKey},
+        meta::{LayoutKey, ViewKey, region::Region},
         timer::Timer,
         view::ViewportRect,
     },

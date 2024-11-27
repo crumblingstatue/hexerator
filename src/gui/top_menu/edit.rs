@@ -1,10 +1,10 @@
 use {
     crate::{
         app::{
-            command::{perform_command, Cmd},
             App,
+            command::{Cmd, perform_command},
         },
-        gui::{dialogs::TruncateDialog, message_dialog::Icon, Gui},
+        gui::{Gui, dialogs::TruncateDialog, message_dialog::Icon},
         shell::msg_if_fail,
     },
     egui::Button,

@@ -1,7 +1,7 @@
 use {
     crate::{
-        app::{set_clipboard_string, App},
-        gui::{dialogs::AutoSaveReloadDialog, Gui},
+        app::{App, set_clipboard_string},
+        gui::{Gui, dialogs::AutoSaveReloadDialog},
         shell::msg_if_fail,
     },
     egui::Button,

@@ -2,7 +2,7 @@ use {
     self::{perspective::Perspective, region::Region, value_type::ValueType},
     crate::{layout::Layout, view::View},
     serde::{Deserialize, Serialize},
-    slotmap::{new_key_type, SlotMap},
+    slotmap::{SlotMap, new_key_type},
     std::{
         collections::HashMap,
         io::{ErrorKind, Write as _},

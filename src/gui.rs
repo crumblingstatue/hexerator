@@ -17,7 +17,7 @@ use {
         TopBottomPanel, Window,
     },
     egui_colors::Colorix,
-    egui_sfml::{sfml::graphics::RenderWindow, SfEgui},
+    egui_sfml::{SfEgui, sfml::graphics::RenderWindow},
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     mlua::Lua,
     root_ctx_menu::ContextMenu,

@@ -1,6 +1,6 @@
 use crate::{
     app::App,
-    gui::{message_dialog::Icon, Gui},
+    gui::{Gui, message_dialog::Icon},
     plugin::PluginContainer,
     shell::msg_fail,
 };

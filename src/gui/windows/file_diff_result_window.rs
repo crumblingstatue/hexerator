@@ -4,7 +4,7 @@ use {
         app::read_source_to_buf,
         gui::windows::regions_window::region_context_menu,
         meta::{
-            find_most_specific_region_for_offset, value_type::ValueType, Bookmark, Meta, RegionKey,
+            Bookmark, Meta, RegionKey, find_most_specific_region_for_offset, value_type::ValueType,
         },
         shell::msg_if_fail,
     },

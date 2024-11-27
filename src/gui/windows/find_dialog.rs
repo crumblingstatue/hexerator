@@ -9,13 +9,12 @@ use {
         },
         hex_ui::HexUi,
         meta::{
-            find_most_specific_region_for_offset,
+            Bookmark, Meta, find_most_specific_region_for_offset,
             region::Region,
             value_type::{
-                EndianedPrimitive, F32Be, F32Le, F64Be, F64Le, I16Be, I16Le, I32Be, I32Le, I64Be,
-                I64Le, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType, I8, U8,
+                EndianedPrimitive, F32Be, F32Le, F64Be, F64Le, I8, I16Be, I16Le, I32Be, I32Le,
+                I64Be, I64Le, U8, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType,
             },
-            Bookmark, Meta,
         },
         parse_radix::parse_guess_radix,
         shell::{msg_fail, msg_if_fail},
@@ -635,14 +634,12 @@ fn make_eq_pattern_needle(pattern: &str) -> Vec<u8> {
 
 #[test]
 fn test_make_eq_pattern_needle() {
-    assert_eq!(
-        make_eq_pattern_needle("ABCDBEFFG"),
-        &[0, 1, 2, 3, 1, 4, 5, 5, 6]
-    );
-    assert_eq!(
-        make_eq_pattern_needle("abcdefggheijkbbl"),
-        &[0, 1, 2, 3, 4, 5, 6, 6, 7, 4, 8, 9, 10, 1, 1, 11]
-    );
+    assert_eq!(make_eq_pattern_needle("ABCDBEFFG"), &[
+        0, 1, 2, 3, 1, 4, 5, 5, 6
+    ]);
+    assert_eq!(make_eq_pattern_needle("abcdefggheijkbbl"), &[
+        0, 1, 2, 3, 4, 5, 6, 6, 7, 4, 8, 9, 10, 1, 1, 11
+    ]);
 }
 
 #[cfg(test)]
@@ -708,10 +705,9 @@ fn find_diff_pattern(haystack: &[u8], pat: &[i8]) -> Option<usize> {
 
 #[test]
 fn test_ascii_to_diff_pattern() {
-    assert_eq!(
-        ascii_to_diff_pattern(b"jonathan"),
-        vec![5, -1, -13, 19, -12, -7, 13]
-    );
+    assert_eq!(ascii_to_diff_pattern(b"jonathan"), vec![
+        5, -1, -13, 19, -12, -7, 13
+    ]);
 }
 
 #[test]

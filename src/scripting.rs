@@ -1,11 +1,11 @@
 use {
     crate::{
         app::App,
-        gui::{dialogs::pattern_fill::parse_pattern_string, ConMsg, Gui},
+        gui::{ConMsg, Gui, dialogs::pattern_fill::parse_pattern_string},
         meta::{
+            Bookmark, NamedRegion, ScriptKey,
             region::Region,
             value_type::{self, EndianedPrimitive as _, ValueType},
-            Bookmark, NamedRegion, ScriptKey,
         },
         slice_ext::SliceExt as _,
     },

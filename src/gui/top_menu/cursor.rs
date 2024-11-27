@@ -1,7 +1,7 @@
 use {
     crate::{
         app::App,
-        gui::{dialogs::JumpDialog, Gui},
+        gui::{Gui, dialogs::JumpDialog},
     },
     egui::Button,
 };

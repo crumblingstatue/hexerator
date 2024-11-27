@@ -1,13 +1,13 @@
 use {
     super::View,
     crate::{
-        app::{presentation::Presentation, App},
+        app::{App, presentation::Presentation},
         color::RgbColor,
         dec_conv,
         gui::Gui,
         hex_conv,
         hex_ui::HexUi,
-        meta::{region::Region, PerspectiveMap, RegionMap, ViewKey},
+        meta::{PerspectiveMap, RegionMap, ViewKey, region::Region},
         view::ViewKind,
     },
     egui_sfml::sfml::{

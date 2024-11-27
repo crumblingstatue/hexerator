@@ -1,6 +1,6 @@
 use {
     crate::{
-        meta::{region::Region, PerspectiveMap, RegionMap, ViewKey, ViewMap},
+        meta::{PerspectiveMap, RegionMap, ViewKey, ViewMap, region::Region},
         view::{ViewportRect, ViewportVec},
     },
     serde::{Deserialize, Serialize},

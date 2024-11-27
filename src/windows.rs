@@ -1,7 +1,7 @@
 use {
     crate::{
-        source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
         App,
+        source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     },
     anyhow::bail,
     windows_sys::Win32::System::Threading::*,

@@ -146,14 +146,14 @@ fn zero_partition(data: &[u8], threshold: usize) -> Vec<Region> {
 
 #[test]
 fn test_zero_partition() {
-    assert_eq!(
-        zero_partition(&[1, 1, 0, 0, 0, 1, 2, 3], 3),
-        vec![Region { begin: 0, end: 1 }, Region { begin: 5, end: 7 }]
-    );
-    assert_eq!(
-        zero_partition(&[1, 1, 0, 0, 0, 1, 2, 3], 4),
-        vec![Region { begin: 0, end: 7 }]
-    );
+    assert_eq!(zero_partition(&[1, 1, 0, 0, 0, 1, 2, 3], 3), vec![
+        Region { begin: 0, end: 1 },
+        Region { begin: 5, end: 7 }
+    ]);
+    assert_eq!(zero_partition(&[1, 1, 0, 0, 0, 1, 2, 3], 4), vec![Region {
+        begin: 0,
+        end: 7
+    }]);
     assert_eq!(
         zero_partition(
             &[0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1],
@@ -179,7 +179,9 @@ fn test_zero_partition() {
     // head and tail that exceed threshold
     assert_eq!(
         zero_partition(
-            &[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0],
+            &[
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0
+            ],
             4
         ),
         vec![Region { begin: 10, end: 12 }, Region { begin: 17, end: 19 },]

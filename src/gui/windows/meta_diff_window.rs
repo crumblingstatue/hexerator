@@ -3,8 +3,8 @@ use {
     crate::{
         layout::Layout,
         meta::{
-            perspective::Perspective, LayoutKey, NamedRegion, NamedView, PerspectiveKey, RegionKey,
-            ViewKey,
+            LayoutKey, NamedRegion, NamedView, PerspectiveKey, RegionKey, ViewKey,
+            perspective::Perspective,
         },
     },
     itertools::{EitherOrBoth, Itertools as _},

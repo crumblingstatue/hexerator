@@ -1,7 +1,7 @@
 use {
     crate::meta::value_type::{
-        EndianedPrimitive as _, I16Be, I16Le, I32Be, I32Le, I64Be, I64Le, U16Be, U16Le, U32Be,
-        U32Le, U64Be, U64Le, I8, U8,
+        EndianedPrimitive as _, I8, I16Be, I16Le, I32Be, I32Le, I64Be, I64Le, U8, U16Be, U16Le,
+        U32Be, U32Le, U64Be, U64Le,
     },
     serde::{Deserialize, Serialize},
 };

@@ -6,7 +6,7 @@ use {
             message_dialog::MessageDialog,
             windows::{AdvancedOpenWindow, FileDiffResultWindow},
         },
-        meta::{region::Region, ViewKey},
+        meta::{ViewKey, region::Region},
         shell::{msg_fail, msg_if_fail},
         source::Source,
         util::human_size_u64,
@@ -147,7 +147,7 @@ impl FileOps {
             ui.separator();
             crate::gui::src_args_ui(ui, &mut self.file_dialog_source_args);
         });
-        if let Some(path) = self.dialog.take_selected()
+        if let Some(path) = self.dialog.take_picked()
             && let Some(op) = self.op.take()
         {
             match op {
@@ -283,31 +283,31 @@ impl FileOps {
             let cfg = self.dialog.config_mut();
             parent.clone_into(&mut cfg.initial_directory);
         }
-        self.dialog.select_file();
+        self.dialog.pick_file();
         self.op = Some(FileOp::LoadFile);
     }
     pub fn load_meta_file(&mut self) {
-        self.dialog.select_file();
+        self.dialog.pick_file();
         self.op = Some(FileOp::LoadMetaFile);
     }
 
     pub fn advanced_open_pick_file(&mut self) {
-        self.dialog.select_file();
+        self.dialog.pick_file();
         self.op = Some(FileOp::AdvancedOpenPickFile);
     }
 
     pub fn advanced_open_pick_metafile(&mut self) {
-        self.dialog.select_file();
+        self.dialog.pick_file();
         self.op = Some(FileOp::AdvancedOpenPickMetafile);
     }
 
     pub fn load_palette_for_view(&mut self, key: ViewKey) {
-        self.dialog.select_file();
+        self.dialog.pick_file();
         self.op = Some(FileOp::LoadPaletteForView(key));
     }
 
     pub fn load_palette_from_image_for_view(&mut self, view_key: ViewKey) {
-        self.dialog.select_file();
+        self.dialog.pick_file();
         self.op = Some(FileOp::LoadPaletteFromImageForView(view_key));
     }
 
@@ -317,12 +317,12 @@ impl FileOps {
         {
             self.dialog.config_mut().initial_directory = parent.to_owned();
         }
-        self.dialog.select_file();
+        self.dialog.pick_file();
         self.op = Some(FileOp::DiffWithFile);
     }
 
     pub fn load_lua_script(&mut self) {
-        self.dialog.select_file();
+        self.dialog.pick_file();
         self.op = Some(FileOp::LoadLuaScript);
     }
 
