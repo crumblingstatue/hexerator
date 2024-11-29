@@ -18,13 +18,16 @@ fn read_ty_as_usize_at(data: &[u8], ty: &StructTy, offset: usize) -> Option<usiz
 
 impl super::Window for StructsWindow {
     fn ui(&mut self, super::WinCtx { ui, app, .. }: super::WinCtx) {
+        let (key_ctrl, key_enter) =
+            ui.input(|inp| (inp.modifiers.ctrl, inp.key_pressed(egui::Key::Enter)));
         ui.add(
             egui::TextEdit::multiline(&mut self.struct_text_buf)
                 .code_editor()
                 .desired_width(f32::INFINITY)
                 .hint_text("Rust struct definition"),
         );
-        if ui.button("Parse").clicked() {
+        if ui.button("Parse (ctrl+enter)").clicked() || (key_ctrl && key_enter) {
+            self.error_label.clear();
             match structparse::Struct::parse(&self.struct_text_buf) {
                 Ok(struct_) => match StructMetaItem::new(struct_) {
                     Ok(struct_) => {
