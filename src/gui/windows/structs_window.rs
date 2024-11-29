@@ -20,6 +20,7 @@ impl super::Window for StructsWindow {
     fn ui(&mut self, super::WinCtx { ui, app, .. }: super::WinCtx) {
         ui.add(
             egui::TextEdit::multiline(&mut self.struct_text_buf)
+                .code_editor()
                 .desired_width(f32::INFINITY)
                 .hint_text("Rust struct definition"),
         );
