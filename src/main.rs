@@ -168,7 +168,7 @@ fn try_main() -> anyhow::Result<()> {
         );
         gui.msg_dialog.custom_button_row_ui(Box::new(|ui, modal, _cmd| {
             if ui.button("⚠️ Continue").clicked() {
-                modal.close();
+                modal.is_open = false;
             }
             if ui.button("Abort").clicked() {
                 std::process::abort();

@@ -96,7 +96,7 @@ pub fn ui(
                     );
                     gui.msg_dialog.custom_button_row_ui(Box::new(move |ui, modal, cmd| {
                         if ui.button("Cancel paste").clicked() {
-                            modal.close();
+                            modal.is_open = false;
                         } else if ui.button("Extend document").clicked() {
                             cmd.push(Cmd::ExtendDocument {
                                 new_len: cursor + bytes.len(),
@@ -105,7 +105,7 @@ pub fn ui(
                                 at: cursor,
                                 bytes: bytes.clone(),
                             });
-                            modal.close();
+                            modal.is_open = false;
                         } else if ui.button("Shorten paste").clicked() {
                         }
                     }));

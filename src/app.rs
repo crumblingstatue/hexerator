@@ -231,11 +231,11 @@ impl App {
                     .button(egui::RichText::new("Save & Truncate").color(egui::Color32::RED))
                     .clicked()
                 {
-                    modal.close();
+                    modal.is_open = false;
                     cmd.push(Cmd::SaveTruncateFinish);
                 }
                 if ui.button("Cancel").clicked() {
-                    modal.close();
+                    modal.is_open = false;
                 }
             }));
             return Ok(());

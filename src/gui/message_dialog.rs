@@ -1,16 +1,11 @@
-use {
-    crate::app::command::CommandQueue, core::f32, egui::Color32, egui_modal::Modal,
-    std::backtrace::Backtrace,
-};
+use {crate::app::command::CommandQueue, core::f32, egui::Color32, std::backtrace::Backtrace};
 
 #[derive(Default)]
 pub struct MessageDialog {
     title: String,
     desc: String,
-    modal: Option<Modal>,
+    pub is_open: bool,
     icon: Icon,
-    /// If set, it will open modal on next call of show()
-    open_modal: bool,
     buttons_ui_fn: Option<Box<UiFn>>,
     pub backtrace: Option<Backtrace>,
     show_backtrace: bool,
@@ -25,7 +20,7 @@ pub enum Icon {
     Error,
 }
 
-pub(crate) type UiFn = dyn FnMut(&mut egui::Ui, &Modal, &mut CommandQueue);
+pub(crate) type UiFn = dyn FnMut(&mut egui::Ui, &mut MessageDialog, &mut CommandQueue);
 
 // Colors and icon text are copied from egui-toast, for visual consistency
 // https://github.com/urholaukkarinen/egui-toast
@@ -65,7 +60,7 @@ impl MessageDialog {
         self.title = title.into();
         self.desc = desc.into();
         self.icon = icon;
-        self.open_modal = true;
+        self.is_open = true;
         self.buttons_ui_fn = None;
     }
     pub(crate) fn custom_button_row_ui(&mut self, f: Box<UiFn>) {
@@ -77,13 +72,11 @@ impl MessageDialog {
         cb: &mut arboard::Clipboard,
         cmd: &mut CommandQueue,
     ) {
-        let modal = self.modal.get_or_insert_with(|| Modal::new(ctx, "modal_message_dialog"));
-        if self.open_modal {
-            modal.open();
-            self.open_modal = false;
+        if !self.is_open {
+            return;
         }
-        modal.show(|ui| {
-            modal.title(ui, &self.title);
+        egui::Modal::new("msg_dialog_popup".into()).show(ctx, |ui| {
+            ui.heading(&self.title);
             ui.vertical_centered_justified(|ui| {
                 ui.horizontal(|ui| {
                     if self.icon.is_set()
@@ -131,15 +124,17 @@ impl MessageDialog {
                         inp.consume_key(egui::Modifiers::default(), egui::Key::Escape),
                     )
                 });
-                match &mut self.buttons_ui_fn {
-                    Some(f) => f(ui, modal, cmd),
+                let mut buttons_ui_fn = self.buttons_ui_fn.take();
+                match &mut buttons_ui_fn {
+                    Some(f) => f(ui, self, cmd),
                     None => {
                         if ui.button("Ok").clicked() || enter_pressed || esc_pressed {
                             self.backtrace = None;
-                            modal.close();
+                            self.is_open = false;
                         }
                     }
                 }
+                self.buttons_ui_fn = buttons_ui_fn;
             });
         });
     }
