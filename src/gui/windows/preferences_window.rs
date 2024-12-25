@@ -180,7 +180,7 @@ fn style_ui(
             }
         });
         ui.separator();
-        colorix.ui_combo_12(ui);
+        colorix.ui_combo_12(ui, true);
         if let Some(dirs) = crate::config::project_dirs() {
             ui.separator();
             ui.horizontal(|ui| {

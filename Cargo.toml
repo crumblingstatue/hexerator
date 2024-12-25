@@ -31,7 +31,7 @@ num-traits = "0.2.18"
 serde-big-array = "0.5.1"
 egui = { version = "0.30", features = ["serde"] }
 egui_extras = { version = "0.30", default-features = false }
-itertools = "0.13"
+itertools = "0.14"
 sysinfo = { version = "0.33", default-features = false, features = ["system"] }
 proc-maps = "0.4.0"
 open = "5.1.2"
@@ -42,12 +42,12 @@ strum = { version = "0.26.2", features = ["derive"] }
 egui_code_editor = "0.2.10"
 # luajit breaks with panic=abort, because it relies on unwinding for exception handling
 mlua = { version = "0.10", features = ["lua54", "vendored"] }
-egui-file-dialog = { git = "https://github.com/bircni/egui-file-dialog.git", branch = "bump_egui" }
+egui-file-dialog = "0.8.0"
 human_bytes = "0.4.3"
 shlex = "1.3.0"
 smart-default = "0.7.1"
 egui-fontcfg = { git = "https://github.com/crumblingstatue/egui-fontcfg.git" }
-egui_colors = { git = "https://github.com/frankvgompel/egui_colors.git" }
+egui_colors = "0.6.0"
 libloading = "0.8.3"
 hexerator-plugin-api = { path = "hexerator-plugin-api" }
 image = "0.25"
