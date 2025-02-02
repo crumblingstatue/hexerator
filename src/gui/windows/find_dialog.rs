@@ -634,12 +634,14 @@ fn make_eq_pattern_needle(pattern: &str) -> Vec<u8> {
 
 #[test]
 fn test_make_eq_pattern_needle() {
-    assert_eq!(make_eq_pattern_needle("ABCDBEFFG"), &[
-        0, 1, 2, 3, 1, 4, 5, 5, 6
-    ]);
-    assert_eq!(make_eq_pattern_needle("abcdefggheijkbbl"), &[
-        0, 1, 2, 3, 4, 5, 6, 6, 7, 4, 8, 9, 10, 1, 1, 11
-    ]);
+    assert_eq!(
+        make_eq_pattern_needle("ABCDBEFFG"),
+        &[0, 1, 2, 3, 1, 4, 5, 5, 6]
+    );
+    assert_eq!(
+        make_eq_pattern_needle("abcdefggheijkbbl"),
+        &[0, 1, 2, 3, 4, 5, 6, 6, 7, 4, 8, 9, 10, 1, 1, 11]
+    );
 }
 
 #[cfg(test)]
@@ -705,9 +707,10 @@ fn find_diff_pattern(haystack: &[u8], pat: &[i8]) -> Option<usize> {
 
 #[test]
 fn test_ascii_to_diff_pattern() {
-    assert_eq!(ascii_to_diff_pattern(b"jonathan"), vec![
-        5, -1, -13, 19, -12, -7, 13
-    ]);
+    assert_eq!(
+        ascii_to_diff_pattern(b"jonathan"),
+        vec![5, -1, -13, 19, -12, -7, 13]
+    );
 }
 
 #[test]

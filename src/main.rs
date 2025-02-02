@@ -593,26 +593,35 @@ fn handle_events(
                     match app.view_at_pos(mp.x, mp.y) {
                         Some(view_key) => match app.view_byte_offset_at_pos(view_key, mp.x, mp.y) {
                             Some(pos) => {
-                                gui.context_menu =
-                                    Some(ContextMenu::new(mp.x, mp.y, ContextMenuData {
+                                gui.context_menu = Some(ContextMenu::new(
+                                    mp.x,
+                                    mp.y,
+                                    ContextMenuData {
                                         view: Some(view_key),
                                         byte_off: Some(pos),
-                                    }));
+                                    },
+                                ));
                             }
                             None => {
-                                gui.context_menu =
-                                    Some(ContextMenu::new(mp.x, mp.y, ContextMenuData {
+                                gui.context_menu = Some(ContextMenu::new(
+                                    mp.x,
+                                    mp.y,
+                                    ContextMenuData {
                                         view: Some(view_key),
                                         byte_off: None,
-                                    }));
+                                    },
+                                ));
                             }
                         },
                         None => {
-                            gui.context_menu =
-                                Some(ContextMenu::new(mp.x, mp.y, ContextMenuData {
+                            gui.context_menu = Some(ContextMenu::new(
+                                mp.x,
+                                mp.y,
+                                ContextMenuData {
                                     view: None,
                                     byte_off: None,
-                                }));
+                                },
+                            ));
                         }
                     }
                 }

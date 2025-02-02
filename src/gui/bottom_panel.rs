@@ -180,16 +180,20 @@ fn key_label(ui: &Ui, key_text: &str, label_text: &str) -> LayoutJob {
     let mut job = LayoutJob::default();
     let style = ui.style();
     let body_font = TextStyle::Body.resolve(style);
-    job.append(key_text, 0.0, TextFormat {
-        font_id: body_font.clone(),
-        color: style.visuals.widgets.active.fg_stroke.color,
-        background: style.visuals.code_bg_color,
-        italics: false,
-        underline: Stroke::NONE,
-        strikethrough: Stroke::NONE,
-        valign: Align::Center,
-        ..Default::default()
-    });
+    job.append(
+        key_text,
+        0.0,
+        TextFormat {
+            font_id: body_font.clone(),
+            color: style.visuals.widgets.active.fg_stroke.color,
+            background: style.visuals.code_bg_color,
+            italics: false,
+            underline: Stroke::NONE,
+            strikethrough: Stroke::NONE,
+            valign: Align::Center,
+            ..Default::default()
+        },
+    );
     job.append(
         label_text,
         10.0,
