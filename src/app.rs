@@ -1141,7 +1141,7 @@ fn load_file_from_src_args(
             cmd.push(Cmd::ProcessSourceChange);
             true
         } else {
-            let result: Result<(), anyhow::Error> = try {
+            let result: std::io::Result<()> = try {
                 let mut file = open_file(file_arg, src_args.read_only)?;
                 data.clear();
                 if let Some(path) = &mut src_args.file {
@@ -1178,6 +1178,11 @@ fn load_file_from_src_args(
             match result {
                 Ok(()) => true,
                 Err(e) => {
+                    if !src_args.read_only && e.kind() == std::io::ErrorKind::PermissionDenied {
+                        eprintln!("Failed to open file: {e}. Retrying read-only.");
+                        src_args.read_only = true;
+                        return load_file_from_src_args(src_args, cfg, source, data, msg, cmd);
+                    }
                     msg_fail(&e, "Failed to open file", msg);
                     false
                 }
@@ -1188,15 +1193,11 @@ fn load_file_from_src_args(
     }
 }
 
-fn open_file(path: &Path, read_only: bool) -> Result<File, anyhow::Error> {
-    OpenOptions::new()
-        .read(true)
-        .write(!read_only)
-        .open(path)
-        .context("Failed to open file")
+fn open_file(path: &Path, read_only: bool) -> std::io::Result<File> {
+    OpenOptions::new().read(true).write(!read_only).open(path)
 }
 
-fn read_contents(args: &SourceArgs, file: &mut File) -> anyhow::Result<Vec<u8>> {
+fn read_contents(args: &SourceArgs, file: &mut File) -> std::io::Result<Vec<u8>> {
     let seek = args.hard_seek.unwrap_or(0);
     file.seek(SeekFrom::Start(seek as u64))?;
     let mut data = Vec::new();
