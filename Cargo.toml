@@ -14,10 +14,10 @@ default = ["backend-sfml"]
 gamedebug_core = { git = "https://github.com/crumblingstatue/gamedebug_core.git" }
 clap = { version = "4.5.4", features = ["derive"] }
 anyhow = "1.0.81"
-rand = "0.8.5"
+rand = "0.9.0"
 rmp-serde = "1.1.2"
 serde = { version = "1.0.197", features = ["derive"] }
-directories = "5.0.1"
+directories = "6.0.0"
 recently_used_list = { git = "https://github.com/crumblingstatue/recently_used_list.git" }
 memchr = "2.7.2"
 glu-sys = "0.1.4"

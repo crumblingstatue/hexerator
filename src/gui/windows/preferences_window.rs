@@ -172,10 +172,10 @@ fn style_ui(
                 colorix.light_dark_toggle_button(ui);
             });
             if ui.button("Random theme").clicked() {
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 *colorix = Colorix::init(
                     ui.ctx(),
-                    std::array::from_fn(|_| ThemeColor::Custom(rng.r#gen::<[u8; 3]>())),
+                    std::array::from_fn(|_| ThemeColor::Custom(rng.random::<[u8; 3]>())),
                 );
             }
         });
