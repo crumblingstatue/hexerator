@@ -12,7 +12,7 @@ pub fn open_previous(app: &App, load: &mut Option<crate::args::SourceArgs>) {
     }
 }
 
-pub fn msg_if_fail<T, E: std::fmt::Debug>(
+pub fn msg_if_fail<T, E: std::fmt::Display>(
     result: Result<T, E>,
     prefix: &str,
     msg: &mut MessageDialog,
@@ -25,7 +25,7 @@ pub fn msg_if_fail<T, E: std::fmt::Debug>(
     }
 }
 
-pub fn msg_fail<E: std::fmt::Debug>(e: &E, prefix: &str, msg: &mut MessageDialog) {
-    msg.open(Icon::Error, "Error", format!("{prefix}: {e:?}"));
+pub fn msg_fail<E: std::fmt::Display>(e: &E, prefix: &str, msg: &mut MessageDialog) {
+    msg.open(Icon::Error, "Error", format!("{prefix}: {e}"));
     msg.backtrace = Some(Backtrace::force_capture());
 }
