@@ -158,7 +158,7 @@ fn style_ui(
             Some(colorix) => colorix,
             None => {
                 if ui.button("Activate custom colors").clicked() {
-                    opt_colorix.insert(Colorix::init(ui.ctx(), egui_colors::utils::EGUI_THEME))
+                    opt_colorix.insert(Colorix::global(ui.ctx(), egui_colors::utils::EGUI_THEME))
                 } else {
                     return;
                 }
@@ -169,11 +169,11 @@ fn style_ui(
             colorix.themes_dropdown(ui, None, false);
             ui.group(|ui| {
                 ui.label("light dark toggle");
-                colorix.light_dark_toggle_button(ui);
+                colorix.light_dark_toggle_button(ui, 20.0);
             });
             if ui.button("Random theme").clicked() {
                 let mut rng = rand::rng();
-                *colorix = Colorix::init(
+                *colorix = Colorix::global(
                     ui.ctx(),
                     std::array::from_fn(|_| ThemeColor::Custom(rng.random::<[u8; 3]>())),
                 );

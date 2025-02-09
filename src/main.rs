@@ -33,7 +33,7 @@ use {
     config::{LoadedConfig, ProjectDirsExt as _},
     core::f32,
     egui_colors::{Colorix, tokens::ThemeColor},
-    egui_file_dialog::{DialogState, DirectoryEntry},
+    egui_file_dialog::{DialogState, DirectoryEntry, NativeFileSystem},
     egui_sfml::sfml::graphics::RenderStates,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     gui::command::GCmd,
@@ -202,7 +202,7 @@ fn try_main() -> anyhow::Result<()> {
                     let theme = std::array::from_fn(|_| {
                         ThemeColor::Custom(chunks.next().unwrap_or_default())
                     });
-                    gui.colorix = Some(Colorix::init(sf_egui.context(), theme));
+                    gui.colorix = Some(Colorix::global(sf_egui.context(), theme));
                 }
                 Err(e) => {
                     eprintln!("Failed to load custom theme: {e}");
@@ -242,7 +242,11 @@ fn transfer_pinned_folders_to_file_dialog(gui: &mut Gui, cfg: &mut Config) {
     // Remove them from the config, as later it will be filled with
     // the pinned dirs from the dialog
     for dir in cfg.pinned_dirs.drain(..) {
-        dia_cfg.storage.pinned_folders.push(DirectoryEntry::from_path(dia_cfg, &dir));
+        dia_cfg.storage.pinned_folders.push(DirectoryEntry::from_path(
+            dia_cfg,
+            &dir,
+            &NativeFileSystem,
+        ));
     }
 }
 
@@ -347,7 +351,7 @@ fn do_fatal_error_report(title: &str, mut desc: &str, backtrace: &Backtrace) {
                     ui.separator();
                     ui.horizontal(|ui| {
                         if ui.button("Copy to clipboard").clicked() {
-                            ui.output_mut(|out| out.copied_text = desc.to_owned());
+                            ctx.copy_text(desc.to_owned());
                         }
                         if ui.button("Close").clicked() {
                             rw.close();

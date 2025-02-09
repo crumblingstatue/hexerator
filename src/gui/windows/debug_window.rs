@@ -32,7 +32,7 @@ pub fn ui(ui: &mut Ui) {
                     if let Some(src_loc) = &msg.src_loc {
                         let txt = format!("{}:{}:{}", src_loc.file, src_loc.line, src_loc.column);
                         if ui.link(&txt).on_hover_text("Click to copy to clipboard").clicked() {
-                            ui.output_mut(|out| out.copied_text = txt);
+                            ui.ctx().copy_text(txt);
                         }
                     }
                     ui.label(&msg.info);

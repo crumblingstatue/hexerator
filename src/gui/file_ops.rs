@@ -103,7 +103,7 @@ impl FileOps {
     ) {
         self.dialog.update_with_right_panel_ui(ctx, &mut |ui, dia| {
             ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
-            if let Some(highlight) = dia.active_entry() {
+            if let Some(highlight) = dia.selected_entry() {
                 if let Some(parent) = highlight.as_path().parent() {
                     ui.label(egui::RichText::new(parent.display().to_string()).small());
                 }
@@ -137,9 +137,7 @@ impl FileOps {
                     }
                 }
                 if ui.button("📋 Copy path to clipboard").clicked() {
-                    ui.output_mut(|out| {
-                        out.copied_text = highlight.as_path().display().to_string();
-                    });
+                    ctx.copy_text(highlight.as_path().display().to_string());
                 }
             } else {
                 ui.heading("Hexerator");
