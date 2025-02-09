@@ -169,7 +169,7 @@ fn style_ui(
             colorix.themes_dropdown(ui, None, false);
             ui.group(|ui| {
                 ui.label("light dark toggle");
-                colorix.light_dark_toggle_button(ui, 20.0);
+                colorix.light_dark_toggle_button(ui, 30.0);
             });
             if ui.button("Random theme").clicked() {
                 let mut rng = rand::rng();
