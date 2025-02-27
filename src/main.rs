@@ -30,16 +30,43 @@
 #![windows_subsystem = "windows"]
 
 use {
-    config::{LoadedConfig, ProjectDirsExt as _},
+    crate::{app::App, view::ViewportVec},
+    anyhow::Context as _,
+    app::interact_mode::InteractMode,
+    args::Args,
+    clap::Parser as _,
+    config::{Config, LoadedConfig, ProjectDirsExt as _},
     core::f32,
     egui_colors::{Colorix, tokens::ThemeColor},
     egui_file_dialog::{DialogState, DirectoryEntry, NativeFileSystem},
-    egui_sfml::sfml::graphics::RenderStates,
-    gamedebug_core::{IMMEDIATE, PERSISTENT},
-    gui::command::GCmd,
+    egui_sfml::{
+        SfEgui,
+        sfml::{
+            graphics::{
+                Color, Font, Rect, RenderStates, RenderTarget as _, RenderWindow, Text,
+                Transformable as _, Vertex, View,
+            },
+            system::Vector2,
+            window::{ContextSettings, Event, Key, Style, VideoMode, mouse},
+        },
+    },
+    gamedebug_core::{IMMEDIATE, PERSISTENT, per},
+    gui::{
+        Gui,
+        command::GCmd,
+        dialogs::JumpDialog,
+        message_dialog::{Icon, MessageDialog},
+        root_ctx_menu::{ContextMenu, ContextMenuData},
+    },
+    meta::{NamedView, PerspectiveMap, RegionMap},
+    mlua::Lua,
+    shell::msg_if_fail,
+    slotmap::Key as _,
     std::{
         backtrace::{Backtrace, BacktraceStatus},
+        fmt::Display,
         io::IsTerminal as _,
+        time::Duration,
     },
 };
 
@@ -74,38 +101,6 @@ mod value_color;
 mod view;
 #[cfg(windows)]
 mod windows;
-
-use {
-    crate::{app::App, view::ViewportVec},
-    anyhow::Context as _,
-    app::interact_mode::InteractMode,
-    args::Args,
-    clap::Parser as _,
-    config::Config,
-    egui_sfml::{
-        SfEgui,
-        sfml::{
-            graphics::{
-                Color, Font, Rect, RenderTarget as _, RenderWindow, Text, Transformable as _,
-                Vertex, View,
-            },
-            system::Vector2,
-            window::{ContextSettings, Event, Key, Style, VideoMode, mouse},
-        },
-    },
-    gamedebug_core::per,
-    gui::{
-        Gui,
-        dialogs::JumpDialog,
-        message_dialog::{Icon, MessageDialog},
-        root_ctx_menu::{ContextMenu, ContextMenuData},
-    },
-    meta::{NamedView, PerspectiveMap, RegionMap},
-    mlua::Lua,
-    shell::msg_if_fail,
-    slotmap::Key as _,
-    std::{fmt::Display, time::Duration},
-};
 
 fn print_version_info() {
     eprintln!(
