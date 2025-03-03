@@ -53,6 +53,14 @@ pub fn top_menu(
                                             try_open_file(file, gui);
                                             ui.close_menu();
                                         }
+                                        if ui.button("Copy path to clipboard").clicked() {
+                                            crate::app::set_clipboard_string(
+                                                &mut app.clipboard,
+                                                &mut gui.msg_dialog,
+                                                &s,
+                                            );
+                                            ui.close_menu();
+                                        }
                                         if let Some(parent) = file.parent() {
                                             if ui.button("Open containing folder").clicked() {
                                                 let result = open::that(parent);
@@ -63,14 +71,15 @@ pub fn top_menu(
                                                 );
                                                 ui.close_menu();
                                             }
-                                        }
-                                        if ui.button("Copy path to clipboard").clicked() {
-                                            crate::app::set_clipboard_string(
-                                                &mut app.clipboard,
-                                                &mut gui.msg_dialog,
-                                                &s,
-                                            );
-                                            ui.close_menu();
+                                            if ui.button("Copy folder path to clipboard").clicked()
+                                            {
+                                                ui.close_menu();
+                                                crate::app::set_clipboard_string(
+                                                    &mut app.clipboard,
+                                                    &mut gui.msg_dialog,
+                                                    &parent.display().to_string(),
+                                                );
+                                            }
                                         }
                                     };
                                     if !app.meta_state.current_meta_path.as_os_str().is_empty() {
