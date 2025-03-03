@@ -733,6 +733,31 @@ impl App {
         }
     }
 
+    pub(crate) fn focused_view_select_row(&mut self) {
+        if let Some([row, _]) = self.row_col_of_cursor()
+            && let Some(reg) = self.row_region(row)
+        {
+            self.hex_ui.select_a = Some(reg.begin);
+            self.hex_ui.select_b = Some(reg.end);
+        }
+    }
+
+    pub(crate) fn row_region(&self, row: usize) -> Option<Region> {
+        let per = Self::focused_perspective(&self.hex_ui, &self.meta_state.meta)?;
+        let per_reg = self.meta_state.meta.low.regions.get(per.region)?.region;
+        // Beginning of the region
+        let beg = per_reg.begin;
+        // Number of columns
+        let cols = per.cols;
+        let row_begin = beg + row * cols;
+        // Regions are inclusive, so we subtract 1
+        let row_end = (row_begin + cols).saturating_sub(1);
+        Some(Region {
+            begin: row_begin,
+            end: row_end,
+        })
+    }
+
     pub(crate) fn source_file(&self) -> Option<&Path> {
         self.src_args.file.as_deref()
     }

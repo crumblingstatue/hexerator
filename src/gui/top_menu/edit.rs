@@ -55,6 +55,10 @@ pub fn ui(
         app.focused_view_select_all();
         ui.close_menu();
     }
+    if ui.add(Button::new("Select row")).clicked() {
+        app.focused_view_select_row();
+        ui.close_menu();
+    }
     ui.separator();
     if ui.add(Button::new("External command...").shortcut_text("Ctrl+E")).clicked() {
         gui.win.external_command.open.toggle();
