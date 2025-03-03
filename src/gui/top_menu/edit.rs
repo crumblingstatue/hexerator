@@ -59,6 +59,13 @@ pub fn ui(
         app.focused_view_select_row();
         ui.close_menu();
     }
+    if ui.button("Zero out column").clicked() {
+        if let Some(offsets) = app.cursor_col_offsets() {
+            for offset in offsets {
+                app.data[offset] = 0;
+            }
+        }
+    }
     ui.separator();
     if ui.add(Button::new("External command...").shortcut_text("Ctrl+E")).clicked() {
         gui.win.external_command.open.toggle();

@@ -758,6 +758,20 @@ impl App {
         })
     }
 
+    pub(crate) fn col_offsets(&self, col: usize) -> Option<Vec<usize>> {
+        let per = Self::focused_perspective(&self.hex_ui, &self.meta_state.meta)?;
+        let per_reg = self.meta_state.meta.low.regions.get(per.region)?.region;
+        let beg = per_reg.begin;
+        let end = per_reg.end;
+        let cols = per.cols;
+        let offsets = (beg..=end).step_by(cols).map(|off| off + col).collect();
+        Some(offsets)
+    }
+
+    pub(crate) fn cursor_col_offsets(&self) -> Option<Vec<usize>> {
+        self.row_col_of_cursor().and_then(|[_, col]| self.col_offsets(col))
+    }
+
     pub(crate) fn source_file(&self) -> Option<&Path> {
         self.src_args.file.as_deref()
     }
