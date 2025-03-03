@@ -26,6 +26,6 @@ pub fn msg_if_fail<T, E: std::fmt::Display>(
 }
 
 pub fn msg_fail<E: std::fmt::Display>(e: &E, prefix: &str, msg: &mut MessageDialog) {
-    msg.open(Icon::Error, "Error", format!("{prefix}: {e}"));
+    msg.open(Icon::Error, "Error", format!("{prefix}: {e:#}"));
     msg.backtrace = Some(Backtrace::force_capture());
 }
