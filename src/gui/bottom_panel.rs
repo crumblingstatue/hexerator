@@ -65,8 +65,9 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
             }
         }
         ui.separator();
+        let [row, col] = app.row_col_of_cursor().unwrap_or([0, 0]);
         let mut text = egui::RichText::new(format!(
-            "cursor: {} ({:x})",
+            "cursor: {} ({:x}) [r{row} c{col}]",
             app.edit_state.cursor, app.edit_state.cursor,
         ));
         let out_of_bounds = app.edit_state.cursor >= app.data.len();
