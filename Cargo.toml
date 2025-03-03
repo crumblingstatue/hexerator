@@ -39,8 +39,7 @@ arboard = { version = "3.3.2", default-features = false }
 paste = "1.0.14"
 iced-x86 = "1.21.0"
 strum = { version = "0.27", features = ["derive"] }
-egui_code_editor.git = "https://github.com/crumblingstatue/egui_code_editor.git"
-egui_code_editor.branch = "egui-0.31"
+egui_code_editor = "0.2.12"
 # luajit breaks with panic=abort, because it relies on unwinding for exception handling
 mlua = { version = "0.10", features = ["lua54", "vendored"] }
 egui-file-dialog = "0.9.0"
