@@ -5,20 +5,11 @@ use {
     egui_extras::Column,
 };
 
+#[derive(Default)]
 pub struct VarsWindow {
     pub open: WindowOpen,
     pub new_var_name: String,
-    pub new_val_val: VarVal,
-}
-
-impl Default for VarsWindow {
-    fn default() -> Self {
-        Self {
-            open: Default::default(),
-            new_var_name: Default::default(),
-            new_val_val: VarVal::U64(0),
-        }
-    }
+    pub new_val_val: VarVal = VarVal::U64(0),
 }
 
 impl super::Window for VarsWindow {
