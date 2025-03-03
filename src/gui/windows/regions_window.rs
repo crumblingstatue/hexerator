@@ -12,8 +12,8 @@ use {
 pub struct RegionsWindow {
     pub open: WindowOpen,
     pub selected_key: Option<RegionKey>,
-    select_active: bool,
-    rename_active: bool,
+    pub select_active: bool,
+    pub rename_active: bool,
 }
 
 pub fn region_context_menu(
@@ -84,7 +84,11 @@ impl super::Window for RegionsWindow {
             let reg = &mut app.meta_state.meta.low.regions[key];
             ui.horizontal(|ui| {
                 if self.rename_active {
-                    if ui.text_edit_singleline(&mut reg.name).lost_focus() {
+                    let re = ui.text_edit_singleline(&mut reg.name);
+                    if self.open.just_now() {
+                        re.request_focus();
+                    }
+                    if re.lost_focus() {
                         self.rename_active = false;
                     }
                 } else {
