@@ -4,7 +4,8 @@
     let_chains,
     array_windows,
     generic_const_exprs,
-    macro_metavar_expr_concat
+    macro_metavar_expr_concat,
+    default_field_values
 )]
 #![warn(
     trivial_casts,
