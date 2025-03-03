@@ -5,7 +5,8 @@
     array_windows,
     generic_const_exprs,
     macro_metavar_expr_concat,
-    default_field_values
+    default_field_values,
+    yeet_expr
 )]
 #![warn(
     trivial_casts,

@@ -9,6 +9,7 @@ use {
     std::{
         ffi::OsString,
         io::Read as _,
+        path::PathBuf,
         process::{Child, Command, ExitStatus, Stdio},
     },
 };
@@ -25,6 +26,27 @@ pub struct ExternalCommandWindow {
     inherited_streams: bool,
     selection_only: bool,
     temp_file_name: String,
+    working_dir: WorkingDir,
+}
+
+#[derive(PartialEq)]
+enum WorkingDir {
+    /// Create a temporary directory for executing the command
+    Temp,
+    /// Execute in the same directory as Hexerator's working dir
+    Hexerator,
+    /// Execute in the same directory as the opened document
+    Document,
+}
+
+impl WorkingDir {
+    fn label(&self) -> &'static str {
+        match self {
+            WorkingDir::Temp => "Temp",
+            WorkingDir::Hexerator => "Hexerator",
+            WorkingDir::Document => "Document",
+        }
+    }
 }
 
 impl Default for ExternalCommandWindow {
@@ -41,6 +63,7 @@ impl Default for ExternalCommandWindow {
             inherited_streams: Default::default(),
             selection_only: true,
             temp_file_name: String::from("hexerator_data_tmp.bin"),
+            working_dir: WorkingDir::Temp,
         }
     }
 }
@@ -61,8 +84,29 @@ impl super::Window for ExternalCommandWindow {
             re.request_focus();
         }
         ui.horizontal(|ui| {
-            ui.label("Temp file name");
-            ui.text_edit_singleline(&mut self.temp_file_name);
+            egui::ComboBox::new("wd_cb", "Working dir")
+                .selected_text(self.working_dir.label())
+                .show_ui(ui, |ui| {
+                    ui.selectable_value(
+                        &mut self.working_dir,
+                        WorkingDir::Temp,
+                        WorkingDir::Temp.label(),
+                    );
+                    ui.selectable_value(
+                        &mut self.working_dir,
+                        WorkingDir::Document,
+                        WorkingDir::Document.label(),
+                    );
+                    ui.selectable_value(
+                        &mut self.working_dir,
+                        WorkingDir::Hexerator,
+                        WorkingDir::Hexerator.label(),
+                    );
+                });
+            if let WorkingDir::Temp = self.working_dir {
+                ui.label("Temp file name");
+                ui.text_edit_singleline(&mut self.temp_file_name);
+            }
         });
         ui.horizontal(|ui| {
             ui.add_enabled(
@@ -96,13 +140,33 @@ impl super::Window for ExternalCommandWindow {
                     } else {
                         0..=app.data.len() - 1
                     };
-                    let temp_dir = std::env::temp_dir();
-                    let path = temp_dir.join(&self.temp_file_name);
-                    let data = app.data.get(range).context("Range out of bounds")?;
-                    std::fs::write(&path, data)?;
+                    let dir: PathBuf;
+                    match self.working_dir {
+                        WorkingDir::Temp => {
+                            dir = std::env::temp_dir();
+                            let path = dir.join(&self.temp_file_name);
+                            let data = app.data.get(range).context("Range out of bounds")?;
+                            std::fs::write(&path, data)?;
+                        }
+                        WorkingDir::Hexerator => {
+                            dir = std::env::current_dir()?;
+                        }
+                        WorkingDir::Document => match &app.src_args.file {
+                            Some(path) => {
+                                dir = path
+                                    .parent()
+                                    .context("Document path has no parent")?
+                                    .to_path_buf();
+                            }
+                            None => {
+                                do yeet anyhow::anyhow!("Document has no path");
+                            }
+                        },
+                    }
+
                     // Spawn process
                     let mut cmd = Command::new(cmd);
-                    cmd.current_dir(temp_dir).args(resolve_args(args, &path));
+                    cmd.current_dir(&dir).args(resolve_args(args, &dir));
                     if self.inherited_streams {
                         cmd.stdout(Stdio::inherit());
                         cmd.stderr(Stdio::inherit());
