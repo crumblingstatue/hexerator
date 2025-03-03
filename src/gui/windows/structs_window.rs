@@ -1,6 +1,6 @@
 use {
     super::WindowOpen,
-    crate::struct_meta_item::{Endian, StructMetaItem, StructTy},
+    crate::struct_meta_item::{Endian, IPrimSize, StructMetaItem, StructTy},
     core::f32,
 };
 
@@ -81,5 +81,104 @@ fn struct_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::a
                 }
             }
         });
+    }
+    ui.separator();
+    if let Some([row, _]) = app.row_col_of_cursor()
+        && let Some(reg) = app.row_region(row)
+    {
+        let bm_name = app
+            .meta_state
+            .meta
+            .bookmarks
+            .iter()
+            .find(|bm| bm.offset == reg.begin)
+            .map_or(String::new(), |bm| format!(" ({})", bm.label));
+        ui.heading(format!("Object at row {row}{bm_name}"));
+        for (off, field) in struct_.fields_with_offsets_mut() {
+            ui.horizontal(|ui| {
+                let data_off = reg.begin + off;
+                ui.label(&field.name);
+                let field_bytes_len = field.ty.size();
+                let byte_slice = &mut app.data[data_off..data_off + field_bytes_len];
+                field_edit_ui(ui, field, byte_slice);
+            });
+        }
+    }
+}
+
+fn field_edit_ui(
+    ui: &mut egui::Ui,
+    field: &crate::struct_meta_item::StructField,
+    byte_slice: &mut [u8],
+) {
+    match &field.ty {
+        StructTy::IntegerPrimitive {
+            size,
+            signed,
+            endian,
+        } => match (size, signed, endian) {
+            (IPrimSize::S8, true, Endian::Le) => {
+                ui.add(egui::DragValue::new(
+                    &mut bytemuck::cast_slice_mut::<u8, i8>(byte_slice)[0],
+                ));
+            }
+            (IPrimSize::S8, true, Endian::Be) => {
+                ui.add(egui::DragValue::new(
+                    &mut bytemuck::cast_slice_mut::<u8, i8>(byte_slice)[0],
+                ));
+            }
+            (IPrimSize::S8, false, Endian::Le) => {
+                ui.add(egui::DragValue::new(&mut byte_slice[0]));
+            }
+            (IPrimSize::S8, false, Endian::Be) => {
+                ui.add(egui::DragValue::new(&mut byte_slice[0]));
+            }
+            (IPrimSize::S16, true, Endian::Le) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S16, true, Endian::Be) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S16, false, Endian::Le) => {
+                match bytemuck::try_from_bytes_mut::<u16>(byte_slice) {
+                    Ok(num) => {
+                        ui.add(egui::DragValue::new(num));
+                    }
+                    Err(e) => {
+                        ui.label(e.to_string());
+                    }
+                }
+            }
+            (IPrimSize::S16, false, Endian::Be) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S32, true, Endian::Le) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S32, true, Endian::Be) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S32, false, Endian::Le) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S32, false, Endian::Be) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S64, true, Endian::Le) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S64, true, Endian::Be) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S64, false, Endian::Le) => {
+                ui.label("<todo>");
+            }
+            (IPrimSize::S64, false, Endian::Be) => {
+                ui.label("<todo>");
+            }
+        },
+        StructTy::Array { .. } => {
+            ui.label("<array>");
+        }
     }
 }
