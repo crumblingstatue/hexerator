@@ -3,10 +3,7 @@ use {
     crate::{layout::Layout, view::View},
     serde::{Deserialize, Serialize},
     slotmap::{SlotMap, new_key_type},
-    std::{
-        collections::HashMap,
-        io::{ErrorKind, Write as _},
-    },
+    std::{collections::HashMap, io::Write as _},
 };
 
 pub mod perspective;
@@ -64,10 +61,7 @@ impl Bookmark {
     )]
     pub(crate) fn write_int(&self, mut data: &mut [u8], val: i64) -> std::io::Result<()> {
         match self.value_type {
-            ValueType::None => Err(std::io::Error::new(
-                ErrorKind::Other,
-                "Bookmark doesn't have value type",
-            )),
+            ValueType::None => Err(std::io::Error::other("Bookmark doesn't have value type")),
             ValueType::I8(_) => data.write_all(&(val as i8).to_ne_bytes()),
             ValueType::U8(_) => data.write_all(&(val as u8).to_ne_bytes()),
             ValueType::I16Le(_) => data.write_all(&(val as i16).to_le_bytes()),
