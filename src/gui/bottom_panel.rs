@@ -132,7 +132,8 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
         if !app.hex_ui.current_layout.is_null()
             && let Some((offset, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y)
         {
-            ui.label(format!("mouse: {offset} ({offset:x})"));
+            let [row, col] = app.row_col_of_byte_pos(offset).unwrap_or([0, 0]);
+            ui.label(format!("mouse: {offset} ({offset:x}) [r{row} c{col}]"));
             if let Some(region) =
                 find_most_specific_region_for_offset(&app.meta_state.meta.low.regions, offset)
             {

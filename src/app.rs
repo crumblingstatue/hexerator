@@ -986,15 +986,19 @@ impl App {
             self.hex_ui.focused_view = None;
         }
     }
-    /// Returns the row and column of the current cursor, according to focused perspective
-    pub(crate) fn row_col_of_cursor(&self) -> Option<[usize; 2]> {
+    /// Returns the row and column of the provided byte position, according to focused perspective
+    pub(crate) fn row_col_of_byte_pos(&self, pos: usize) -> Option<[usize; 2]> {
         let per = Self::focused_perspective(&self.hex_ui, &self.meta_state.meta);
         per.map(|per| {
             let cols = per.cols;
             let region_begin = self.meta_state.meta.low.regions[per.region].region.begin;
-            let byte_pos = self.edit_state.cursor.saturating_sub(region_begin);
+            let byte_pos = pos.saturating_sub(region_begin);
             [byte_pos / cols, byte_pos % cols]
         })
+    }
+    /// Returns the row and column of the current cursor, according to focused perspective
+    pub(crate) fn row_col_of_cursor(&self) -> Option<[usize; 2]> {
+        self.row_col_of_byte_pos(self.edit_state.cursor)
     }
 }
 
