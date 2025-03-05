@@ -121,8 +121,6 @@ pub fn do_egui(
         let bot_re = TopBottomPanel::bottom("bottom_panel")
             .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos, gui));
         let right_re = egui::SidePanel::right("right_panel")
-            // TODO: Workaround for side panel aggressively taking over content area with egui 0.30
-            .max_width(300.0)
             .show(ctx, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
             .response;
         let padding = 2;
