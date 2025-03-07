@@ -1,7 +1,7 @@
 use {
     super::WindowOpen,
     crate::struct_meta_item::{Endian, IPrimSize, StructMetaItem, StructTy},
-    core::f32,
+    egui_code_editor::{CodeEditor, Syntax},
 };
 
 #[derive(Default)]
@@ -18,12 +18,11 @@ fn read_ty_as_usize_at(data: &[u8], ty: &StructTy, offset: usize) -> Option<usiz
 
 impl super::Window for StructsWindow {
     fn ui(&mut self, super::WinCtx { ui, app, .. }: super::WinCtx) {
-        let re = ui.add(
-            egui::TextEdit::multiline(&mut self.struct_text_buf)
-                .code_editor()
-                .desired_width(f32::INFINITY)
-                .hint_text("Rust struct definition"),
-        );
+        let re = CodeEditor::default()
+            .with_syntax(Syntax::rust())
+            .show(ui, &mut self.struct_text_buf)
+            .response;
+
         if re.changed() {
             self.error_label.clear();
             match structparse::Struct::parse(&self.struct_text_buf) {
