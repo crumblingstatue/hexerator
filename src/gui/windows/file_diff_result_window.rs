@@ -3,9 +3,7 @@ use {
     crate::{
         app::read_source_to_buf,
         gui::windows::regions_window::region_context_menu,
-        meta::{
-            Bookmark, Meta, RegionKey, find_most_specific_region_for_offset, value_type::ValueType,
-        },
+        meta::{Meta, RegionKey, find_most_specific_region_for_offset},
         shell::msg_if_fail,
     },
     egui_extras::Column,
@@ -192,15 +190,7 @@ impl super::Window for FileDiffResultWindow {
                         let re = ui.link(offs.to_string());
                         re.context_menu(|ui| {
                             if ui.button("Add bookmark").clicked() {
-                                let idx = app.meta_state.meta.bookmarks.len();
-                                app.meta_state.meta.bookmarks.push(Bookmark {
-                                    offset: offs,
-                                    label: "New bookmark".into(),
-                                    desc: String::new(),
-                                    value_type: ValueType::None,
-                                });
-                                gui.win.bookmarks.open.set(true);
-                                gui.win.bookmarks.selected = Some(idx);
+                                crate::gui::add_new_bookmark(app, gui, offs);
                                 ui.close_menu();
                             }
                         });

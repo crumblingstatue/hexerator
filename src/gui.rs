@@ -8,6 +8,10 @@ use {
         app::App,
         args::SourceArgs,
         config::Style,
+        meta::{
+            Bookmark,
+            value_type::{self, ValueType},
+        },
         view::{ViewportScalar, ViewportVec},
     },
     egui::{
@@ -272,4 +276,19 @@ fn src_args_ui(ui: &mut egui::Ui, src_args: &mut SourceArgs) {
     {
         src_args.read_only = src_args.stream;
     }
+}
+
+fn add_new_bookmark(app: &mut App, gui: &mut Gui, byte_off: usize) {
+    let bms = &mut app.meta_state.meta.bookmarks;
+    let idx = bms.len();
+    bms.push(Bookmark {
+        offset: byte_off,
+        label: format!("New @ offset {byte_off}"),
+        desc: String::new(),
+        value_type: ValueType::U8(value_type::U8),
+    });
+    gui.win.bookmarks.open.set(true);
+    gui.win.bookmarks.selected = Some(idx);
+    gui.win.bookmarks.edit_name = true;
+    gui.win.bookmarks.focus_text_edit = true;
 }

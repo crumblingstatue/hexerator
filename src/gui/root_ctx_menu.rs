@@ -1,13 +1,6 @@
 use {
     super::Gui,
-    crate::{
-        app::App,
-        meta::{
-            Bookmark, ViewKey,
-            value_type::{self, ValueType},
-        },
-        view::ViewportScalar,
-    },
+    crate::{app::App, meta::ViewKey, view::ViewportScalar},
 };
 
 pub struct ContextMenu {
@@ -134,18 +127,7 @@ fn menu_inner_ui(
             }
             None => {
                 if ui.button("Add bookmark").clicked() {
-                    let bms = &mut app.meta_state.meta.bookmarks;
-                    let idx = bms.len();
-                    bms.push(Bookmark {
-                        offset: byte_off,
-                        label: format!("New @ offset {byte_off}"),
-                        desc: String::new(),
-                        value_type: ValueType::U8(value_type::U8),
-                    });
-                    gui.win.bookmarks.open.set(true);
-                    gui.win.bookmarks.selected = Some(idx);
-                    gui.win.bookmarks.edit_name = true;
-                    gui.win.bookmarks.focus_text_edit = true;
+                    crate::gui::add_new_bookmark(app, gui, byte_off);
                     *close = true;
                 }
             }
