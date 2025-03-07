@@ -32,7 +32,7 @@ pub fn load_palette(path: &Path) -> anyhow::Result<Palette> {
 }
 
 pub fn save_palette(pal: &Palette, path: &Path) -> anyhow::Result<()> {
-    let raw_bytes: &[u8] = bytemuck::cast_slice(&pal.0);
+    let raw_bytes: &[u8] = pal.0.as_flattened();
     Ok(std::fs::write(path, raw_bytes)?)
 }
 
