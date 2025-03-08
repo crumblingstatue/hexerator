@@ -105,6 +105,55 @@ fn struct_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::a
     }
 }
 
+trait ToFromBytes: Sized {
+    const LEN: usize = std::mem::size_of::<Self>();
+    fn from_bytes(bytes: [u8; Self::LEN], endian: Endian) -> Self;
+    fn to_bytes(&self, endian: Endian) -> [u8; Self::LEN];
+}
+
+fn with_bytes_as_primitive<T, F>(bytes: &mut [u8], endian: Endian, mut fun: F)
+where
+    T: ToFromBytes,
+    F: FnMut(&mut T),
+    [(); T::LEN]:,
+{
+    if let Ok(arr) = bytes.try_into() {
+        let mut prim = T::from_bytes(arr, endian);
+        fun(&mut prim);
+        bytes.copy_from_slice(prim.to_bytes(endian).as_slice());
+    }
+}
+
+macro_rules! to_from_impl {
+    ($prim:ty) => {
+        impl ToFromBytes for $prim {
+            fn from_bytes(bytes: [u8; Self::LEN], endian: Endian) -> Self {
+                match endian {
+                    Endian::Le => <$prim>::from_le_bytes(bytes),
+                    Endian::Be => <$prim>::from_be_bytes(bytes),
+                }
+            }
+            fn to_bytes(&self, endian: Endian) -> [u8; Self::LEN] {
+                match endian {
+                    Endian::Le => self.to_le_bytes(),
+                    Endian::Be => self.to_be_bytes(),
+                }
+            }
+        }
+    };
+}
+
+to_from_impl!(i8);
+to_from_impl!(u8);
+to_from_impl!(i16);
+to_from_impl!(u16);
+to_from_impl!(i32);
+to_from_impl!(u32);
+to_from_impl!(i64);
+to_from_impl!(u64);
+to_from_impl!(f32);
+to_from_impl!(f64);
+
 fn field_edit_ui(
     ui: &mut egui::Ui,
     field: &crate::struct_meta_item::StructField,
@@ -116,64 +165,59 @@ fn field_edit_ui(
             signed,
             endian,
         } => match (size, signed, endian) {
-            (IPrimSize::S8, true, Endian::Le) => {
-                ui.add(egui::DragValue::new(
-                    &mut bytemuck::cast_slice_mut::<u8, i8>(byte_slice)[0],
-                ));
+            (IPrimSize::S8, true, _) => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut i8| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
-            (IPrimSize::S8, true, Endian::Be) => {
-                ui.add(egui::DragValue::new(
-                    &mut bytemuck::cast_slice_mut::<u8, i8>(byte_slice)[0],
-                ));
+            (IPrimSize::S8, false, _) => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut u8| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
-            (IPrimSize::S8, false, Endian::Le) => {
-                ui.add(egui::DragValue::new(&mut byte_slice[0]));
+            (IPrimSize::S16, true, _) => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut i16| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
-            (IPrimSize::S8, false, Endian::Be) => {
-                ui.add(egui::DragValue::new(&mut byte_slice[0]));
+            (IPrimSize::S16, false, _) => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut u16| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
-            (IPrimSize::S16, true, Endian::Le) => {
-                ui.label("<todo>");
+            (IPrimSize::S32, true, _) => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut i32| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
-            (IPrimSize::S16, true, Endian::Be) => {
-                ui.label("<todo>");
+            (IPrimSize::S32, false, _) => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut u32| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
-            (IPrimSize::S16, false, Endian::Le) => {
-                match bytemuck::try_from_bytes_mut::<u16>(byte_slice) {
-                    Ok(num) => {
-                        ui.add(egui::DragValue::new(num));
-                    }
-                    Err(e) => {
-                        ui.label(e.to_string());
-                    }
-                }
+            (IPrimSize::S64, true, _) => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut i64| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
-            (IPrimSize::S16, false, Endian::Be) => {
-                ui.label("<todo>");
+            (IPrimSize::S64, false, _) => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut u64| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
-            (IPrimSize::S32, true, Endian::Le) => {
-                ui.label("<todo>");
+        },
+        StructTy::FloatPrimitive { size, endian } => match size {
+            IPrimSize::S8 => todo!(),
+            IPrimSize::S16 => todo!(),
+            IPrimSize::S32 => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut f32| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
-            (IPrimSize::S32, true, Endian::Be) => {
-                ui.label("<todo>");
-            }
-            (IPrimSize::S32, false, Endian::Le) => {
-                ui.label("<todo>");
-            }
-            (IPrimSize::S32, false, Endian::Be) => {
-                ui.label("<todo>");
-            }
-            (IPrimSize::S64, true, Endian::Le) => {
-                ui.label("<todo>");
-            }
-            (IPrimSize::S64, true, Endian::Be) => {
-                ui.label("<todo>");
-            }
-            (IPrimSize::S64, false, Endian::Le) => {
-                ui.label("<todo>");
-            }
-            (IPrimSize::S64, false, Endian::Be) => {
-                ui.label("<todo>");
+            IPrimSize::S64 => {
+                with_bytes_as_primitive(byte_slice, *endian, |num: &mut f64| {
+                    ui.add(egui::DragValue::new(num));
+                });
             }
         },
         StructTy::Array { .. } => {

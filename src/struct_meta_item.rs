@@ -85,6 +85,14 @@ fn try_resolve_ty(ty: structparse::Ty) -> anyhow::Result<StructTy> {
                     signed: false,
                     endian: Endian::Le,
                 },
+                "f32" => StructTy::FloatPrimitive {
+                    size: IPrimSize::S32,
+                    endian: Endian::Le,
+                },
+                "f64" => StructTy::FloatPrimitive {
+                    size: IPrimSize::S64,
+                    endian: Endian::Le,
+                },
                 _ => anyhow::bail!("Unknown type"),
             };
             Ok(ty)
@@ -102,7 +110,7 @@ pub struct StructField {
     pub ty: StructTy,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum Endian {
     Le,
     Be,
@@ -140,6 +148,11 @@ pub enum StructTy {
         endian: Endian,
     },
 
+    FloatPrimitive {
+        size: IPrimSize,
+        endian: Endian,
+    },
+
     Array {
         item_ty: Box<StructTy>,
         len: usize,
@@ -150,6 +163,12 @@ impl StructTy {
     pub fn size(&self) -> usize {
         match self {
             Self::IntegerPrimitive { size, .. } => match size {
+                IPrimSize::S8 => 1,
+                IPrimSize::S16 => 2,
+                IPrimSize::S32 => 4,
+                IPrimSize::S64 => 8,
+            },
+            Self::FloatPrimitive { size, .. } => match size {
                 IPrimSize::S8 => 1,
                 IPrimSize::S16 => 2,
                 IPrimSize::S32 => 4,
@@ -189,12 +208,14 @@ impl StructTy {
                     (IPrimSize::S64, false, Endian::Be) => from_byte_slice!(U64Be),
                 }
             }
-            StructTy::Array { .. } => None,
+            StructTy::Array { .. } | StructTy::FloatPrimitive { .. } => None,
         }
     }
     pub fn endian_mut(&mut self) -> &mut Endian {
         match self {
-            StructTy::IntegerPrimitive { endian, .. } => endian,
+            StructTy::IntegerPrimitive { endian, .. } | StructTy::FloatPrimitive { endian, .. } => {
+                endian
+            }
             StructTy::Array { item_ty, .. } => item_ty.endian_mut(),
         }
     }
@@ -208,6 +229,11 @@ impl std::fmt::Display for StructTy {
                 let size = self.size() * 8;
                 let endian = endian.label();
                 write!(f, "{sign}{size}-{endian}")
+            }
+            StructTy::FloatPrimitive { endian, .. } => {
+                let size = self.size() * 8;
+                let endian = endian.label();
+                write!(f, "f{size}-{endian}")
             }
             StructTy::Array { item_ty, len } => {
                 write!(f, "[{item_ty}; {len}]")
