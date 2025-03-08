@@ -33,27 +33,15 @@ pub struct HexUi {
     pub rulers: HashMap<ViewKey, Ruler>,
 }
 
+#[derive(Default)]
 pub struct Ruler {
-    pub color: RgbaColor,
+    pub color: RgbaColor = RgbaColor { r: 255, g: 255, b: 0,a: 255},
     /// Horizontal offset in pixels
     pub hoffset: i16,
     /// Frequency of ruler lines
-    pub freq: u8,
-}
-
-impl Default for Ruler {
-    fn default() -> Self {
-        Self {
-            color: RgbaColor {
-                r: 255,
-                g: 255,
-                b: 0,
-                a: 255,
-            },
-            hoffset: 0,
-            freq: 1,
-        }
-    }
+    pub freq: u8 = 1,
+    /// If set, it will try to layout ruler based on the struct fields
+    pub struct_idx: Option<usize>,
 }
 
 impl HexUi {

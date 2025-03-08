@@ -8,6 +8,7 @@ use {
         hex_conv,
         hex_ui::HexUi,
         meta::{PerspectiveMap, RegionMap, ViewKey, region::Region},
+        struct_meta_item::StructMetaItem,
         view::ViewKind,
     },
     egui_sfml::sfml::{
@@ -37,6 +38,7 @@ fn draw_view(
     key: ViewKey,
     app_perspectives: &PerspectiveMap,
     app_regions: &RegionMap,
+    app_structs: &[StructMetaItem],
     app_data: &[u8],
     app_hex_ui: &HexUi,
     app_ui: &Gui,
@@ -149,20 +151,46 @@ fn draw_view(
         let view_cols =
             usize::try_from(view.cols()).expect("Bug: view.cols() returned negative number");
         let end = view_p_cols.min(view.scroll_offset.col + view_cols);
-        for col in view.scroll_offset.col..end {
-            if col % usize::from(ruler.freq) == 0 {
-                let x_offset = i16::try_from(col - view.scroll_offset.col)
-                    .expect("Bug: x offset larger than i16::MAX");
-                let line_x = (x_offset
-                    * i16::try_from(view.col_w).expect("Bug: col_w larger than i16::MAX"))
-                    - view.scroll_offset.pix_xoff;
-                draw_vline(
-                    vertex_buffer,
-                    f32::from(line_x + ruler.hoffset),
-                    f32::from(y),
-                    f32::from(h),
-                    ruler.color.into(),
-                );
+        match ruler.struct_idx {
+            Some(idx) => {
+                let Some(struct_) = app_structs.get(idx) else {
+                    gamedebug_core::per!("Dangling struct index: {idx}");
+                    return;
+                };
+                let mut col = 0;
+                for field in &struct_.fields {
+                    let x_offset = i16::try_from(col - view.scroll_offset.col)
+                        .expect("Bug: x offset larger than i16::MAX");
+                    let line_x = (x_offset
+                        * i16::try_from(view.col_w).expect("Bug: col_w larger than i16::MAX"))
+                        - view.scroll_offset.pix_xoff;
+                    draw_vline(
+                        vertex_buffer,
+                        f32::from(line_x + ruler.hoffset),
+                        f32::from(y),
+                        f32::from(h),
+                        ruler.color.into(),
+                    );
+                    col += field.ty.size();
+                }
+            }
+            None => {
+                for col in view.scroll_offset.col..end {
+                    if col % usize::from(ruler.freq) == 0 {
+                        let x_offset = i16::try_from(col - view.scroll_offset.col)
+                            .expect("Bug: x offset larger than i16::MAX");
+                        let line_x = (x_offset
+                            * i16::try_from(view.col_w).expect("Bug: col_w larger than i16::MAX"))
+                            - view.scroll_offset.pix_xoff;
+                        draw_vline(
+                            vertex_buffer,
+                            f32::from(line_x + ruler.hoffset),
+                            f32::from(y),
+                            f32::from(h),
+                            ruler.color.into(),
+                        );
+                    }
+                }
             }
         }
     }
@@ -397,6 +425,7 @@ impl View {
                     key,
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
+                    &app.meta_state.meta.structs,
                     &app.data,
                     &app.hex_ui,
                     gui,
@@ -460,6 +489,7 @@ impl View {
                     key,
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
+                    &app.meta_state.meta.structs,
                     &app.data,
                     &app.hex_ui,
                     gui,
@@ -523,6 +553,7 @@ impl View {
                     key,
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
+                    &app.meta_state.meta.structs,
                     &app.data,
                     &app.hex_ui,
                     gui,
@@ -588,6 +619,7 @@ impl View {
                     key,
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
+                    &app.meta_state.meta.structs,
                     &app.data,
                     &app.hex_ui,
                     gui,

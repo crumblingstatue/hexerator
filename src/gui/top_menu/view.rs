@@ -33,6 +33,18 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                 ui.add(egui::DragValue::new(&mut ruler.freq));
                 ui.label("Horizontal offset");
                 ui.add(egui::DragValue::new(&mut ruler.hoffset));
+                ui.menu_button("struct", |ui| {
+                    for (i, struct_) in app.meta_state.meta.structs.iter().enumerate() {
+                        if ui.selectable_label(ruler.struct_idx == Some(i), &struct_.name).clicked()
+                        {
+                            ruler.struct_idx = Some(i);
+                        }
+                    }
+                    ui.separator();
+                    if ui.button("Unassociate").clicked() {
+                        ruler.struct_idx = None;
+                    }
+                });
             }
             None => {
                 if ui.button("Add ruler for current view").clicked() {
