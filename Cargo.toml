@@ -81,3 +81,4 @@ vergen-gitcl = { version = "1.0.0", default-features = false, features = ["build
 
 [workspace]
 members = ["hexerator-plugin-api", "plugins/hello-world"]
+exclude = ["scripts"]
