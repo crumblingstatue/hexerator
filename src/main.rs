@@ -961,6 +961,7 @@ fn handle_key_pressed(
         Key::F8 => gui.win.regions.open.toggle(),
         Key::F9 => gui.win.bookmarks.open.toggle(),
         Key::F10 => gui.win.vars.open.toggle(),
+        Key::F11 => gui.win.structs.open.toggle(),
         Key::Escape => {
             gui.context_menu = None;
             if let Some(view_key) = app.hex_ui.focused_view {

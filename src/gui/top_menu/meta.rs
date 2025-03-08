@@ -20,7 +20,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         gui.win.vars.open.toggle();
         ui.close_menu();
     }
-    if ui.add(Button::new("Structs")).clicked() {
+    if ui.add(Button::new("Structs").shortcut_text("F11")).clicked() {
         gui.win.structs.open.toggle();
         ui.close_menu();
     }
