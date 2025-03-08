@@ -1,6 +1,6 @@
 use {
     super::WindowOpen,
-    crate::struct_meta_item::{Endian, IPrimSize, StructMetaItem, StructTy},
+    crate::struct_meta_item::{Endian, StructMetaItem, StructPrimitive, StructTy},
     egui_code_editor::{CodeEditor, Syntax},
 };
 
@@ -160,61 +160,53 @@ fn field_edit_ui(
     byte_slice: &mut [u8],
 ) {
     match &field.ty {
-        StructTy::IntegerPrimitive {
-            size,
-            signed,
-            endian,
-        } => match (size, signed, endian) {
-            (IPrimSize::S8, true, _) => {
+        StructTy::Primitive { ty, endian } => match ty {
+            StructPrimitive::I8 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut i8| {
                     ui.add(egui::DragValue::new(num));
                 });
             }
-            (IPrimSize::S8, false, _) => {
+            StructPrimitive::U8 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut u8| {
                     ui.add(egui::DragValue::new(num));
                 });
             }
-            (IPrimSize::S16, true, _) => {
+            StructPrimitive::I16 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut i16| {
                     ui.add(egui::DragValue::new(num));
                 });
             }
-            (IPrimSize::S16, false, _) => {
+            StructPrimitive::U16 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut u16| {
                     ui.add(egui::DragValue::new(num));
                 });
             }
-            (IPrimSize::S32, true, _) => {
+            StructPrimitive::I32 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut i32| {
                     ui.add(egui::DragValue::new(num));
                 });
             }
-            (IPrimSize::S32, false, _) => {
+            StructPrimitive::U32 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut u32| {
                     ui.add(egui::DragValue::new(num));
                 });
             }
-            (IPrimSize::S64, true, _) => {
+            StructPrimitive::I64 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut i64| {
                     ui.add(egui::DragValue::new(num));
                 });
             }
-            (IPrimSize::S64, false, _) => {
+            StructPrimitive::U64 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut u64| {
                     ui.add(egui::DragValue::new(num));
                 });
             }
-        },
-        StructTy::FloatPrimitive { size, endian } => match size {
-            IPrimSize::S8 => todo!(),
-            IPrimSize::S16 => todo!(),
-            IPrimSize::S32 => {
+            StructPrimitive::F32 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut f32| {
                     ui.add(egui::DragValue::new(num));
                 });
             }
-            IPrimSize::S64 => {
+            StructPrimitive::F64 => {
                 with_bytes_as_primitive(byte_slice, *endian, |num: &mut f64| {
                     ui.add(egui::DragValue::new(num));
                 });
