@@ -75,6 +75,9 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         retain
     });
     if let Some(path) = reload {
+        // Safety: This will cause UB on a bad plugin. Nothing we can do.
+        //
+        // It's up to the user not to load bad plugins.
         unsafe {
             match PluginContainer::new(path) {
                 Ok(plugin) => {

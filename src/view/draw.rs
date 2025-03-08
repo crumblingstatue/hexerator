@@ -673,6 +673,7 @@ impl View {
             -1.0,
         );
         if app.hex_ui.scissor_views {
+            // Safety: It's just some OpenGL calls, it's fine, trust me
             unsafe {
                 glu_sys::glEnable(glu_sys::GL_SCISSOR_TEST);
                 #[expect(
@@ -710,6 +711,7 @@ impl View {
         }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
         if app.hex_ui.scissor_views {
+            // Safety: It's an innocent OpenGL call
             unsafe {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
             }

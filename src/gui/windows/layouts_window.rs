@@ -131,6 +131,7 @@ impl super::Window for LayoutsWindow {
                         if let Some((b_row, b_col)) = layout.idx_of_key(b) {
                             let addr_a = &raw mut layout.view_grid[a_row][a_col];
                             let addr_b = &raw mut layout.view_grid[b_row][b_col];
+                            // Safety: `addr_a` and `addr_b` are r/w valid and well-aligned
                             unsafe {
                                 std::ptr::swap(addr_a, addr_b);
                             }

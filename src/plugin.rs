@@ -32,6 +32,9 @@ impl HexeratorHandle for App {
 
 impl PluginContainer {
     pub unsafe fn new(path: PathBuf) -> anyhow::Result<Self> {
+        // Safety: This will cause UB on a bad plugin. Nothing we can do.
+        //
+        // It's up to the user not to load bad plugins.
         unsafe {
             let lib = libloading::Library::new(&path)?;
             let plugin_init = lib.get::<fn() -> Box<dyn Plugin>>(b"hexerator_plugin_new")?;

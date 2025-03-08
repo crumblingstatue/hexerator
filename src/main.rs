@@ -22,7 +22,8 @@
     clippy::needless_pass_by_ref_mut,
     clippy::semicolon_if_nothing_returned,
     clippy::items_after_statements,
-    clippy::unused_trait_names
+    clippy::unused_trait_names,
+    clippy::undocumented_unsafe_blocks
 )]
 #![expect(
     incomplete_features,
@@ -144,9 +145,8 @@ fn try_main() -> anyhow::Result<()> {
     });
     let mut style = egui::Style::default();
     style.interaction.show_tooltips_only_when_still = true;
-    let font = unsafe {
-        Font::from_memory(include_bytes!("../DejaVuSansMono.ttf")).context("Failed to load font")?
-    };
+    let font = Font::from_memory_static(include_bytes!("../DejaVuSansMono.ttf"))
+        .context("Failed to load font")?;
     let mut gui = Gui::default();
     gui.win.open_process.default_meta_path.clone_from(&args.meta);
     transfer_pinned_folders_to_file_dialog(&mut gui, &mut cfg);

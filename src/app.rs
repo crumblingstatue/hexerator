@@ -114,6 +114,9 @@ impl App {
             stream_buffer_size: args.src.stream_buffer_size.unwrap_or(DEFAULT_STREAM_BUFFER_SIZE),
         };
         for path in args.load_plugin {
+            // Safety: This will cause UB on a bad plugin. Nothing we can do.
+            //
+            // It's up to the user not to load bad plugins.
             this.plugins.push(unsafe { PluginContainer::new(path)? });
         }
         if args.autosave {
