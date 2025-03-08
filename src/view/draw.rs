@@ -34,6 +34,7 @@ struct DrawArgs<'vert, 'data> {
 
 fn draw_view(
     view: &View,
+    key: ViewKey,
     app_perspectives: &PerspectiveMap,
     app_regions: &RegionMap,
     app_data: &[u8],
@@ -139,7 +140,9 @@ fn draw_view(
             }
         }
     }
-    if app_hex_ui.ruler.enabled && app_hex_ui.ruler.freq != 0 {
+    if let Some(ruler) = app_hex_ui.rulers.get(&key)
+        && ruler.freq != 0
+    {
         let y = view.viewport_rect.y;
         let h = view.viewport_rect.h;
         let view_p_cols = view.p_cols(app_perspectives);
@@ -147,7 +150,7 @@ fn draw_view(
             usize::try_from(view.cols()).expect("Bug: view.cols() returned negative number");
         let end = view_p_cols.min(view.scroll_offset.col + view_cols);
         for col in view.scroll_offset.col..end {
-            if col % usize::from(app_hex_ui.ruler.freq) == 0 {
+            if col % usize::from(ruler.freq) == 0 {
                 let x_offset = i16::try_from(col - view.scroll_offset.col)
                     .expect("Bug: x offset larger than i16::MAX");
                 let line_x = (x_offset
@@ -155,10 +158,10 @@ fn draw_view(
                     - view.scroll_offset.pix_xoff;
                 draw_vline(
                     vertex_buffer,
-                    f32::from(line_x + app_hex_ui.ruler.hoffset),
+                    f32::from(line_x + ruler.hoffset),
                     f32::from(y),
                     f32::from(h),
-                    app_hex_ui.ruler.color.into(),
+                    ruler.color.into(),
                 );
             }
         }
@@ -391,6 +394,7 @@ impl View {
             ViewKind::Hex(hex) => {
                 draw_view(
                     &this.view,
+                    key,
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
@@ -453,6 +457,7 @@ impl View {
             ViewKind::Dec(dec) => {
                 draw_view(
                     &this.view,
+                    key,
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
@@ -515,6 +520,7 @@ impl View {
             ViewKind::Text(text) => {
                 draw_view(
                     &this.view,
+                    key,
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,
@@ -579,6 +585,7 @@ impl View {
             ViewKind::Block => {
                 draw_view(
                     &this.view,
+                    key,
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                     &app.data,

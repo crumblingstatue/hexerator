@@ -7,7 +7,7 @@ use {
         view::ViewportRect,
     },
     slotmap::Key as _,
-    std::time::Duration,
+    std::{collections::HashMap, time::Duration},
 };
 
 /// State related to the hex view ui, different from the egui gui overlay
@@ -30,11 +30,10 @@ pub struct HexUi {
     pub scissor_views: bool,
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
-    pub ruler: Ruler,
+    pub rulers: HashMap<ViewKey, Ruler>,
 }
 
 pub struct Ruler {
-    pub enabled: bool,
     pub color: RgbaColor,
     /// Horizontal offset in pixels
     pub hoffset: i16,
@@ -45,7 +44,6 @@ pub struct Ruler {
 impl Default for Ruler {
     fn default() -> Self {
         Self {
-            enabled: false,
             color: RgbaColor {
                 r: 255,
                 g: 255,
@@ -108,7 +106,7 @@ impl Default for HexUi {
             hex_iface_rect: ViewportRect::default(),
             show_alt_overlay: false,
             current_layout: LayoutKey::null(),
-            ruler: Ruler::default(),
+            rulers: HashMap::new(),
         }
     }
 }

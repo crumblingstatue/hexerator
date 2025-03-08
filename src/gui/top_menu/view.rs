@@ -1,5 +1,5 @@
 use {
-    crate::{app::App, gui::Gui, meta::LayoutMapExt as _},
+    crate::{app::App, gui::Gui, hex_ui::Ruler, meta::LayoutMapExt as _},
     egui::Button,
 };
 
@@ -18,16 +18,31 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
             ui.close_menu();
         }
     });
-    ui.menu_button("Ruler", |ui| {
-        ui.checkbox(&mut app.hex_ui.ruler.enabled, "enabled");
-        ui.label("Color (right or middle click when open)");
-        app.hex_ui.ruler.color.with_as_egui_mut(|c| {
-            ui.color_edit_button_srgba(c);
-        });
-        ui.label("Frequency");
-        ui.add(egui::DragValue::new(&mut app.hex_ui.ruler.freq));
-        ui.label("Horizontal offset");
-        ui.add(egui::DragValue::new(&mut app.hex_ui.ruler.hoffset));
+    ui.menu_button("Ruler", |ui| match app.focused_view_mut() {
+        Some((key, _view)) => match app.hex_ui.rulers.get_mut(&key) {
+            Some(ruler) => {
+                if ui.button("Remove").clicked() {
+                    app.hex_ui.rulers.remove(&key);
+                    return;
+                }
+                ui.label("Color (right or middle click when open)");
+                ruler.color.with_as_egui_mut(|c| {
+                    ui.color_edit_button_srgba(c);
+                });
+                ui.label("Frequency");
+                ui.add(egui::DragValue::new(&mut ruler.freq));
+                ui.label("Horizontal offset");
+                ui.add(egui::DragValue::new(&mut ruler.hoffset));
+            }
+            None => {
+                if ui.button("Add ruler for current view").clicked() {
+                    app.hex_ui.rulers.insert(key, Ruler::default());
+                }
+            }
+        },
+        None => {
+            ui.label("<No active view>");
+        }
     });
     if ui.add(Button::new("Layouts...").shortcut_text("F5")).clicked() {
         gui.win.layouts.open.toggle();

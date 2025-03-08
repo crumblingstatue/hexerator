@@ -722,6 +722,11 @@ impl App {
             max_hi.clamp(0, self.data.len()),
         )
     }
+    pub(crate) fn focused_view_mut(&mut self) -> Option<(ViewKey, &mut View)> {
+        self.hex_ui.focused_view.and_then(|key| {
+            self.meta_state.meta.views.get_mut(key).map(|view| (key, &mut view.view))
+        })
+    }
     pub(crate) fn focused_view_select_all(&mut self) {
         if let Some(view) = self.hex_ui.focused_view {
             let p_key = self.meta_state.meta.views[view].view.perspective;
