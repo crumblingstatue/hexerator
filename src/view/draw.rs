@@ -160,8 +160,11 @@ fn draw_view(
                 let mut col = 0;
                 for field in &struct_.fields {
                     col += field.ty.size();
-                    let x_offset = i16::try_from(col - view.scroll_offset.col)
-                        .expect("Bug: x offset larger than i16::MAX");
+                    let x_off = col.saturating_sub(view.scroll_offset.col);
+                    let Ok(x_offset) = i16::try_from(x_off) else {
+                        gamedebug_core::per!("Bug: x offset ({x_off}) larger than i16::MAX");
+                        continue;
+                    };
                     let line_x = (x_offset
                         * i16::try_from(view.col_w).expect("Bug: col_w larger than i16::MAX"))
                         - view.scroll_offset.pix_xoff;
