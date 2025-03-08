@@ -159,6 +159,7 @@ fn draw_view(
                 };
                 let mut col = 0;
                 for field in &struct_.fields {
+                    col += field.ty.size();
                     let x_offset = i16::try_from(col - view.scroll_offset.col)
                         .expect("Bug: x offset larger than i16::MAX");
                     let line_x = (x_offset
@@ -171,7 +172,6 @@ fn draw_view(
                         f32::from(h),
                         ruler.color.into(),
                     );
-                    col += field.ty.size();
                 }
             }
             None => {
