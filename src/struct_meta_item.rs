@@ -9,15 +9,17 @@ use {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct StructMetaItem {
     pub name: String,
+    pub src: String,
     pub fields: Vec<StructField>,
 }
 
 impl StructMetaItem {
-    pub fn new(parsed: structparse::Struct) -> anyhow::Result<Self> {
+    pub fn new(parsed: structparse::Struct, src: String) -> anyhow::Result<Self> {
         let fields: anyhow::Result<Vec<StructField>> =
             parsed.fields.into_iter().map(try_resolve_field).collect();
         Ok(Self {
             name: parsed.name.to_string(),
+            src,
             fields: fields?,
         })
     }

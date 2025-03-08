@@ -1,6 +1,6 @@
 use {
     self::{perspective::Perspective, region::Region, value_type::ValueType},
-    crate::{layout::Layout, view::View},
+    crate::{layout::Layout, struct_meta_item::StructMetaItem, view::View},
     serde::{Deserialize, Serialize},
     slotmap::{SlotMap, new_key_type},
     std::{collections::HashMap, io::Write as _},
@@ -119,6 +119,8 @@ pub struct Meta {
     /// Script to execute when a document loads
     #[serde(default)]
     pub onload_script: Option<ScriptKey>,
+    #[serde(default)]
+    pub structs: Vec<StructMetaItem>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

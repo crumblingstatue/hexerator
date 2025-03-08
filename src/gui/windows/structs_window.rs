@@ -10,6 +10,7 @@ pub struct StructsWindow {
     struct_text_buf: String,
     parsed_struct: Option<StructMetaItem>,
     error_label: String,
+    selected_idx: Option<usize>,
 }
 
 fn read_ty_as_usize_at(data: &[u8], ty: &StructTy, offset: usize) -> Option<usize> {
@@ -18,6 +19,14 @@ fn read_ty_as_usize_at(data: &[u8], ty: &StructTy, offset: usize) -> Option<usiz
 
 impl super::Window for StructsWindow {
     fn ui(&mut self, super::WinCtx { ui, app, .. }: super::WinCtx) {
+        for (i, struct_) in app.meta_state.meta.structs.iter().enumerate() {
+            if ui.selectable_label(self.selected_idx == Some(i), &struct_.name).clicked() {
+                self.selected_idx = Some(i);
+                self.struct_text_buf = struct_.src.clone();
+                self.parsed_struct = Some(struct_.clone());
+            }
+        }
+        ui.separator();
         let re = CodeEditor::default()
             .with_syntax(Syntax::rust())
             .show(ui, &mut self.struct_text_buf)
@@ -26,7 +35,7 @@ impl super::Window for StructsWindow {
         if re.changed() {
             self.error_label.clear();
             match structparse::Struct::parse(&self.struct_text_buf) {
-                Ok(struct_) => match StructMetaItem::new(struct_) {
+                Ok(struct_) => match StructMetaItem::new(struct_, self.struct_text_buf.clone()) {
                     Ok(struct_) => {
                         self.parsed_struct = Some(struct_);
                     }
@@ -35,6 +44,7 @@ impl super::Window for StructsWindow {
                     }
                 },
                 Err(e) => {
+                    self.parsed_struct = None;
                     self.error_label = format!("Parse error: {e}");
                 }
             }
@@ -47,6 +57,24 @@ impl super::Window for StructsWindow {
                 ui.label(egui::RichText::new(&self.error_label).color(egui::Color32::RED));
             }
         });
+        ui.separator();
+        match &mut self.parsed_struct {
+            Some(struct_) => {
+                if ui.button("Save").clicked() {
+                    struct_.src = self.struct_text_buf.clone();
+                    if let Some(s) =
+                        app.meta_state.meta.structs.iter_mut().find(|s| s.name == struct_.name)
+                    {
+                        *s = struct_.clone();
+                    } else {
+                        app.meta_state.meta.structs.push(struct_.clone());
+                    }
+                }
+            }
+            None => {
+                ui.add_enabled(false, egui::Button::new("Save"));
+            }
+        }
     }
 
     fn title(&self) -> &str {
@@ -92,7 +120,10 @@ fn struct_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::a
             .iter()
             .find(|bm| bm.offset == reg.begin)
             .map_or(String::new(), |bm| format!(" ({})", bm.label));
-        ui.heading(format!("Object at row {row}{bm_name}"));
+        ui.heading(format!(
+            "{structname} at row {row}{bm_name}",
+            structname = struct_.name
+        ));
         for (off, field) in struct_.fields_with_offsets_mut() {
             ui.horizontal(|ui| {
                 let data_off = reg.begin + off;
