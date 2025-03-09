@@ -33,7 +33,7 @@ struct DrawArgs<'vert, 'data> {
     highlight: bool,
 }
 
-fn draw_view(
+fn draw_view<'f>(
     view: &View,
     key: ViewKey,
     app_perspectives: &PerspectiveMap,
@@ -43,6 +43,8 @@ fn draw_view(
     app_hex_ui: &HexUi,
     app_ui: &Gui,
     vertex_buffer: &mut Vec<Vertex>,
+    overlay_texts: &mut Vec<Text<'f>>,
+    font: &'f Font,
     mut drawfn: impl FnMut(DrawArgs),
 ) {
     // Protect against infinite loop lock up when scrolling horizontally out of view
@@ -158,16 +160,26 @@ fn draw_view(
                     return;
                 };
                 let mut col = 0;
-                for field in &struct_.fields {
+                for (i, field) in struct_.fields.iter().enumerate() {
+                    // Draw field names if alt overlay is enabled
+                    // TODO: Very hacky, needs proper support in the future
+                    if app_hex_ui.show_alt_overlay
+                        && let Some(line_x) = line_x(view, col)
+                    {
+                        let mut text = Text::new(&field.name, font, 12);
+                        text.set_outline_thickness(1.0);
+                        text.set_fill_color(Color::WHITE);
+                        text.set_outline_color(Color::BLACK);
+                        let y_offs = [24.0, 48.0, 64.0];
+                        let y_off = y_offs[i % y_offs.len()];
+                        let x = line_x + ruler.hoffset;
+                        text.set_position((f32::from(x), f32::from(y) + y_off));
+                        overlay_texts.push(text);
+                    }
                     col += field.ty.size();
-                    let x_off = col.saturating_sub(view.scroll_offset.col);
-                    let Ok(x_offset) = i16::try_from(x_off) else {
-                        gamedebug_core::per!("Bug: x offset ({x_off}) larger than i16::MAX");
+                    let Some(line_x) = line_x(view, col) else {
                         continue;
                     };
-                    let line_x = (x_offset
-                        * i16::try_from(view.col_w).expect("Bug: col_w larger than i16::MAX"))
-                        - view.scroll_offset.pix_xoff;
                     draw_vline(
                         vertex_buffer,
                         f32::from(line_x + ruler.hoffset),
@@ -197,6 +209,17 @@ fn draw_view(
             }
         }
     }
+}
+
+fn line_x(view: &View, col: usize) -> Option<i16> {
+    let x_off = col.checked_sub(view.scroll_offset.col)?;
+    let Ok(x_offset) = i16::try_from(x_off) else {
+        gamedebug_core::per!("Bug: x offset ({x_off}) larger than i16::MAX");
+        return None;
+    };
+    let line_x = (x_offset * i16::try_from(view.col_w).expect("Bug: col_w larger than i16::MAX"))
+        - view.scroll_offset.pix_xoff;
+    Some(line_x)
 }
 
 fn draw_text_cursor(
@@ -421,6 +444,7 @@ impl View {
         let Some(this) = app.meta_state.meta.views.get(key) else {
             return;
         };
+        let mut overlay_texts = Vec::new();
         match &this.view.kind {
             ViewKind::Hex(hex) => {
                 draw_view(
@@ -433,6 +457,8 @@ impl View {
                     &app.hex_ui,
                     gui,
                     vertex_buffer,
+                    &mut overlay_texts,
+                    font,
                     |DrawArgs {
                          vertices,
                          x,
@@ -497,6 +523,8 @@ impl View {
                     &app.hex_ui,
                     gui,
                     vertex_buffer,
+                    &mut overlay_texts,
+                    font,
                     |DrawArgs {
                          vertices,
                          x,
@@ -561,6 +589,8 @@ impl View {
                     &app.hex_ui,
                     gui,
                     vertex_buffer,
+                    &mut overlay_texts,
+                    font,
                     |DrawArgs {
                          vertices,
                          x,
@@ -627,6 +657,8 @@ impl View {
                     &app.hex_ui,
                     gui,
                     vertex_buffer,
+                    &mut overlay_texts,
+                    font,
                     |DrawArgs {
                          vertices,
                          x,
@@ -694,7 +726,6 @@ impl View {
                 glu_sys::glScissor(x, y, w, h);
             }
         }
-        let mut overlay_text = None;
         if app.hex_ui.show_alt_overlay {
             let mut text = Text::new(&this.name, font, 16);
             text.set_position((
@@ -710,7 +741,7 @@ impl View {
                 text_bounds.height,
                 Color::rgba(32, 32, 32, 200),
             );
-            overlay_text = Some(text);
+            overlay_texts.push(text);
         }
         window.draw_primitives(vertex_buffer, PrimitiveType::QUADS, &rs);
         if app.hex_ui.scissor_views {
@@ -719,7 +750,7 @@ impl View {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
             }
         }
-        if let Some(text) = overlay_text {
+        for text in overlay_texts {
             window.draw_text(&text, &RenderStates::DEFAULT);
         }
     }
