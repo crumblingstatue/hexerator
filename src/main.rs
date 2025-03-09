@@ -1,3 +1,4 @@
+#![doc(html_no_source)]
 #![feature(
     try_blocks,
     array_chunks,
