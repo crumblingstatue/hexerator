@@ -318,7 +318,7 @@ impl App {
     }
     /// Reload only what's visible on the screen (current layout)
     fn reload_visible(&mut self) -> anyhow::Result<()> {
-        let (lo, hi) = self.visible_byte_range();
+        let [lo, hi] = self.visible_byte_range();
         self.reload_range(lo, hi)
     }
     pub fn reload_range(&mut self, lo: usize, hi: usize) -> anyhow::Result<()> {
@@ -648,7 +648,7 @@ impl App {
         layout.iter().map(|key| &self.meta_state.meta.views[key])
     }
     /// Largest visible byte range in the current perspective
-    fn visible_byte_range(&self) -> (usize, usize) {
+    fn visible_byte_range(&self) -> [usize; 2] {
         let mut min_lo = self.data.len();
         let mut max_hi = 0;
         for view in self.active_views() {
@@ -661,10 +661,7 @@ impl App {
             let hi = lo + view.view.bytes_per_page(&self.meta_state.meta.low.perspectives);
             max_hi = std::cmp::max(max_hi, hi);
         }
-        (
-            min_lo.clamp(0, self.data.len()),
-            max_hi.clamp(0, self.data.len()),
-        )
+        [min_lo, max_hi].map(|v| v.clamp(0, self.data.len()))
     }
     pub(crate) fn focused_view_mut(&mut self) -> Option<(ViewKey, &mut View)> {
         self.hex_ui.focused_view.and_then(|key| {
