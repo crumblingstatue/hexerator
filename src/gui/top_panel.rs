@@ -20,13 +20,21 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
         if app.hex_ui.select_a.is_some() || app.hex_ui.select_b.is_some() {
             ui.label("Selection");
         }
+        let mut action_focus = None;
         if let Some(a) = &mut app.hex_ui.select_a {
-            ui.label("a");
+            if ui.link("a").clicked() {
+                action_focus = Some(*a);
+            }
             ui.add(egui::DragValue::new(a));
         }
         if let Some(b) = &mut app.hex_ui.select_b {
-            ui.label("b");
+            if ui.link("b").clicked() {
+                action_focus = Some(*b);
+            }
             ui.add(egui::DragValue::new(b));
+        }
+        if let Some(off) = action_focus {
+            app.search_focus(off);
         }
         if let Some(sel) = app.hex_ui.selection()
             && let Some(view_key) = app.hex_ui.focused_view
