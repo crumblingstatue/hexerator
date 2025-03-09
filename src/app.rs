@@ -870,6 +870,21 @@ impl App {
         }
     }
 
+    pub(crate) fn focus_first_view_of_key(
+        app_hex_ui: &mut HexUi,
+        app_meta: &Meta,
+        view_key: ViewKey,
+    ) {
+        if let Some(layout_key) = app_meta
+            .layouts
+            .iter()
+            .find_map(|(k, l)| l.contains_view(view_key).then_some(k))
+        {
+            App::switch_layout(app_hex_ui, app_meta, layout_key);
+            app_hex_ui.focused_view = Some(view_key);
+        }
+    }
+
     pub(crate) fn load_proc_memory(
         &mut self,
         pid: sysinfo::Pid,

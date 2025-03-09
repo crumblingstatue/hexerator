@@ -110,6 +110,13 @@ impl super::Window for ViewsWindow {
                         if re.clicked() {
                             self.selected = view_key;
                         }
+                        if re.double_clicked() {
+                            App::focus_first_view_of_key(
+                                &mut app.hex_ui,
+                                &app.meta_state.meta,
+                                view_key,
+                            );
+                        }
                     });
                     row.col(|ui| {
                         ui.label(egui::RichText::new(view.view.kind.name()).code());
