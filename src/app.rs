@@ -168,6 +168,12 @@ impl App {
                 msg_fail(&err, "Couldn't switch layout", msg);
             }
         }
+        if let Some(name) = args.view {
+            if !Self::focus_first_view_of_name(&mut this.hex_ui, &this.meta_state.meta, &name) {
+                let err = anyhow::anyhow!("No view with name '{name}' found.");
+                msg_fail(&err, "Couldn't focus view", msg);
+            }
+        }
         Ok(this)
     }
     pub fn reload(&mut self) -> anyhow::Result<()> {
@@ -832,6 +838,22 @@ impl App {
         match app_meta.layouts.iter().find(|(_k, v)| v.name == name) {
             Some((k, _v)) => {
                 Self::switch_layout(app_hex_ui, app_meta, k);
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// Tries to focus a view with the given name. Returns `false` if a view with that name wasn't found.
+    #[must_use]
+    pub(crate) fn focus_first_view_of_name(
+        app_hex_ui: &mut HexUi,
+        app_meta: &Meta,
+        name: &str,
+    ) -> bool {
+        match app_meta.views.iter().find(|(_k, v)| v.name == name) {
+            Some((k, _v)) => {
+                Self::focus_first_view_of_key(app_hex_ui, app_meta, k);
                 true
             }
             None => false,

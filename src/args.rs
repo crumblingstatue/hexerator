@@ -41,6 +41,9 @@ pub struct Args {
     /// Open this layout on startup instead of the default
     #[arg(long, value_name = "name")]
     pub layout: Option<String>,
+    /// Focus the first instance of this view on startup
+    #[arg(long, value_name = "name")]
+    pub view: Option<String>,
     #[arg(long)]
     /// Load a dynamic library plugin at startup
     pub load_plugin: Vec<PathBuf>,
