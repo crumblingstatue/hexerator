@@ -48,6 +48,10 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
                 sel.len()
             ))
             .on_hover_text_deferred(|| human_size(sel.len()));
+            if ui.button("Clear").clicked() {
+                app.hex_ui.select_a = None;
+                app.hex_ui.select_b = None;
+            }
         }
         if !gui.highlight_set.is_empty() {
             ui.label(format!("{} bytes highlighted", gui.highlight_set.len()));
