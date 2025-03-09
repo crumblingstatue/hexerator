@@ -923,9 +923,20 @@ fn handle_key_pressed(
                     InteractMode::View => {
                         view.go_home();
                     }
-                    InteractMode::Edit => {
+                    InteractMode::Edit if key_mod.ctrl => {
                         view.go_home();
                         app.edit_state.cursor = app.meta_state.meta.low.start_offset_of_view(view);
+                    }
+                    InteractMode::Edit => {
+                        if let Some(row_start) = app.find_row_start(app.edit_state.cursor) {
+                            app.edit_state.cursor = row_start;
+                            keep_cursor_in_view(
+                                &mut app.meta_state.meta.views[key].view,
+                                &app.meta_state.meta.low.perspectives,
+                                &app.meta_state.meta.low.regions,
+                                app.edit_state.cursor,
+                            );
+                        }
                     }
                 }
             }
@@ -940,9 +951,20 @@ fn handle_key_pressed(
                             &app.meta_state.meta.low.regions,
                         );
                     }
-                    InteractMode::Edit => {
+                    InteractMode::Edit if key_mod.ctrl => {
                         app.edit_state.cursor = app.meta_state.meta.low.end_offset_of_view(view);
                         app.center_view_on_offset(app.edit_state.cursor);
+                    }
+                    InteractMode::Edit => {
+                        if let Some(row_end) = app.find_row_end(app.edit_state.cursor) {
+                            app.edit_state.cursor = row_end;
+                            keep_cursor_in_view(
+                                &mut app.meta_state.meta.views[key].view,
+                                &app.meta_state.meta.low.perspectives,
+                                &app.meta_state.meta.low.regions,
+                                app.edit_state.cursor,
+                            );
+                        }
                     }
                 }
             }

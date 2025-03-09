@@ -702,12 +702,13 @@ impl App {
     }
     /// Returns the row and column of the provided byte position, according to focused perspective
     pub(crate) fn row_col_of_byte_pos(&self, pos: usize) -> Option<[usize; 2]> {
-        let per = Self::focused_perspective(&self.hex_ui, &self.meta_state.meta);
-        per.map(|per| {
-            let cols = per.cols;
-            let region_begin = self.meta_state.meta.low.regions[per.region].region.begin;
-            let byte_pos = pos.saturating_sub(region_begin);
-            [byte_pos / cols, byte_pos % cols]
+        Self::focused_perspective(&self.hex_ui, &self.meta_state.meta)
+            .map(|per| calc_perspective_row_col(pos, per, &self.meta_state.meta.low.regions))
+    }
+    /// Returns the byte position of the provided row and column, according to focused perspective
+    pub(crate) fn byte_pos_of_row_col(&self, row: usize, col: usize) -> Option<usize> {
+        Self::focused_perspective(&self.hex_ui, &self.meta_state.meta).map(|per| {
+            calc_perspective_row_col_offset(row, col, per, &self.meta_state.meta.low.regions)
         })
     }
     /// Returns the row and column of the current cursor, according to focused perspective
@@ -725,6 +726,43 @@ impl App {
         let per_key = self.meta_state.meta.views[view_key].view.perspective;
         self.meta_state.meta.low.perspectives[per_key].region
     }
+    /// Figure out the byte offset of the row `offset` is on
+    pub(crate) fn find_row_start(&self, offset: usize) -> Option<usize> {
+        match self.row_col_of_byte_pos(offset) {
+            Some([row, _col]) => self.byte_pos_of_row_col(row, 0),
+            None => None,
+        }
+    }
+    /// Figure out the byte offset of the row `offset` is on + end
+    pub(crate) fn find_row_end(&self, offset: usize) -> Option<usize> {
+        Self::focused_perspective(&self.hex_ui, &self.meta_state.meta).map(|per| {
+            let [row, _col] =
+                calc_perspective_row_col(offset, per, &self.meta_state.meta.low.regions);
+            calc_perspective_row_col_offset(
+                row,
+                per.cols.saturating_sub(1),
+                per,
+                &self.meta_state.meta.low.regions,
+            )
+        })
+    }
+}
+
+fn calc_perspective_row_col(pos: usize, per: &Perspective, regions: &RegionMap) -> [usize; 2] {
+    let cols = per.cols;
+    let region_begin = regions[per.region].region.begin;
+    let byte_pos = pos.saturating_sub(region_begin);
+    [byte_pos / cols, byte_pos % cols]
+}
+
+fn calc_perspective_row_col_offset(
+    row: usize,
+    col: usize,
+    per: &Perspective,
+    regions: &RegionMap,
+) -> usize {
+    let region_begin = regions[per.region].region.begin;
+    row * per.cols + col + region_begin
 }
 
 /// Editing
