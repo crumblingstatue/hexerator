@@ -110,7 +110,7 @@ impl super::Window for ExternalCommandWindow {
         });
         ui.horizontal(|ui| {
             ui.add_enabled(
-                app.hex_ui.selection().is_some(),
+                app.hex_ui.selection().is_some() && self.working_dir == WorkingDir::Temp,
                 egui::Checkbox::new(&mut self.selection_only, "Selection only"),
             );
             ui.checkbox(&mut self.inherited_streams, "Inherited stdout/stderr")
@@ -141,15 +141,18 @@ impl super::Window for ExternalCommandWindow {
                         0..=app.data.len() - 1
                     };
                     let dir: PathBuf;
+                    let file_path: PathBuf;
                     match self.working_dir {
                         WorkingDir::Temp => {
                             dir = std::env::temp_dir();
                             let path = dir.join(&self.temp_file_name);
                             let data = app.data.get(range).context("Range out of bounds")?;
                             std::fs::write(&path, data)?;
+                            file_path = path.clone();
                         }
                         WorkingDir::Hexerator => {
                             dir = std::env::current_dir()?;
+                            file_path = dir.clone();
                         }
                         WorkingDir::Document => match &app.src_args.file {
                             Some(path) => {
@@ -157,6 +160,7 @@ impl super::Window for ExternalCommandWindow {
                                     .parent()
                                     .context("Document path has no parent")?
                                     .to_path_buf();
+                                file_path = dir.clone();
                             }
                             None => {
                                 do yeet anyhow::anyhow!("Document has no path");
@@ -166,7 +170,7 @@ impl super::Window for ExternalCommandWindow {
 
                     // Spawn process
                     let mut cmd = Command::new(cmd);
-                    cmd.current_dir(&dir).args(resolve_args(args, &dir));
+                    cmd.current_dir(&dir).args(resolve_args(args, &file_path));
                     if self.inherited_streams {
                         cmd.stdout(Stdio::inherit());
                         cmd.stderr(Stdio::inherit());
