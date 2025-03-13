@@ -327,7 +327,7 @@ impl super::Window for FindDialog {
                                         }
                                     };
                                     if let Some(damage) = damage {
-                                        app.edit_state.widen_dirty_region(damage);
+                                        app.data.widen_dirty_region(damage);
                                     }
                                 });
                                 row.col(|ui| {

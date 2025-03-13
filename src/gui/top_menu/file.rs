@@ -84,7 +84,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
     if ui
         .add_enabled(
             matches!(&app.source, Some(src) if src.attr.permissions.write)
-                && app.edit_state.dirty_region.is_some(),
+                && app.data.dirty_region.is_some(),
             Button::new("Save").shortcut_text("Ctrl+S"),
         )
         .clicked()

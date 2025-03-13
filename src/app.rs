@@ -8,6 +8,7 @@ use {
         args::{Args, SourceArgs},
         config::Config,
         damage_region::DamageRegion,
+        data::Data,
         gui::{
             Gui,
             message_dialog::{Icon, MessageDialog},
@@ -52,9 +53,7 @@ pub mod presentation;
 
 /// The hexerator application state
 pub struct App {
-    pub data: Vec<u8>,
-    /// Original data length. Compared with current data length to detect truncation.
-    pub orig_data_len: usize,
+    pub data: Data,
     pub edit_state: EditState,
     pub input: Input,
     pub src_args: SourceArgs,
@@ -85,8 +84,7 @@ impl App {
         match &mut self.source {
             Some(src) => match &mut src.provider {
                 SourceProvider::File(file) => {
-                    self.data = read_contents(&self.src_args, file)?;
-                    self.edit_state.dirty_region = None;
+                    self.data = Data::clean_from_buf(read_contents(&self.src_args, file)?);
                 }
                 SourceProvider::Stdin(_) => {
                     bail!("Can't reload streaming sources like standard input")
@@ -121,8 +119,6 @@ impl App {
             msg,
             &mut self.cmd,
         ) {
-            // Loaded new file, set the "original" data length to this length to prepare for truncation/etc.
-            self.orig_data_len = self.data.len();
             // Set up meta
             if !self.preferences.keep_meta {
                 if let Some(meta_path) = meta_path {
@@ -191,7 +187,7 @@ impl App {
             None => bail!("No surce opened, nothing to save"),
         };
         // If the file was truncated, we completely save over it
-        if self.data.len() != self.orig_data_len {
+        if self.data.len() != self.data.orig_data_len {
             msg.open(
                 Icon::Warn,
                 "File truncated/extended",
@@ -213,7 +209,7 @@ impl App {
         }
         let offset = self.src_args.hard_seek.unwrap_or(0);
         file.seek(SeekFrom::Start(offset as u64))?;
-        let data_to_write = match self.edit_state.dirty_region {
+        let data_to_write = match self.data.dirty_region {
             Some(region) => {
                 eprintln!(
                     "Writing dirty region {}..{}, size {}",
@@ -238,7 +234,7 @@ impl App {
             anyhow::bail!("No data to write (possibly out of bounds indexing)");
         };
         file.write_all(data_to_write)?;
-        self.edit_state.dirty_region = None;
+        self.data.undirty();
         if let Err(e) = self.save_temp_metafile_backup() {
             per!("Failed to save metafile backup: {}", e);
         }
@@ -254,8 +250,7 @@ impl App {
         file.set_len(self.data.len() as u64)?;
         file.rewind()?;
         file.write_all(&self.data)?;
-        self.edit_state.dirty_region = None;
-        self.orig_data_len = self.data.len();
+        self.data.undirty();
         Ok(())
     }
     pub(crate) fn source_file(&self) -> Option<&Path> {
@@ -278,6 +273,8 @@ impl App {
                 read_only,
                 stream: false,
                 stream_buffer_size: None,
+                unsafe_mmap: None,
+                mmap_len: None,
             },
             None,
             msg,
@@ -288,7 +285,7 @@ impl App {
 
     pub fn close_file(&mut self) {
         // We potentially had large data, free it instead of clearing the Vec
-        self.data = Vec::new();
+        self.data.close();
         self.src_args.file = None;
         self.source = None;
     }
@@ -767,7 +764,7 @@ impl App {
     pub(crate) fn mod_byte_at_cursor(&mut self, f: impl FnOnce(&mut u8)) {
         if let Some(byte) = self.data.get_mut(self.edit_state.cursor) {
             f(byte);
-            self.edit_state.widen_dirty_region(DamageRegion::Single(self.edit_state.cursor));
+            self.data.widen_dirty_region(DamageRegion::Single(self.edit_state.cursor));
         }
     }
 
@@ -777,13 +774,6 @@ impl App {
 
     pub(crate) fn dec_byte_at_cursor(&mut self) {
         self.mod_byte_at_cursor(|b| *b = b.wrapping_sub(1));
-    }
-    pub(crate) fn zero_fill_region(&mut self, region: Region) {
-        let range = region.begin..=region.end;
-        if let Some(data) = self.data.get_mut(range.clone()) {
-            data.fill(0);
-            self.edit_state.widen_dirty_region(DamageRegion::RangeInclusive(range));
-        }
     }
 }
 
@@ -802,8 +792,7 @@ impl App {
             args.src = recent.clone();
         }
         let mut this = Self {
-            orig_data_len: 0,
-            data: Vec::new(),
+            data: Data::default(),
             edit_state: EditState::default(),
             input: Input::default(),
             src_args: SourceArgs::default(),
@@ -856,8 +845,7 @@ impl App {
                     this.source = Some(Source::file(f));
                     this.src_args.file = Some(path);
                 }
-                this.data = vec![0; new_len];
-                this.orig_data_len = new_len;
+                this.data = Data::clean_from_buf(vec![0; new_len]);
                 // Set clean meta for the newly allocated buffer
                 this.set_new_clean_meta(font_size, line_spacing);
             }
@@ -977,7 +965,7 @@ impl App {
                 &self.meta_state.meta.low.regions,
             );
         }
-        if self.preferences.auto_save && self.edit_state.dirty_region.is_some() {
+        if self.preferences.auto_save && self.data.dirty_region.is_some() {
             if let Err(e) = self.save(&mut gui.msg_dialog) {
                 per!("Save fail: {}", e);
             }
@@ -1168,6 +1156,8 @@ fn load_proc_memory_linux(
             read_only: !is_write,
             stream: false,
             stream_buffer_size: None,
+            unsafe_mmap: None,
+            mmap_len: None,
         },
         None,
         msg,
@@ -1272,7 +1262,7 @@ fn load_file_from_src_args(
     src_args: &mut SourceArgs,
     cfg: &mut Config,
     source: &mut Option<Source>,
-    data: &mut Vec<u8>,
+    data: &mut Data,
     msg: &mut MessageDialog,
     cmd: &mut CommandQueue,
 ) -> bool {
@@ -1291,7 +1281,6 @@ fn load_file_from_src_args(
         } else {
             let result: std::io::Result<()> = try {
                 let mut file = open_file(file_arg, src_args.read_only)?;
-                data.clear();
                 if let Some(path) = &mut src_args.file {
                     match path.canonicalize() {
                         Ok(canon) => *path = canon,
@@ -1309,7 +1298,26 @@ fn load_file_from_src_args(
                 }
                 cfg.recent.use_(src_args.clone());
                 if !src_args.stream {
-                    *data = read_contents(&*src_args, &mut file)?;
+                    if let Some(mmap_mode) = src_args.unsafe_mmap {
+                        let mut opts = memmap2::MmapOptions::new();
+                        if let Some(len) = src_args.mmap_len {
+                            opts.len(len);
+                        }
+                        // Safety:
+                        //
+                        // Memory mapped file access cannot be made 100% safe, not much we can do here.
+                        //
+                        // The command line option is called `--unsafe-mmap` to reflect this.
+                        let map = unsafe {
+                            match mmap_mode {
+                                crate::args::MmapMode::Cow => opts.map_copy(&file)?,
+                                crate::args::MmapMode::Mut => opts.map_mut(&file)?,
+                            }
+                        };
+                        *data = Data::new_mmap(map);
+                    } else {
+                        *data = Data::clean_from_buf(read_contents(&*src_args, &mut file)?);
+                    }
                 }
                 *source = Some(Source {
                     provider: SourceProvider::File(file),

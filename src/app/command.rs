@@ -138,7 +138,7 @@ pub fn perform_command(
         Cmd::PasteBytes { at, bytes } => {
             let range = at..at + bytes.len();
             app.data[range.clone()].copy_from_slice(&bytes);
-            app.edit_state.widen_dirty_region(DamageRegion::Range(range));
+            app.data.widen_dirty_region(DamageRegion::Range(range));
         }
         Cmd::ProcessSourceChange => {
             app.backend_cmd.push(BackendCmd::SetWindowTitle(format!(

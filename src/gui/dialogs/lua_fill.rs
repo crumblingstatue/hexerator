@@ -58,7 +58,7 @@ impl Dialog for LuaFillDialog {
                 for (i, b) in app.data[sel.begin..=sel.end].iter_mut().enumerate() {
                     *b = f.call((i, *b))?;
                 }
-                app.edit_state.dirty_region = Some(sel);
+                app.data.dirty_region = Some(sel);
             };
             if let Err(e) = res {
                 self.result_info_string = e.to_string();
@@ -69,7 +69,7 @@ impl Dialog for LuaFillDialog {
                 self.err = false;
             }
         }
-        if app.edit_state.dirty_region.is_some() {
+        if app.data.dirty_region.is_some() {
             ui.label(
                 egui::RichText::new("Unsaved changes")
                     .italics()

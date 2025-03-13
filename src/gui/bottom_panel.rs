@@ -142,7 +142,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
         }
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             let mut txt = egui::RichText::new(format!("File size: {}", app.data.len()));
-            let truncated = app.data.len() != app.orig_data_len;
+            let truncated = app.data.len() != app.data.orig_data_len;
             if truncated {
                 txt = txt.color(egui::Color32::RED);
             }
@@ -156,7 +156,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
             });
             if truncated {
                 label_re = label_re.on_hover_text_deferred(|| {
-                    format!("Length changed, orig.: {}", app.orig_data_len)
+                    format!("Length changed, orig.: {}", app.data.orig_data_len)
                 });
             }
             if label_re.clicked() {

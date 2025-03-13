@@ -1,8 +1,9 @@
 use {
     super::{WinCtx, WindowOpen},
     crate::{
-        app::{edit_state::EditState, set_clipboard_string},
+        app::set_clipboard_string,
         damage_region::DamageRegion,
+        data::Data,
         gui::{message_dialog::MessageDialog, windows::regions_window::region_context_menu},
         meta::{
             Bookmark, find_most_specific_region_for_offset,
@@ -145,7 +146,6 @@ impl super::Window for BookmarksWindow {
                             let result = value_ui(
                                 bookmark,
                                 &mut app.data,
-                                &mut app.edit_state,
                                 ui,
                                 &mut app.clipboard,
                                 &mut gui.msg_dialog,
@@ -269,7 +269,6 @@ impl super::Window for BookmarksWindow {
                 let result = value_ui(
                     mark,
                     &mut app.data,
-                    &mut app.edit_state,
                     ui,
                     &mut app.clipboard,
                     &mut gui.msg_dialog,
@@ -356,15 +355,14 @@ impl super::Window for BookmarksWindow {
 
 fn value_ui(
     bm: &Bookmark,
-    data: &mut [u8],
-    edit_state: &mut EditState,
+    data: &mut Data,
     ui: &mut Ui,
     cb: &mut arboard::Clipboard,
     msg: &mut MessageDialog,
 ) -> anyhow::Result<Action> {
     macro_rules! val_ui_dispatch {
         ($i:ident) => {
-            $i.value_ui_for_self(bm, data, edit_state, ui, cb, msg).to_action()
+            $i.value_ui_for_self(bm, data, ui, cb, msg).to_action()
         };
     }
     Ok(match &bm.value_type {
@@ -403,8 +401,7 @@ trait ValueTrait: EndianedPrimitive {
     fn value_ui_for_self(
         &self,
         bm: &Bookmark,
-        data: &mut [u8],
-        edit_state: &mut EditState,
+        data: &mut Data,
         ui: &mut Ui,
         cb: &mut arboard::Clipboard,
         msg: &mut MessageDialog,
@@ -421,7 +418,7 @@ trait ValueTrait: EndianedPrimitive {
                 )]
                 let out = self.value_change_ui(ui, slice.try_into().unwrap(), cb, msg);
                 if out.changed {
-                    edit_state.widen_dirty_region(DamageRegion::Range(range));
+                    data.widen_dirty_region(DamageRegion::Range(range));
                 }
                 out.action
             }

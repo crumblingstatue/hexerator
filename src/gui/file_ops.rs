@@ -249,6 +249,8 @@ impl FileOps {
                             read_only: false,
                             stream: false,
                             stream_buffer_size: None,
+                            unsafe_mmap: None,
+                            mmap_len: None,
                         });
                     };
                     msg_if_fail(result, "Failed to save as", msg);

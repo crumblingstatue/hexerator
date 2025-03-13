@@ -2,6 +2,7 @@ use {
     crate::{
         app::{edit_state::EditState, presentation::Presentation},
         damage_region::DamageRegion,
+        data::Data,
         edit_buffer::EditBuffer,
         gui::message_dialog::{Icon, MessageDialog},
         hex_conv::merge_hex_halves,
@@ -338,7 +339,7 @@ impl View {
         unicode: char,
         edit_state: &mut EditState,
         preferences: &Preferences,
-        data: &mut [u8],
+        data: &mut Data,
         msg: &mut MessageDialog,
     ) {
         if self.char_valid(unicode) {
@@ -415,7 +416,7 @@ impl View {
     pub fn finish_editing(
         &mut self,
         edit_state: &mut EditState,
-        data: &mut [u8],
+        data: &mut Data,
         preferences: &Preferences,
         msg: &mut MessageDialog,
     ) {
@@ -425,7 +426,7 @@ impl View {
                     Some(merged) => data[edit_state.cursor] = merged,
                     None => per!("finish_editing: Failed to merge hex halves"),
                 }
-                edit_state.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
+                data.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
             }
             ViewKind::Dec(dec) => {
                 let s =
@@ -433,7 +434,7 @@ impl View {
                 match s.parse() {
                     Ok(num) => {
                         data[edit_state.cursor] = num;
-                        edit_state.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
+                        data.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
                     }
                     Err(e) => msg.open(Icon::Error, "Invalid value", e.to_string()),
                 }
@@ -443,7 +444,7 @@ impl View {
                     return;
                 };
                 *byte = text.edit_buf.buf[0];
-                edit_state.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
+                data.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
             }
             ViewKind::Block => {}
         }

@@ -61,7 +61,7 @@ impl Dialog for TruncateDialog {
         });
         let new_len = (self.end + 1) - self.begin;
         let mut text = egui::RichText::new(format!("New length: {new_len}"));
-        match new_len.cmp(&app.orig_data_len) {
+        match new_len.cmp(&app.data.orig_data_len) {
             std::cmp::Ordering::Less => text = text.color(egui::Color32::RED),
             std::cmp::Ordering::Equal => {}
             std::cmp::Ordering::Greater => text = text.color(egui::Color32::YELLOW),
@@ -90,11 +90,11 @@ impl Dialog for TruncateDialog {
                 .on_hover_text("This will change the length of the data")
                 .clicked()
             {
-                app.data.resize_with(self.end + 1, || 0);
+                app.data.resize(self.end + 1, 0);
                 app.data.drain(0..self.begin);
                 app.hex_ui.select_a = None;
                 app.hex_ui.select_b = None;
-                app.edit_state.dirty_region = Some(Region {
+                app.data.dirty_region = Some(Region {
                     begin: 0,
                     end: app.data.len(),
                 });

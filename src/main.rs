@@ -80,6 +80,7 @@ mod backend;
 mod color;
 mod config;
 mod damage_region;
+mod data;
 mod dec_conv;
 pub mod edit_buffer;
 mod find_util;
@@ -971,7 +972,7 @@ fn handle_key_pressed(
         }
         Key::Delete => {
             if let Some(sel) = app.hex_ui.selection() {
-                app.zero_fill_region(sel);
+                app.data.zero_fill_region(sel);
             } else if let Some(byte) = app.data.get_mut(app.edit_state.cursor) {
                 *byte = 0;
             }

@@ -54,7 +54,7 @@ impl Dialog for PatternFillDialog {
                         return false;
                     };
                     data_slice.pattern_fill(&values);
-                    app.edit_state.widen_dirty_region(DamageRegion::RangeInclusive(range));
+                    app.data.widen_dirty_region(DamageRegion::RangeInclusive(range));
                     false
                 }
                 Err(e) => {

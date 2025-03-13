@@ -181,7 +181,7 @@ def_method! {
 def_method! {
     "Sets the dirty region to `begin..=end`"
     set_dirty_region(_lua, exec, begin: usize, end: usize) -> () {
-        exec.app.edit_state.dirty_region = Some(Region { begin, end });
+        exec.app.data.dirty_region = Some(Region { begin, end });
         Ok(())
     }
 }

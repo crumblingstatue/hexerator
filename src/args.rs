@@ -77,4 +77,23 @@ pub struct SourceArgs {
     #[arg(long)]
     #[serde(default)]
     pub stream_buffer_size: Option<usize>,
+    /// Try to open the source using mmap rather than load into a buffer
+    #[serde(default)]
+    #[arg(long, value_name = "mode")]
+    pub unsafe_mmap: Option<MmapMode>,
+    /// Assume the memory mapped file is of this length (might be needed for looking at block devices, etc.)
+    #[serde(default)]
+    #[arg(long, value_name = "len")]
+    pub mmap_len: Option<usize>,
+}
+
+/// How the memory mapping should operate
+#[derive(Clone, Copy, clap::ValueEnum, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub enum MmapMode {
+    /// Copy-on-write memory map.
+    /// Changes are only visible locally.
+    Cow,
+    /// Mutable memory map.
+    /// *WARNING*: Any edits will immediately take effect. You can't undo your changes.
+    Mut,
 }

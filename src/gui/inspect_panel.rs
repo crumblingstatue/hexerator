@@ -616,7 +616,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                 app.center_view_on_offset(app.edit_state.cursor);
                 app.hex_ui.flash_cursor();
             }
-            Action::AddDirty(damage) => app.edit_state.widen_dirty_region(damage),
+            Action::AddDirty(damage) => app.data.widen_dirty_region(damage),
             Action::JumpForward(amount) => {
                 app.edit_state.set_cursor(app.edit_state.cursor + amount);
                 app.center_view_on_offset(app.edit_state.cursor);

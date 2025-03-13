@@ -35,7 +35,7 @@ pub fn selection_menu(
             clicked = true;
         }
         if ui.add(Button::new("Zero fill").shortcut_text("Del")).clicked() {
-            app.zero_fill_region(sel);
+            app.data.zero_fill_region(sel);
             ui.close_menu();
             clicked = true;
         }
@@ -52,7 +52,7 @@ pub fn selection_menu(
         if ui.button("Random fill").clicked() {
             let range = sel.begin..=sel.end;
             rand::rng().fill_bytes(&mut app.data[range.clone()]);
-            app.edit_state.widen_dirty_region(DamageRegion::RangeInclusive(range));
+            app.data.widen_dirty_region(DamageRegion::RangeInclusive(range));
             ui.close_menu();
             clicked = true;
         }

@@ -136,7 +136,7 @@ impl super::Window for LuaEditorWindow {
                         ui.text_edit_singleline(&mut self.args_string);
                     });
                     ui.separator();
-                    if app.edit_state.dirty_region.is_some() {
+                    if app.data.dirty_region.is_some() {
                         ui.label(
                             egui::RichText::new("Unsaved changes")
                                 .italics()
