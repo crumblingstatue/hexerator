@@ -16,7 +16,7 @@ impl super::Window for PerspectivesWindow {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         TableBuilder::new(ui)
-            .columns(Column::auto(), 3)
+            .columns(Column::auto(), 4)
             .column(Column::remainder())
             .striped(true)
             .resizable(true)
@@ -28,7 +28,10 @@ impl super::Window for PerspectivesWindow {
                     ui.label("Region");
                 });
                 row.col(|ui| {
-                    ui.label("Column count");
+                    ui.label("Columns");
+                });
+                row.col(|ui| {
+                    ui.label("Rows");
                 });
                 row.col(|ui| {
                     ui.label("Flip row order");
@@ -103,6 +106,20 @@ impl super::Window for PerspectivesWindow {
                         ui.add(egui::DragValue::new(
                             &mut app.meta_state.meta.low.perspectives[keys[idx]].cols,
                         ));
+                    });
+                    row.col(|ui| {
+                        let per = &app.meta_state.meta.low.perspectives[keys[idx]];
+                        let reg = &app.meta_state.meta.low.regions[per.region];
+                        let reg_len = reg.region.len();
+                        let cols = per.cols;
+                        let rows = reg_len / cols;
+                        let rem = reg_len % cols;
+                        let rem_str: &str = if rem == 0 {
+                            ""
+                        } else {
+                            &format!(" (rem: {rem})")
+                        };
+                        ui.label(format!("{rows}{rem_str}"));
                     });
                     row.col(|ui| {
                         ui.checkbox(
