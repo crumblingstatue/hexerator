@@ -19,7 +19,6 @@ use {
         system::Vector2,
     },
     either::Either,
-    glu_sys::GLint,
     slotmap::Key as _,
 };
 
@@ -716,7 +715,7 @@ impl View {
                     reason = "Huge window sizes (>32000) are not supported."
                 )]
                 let vh = window.size().y as i16;
-                let (x, y, w, h) = rect_to_gl_viewport(
+                let [x, y, w, h] = rect_to_gl_viewport(
                     this.view.viewport_rect.x - 2,
                     this.view.viewport_rect.y - 2,
                     this.view.viewport_rect.w + 3,
@@ -756,22 +755,17 @@ impl View {
     }
 }
 
-fn rect_to_gl_viewport(x: i16, y: i16, w: i16, h: i16, viewport_h: i16) -> (i32, i32, i32, i32) {
-    (
-        GLint::from(x),
-        GLint::from(viewport_h - (y + h)),
-        GLint::from(w),
-        GLint::from(h),
-    )
+fn rect_to_gl_viewport(x: i16, y: i16, w: i16, h: i16, viewport_h: i16) -> [i32; 4] {
+    [x, viewport_h - (y + h), w, h].map(glu_sys::GLint::from)
 }
 
 #[test]
 fn test_rect_to_gl() {
     let vh = 1080;
-    assert_eq!(rect_to_gl_viewport(0, 0, 0, 0, vh), (0, 1080, 0, 0));
+    assert_eq!(rect_to_gl_viewport(0, 0, 0, 0, vh), [0, 1080, 0, 0]);
     assert_eq!(
         rect_to_gl_viewport(100, 480, 300, 400, vh),
-        (100, 200, 300, 400)
+        [100, 200, 300, 400]
     );
 }
 
