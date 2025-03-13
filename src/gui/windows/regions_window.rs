@@ -4,6 +4,7 @@ use {
         app::command::{Cmd, CommandQueue},
         gui::command::{GCmd, GCommandQueue},
         meta::{Meta, NamedRegion, RegionKey},
+        util::human_size,
     },
     egui_extras::{Column, TableBuilder},
 };
@@ -114,6 +115,11 @@ impl super::Window for RegionsWindow {
                     }
                 });
             });
+            ui.label(format!(
+                "Length: {} ({})",
+                reg.region.len(),
+                human_size(reg.region.len())
+            ));
             if self.select_active {
                 app.hex_ui.select_a = Some(reg.region.begin);
                 app.hex_ui.select_b = Some(reg.region.end);
