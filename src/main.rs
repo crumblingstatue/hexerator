@@ -413,8 +413,6 @@ fn do_frame(
     }
     sf_egui.draw(di, window, None);
     window.display();
-    // Should only be true on the frame right after reloading
-    app.just_reloaded = false;
     gamedebug_core::inc_frame();
     if app.quit_requested {
         return Ok(false);

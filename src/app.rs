@@ -58,7 +58,6 @@ pub struct App {
     pub input: Input,
     pub src_args: SourceArgs,
     pub source: Option<Source>,
-    pub just_reloaded: bool,
     stream_read_recv: Option<Receiver<Vec<u8>>>,
     pub cfg: Config,
     last_reload: Instant,
@@ -100,7 +99,6 @@ impl App {
             },
             None => bail!("No file to reload"),
         }
-        self.just_reloaded = true;
         Ok(())
     }
     pub(crate) fn load_file_args(
@@ -797,7 +795,6 @@ impl App {
             input: Input::default(),
             src_args: SourceArgs::default(),
             source: None,
-            just_reloaded: true,
             stream_read_recv: None,
             cfg,
             last_reload: Instant::now(),
