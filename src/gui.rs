@@ -61,6 +61,7 @@ pub struct Gui {
     pub fileops: FileOps,
     pub win: Windows,
     pub colorix: Option<Colorix>,
+    pub show_quick_scroll_popup: bool,
 }
 
 pub trait Dialog {
