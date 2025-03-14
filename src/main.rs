@@ -410,6 +410,13 @@ fn do_frame(
             txt.set_position((f32::from(mp.x), f32::from(mp.y + 15)));
             window.draw_text(&txt, &RenderStates::DEFAULT);
         }
+        // Mouse drag selection
+        if let Some(a) = app.hex_ui.lmb_drag_offset
+            && offs != a
+        {
+            app.hex_ui.select_a = Some(a);
+            app.hex_ui.select_b = Some(offs);
+        }
     }
     sf_egui.draw(di, window, None);
     window.display();
@@ -584,6 +591,7 @@ fn handle_events(
                 if button == mouse::Button::Left {
                     gui.context_menu = None;
                     if let Some((off, _view_idx)) = app.byte_offset_at_pos(mp.x, mp.y) {
+                        app.hex_ui.lmb_drag_offset = Some(off);
                         app.edit_state.set_cursor(off);
                     }
                     if let Some(view_idx) = app.view_idx_at_pos(mp.x, mp.y) {
@@ -626,6 +634,12 @@ fn handle_events(
                         }
                     }
                 }
+            }
+            Event::MouseButtonReleased {
+                button: mouse::Button::Left,
+                ..
+            } => {
+                app.hex_ui.lmb_drag_offset = None;
             }
             Event::LostFocus => {
                 // When alt-tabbing, keys held down can get "stuck", because the key release events won't reach us

@@ -32,6 +32,8 @@ pub struct HexUi {
     /// When alt is being held, it shows things like names of views as overlays
     pub show_alt_overlay: bool,
     pub rulers: HashMap<ViewKey, Ruler>,
+    /// If `Some`, contains the last byte offset the cursor was clicked at, while lmb is being held down
+    pub lmb_drag_offset: Option<usize>,
 }
 
 #[derive(Default)]
