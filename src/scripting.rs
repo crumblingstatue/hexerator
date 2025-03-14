@@ -163,6 +163,27 @@ def_method! {
 }
 
 def_method! {
+    "Reads a binary blob at `offset` of length `len`"
+    read_blob(_lua, exec, offset: usize, len: usize) -> Vec<u8> {
+        match exec
+        .app
+        .data
+        .get(offset..offset + len)
+    {
+        Some(slice) => Ok(slice.to_vec()),
+        None => Err("out of bounds".into_lua_err()),
+    }
+    }
+}
+
+def_method! {
+    "Saves binary blob `blob` to `path` on the filesystem"
+    save_blob(_lua, _exec, blob: Vec<u8>, path: String) -> () {
+        std::fs::write(path, blob).into_lua_err()
+    }
+}
+
+def_method! {
     "Fills a range from `start` to `end` with the value `fill`"
     fill_range(_lua, exec, start: usize, end: usize, fill: u8) -> () {
         match exec
@@ -378,6 +399,8 @@ macro_rules! for_each_method {
         $m!(write_u8);
         $m!(read_u16_le);
         $m!(read_u32_le);
+        $m!(read_blob);
+        $m!(save_blob);
         $m!(fill_range);
         $m!(set_dirty_region);
         $m!(save);
