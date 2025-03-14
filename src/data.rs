@@ -24,7 +24,7 @@ impl std::fmt::Debug for DataProvider {
         match self {
             Self::Vec(..) => f.write_str("Vec"),
             Self::MmapMut(..) => f.write_str("MmapMut"),
-            Self::MmapImmut(..) => f.write_str("MmapRaw"),
+            Self::MmapImmut(..) => f.write_str("MmapImmut"),
         }
     }
 }
