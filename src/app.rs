@@ -1306,13 +1306,17 @@ fn load_file_from_src_args(
                         // Memory mapped file access cannot be made 100% safe, not much we can do here.
                         //
                         // The command line option is called `--unsafe-mmap` to reflect this.
-                        let map = unsafe {
+                        *data = unsafe {
                             match mmap_mode {
-                                crate::args::MmapMode::Cow => opts.map_copy(&file)?,
-                                crate::args::MmapMode::Mut => opts.map_mut(&file)?,
+                                crate::args::MmapMode::Cow => {
+                                    Data::new_mmap_mut(opts.map_copy(&file)?)
+                                }
+                                crate::args::MmapMode::DangerousMut => {
+                                    Data::new_mmap_mut(opts.map_mut(&file)?)
+                                }
+                                crate::args::MmapMode::Ro => Data::new_mmap_immut(opts.map(&file)?),
                             }
                         };
-                        *data = Data::new_mmap(map);
                     } else {
                         *data = Data::clean_from_buf(read_contents(&*src_args, &mut file)?);
                     }

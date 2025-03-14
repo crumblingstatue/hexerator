@@ -15,14 +15,16 @@ pub struct Data {
 
 enum DataProvider {
     Vec(Vec<u8>),
-    Mmap(memmap2::MmapMut),
+    MmapMut(memmap2::MmapMut),
+    MmapImmut(memmap2::Mmap),
 }
 
 impl std::fmt::Debug for DataProvider {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Vec(..) => f.write_str("Vec"),
-            Self::Mmap(..) => f.write_str("Mmap"),
+            Self::MmapMut(..) => f.write_str("MmapMut"),
+            Self::MmapImmut(..) => f.write_str("MmapRaw"),
         }
     }
 }
@@ -35,10 +37,17 @@ impl Data {
             dirty_region: None,
         }
     }
-    pub(crate) fn new_mmap(mmap: memmap2::MmapMut) -> Self {
+    pub(crate) fn new_mmap_mut(mmap: memmap2::MmapMut) -> Self {
         Self {
             orig_data_len: mmap.len(),
-            data: Some(DataProvider::Mmap(mmap)),
+            data: Some(DataProvider::MmapMut(mmap)),
+            dirty_region: None,
+        }
+    }
+    pub(crate) fn new_mmap_immut(mmap: memmap2::Mmap) -> Self {
+        Self {
+            orig_data_len: mmap.len(),
+            data: Some(DataProvider::MmapImmut(mmap)),
             dirty_region: None,
         }
     }
@@ -125,7 +134,8 @@ impl Deref for Data {
     fn deref(&self) -> &Self::Target {
         match &self.data {
             Some(DataProvider::Vec(v)) => v,
-            Some(DataProvider::Mmap(map)) => map,
+            Some(DataProvider::MmapMut(map)) => map,
+            Some(DataProvider::MmapImmut(map)) => map,
             None => &[],
         }
     }
@@ -135,7 +145,8 @@ impl DerefMut for Data {
     fn deref_mut(&mut self) -> &mut Self::Target {
         match &mut self.data {
             Some(DataProvider::Vec(v)) => v,
-            Some(DataProvider::Mmap(map)) => map,
+            Some(DataProvider::MmapMut(map)) => map,
+            Some(DataProvider::MmapImmut(_)) => &mut [],
             None => &mut [],
         }
     }
