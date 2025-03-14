@@ -32,10 +32,6 @@ impl Dialog for PatternFillDialog {
         _font_size: u16,
         _line_spacing: u16,
     ) -> bool {
-        let Some(sel) = app.hex_ui.selection() else {
-            ui.heading("No active selection");
-            return true;
-        };
         let re = ui.add(
             egui::TextEdit::singleline(&mut self.pattern_string)
                 .hint_text("Hex pattern (e.g. `00 ff 00`)"),
@@ -48,13 +44,15 @@ impl Dialog for PatternFillDialog {
             let values: Result<Vec<u8>, _> = parse_pattern_string(&self.pattern_string);
             match values {
                 Ok(values) => {
-                    let range = sel.begin..=sel.end;
-                    let Some(data_slice) = app.data.get_mut(range.clone()) else {
-                        gui.msg_dialog.open(Icon::Error, "Pattern fill error", format!("Invalid range for fill.\nRequested range: {range:?}\nData length: {}", app.data.len()));
-                        return false;
-                    };
-                    data_slice.pattern_fill(&values);
-                    app.data.widen_dirty_region(DamageRegion::RangeInclusive(range));
+                    for reg in app.hex_ui.selected_regions() {
+                        let range = reg.to_range();
+                        let Some(data_slice) = app.data.get_mut(range.clone()) else {
+                            gui.msg_dialog.open(Icon::Error, "Pattern fill error", format!("Invalid range for fill.\nRequested range: {range:?}\nData length: {}", app.data.len()));
+                            return false;
+                        };
+                        data_slice.pattern_fill(&values);
+                        app.data.widen_dirty_region(DamageRegion::RangeInclusive(range));
+                    }
                     false
                 }
                 Err(e) => {

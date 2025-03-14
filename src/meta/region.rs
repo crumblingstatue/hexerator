@@ -20,4 +20,7 @@ impl Region {
     pub(crate) fn contains_region(&self, reg: &Region) -> bool {
         self.begin <= reg.begin && self.end >= reg.end
     }
+    pub fn to_range(self) -> std::ops::RangeInclusive<usize> {
+        self.begin..=self.end
+    }
 }
