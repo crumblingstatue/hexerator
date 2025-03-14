@@ -103,6 +103,9 @@ pub fn do_egui(
     let di = sf_egui.run(rwin, |_rwin, ctx| {
         let mut open = IMMEDIATE.enabled() || PERSISTENT.enabled();
         let was_open = open;
+        if open {
+            app.imm_debug_fun();
+        }
         Window::new("Debug").open(&mut open).show(ctx, windows::debug_window::ui);
         if was_open && !open {
             IMMEDIATE.toggle();

@@ -47,6 +47,7 @@ use {
 
 pub mod backend_command;
 pub mod command;
+mod debug;
 pub mod edit_state;
 pub mod interact_mode;
 pub mod presentation;
