@@ -101,16 +101,22 @@ pub fn top_menu(
                                         ui.add(egui::Label::new(&s).sense(egui::Sense::click()));
                                     re.context_menu(ctx_menu);
                                     re = re.on_hover_ui(|ui| {
+                                        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
                                         if let Some(offset) = &app.src_args.hard_seek {
                                             ui.label(format!("Hard seek: {offset} ({offset:X})"));
                                         }
                                         if let Some(len) = &app.src_args.take {
                                             ui.label(format!("Take: {len}"));
                                         }
-                                        ui.heading("Source");
-                                        ui.code(format!("{:#?}", app.source));
-                                        ui.heading("Data provider");
-                                        ui.code(format!("{:#?}", app.data));
+                                        ui.collapsing("Src args", |ui| {
+                                            ui.code(format!("{:#?}", app.src_args));
+                                        });
+                                        ui.collapsing("Source", |ui| {
+                                            ui.code(format!("{:#?}", src));
+                                        });
+                                        ui.collapsing("Data provider", |ui| {
+                                            ui.code(format!("{:#?}", app.data));
+                                        });
                                         ui.label("Right click for context menu");
                                     });
                                     if re.clicked() {
