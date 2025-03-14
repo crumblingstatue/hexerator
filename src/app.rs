@@ -918,7 +918,7 @@ impl App {
                         let perspective = &self.meta_state.meta.low.perspectives[view.perspective];
                         let region =
                             &mut self.meta_state.meta.low.regions[perspective.region].region;
-                        region.end = self.data.len() - 1;
+                        region.end = self.data.len().saturating_sub(1);
                     }
                 }
                 Err(e) => match e {

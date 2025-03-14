@@ -11,6 +11,7 @@ use {
     super::{App, backend_command::BackendCmd},
     crate::{
         damage_region::DamageRegion,
+        data::Data,
         gui::Gui,
         meta::{NamedView, PerspectiveKey, RegionKey},
         scripting::exec_lua,
@@ -141,6 +142,10 @@ pub fn perform_command(
             app.data.widen_dirty_region(DamageRegion::Range(range));
         }
         Cmd::ProcessSourceChange => {
+            // Allocate a clean data buffer for streaming sources
+            if app.source.as_ref().is_some_and(|src| src.attr.stream) {
+                app.data = Data::clean_from_buf(Vec::new());
+            }
             app.backend_cmd.push(BackendCmd::SetWindowTitle(format!(
                 "{} - Hexerator",
                 app.source_file().map_or("no source", path_filename_as_str)
