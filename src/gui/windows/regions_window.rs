@@ -125,8 +125,7 @@ impl super::Window for RegionsWindow {
                 app.hex_ui.select_b = Some(reg.region.end);
             }
             if ui.checkbox(&mut self.select_active, "Select").clicked() {
-                app.hex_ui.select_a = None;
-                app.hex_ui.select_b = None;
+                app.hex_ui.clear_selections();
             }
             if let Some(sel) = app.hex_ui.selection() {
                 if ui.button("Set to selection").clicked() {

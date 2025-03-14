@@ -49,9 +49,14 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
             ))
             .on_hover_text_deferred(|| human_size(sel.len()));
             if ui.button("Clear").clicked() {
-                app.hex_ui.select_a = None;
-                app.hex_ui.select_b = None;
+                app.hex_ui.clear_selections();
             }
+        }
+        if !app.hex_ui.extra_selections.is_empty() {
+            ui.label(format!(
+                "({} extra selections)",
+                app.hex_ui.extra_selections.len()
+            ));
         }
         if !gui.highlight_set.is_empty() {
             ui.label(format!("{} bytes highlighted", gui.highlight_set.len()));

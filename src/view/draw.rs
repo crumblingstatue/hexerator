@@ -116,7 +116,7 @@ fn draw_view<'f>(
                         data,
                         idx,
                         color: c,
-                        highlight: should_highlight(app_hex_ui.selection(), idx, app_ui),
+                        highlight: should_highlight(app_hex_ui.selected_regions(), idx, app_ui),
                     });
                     /*if gamedebug_core::enabled() {
                         #[expect(
@@ -769,13 +769,10 @@ fn test_rect_to_gl() {
     );
 }
 
-fn should_highlight(app_selection: Option<Region>, idx: usize, gui: &Gui) -> bool {
-    selected(app_selection, idx) || gui.highlight_set.contains(&idx)
-}
-
-fn selected(app_selection: Option<Region>, idx: usize) -> bool {
-    match app_selection {
-        Some(sel) => (sel.begin..=sel.end).contains(&idx),
-        None => false,
-    }
+fn should_highlight(
+    mut app_selection: impl Iterator<Item = Region>,
+    idx: usize,
+    gui: &Gui,
+) -> bool {
+    app_selection.any(|reg| reg.contains(idx)) || gui.highlight_set.contains(&idx)
 }

@@ -29,8 +29,7 @@ pub fn selection_menu(
     let mut clicked = false;
     ui.menu_button(title, |ui| {
         if ui.add(Button::new("Unselect").shortcut_text("Esc")).clicked() {
-            app.hex_ui.select_a = None;
-            app.hex_ui.select_b = None;
+            app.hex_ui.clear_selections();
             ui.close_menu();
             clicked = true;
         }

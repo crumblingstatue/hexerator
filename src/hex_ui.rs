@@ -19,6 +19,8 @@ pub struct HexUi {
     /// "b" point of selection. Could be smaller or larger than "a".
     /// The length of selection is absolute difference between a and b
     pub select_b: Option<usize>,
+    /// Extra selections on top of the a-b selection
+    pub extra_selections: Vec<Region>,
     pub interact_mode: InteractMode = InteractMode::View,
     pub current_layout: LayoutKey,
     /// The currently focused view (appears with a yellow border around it)
@@ -59,6 +61,14 @@ impl HexUi {
         } else {
             None
         }
+    }
+    pub fn selected_regions(&self) -> impl Iterator<Item = Region> {
+        self.selection().into_iter().chain(self.extra_selections.iter().cloned())
+    }
+    pub fn clear_selections(&mut self) {
+        self.select_a = None;
+        self.select_b = None;
+        self.extra_selections.clear();
     }
     /// Clear existing meta references
     pub fn clear_meta_refs(&mut self) {

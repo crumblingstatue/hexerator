@@ -92,8 +92,7 @@ impl Dialog for TruncateDialog {
             {
                 app.data.resize(self.end + 1, 0);
                 app.data.drain(0..self.begin);
-                app.hex_ui.select_a = None;
-                app.hex_ui.select_b = None;
+                app.hex_ui.clear_selections();
                 app.data.dirty_region = Some(Region {
                     begin: 0,
                     end: app.data.len(),

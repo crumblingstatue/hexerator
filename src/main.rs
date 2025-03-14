@@ -7,7 +7,8 @@
     generic_const_exprs,
     macro_metavar_expr_concat,
     default_field_values,
-    yeet_expr
+    yeet_expr,
+    cmp_minmax
 )]
 #![warn(
     trivial_casts,
@@ -62,7 +63,7 @@ use {
         message_dialog::{Icon, MessageDialog},
         root_ctx_menu::{ContextMenu, ContextMenuData},
     },
-    meta::{NamedView, PerspectiveMap, RegionMap},
+    meta::{NamedView, PerspectiveMap, RegionMap, region::Region},
     mlua::Lua,
     shell::msg_if_fail,
     slotmap::Key as _,
@@ -404,7 +405,7 @@ fn do_frame(
         (b * 255.) as u8,
     ));
     draw(app, gui, window, font, vertex_buffer);
-    if let Some((offs, _view)) = app.byte_offset_at_pos(mp.x, mp.y) {
+    if let Some((offs, view_key)) = app.byte_offset_at_pos(mp.x, mp.y) {
         if let Some(bm) = app.meta_state.meta.bookmarks.iter().find(|bm| bm.offset == offs) {
             let mut txt = Text::new(&bm.label, font, 20);
             txt.set_position((f32::from(mp.x), f32::from(mp.y + 15)));
@@ -414,8 +415,37 @@ fn do_frame(
         if let Some(a) = app.hex_ui.lmb_drag_offset
             && offs != a
         {
-            app.hex_ui.select_a = Some(a);
-            app.hex_ui.select_b = Some(offs);
+            if app.input.key_down(Key::LAlt) {
+                // Block multi-selection
+                let view = &app.meta_state.meta.views[view_key];
+                let per = &app.meta_state.meta.low.perspectives[view.view.perspective];
+                let (a_row, a_col) =
+                    per.row_col_of_byte_offset(a, &app.meta_state.meta.low.regions);
+                let (b_row, b_col) =
+                    per.row_col_of_byte_offset(offs, &app.meta_state.meta.low.regions);
+                let [min_row, max_row] = std::cmp::minmax(a_row, b_row);
+                let [min_col, max_col] = std::cmp::minmax(a_col, b_col);
+                let mut rows = min_row..=max_row;
+                if let Some(row) = rows.next() {
+                    let a =
+                        per.byte_offset_of_row_col(row, min_col, &app.meta_state.meta.low.regions);
+                    app.hex_ui.select_a = Some(a);
+                    let b =
+                        per.byte_offset_of_row_col(row, max_col, &app.meta_state.meta.low.regions);
+                    app.hex_ui.select_b = Some(b);
+                }
+                app.hex_ui.extra_selections.clear();
+                for row in rows {
+                    let a =
+                        per.byte_offset_of_row_col(row, min_col, &app.meta_state.meta.low.regions);
+                    let b =
+                        per.byte_offset_of_row_col(row, max_col, &app.meta_state.meta.low.regions);
+                    app.hex_ui.extra_selections.push(Region { begin: a, end: b });
+                }
+            } else {
+                app.hex_ui.select_a = Some(a);
+                app.hex_ui.select_b = Some(offs);
+            }
         }
     }
     sf_egui.draw(di, window, None);
@@ -983,9 +1013,12 @@ fn handle_key_pressed(
             }
         }
         Key::Delete => {
-            if let Some(sel) = app.hex_ui.selection() {
+            let mut any = false;
+            for sel in app.hex_ui.selected_regions() {
                 app.data.zero_fill_region(sel);
-            } else if let Some(byte) = app.data.get_mut(app.edit_state.cursor) {
+                any = true;
+            }
+            if !any && let Some(byte) = app.data.get_mut(app.edit_state.cursor) {
                 *byte = 0;
             }
         }
@@ -1003,8 +1036,7 @@ fn handle_key_pressed(
             if let Some(view_key) = app.hex_ui.focused_view {
                 app.meta_state.meta.views[view_key].view.cancel_editing();
             }
-            app.hex_ui.select_a = None;
-            app.hex_ui.select_b = None;
+            app.hex_ui.clear_selections();
         }
         Key::Enter => {
             if let Some(view_key) = app.hex_ui.focused_view {
