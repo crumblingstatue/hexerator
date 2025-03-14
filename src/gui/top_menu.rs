@@ -107,6 +107,10 @@ pub fn top_menu(
                                         if let Some(len) = &app.src_args.take {
                                             ui.label(format!("Take: {len}"));
                                         }
+                                        ui.heading("Source");
+                                        ui.code(format!("{:#?}", app.source));
+                                        ui.heading("Data provider");
+                                        ui.code(format!("{:#?}", app.data));
                                         ui.label("Right click for context menu");
                                     });
                                     if re.clicked() {

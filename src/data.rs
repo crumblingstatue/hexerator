@@ -4,7 +4,7 @@ use {
 };
 
 /// The data we are viewing/editing
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Data {
     data: Option<DataProvider>,
     /// The region that was changed compared to the source
