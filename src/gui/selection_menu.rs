@@ -50,8 +50,10 @@ pub fn selection_menu(
         }
         if ui.button("Random fill").clicked() {
             let range = sel.begin..=sel.end;
-            rand::rng().fill_bytes(&mut app.data[range.clone()]);
-            app.data.widen_dirty_region(DamageRegion::RangeInclusive(range));
+            if let Some(data) = app.data.get_mut(range.clone()) {
+                rand::rng().fill_bytes(data);
+                app.data.widen_dirty_region(DamageRegion::RangeInclusive(range));
+            }
             ui.close_menu();
             clicked = true;
         }
