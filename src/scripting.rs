@@ -210,6 +210,21 @@ def_method! {
 }
 
 def_method! {
+    "Returns the `beginning`, `end` offsets of region `name`"
+    region(_lua, exec, name: String) -> (usize, usize) {
+        match exec
+             .app
+             .meta_state
+             .meta
+             .region_by_name_mut(&name)
+        {
+            Some(reg) => Ok((reg.region.begin, reg.region.end)),
+            None => Err(format!("no such region: {name}").into_lua_err()),
+        }
+    }
+}
+
+def_method! {
     "Adds a bookmark with name `name`, pointing at `offset`"
     add_bookmark(_lua, exec, offset: usize, name: String) -> () {
         exec.app.meta_state.meta.bookmarks.push(Bookmark {
@@ -367,6 +382,7 @@ macro_rules! for_each_method {
         $m!(set_dirty_region);
         $m!(save);
         $m!(bookmark_offset);
+        $m!(region);
         $m!(add_bookmark);
         $m!(find_hex_string);
         $m!(focus_cursor);
