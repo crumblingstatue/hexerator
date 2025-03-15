@@ -414,7 +414,7 @@ trait ValueTrait: EndianedPrimitive {
                 out.action
             }
             None => {
-                match data.get(range.clone()) {
+                match data.get(range) {
                     Some(slice) => {
                         #[expect(
                             clippy::unwrap_used,

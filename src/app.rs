@@ -121,7 +121,7 @@ impl App {
             // Set up meta
             if !self.preferences.keep_meta {
                 if let Some(meta_path) = meta_path {
-                    if let Err(e) = self.consume_meta_from_file(meta_path.clone()) {
+                    if let Err(e) = self.consume_meta_from_file(meta_path) {
                         self.set_new_clean_meta(font_size, line_spacing);
                         msg_fail(&e, "Failed to load metafile", msg);
                     }

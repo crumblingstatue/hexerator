@@ -32,7 +32,8 @@
     clippy::format_push_string,
     clippy::unnecessary_wraps,
     clippy::map_unwrap_or,
-    clippy::use_self
+    clippy::use_self,
+    clippy::redundant_clone
 )]
 #![expect(
     incomplete_features,

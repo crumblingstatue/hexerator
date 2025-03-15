@@ -148,7 +148,7 @@ impl super::Window for ExternalCommandWindow {
                             let path = dir.join(&self.temp_file_name);
                             let data = app.data.get(range).context("Range out of bounds")?;
                             std::fs::write(&path, data)?;
-                            file_path = path.clone();
+                            file_path = path;
                         }
                         WorkingDir::Hexerator => {
                             dir = std::env::current_dir()?;
