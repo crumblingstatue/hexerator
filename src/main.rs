@@ -27,7 +27,8 @@
     clippy::unused_trait_names,
     clippy::undocumented_unsafe_blocks,
     clippy::uninlined_format_args,
-    clippy::format_push_string
+    clippy::format_push_string,
+    clippy::unnecessary_wraps
 )]
 #![expect(
     incomplete_features,

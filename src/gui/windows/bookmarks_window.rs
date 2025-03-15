@@ -143,19 +143,16 @@ impl super::Window for BookmarksWindow {
                                 }
                             }
                             let bookmark = &app.meta_state.meta.bookmarks[idx];
-                            let result = value_ui(
+                            let action = value_ui(
                                 bookmark,
                                 &mut app.data,
                                 ui,
                                 &mut app.clipboard,
                                 &mut gui.msg_dialog,
                             );
-                            match result {
-                                Ok(action) => match action {
-                                    Action::None => {}
-                                    Action::Goto(offset) => app.search_focus(offset),
-                                },
-                                Err(e) => msg_fail(&e, "Value ui error", &mut gui.msg_dialog),
+                            match action {
+                                Action::None => {}
+                                Action::Goto(offset) => app.search_focus(offset),
                             }
                         });
                         row.col(|ui| {
@@ -266,27 +263,24 @@ impl super::Window for BookmarksWindow {
                 });
             ui.horizontal(|ui| {
                 ui.label("Value");
-                let result = value_ui(
+                let value_ui_action = value_ui(
                     mark,
                     &mut app.data,
                     ui,
                     &mut app.clipboard,
                     &mut gui.msg_dialog,
                 );
-                match result {
-                    Ok(value_ui_action) => match (&value_ui_action, &action) {
-                        (Action::None, Action::None) => {}
-                        (Action::None, Action::Goto(_)) => {}
-                        (Action::Goto(_), Action::None) => action = value_ui_action,
-                        (Action::Goto(_), Action::Goto(_)) => {
-                            msg_fail(
-                                &"Conflicting goto action",
-                                "Ui Action error",
-                                &mut gui.msg_dialog,
-                            );
-                        }
-                    },
-                    Err(e) => msg_fail(&e, "Value ui error", &mut gui.msg_dialog),
+                match (&value_ui_action, &action) {
+                    (Action::None, Action::None) => {}
+                    (Action::None, Action::Goto(_)) => {}
+                    (Action::Goto(_), Action::None) => action = value_ui_action,
+                    (Action::Goto(_), Action::Goto(_)) => {
+                        msg_fail(
+                            &"Conflicting goto action",
+                            "Ui Action error",
+                            &mut gui.msg_dialog,
+                        );
+                    }
                 }
             });
             #[expect(clippy::single_match, reason = "Want to add more variants in future")]
@@ -359,13 +353,13 @@ fn value_ui(
     ui: &mut Ui,
     cb: &mut arboard::Clipboard,
     msg: &mut MessageDialog,
-) -> anyhow::Result<Action> {
+) -> Action {
     macro_rules! val_ui_dispatch {
         ($i:ident) => {
             $i.value_ui_for_self(bm, data, ui, cb, msg).to_action()
         };
     }
-    Ok(match &bm.value_type {
+    match &bm.value_type {
         ValueType::None => Action::None,
         ValueType::I8(v) => val_ui_dispatch!(v),
         ValueType::U8(v) => val_ui_dispatch!(v),
@@ -386,7 +380,7 @@ fn value_ui(
         ValueType::F64Le(v) => val_ui_dispatch!(v),
         ValueType::F64Be(v) => val_ui_dispatch!(v),
         ValueType::StringMap(v) => val_ui_dispatch!(v),
-    })
+    }
 }
 
 trait ValueTrait: EndianedPrimitive {
