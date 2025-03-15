@@ -1,7 +1,7 @@
 use {
     crate::{
         app::App,
-        gui::{ConMsg, Gui, dialogs::pattern_fill::parse_pattern_string},
+        gui::{ConMsg, Gui},
         meta::{
             Bookmark, NamedRegion, ScriptKey,
             region::Region,
@@ -95,7 +95,7 @@ def_method! {
             .meta
             .region_by_name_mut(&name)
             .ok_or("no such region".into_lua_err())?;
-        let pat = parse_pattern_string(&pattern).map_err(|e| e.into_lua_err())?;
+        let pat = crate::find_util::parse_hex_string(&pattern).map_err(|e| e.into_lua_err())?;
         exec.app.data[reg.region.begin..=reg.region.end].pattern_fill(&pat);
         Ok(())
     }

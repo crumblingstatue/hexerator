@@ -13,3 +13,11 @@ pub fn find_hex_string(
 pub fn parse_hex_string(hex_string: &str) -> Result<Vec<u8>, std::num::ParseIntError> {
     hex_string.split_whitespace().map(|s| u8::from_str_radix(s, 16)).collect()
 }
+
+#[test]
+fn test_parse_hex_string() {
+    assert_eq!(
+        parse_hex_string("de ad be ef"),
+        Ok(vec![0xde, 0xad, 0xbe, 0xef])
+    );
+}

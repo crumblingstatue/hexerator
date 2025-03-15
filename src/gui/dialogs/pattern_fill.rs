@@ -2,6 +2,7 @@ use {
     crate::{
         app::App,
         damage_region::DamageRegion,
+        find_util,
         gui::{Dialog, message_dialog::Icon},
         slice_ext::SliceExt as _,
     },
@@ -41,7 +42,7 @@ impl Dialog for PatternFillDialog {
         }
         self.just_opened = false;
         if ui.input(|inp| inp.key_pressed(egui::Key::Enter)) {
-            let values: Result<Vec<u8>, _> = parse_pattern_string(&self.pattern_string);
+            let values: Result<Vec<u8>, _> = find_util::parse_hex_string(&self.pattern_string);
             match values {
                 Ok(values) => {
                     for reg in app.hex_ui.selected_regions() {
@@ -67,8 +68,4 @@ impl Dialog for PatternFillDialog {
     fn has_close_button(&self) -> bool {
         true
     }
-}
-
-pub fn parse_pattern_string(string: &str) -> Result<Vec<u8>, std::num::ParseIntError> {
-    string.split(' ').map(|token| u8::from_str_radix(token, 16)).collect()
 }
