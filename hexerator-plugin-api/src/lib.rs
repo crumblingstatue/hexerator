@@ -6,7 +6,7 @@ pub trait Plugin {
         &mut self,
         name: &str,
         params: &[Option<Value>],
-        hexerator: &mut dyn HexeratorHandle,
+        hx: &mut dyn HexeratorHandle,
     ) -> MethodResult;
 }
 

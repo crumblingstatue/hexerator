@@ -51,15 +51,15 @@ impl Plugin for HelloPlugin {
         &mut self,
         name: &str,
         params: &[Option<Value>],
-        hexerator: &mut dyn HexeratorHandle,
+        hx: &mut dyn HexeratorHandle,
     ) -> MethodResult {
         match name {
             "say_hello" => {
-                hexerator.debug_log("Hello world!");
+                hx.debug_log("Hello world!");
                 Ok(None)
             }
-            "fill_selection" => match hexerator.selection_range() {
-                Some((start, end)) => match hexerator.get_data_mut(start, end) {
+            "fill_selection" => match hx.selection_range() {
+                Some((start, end)) => match hx.get_data_mut(start, end) {
                     Some(data) => {
                         data.fill(0x42);
                         Ok(None)
@@ -72,7 +72,7 @@ impl Plugin for HelloPlugin {
                 let &[Some(Value::U64(from)), Some(Value::U64(to))] = params else {
                     return Err("Invalid params".into());
                 };
-                match hexerator.get_data_mut(from as usize, to as usize) {
+                match hx.get_data_mut(from as usize, to as usize) {
                     Some(data) => {
                         let sum: u64 = data.iter().map(|b| *b as u64).sum();
                         Ok(Some(Value::U64(sum)))
