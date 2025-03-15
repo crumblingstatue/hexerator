@@ -166,9 +166,9 @@ fn try_main() -> anyhow::Result<()> {
             format!("Old config failed to load with error: {e}.\n\
                      If you don't want to overwrite the old config, you should probably not continue."),
         );
-        gui.msg_dialog.custom_button_row_ui(Box::new(|ui, modal, _cmd| {
+        gui.msg_dialog.custom_button_row_ui(Box::new(|ui, payload, _cmd| {
             if ui.button("⚠️ Continue").clicked() {
-                modal.is_open = false;
+                payload.close = true;
             }
             if ui.button("Abort").clicked() {
                 std::process::abort();

@@ -105,9 +105,9 @@ pub fn ui(
                         "Prompt",
                         "Paste overflows the document. What do do?",
                     );
-                    gui.msg_dialog.custom_button_row_ui(Box::new(move |ui, modal, cmd| {
+                    gui.msg_dialog.custom_button_row_ui(Box::new(move |ui, payload, cmd| {
                         if ui.button("Cancel paste").clicked() {
-                            modal.is_open = false;
+                            payload.close = true;
                         } else if ui.button("Extend document").clicked() {
                             cmd.push(Cmd::ExtendDocument {
                                 new_len: cursor + bytes.len(),
@@ -116,7 +116,7 @@ pub fn ui(
                                 at: cursor,
                                 bytes: bytes.clone(),
                             });
-                            modal.is_open = false;
+                            payload.close = true;
                         } else if ui.button("Shorten paste").clicked() {
                         }
                     }));
