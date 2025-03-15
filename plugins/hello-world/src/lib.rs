@@ -85,7 +85,7 @@ impl Plugin for HelloPlugin {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "Rust" fn hexerator_plugin_new() -> Box<dyn Plugin> {
     Box::new(HelloPlugin)
 }
