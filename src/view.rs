@@ -423,7 +423,11 @@ impl View {
         match &mut self.kind {
             ViewKind::Hex(hex) => {
                 match merge_hex_halves(hex.edit_buf.buf[0], hex.edit_buf.buf[1]) {
-                    Some(merged) => data[edit_state.cursor] = merged,
+                    Some(merged) => {
+                        if let Some(byte) = data.get_mut(edit_state.cursor) {
+                            *byte = merged;
+                        }
+                    }
                     None => per!("finish_editing: Failed to merge hex halves"),
                 }
                 data.widen_dirty_region(DamageRegion::Single(edit_state.cursor));
