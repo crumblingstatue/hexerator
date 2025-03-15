@@ -35,6 +35,7 @@
     clippy::use_self,
     clippy::redundant_clone
 )]
+#![cfg_attr(test, allow(clippy::unwrap_used))]
 #![expect(
     incomplete_features,
     // It's hard to reconcile lack of partial borrows with few arguments
