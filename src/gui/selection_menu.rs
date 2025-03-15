@@ -49,10 +49,11 @@ pub fn selection_menu(
             clicked = true;
         }
         if ui.button("Random fill").clicked() {
-            let range = sel.begin..=sel.end;
-            if let Some(data) = app.data.get_mut(range.clone()) {
-                rand::rng().fill_bytes(data);
-                app.data.widen_dirty_region(DamageRegion::RangeInclusive(range));
+            for region in app.hex_ui.selected_regions() {
+                if let Some(data) = app.data.get_mut(region.to_range()) {
+                    rand::rng().fill_bytes(data);
+                    app.data.widen_dirty_region(DamageRegion::RangeInclusive(region.to_range()));
+                }
             }
             ui.close_menu();
             clicked = true;
