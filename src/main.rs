@@ -128,7 +128,24 @@ fn print_version_info() {
 }
 
 fn try_main() -> anyhow::Result<()> {
-    let mut args = Args::parse();
+    // Show arg parse diagnostics in GUI window if stderr is not a terminal.
+    //
+    // This is the only way to get arg parse diagnostics on windows, due to windows_subsystem=windows
+    let mut args = if std::io::stderr().is_terminal() {
+        Args::parse()
+    } else {
+        match Args::try_parse() {
+            Ok(args) => args,
+            Err(e) => {
+                do_fatal_error_report(
+                    "Arg parse error",
+                    &e.to_string(),
+                    &Backtrace::force_capture(),
+                );
+                return Ok(());
+            }
+        }
+    };
     if args.debug {
         IMMEDIATE.set_enabled(true);
         PERSISTENT.set_enabled(true);
