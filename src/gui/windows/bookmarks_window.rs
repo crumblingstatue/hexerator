@@ -423,7 +423,18 @@ trait ValueTrait: EndianedPrimitive {
                 out.action
             }
             None => {
-                ui.label("??");
+                match data.get(range.clone()) {
+                    Some(slice) => {
+                        #[expect(
+                            clippy::unwrap_used,
+                            reason = "If slicing is successful, we're guaranteed to have slice of right length"
+                        )]
+                        ui.label(Self::from_bytes(slice.try_into().unwrap()).to_string());
+                    }
+                    None => {
+                        ui.label("??");
+                    }
+                }
                 UiAction::None
             }
         }
