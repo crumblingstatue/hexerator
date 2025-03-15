@@ -179,7 +179,7 @@ impl super::Window for FindDialog {
                 app.search_focus(off);
             }
         }
-        if self.find_type == FindType::Ascii {
+        if self.find_type == FindType::Ascii || self.find_type == FindType::HexString {
             ui.horizontal(|ui| {
                 ui.add(egui::TextEdit::singleline(&mut self.replace_input).hint_text("🔁 Replace"));
                 if ui
@@ -189,7 +189,21 @@ impl super::Window for FindDialog {
                     )
                     .clicked()
                 {
-                    let replace_data = self.replace_input.as_bytes();
+                    let bytes_buf;
+                    let replace_data = if self.find_type == FindType::Ascii {
+                        self.replace_input.as_bytes()
+                    } else {
+                        match crate::find_util::parse_hex_string(&self.replace_input) {
+                            Ok(bytes) => {
+                                bytes_buf = bytes;
+                                &bytes_buf
+                            }
+                            Err(e) => {
+                                msg_fail(&e, "Failed to parse hex string", &mut gui.msg_dialog);
+                                return;
+                            }
+                        }
+                    };
                     for &offset in &self.results_vec {
                         app.data[offset..offset + replace_data.len()].copy_from_slice(replace_data);
                     }
