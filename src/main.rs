@@ -417,31 +417,7 @@ fn do_frame(
         {
             if app.input.key_down(Key::LAlt) {
                 // Block multi-selection
-                let view = &app.meta_state.meta.views[view_key];
-                let per = &app.meta_state.meta.low.perspectives[view.view.perspective];
-                let (a_row, a_col) =
-                    per.row_col_of_byte_offset(a, &app.meta_state.meta.low.regions);
-                let (b_row, b_col) =
-                    per.row_col_of_byte_offset(offs, &app.meta_state.meta.low.regions);
-                let [min_row, max_row] = std::cmp::minmax(a_row, b_row);
-                let [min_col, max_col] = std::cmp::minmax(a_col, b_col);
-                let mut rows = min_row..=max_row;
-                if let Some(row) = rows.next() {
-                    let a =
-                        per.byte_offset_of_row_col(row, min_col, &app.meta_state.meta.low.regions);
-                    app.hex_ui.select_a = Some(a);
-                    let b =
-                        per.byte_offset_of_row_col(row, max_col, &app.meta_state.meta.low.regions);
-                    app.hex_ui.select_b = Some(b);
-                }
-                app.hex_ui.extra_selections.clear();
-                for row in rows {
-                    let a =
-                        per.byte_offset_of_row_col(row, min_col, &app.meta_state.meta.low.regions);
-                    let b =
-                        per.byte_offset_of_row_col(row, max_col, &app.meta_state.meta.low.regions);
-                    app.hex_ui.extra_selections.push(Region { begin: a, end: b });
-                }
+                block_select(app, view_key, a, offs);
             } else {
                 app.hex_ui.select_a = Some(a);
                 app.hex_ui.select_b = Some(offs);
@@ -455,6 +431,28 @@ fn do_frame(
         return Ok(false);
     }
     Ok(true)
+}
+
+fn block_select(app: &mut App, view_key: meta::ViewKey, a: usize, b: usize) {
+    let view = &app.meta_state.meta.views[view_key];
+    let per = &app.meta_state.meta.low.perspectives[view.view.perspective];
+    let (a_row, a_col) = per.row_col_of_byte_offset(a, &app.meta_state.meta.low.regions);
+    let (b_row, b_col) = per.row_col_of_byte_offset(b, &app.meta_state.meta.low.regions);
+    let [min_row, max_row] = std::cmp::minmax(a_row, b_row);
+    let [min_col, max_col] = std::cmp::minmax(a_col, b_col);
+    let mut rows = min_row..=max_row;
+    if let Some(row) = rows.next() {
+        let a = per.byte_offset_of_row_col(row, min_col, &app.meta_state.meta.low.regions);
+        app.hex_ui.select_a = Some(a);
+        let b = per.byte_offset_of_row_col(row, max_col, &app.meta_state.meta.low.regions);
+        app.hex_ui.select_b = Some(b);
+    }
+    app.hex_ui.extra_selections.clear();
+    for row in rows {
+        let a = per.byte_offset_of_row_col(row, min_col, &app.meta_state.meta.low.regions);
+        let b = per.byte_offset_of_row_col(row, max_col, &app.meta_state.meta.low.regions);
+        app.hex_ui.extra_selections.push(Region { begin: a, end: b });
+    }
 }
 
 /// Try to convert mouse position to ViewportVec.
@@ -1093,6 +1091,25 @@ fn handle_key_pressed(
         Key::J if key_mod.ctrl => Gui::add_dialog(&mut gui.dialogs, JumpDialog::default()),
         Key::Num1 if key_mod.shift => app.hex_ui.select_a = Some(app.edit_state.cursor),
         Key::Num2 if key_mod.shift => app.hex_ui.select_b = Some(app.edit_state.cursor),
+        // Block selection with alt+1/2
+        Key::Num1 if key_mod.alt => {
+            if let Some(b) = app.hex_ui.select_b
+                && let Some((view_key, _)) = app.focused_view_mut()
+            {
+                block_select(app, view_key, app.edit_state.cursor, b);
+            } else {
+                app.hex_ui.select_a = Some(app.edit_state.cursor);
+            }
+        }
+        Key::Num2 if key_mod.alt => {
+            if let Some(a) = app.hex_ui.select_a
+                && let Some((view_key, _)) = app.focused_view_mut()
+            {
+                block_select(app, view_key, app.edit_state.cursor, a);
+            } else {
+                app.hex_ui.select_b = Some(app.edit_state.cursor);
+            }
+        }
         Key::Tab if key_mod.shift => app.focus_prev_view_in_layout(),
         Key::Tab => app.focus_next_view_in_layout(),
         Key::Equal if key_mod.ctrl => app.inc_byte_at_cursor(),
