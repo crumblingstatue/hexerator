@@ -182,8 +182,9 @@ impl LuaEditorWindow {
         let start_time = Instant::now();
         let lua_script = self
             .edit_key
-            .map(|key| &app.meta_state.meta.scripts[key].content)
-            .unwrap_or(&app.meta_state.meta.misc.exec_lua_script)
+            .map_or(&app.meta_state.meta.misc.exec_lua_script, |key| {
+                &app.meta_state.meta.scripts[key].content
+            })
             .clone();
         let result = crate::scripting::exec_lua(
             lua,

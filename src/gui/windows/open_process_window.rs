@@ -338,15 +338,10 @@ impl super::Window for OpenProcessWindow {
                                     }
                                     if map_open {
                                         let mut s = String::new();
-                                        ui.label(
-                                            app.data
-                                                .get(*offset)
-                                                .map(|off| {
-                                                    s = off.to_string();
-                                                    s.as_str()
-                                                })
-                                                .unwrap_or("??"),
-                                        );
+                                        ui.label(app.data.get(*offset).map_or("??", |off| {
+                                            s = off.to_string();
+                                            s.as_str()
+                                        }));
                                     }
                                 });
                             }

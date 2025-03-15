@@ -37,11 +37,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
     ui.menu_button("Recent", |ui| {
         app.cfg.recent.retain(|entry| {
             let mut retain = true;
-            let path = entry
-                .file
-                .as_ref()
-                .map(|path| path.display().to_string())
-                .unwrap_or_else(|| String::from("Unnamed file"));
+            let path = entry.file.as_ref().map_or_else(
+                || String::from("Unnamed file"),
+                |path| path.display().to_string(),
+            );
             ui.horizontal(|ui| {
                 if ui.button(&path).clicked() {
                     load = Some(entry.clone());

@@ -106,11 +106,10 @@ impl super::Window for FindMemoryPointersWindow {
                     });
                     row.col(|ui| {
                         let range = &gui.win.open_process.map_ranges[en.range_idx];
-                        ui.label(
-                            range.filename().map(|p| p.display().to_string()).unwrap_or_else(
-                                || format!("<anon> @ {:X} (size: {})", range.start(), range.size()),
-                            ),
-                        );
+                        ui.label(range.filename().map_or_else(
+                            || format!("<anon> @ {:X} (size: {})", range.start(), range.size()),
+                            |p| p.display().to_string(),
+                        ));
                     });
                     row.col(|ui| {
                         let range = &gui.win.open_process.map_ranges[en.range_idx];
