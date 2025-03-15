@@ -83,8 +83,8 @@ impl Clone for SourceProvider {
 impl Read for SourceProvider {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
         match self {
-            SourceProvider::File(f) => f.read(buf),
-            SourceProvider::Stdin(stdin) => stdin.read(buf),
+            Self::File(f) => f.read(buf),
+            Self::Stdin(stdin) => stdin.read(buf),
             #[cfg(windows)]
             SourceProvider::WinProc { .. } => {
                 gamedebug_core::per!("Todo: Read unimplemented");

@@ -395,7 +395,7 @@ impl App {
             line_spacing,
         );
         self.meta_state.clean_meta = self.meta_state.meta.clone();
-        App::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
+        Self::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
     }
     pub fn save_temp_metafile_backup(&mut self) -> anyhow::Result<()> {
         // We set the last_meta_backup first, so if save fails, we don't get
@@ -425,14 +425,14 @@ impl App {
         self.meta_state.meta.post_load_init();
         // Switch to first layout, if there is one
         if let Some(layout_key) = self.meta_state.meta.layouts.keys().next() {
-            App::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
+            Self::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
         }
         Ok(())
     }
 
     pub fn add_perspective_from_region(&mut self, region_key: RegionKey, name: String) {
         let mut per = Perspective::from_region(region_key, name);
-        if let Some(focused_per) = App::focused_perspective(&self.hex_ui, &self.meta_state.meta) {
+        if let Some(focused_per) = Self::focused_perspective(&self.hex_ui, &self.meta_state.meta) {
             per.cols = focused_per.cols;
         }
         self.meta_state.meta.low.perspectives.insert(per);
@@ -554,7 +554,7 @@ impl App {
             .iter()
             .find_map(|(k, l)| l.contains_view(view_key).then_some(k))
         {
-            App::switch_layout(app_hex_ui, app_meta, layout_key);
+            Self::switch_layout(app_hex_ui, app_meta, layout_key);
             app_hex_ui.focused_view = Some(view_key);
         }
     }

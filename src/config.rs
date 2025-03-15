@@ -97,7 +97,7 @@ impl Config {
         let cfg_file = cfg_dir.join(FILENAME);
         if !cfg_file.exists() {
             Ok(LoadedConfig {
-                config: Config::default(),
+                config: Self::default(),
                 old_config_err: None,
             })
         } else {
@@ -111,7 +111,7 @@ impl Config {
                     old_config_err: None,
                 }),
                 Err(e) => Ok(LoadedConfig {
-                    config: Config::default(),
+                    config: Self::default(),
                     old_config_err: Some(e),
                 }),
             }

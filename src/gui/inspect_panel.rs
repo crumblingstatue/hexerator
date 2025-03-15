@@ -23,9 +23,9 @@ enum Format {
 impl Format {
     fn label(&self) -> &'static str {
         match self {
-            Format::Decimal => "Decimal",
-            Format::Hex => "Hex",
-            Format::Bin => "Binary",
+            Self::Decimal => "Decimal",
+            Self::Hex => "Hex",
+            Self::Bin => "Binary",
         }
     }
 }
@@ -58,9 +58,9 @@ enum SeekRelativity {
 impl SeekRelativity {
     fn label(&self) -> &'static str {
         match self {
-            SeekRelativity::Absolute => "Absolute",
-            SeekRelativity::HardSeek => "Hard seek",
-            SeekRelativity::User => "User",
+            Self::Absolute => "Absolute",
+            Self::HardSeek => "Hard seek",
+            Self::User => "User",
         }
     }
 }
@@ -238,11 +238,11 @@ impl NumBytesManip for f32 {
     }
 
     fn to_le_bytes(&self) -> Self::ToBytes {
-        f32::to_le_bytes(*self)
+        Self::to_le_bytes(*self)
     }
 
     fn to_be_bytes(&self) -> Self::ToBytes {
-        f32::to_be_bytes(*self)
+        Self::to_be_bytes(*self)
     }
 
     fn to_hex_string(&self) -> String {
@@ -285,11 +285,11 @@ impl NumBytesManip for f64 {
     }
 
     fn to_le_bytes(&self) -> Self::ToBytes {
-        f64::to_le_bytes(*self)
+        Self::to_le_bytes(*self)
     }
 
     fn to_be_bytes(&self) -> Self::ToBytes {
-        f64::to_le_bytes(*self)
+        Self::to_le_bytes(*self)
     }
 
     fn to_hex_string(&self) -> String {

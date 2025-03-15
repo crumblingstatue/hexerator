@@ -30,9 +30,9 @@ enum Tab {
 impl Tab {
     fn label(&self) -> &'static str {
         match self {
-            Tab::Video => "Video",
-            Tab::Style => "Style",
-            Tab::Fonts => "Fonts",
+            Self::Video => "Video",
+            Self::Style => "Style",
+            Self::Fonts => "Fonts",
         }
     }
 }

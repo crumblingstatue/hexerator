@@ -68,8 +68,8 @@ enum Sort {
 impl Sort {
     fn flip(&mut self) {
         *self = match *self {
-            Sort::Ascending => Sort::Descending,
-            Sort::Descending => Sort::Ascending,
+            Self::Ascending => Self::Descending,
+            Self::Descending => Self::Ascending,
         }
     }
 }

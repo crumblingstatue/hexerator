@@ -57,52 +57,52 @@ pub enum FindType {
 impl FindType {
     fn to_value_type(&self) -> ValueType {
         match self {
-            FindType::I8 => ValueType::I8(I8),
-            FindType::U8 => ValueType::U8(U8),
-            FindType::I16Le => ValueType::I16Le(I16Le),
-            FindType::I16Be => ValueType::I16Be(I16Be),
-            FindType::U16Le => ValueType::U16Le(U16Le),
-            FindType::U16Be => ValueType::U16Be(U16Be),
-            FindType::I32Le => ValueType::I32Le(I32Le),
-            FindType::I32Be => ValueType::I32Be(I32Be),
-            FindType::U32Le => ValueType::U32Le(U32Le),
-            FindType::U32Be => ValueType::U32Be(U32Be),
-            FindType::I64Le => ValueType::I64Le(I64Le),
-            FindType::I64Be => ValueType::I64Be(I64Be),
-            FindType::U64Le => ValueType::U64Le(U64Le),
-            FindType::U64Be => ValueType::U64Be(U64Be),
-            FindType::F32Le => ValueType::F32Le(F32Le),
-            FindType::F32Be => ValueType::F32Be(F32Be),
-            FindType::F64Le => ValueType::F64Le(F64Le),
-            FindType::F64Be => ValueType::F64Be(F64Be),
-            FindType::Ascii => ValueType::None,
-            FindType::StringDiff => ValueType::None,
-            FindType::EqPattern => ValueType::None,
-            FindType::HexString => ValueType::U8(U8),
+            Self::I8 => ValueType::I8(I8),
+            Self::U8 => ValueType::U8(U8),
+            Self::I16Le => ValueType::I16Le(I16Le),
+            Self::I16Be => ValueType::I16Be(I16Be),
+            Self::U16Le => ValueType::U16Le(U16Le),
+            Self::U16Be => ValueType::U16Be(U16Be),
+            Self::I32Le => ValueType::I32Le(I32Le),
+            Self::I32Be => ValueType::I32Be(I32Be),
+            Self::U32Le => ValueType::U32Le(U32Le),
+            Self::U32Be => ValueType::U32Be(U32Be),
+            Self::I64Le => ValueType::I64Le(I64Le),
+            Self::I64Be => ValueType::I64Be(I64Be),
+            Self::U64Le => ValueType::U64Le(U64Le),
+            Self::U64Be => ValueType::U64Be(U64Be),
+            Self::F32Le => ValueType::F32Le(F32Le),
+            Self::F32Be => ValueType::F32Be(F32Be),
+            Self::F64Le => ValueType::F64Le(F64Le),
+            Self::F64Be => ValueType::F64Be(F64Be),
+            Self::Ascii => ValueType::None,
+            Self::StringDiff => ValueType::None,
+            Self::EqPattern => ValueType::None,
+            Self::HexString => ValueType::U8(U8),
         }
     }
     fn help_str(&self) -> &'static str {
         match self {
-            FindType::I8 => "signed 8 bit integer",
-            FindType::U8 => "unsigned 8 bit integer",
-            FindType::I16Le => "signed 16 bit integer (little endian)",
-            FindType::I16Be => "signed 16 bit integer (big endian)",
-            FindType::U16Le => "unsigned 16 bit integer (little endian)",
-            FindType::U16Be => "unsigned 16 bit integer (big endian)",
-            FindType::I32Le => "signed 32 bit integer (little endian)",
-            FindType::I32Be => "signed 32 bit integer (big endian)",
-            FindType::U32Le => "unsigned 32 bit integer (little endian)",
-            FindType::U32Be => "unsigned 32 bit integer (big endian)",
-            FindType::I64Le => "signed 64 bit integer (little endian)",
-            FindType::I64Be => "signed 64 bit integer (big endian)",
-            FindType::U64Le => "unsigned 64 bit integer (little endian)",
-            FindType::U64Be => "unsigned 64 bit integer (big endian)",
-            FindType::F32Le => "32 bit float (little endian)",
-            FindType::F32Be => "32 bit float (big endian)",
-            FindType::F64Le => "64 bit float (little endian)",
-            FindType::F64Be => "64 bit float (big endian)",
-            FindType::Ascii => "Ascii string",
-            FindType::StringDiff => {
+            Self::I8 => "signed 8 bit integer",
+            Self::U8 => "unsigned 8 bit integer",
+            Self::I16Le => "signed 16 bit integer (little endian)",
+            Self::I16Be => "signed 16 bit integer (big endian)",
+            Self::U16Le => "unsigned 16 bit integer (little endian)",
+            Self::U16Be => "unsigned 16 bit integer (big endian)",
+            Self::I32Le => "signed 32 bit integer (little endian)",
+            Self::I32Be => "signed 32 bit integer (big endian)",
+            Self::U32Le => "unsigned 32 bit integer (little endian)",
+            Self::U32Be => "unsigned 32 bit integer (big endian)",
+            Self::I64Le => "signed 64 bit integer (little endian)",
+            Self::I64Be => "signed 64 bit integer (big endian)",
+            Self::U64Le => "unsigned 64 bit integer (little endian)",
+            Self::U64Be => "unsigned 64 bit integer (big endian)",
+            Self::F32Le => "32 bit float (little endian)",
+            Self::F32Be => "32 bit float (big endian)",
+            Self::F64Le => "64 bit float (little endian)",
+            Self::F64Be => "64 bit float (big endian)",
+            Self::Ascii => "Ascii string",
+            Self::StringDiff => {
                 "Searches the string difference pattern of your ascii input
 
 Useful to find alphabetic data in non-ascii character encodings.
@@ -110,12 +110,12 @@ Useful to find alphabetic data in non-ascii character encodings.
 Takes advantage of the fact that A-Z and 0-9, etc, are usually
 next to each other regardless of the encoding."
             }
-            FindType::EqPattern => {
+            Self::EqPattern => {
                 "Searches the byte equivalence pattern of your ascii input
 For example if you type `aabbca`
 then it will match inputs like `00 00 FF FF CC 00`"
             }
-            FindType::HexString => "Search a hex string e.g. `ff 00 ff`",
+            Self::HexString => "Search a hex string e.g. `ff 00 ff`",
         }
     }
 }

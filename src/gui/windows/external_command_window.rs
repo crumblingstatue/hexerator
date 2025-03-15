@@ -42,9 +42,9 @@ enum WorkingDir {
 impl WorkingDir {
     fn label(&self) -> &'static str {
         match self {
-            WorkingDir::Temp => "Temp",
-            WorkingDir::Hexerator => "Hexerator",
-            WorkingDir::Document => "Document",
+            Self::Temp => "Temp",
+            Self::Hexerator => "Hexerator",
+            Self::Document => "Document",
         }
     }
 }

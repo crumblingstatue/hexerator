@@ -36,26 +36,26 @@ pub(crate) type UiFn = dyn FnMut(&mut egui::Ui, &mut Payload, &mut CommandQueue)
 impl Icon {
     fn color(&self) -> Color32 {
         match self {
-            Icon::None => Color32::default(),
-            Icon::Info => Color32::from_rgb(0, 155, 255),
-            Icon::Warn => Color32::from_rgb(255, 212, 0),
-            Icon::Error => Color32::from_rgb(255, 32, 0),
+            Self::None => Color32::default(),
+            Self::Info => Color32::from_rgb(0, 155, 255),
+            Self::Warn => Color32::from_rgb(255, 212, 0),
+            Self::Error => Color32::from_rgb(255, 32, 0),
         }
     }
     fn utf8(&self) -> &'static str {
         match self {
-            Icon::None => "",
-            Icon::Info => "ℹ",
-            Icon::Warn => "⚠",
-            Icon::Error => "❗",
+            Self::None => "",
+            Self::Info => "ℹ",
+            Self::Warn => "⚠",
+            Self::Error => "❗",
         }
     }
     fn hover_text(&self) -> String {
         let label = match self {
-            Icon::None => "",
-            Icon::Info => "Info",
-            Icon::Warn => "Warning",
-            Icon::Error => "Error",
+            Self::None => "",
+            Self::Info => "Info",
+            Self::Warn => "Warning",
+            Self::Error => "Error",
         };
         format!("{label}\n\nClick to copy message to clipboard")
     }

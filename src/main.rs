@@ -31,7 +31,8 @@
     clippy::uninlined_format_args,
     clippy::format_push_string,
     clippy::unnecessary_wraps,
-    clippy::map_unwrap_or
+    clippy::map_unwrap_or,
+    clippy::use_self
 )]
 #![expect(
     incomplete_features,

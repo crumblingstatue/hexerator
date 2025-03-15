@@ -43,9 +43,9 @@ impl Autoreload {
     }
     pub fn label(&self) -> &'static str {
         match self {
-            Autoreload::Disabled => "disabled",
-            Autoreload::All => "all",
-            Autoreload::Visible => "visible only",
+            Self::Disabled => "disabled",
+            Self::All => "all",
+            Self::Visible => "visible only",
         }
     }
 }

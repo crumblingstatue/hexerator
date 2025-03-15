@@ -40,13 +40,13 @@ impl ColorMethod {
     #[must_use]
     pub fn byte_color(&self, byte: u8, invert: bool) -> RgbColor {
         let color = match self {
-            ColorMethod::Mono(color) => *color,
-            ColorMethod::Default => default_color(byte),
-            ColorMethod::Pure => hue_color(byte),
-            ColorMethod::Rgb332 => rgb332_color(byte),
-            ColorMethod::Vga13h => vga_13h_color(byte),
-            ColorMethod::BrightScale(color) => color.cap_brightness(byte),
-            ColorMethod::Custom(pal) => {
+            Self::Mono(color) => *color,
+            Self::Default => default_color(byte),
+            Self::Pure => hue_color(byte),
+            Self::Rgb332 => rgb332_color(byte),
+            Self::Vga13h => vga_13h_color(byte),
+            Self::BrightScale(color) => color.cap_brightness(byte),
+            Self::Custom(pal) => {
                 let [r, g, b] = pal.0[byte as usize];
                 rgb(r, g, b)
             }
@@ -56,13 +56,13 @@ impl ColorMethod {
 
     pub(crate) fn name(&self) -> &str {
         match self {
-            ColorMethod::Mono(_) => "monochrome",
-            ColorMethod::Default => "default",
-            ColorMethod::Pure => "pure hue",
-            ColorMethod::Rgb332 => "rgb 3-3-2",
-            ColorMethod::Vga13h => "VGA 13h",
-            ColorMethod::BrightScale(_) => "brightness scale",
-            ColorMethod::Custom(_) => "custom",
+            Self::Mono(_) => "monochrome",
+            Self::Default => "default",
+            Self::Pure => "pure hue",
+            Self::Rgb332 => "rgb 3-3-2",
+            Self::Vga13h => "VGA 13h",
+            Self::BrightScale(_) => "brightness scale",
+            Self::Custom(_) => "custom",
         }
     }
 }

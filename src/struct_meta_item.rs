@@ -86,15 +86,15 @@ pub enum Endian {
 impl Endian {
     pub fn label(&self) -> &'static str {
         match self {
-            Endian::Le => "le",
-            Endian::Be => "be",
+            Self::Le => "le",
+            Self::Be => "be",
         }
     }
 
     pub(crate) fn toggle(&mut self) {
         *self = match self {
-            Endian::Le => Endian::Be,
-            Endian::Be => Endian::Le,
+            Self::Le => Self::Be,
+            Self::Be => Self::Le,
         }
     }
 }
@@ -122,16 +122,16 @@ pub enum StructPrimitive {
 impl StructPrimitive {
     fn label(&self) -> &'static str {
         match self {
-            StructPrimitive::I8 => "i8",
-            StructPrimitive::U8 => "u8",
-            StructPrimitive::I16 => "i16",
-            StructPrimitive::U16 => "u16",
-            StructPrimitive::I32 => "i32",
-            StructPrimitive::U32 => "u32",
-            StructPrimitive::I64 => "i64",
-            StructPrimitive::U64 => "u64",
-            StructPrimitive::F32 => "f32",
-            StructPrimitive::F64 => "f64",
+            Self::I8 => "i8",
+            Self::U8 => "u8",
+            Self::I16 => "i16",
+            Self::U16 => "u16",
+            Self::I32 => "i32",
+            Self::U32 => "u32",
+            Self::I64 => "i64",
+            Self::U64 => "u64",
+            Self::F32 => "f32",
+            Self::F64 => "f64",
         }
     }
 }
@@ -150,7 +150,7 @@ impl StructTy {
     }
     pub fn read_usize(&self, data: &[u8]) -> Option<usize> {
         match self {
-            StructTy::Primitive { ty, endian } => {
+            Self::Primitive { ty, endian } => {
                 macro_rules! from_byte_slice {
                     ($t:ty) => {
                         <$t>::from_byte_slice(&data[..self.size()]).and_then(|i| i.try_into().ok())
@@ -179,13 +179,13 @@ impl StructTy {
                     (StructPrimitive::F64, Endian::Be) => None,
                 }
             }
-            StructTy::Array { .. } => None,
+            Self::Array { .. } => None,
         }
     }
     pub fn endian_mut(&mut self) -> &mut Endian {
         match self {
-            StructTy::Primitive { endian, .. } => endian,
-            StructTy::Array { item_ty, .. } => item_ty.endian_mut(),
+            Self::Primitive { endian, .. } => endian,
+            Self::Array { item_ty, .. } => item_ty.endian_mut(),
         }
     }
 }
@@ -193,12 +193,12 @@ impl StructTy {
 impl std::fmt::Display for StructTy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            StructTy::Primitive { ty, endian } => {
+            Self::Primitive { ty, endian } => {
                 let ty = ty.label();
                 let endian = endian.label();
                 write!(f, "{ty}-{endian}")
             }
-            StructTy::Array { item_ty, len } => {
+            Self::Array { item_ty, len } => {
                 write!(f, "[{item_ty}; {len}]")
             }
         }

@@ -491,13 +491,13 @@ trait SatFrom<V> {
 
 impl SatFrom<usize> for i16 {
     fn saturating_from(src: usize) -> Self {
-        i16::try_from(src).unwrap_or(Self::MAX)
+        Self::try_from(src).unwrap_or(Self::MAX)
     }
 }
 
 impl SatFrom<u16> for i16 {
     fn saturating_from(src: u16) -> Self {
-        i16::try_from(src).unwrap_or(Self::MAX)
+        Self::try_from(src).unwrap_or(Self::MAX)
     }
 }
 
@@ -713,17 +713,17 @@ pub enum TextKind {
 impl TextKind {
     pub fn name(&self) -> &'static str {
         match self {
-            TextKind::Ascii => "ascii",
-            TextKind::Utf16Le => "utf-16 le",
-            TextKind::Utf16Be => "utf-16 be",
+            Self::Ascii => "ascii",
+            Self::Utf16Le => "utf-16 le",
+            Self::Utf16Be => "utf-16 be",
         }
     }
 
     pub(crate) fn bytes_needed(&self) -> u8 {
         match self {
-            TextKind::Ascii => 1,
-            TextKind::Utf16Le => 2,
-            TextKind::Utf16Be => 2,
+            Self::Ascii => 1,
+            Self::Utf16Le => 2,
+            Self::Utf16Be => 2,
         }
     }
 }

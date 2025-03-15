@@ -26,10 +26,10 @@ impl ViewKind {
     const BLOCK_NAME: &'static str = "Block";
     fn name(&self) -> &'static str {
         match *self {
-            ViewKind::Hex(_) => Self::HEX_NAME,
-            ViewKind::Dec(_) => Self::DEC_NAME,
-            ViewKind::Text(_) => Self::TEXT_NAME,
-            ViewKind::Block => Self::BLOCK_NAME,
+            Self::Hex(_) => Self::HEX_NAME,
+            Self::Dec(_) => Self::DEC_NAME,
+            Self::Text(_) => Self::TEXT_NAME,
+            Self::Block => Self::BLOCK_NAME,
         }
     }
 }

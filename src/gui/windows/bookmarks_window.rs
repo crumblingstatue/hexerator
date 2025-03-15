@@ -547,8 +547,8 @@ enum UiAction<T> {
 impl<T: AsPrimitive<usize>> UiAction<T> {
     fn to_action(&self) -> Action {
         match self {
-            UiAction::None => Action::None,
-            &UiAction::Goto(val) => Action::Goto(val.as_()),
+            Self::None => Action::None,
+            &Self::Goto(val) => Action::Goto(val.as_()),
         }
     }
 }
