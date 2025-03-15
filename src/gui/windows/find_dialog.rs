@@ -351,7 +351,7 @@ impl super::Window for FindDialog {
                                     ) {
                                         Some(key) => {
                                             let reg = &app.meta_state.meta.low.regions[key];
-                                            let ctx_menu = |ui: &mut egui::Ui| {
+                                            let ctx_menu = |ui: &mut Ui| {
                                                 region_context_menu(
                                                     ui,
                                                     reg,

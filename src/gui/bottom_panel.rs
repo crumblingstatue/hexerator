@@ -115,11 +115,11 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
         let cursor_end = app.edit_state.cursor == app.data.len().saturating_sub(1);
         let cursor_begin = app.edit_state.cursor == 0;
         if out_of_bounds {
-            text = text.color(egui::Color32::RED);
+            text = text.color(Color32::RED);
         } else if cursor_end {
-            text = text.color(egui::Color32::YELLOW);
+            text = text.color(Color32::YELLOW);
         } else if cursor_begin {
-            text = text.color(egui::Color32::GREEN);
+            text = text.color(Color32::GREEN);
         }
         let re = ui.label(text);
         re.context_menu(|ui| {
@@ -181,19 +181,16 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
                 region_label(ui, &app.meta_state.meta.low.regions[region].name);
             }
         }
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+        ui.with_layout(egui::Layout::right_to_left(Align::Center), |ui| {
             let mut txt = egui::RichText::new(format!("File size: {}", app.data.len()));
             let truncated = app.data.len() != app.data.orig_data_len;
             if truncated {
-                txt = txt.color(egui::Color32::RED);
+                txt = txt.color(Color32::RED);
             }
             let label = egui::Label::new(txt).sense(egui::Sense::click());
             let mut label_re = ui.add(label).on_hover_ui(|ui| {
                 ui.label("Click to copy");
-                ui.label(format!(
-                    "Human size: {}",
-                    crate::util::human_size(app.data.len())
-                ));
+                ui.label(format!("Human size: {}", human_size(app.data.len())));
             });
             if truncated {
                 label_re = label_re.on_hover_text_deferred(|| {
@@ -213,7 +210,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
 
 fn region_label(ui: &mut Ui, name: &str) -> egui::Response {
     let label =
-        egui::Label::new(egui::RichText::new(format!("[{name}]")).color(egui::Color32::LIGHT_BLUE))
+        egui::Label::new(egui::RichText::new(format!("[{name}]")).color(Color32::LIGHT_BLUE))
             .sense(egui::Sense::click());
     ui.add(label)
 }

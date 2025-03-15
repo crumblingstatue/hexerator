@@ -37,7 +37,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
     if ui
         .add_enabled(
             !app.meta_state.current_meta_path.as_os_str().is_empty(),
-            egui::Button::new("Reload"),
+            Button::new("Reload"),
         )
         .on_hover_text_deferred(|| {
             format!("Reload from {}", app.meta_state.current_meta_path.display())
@@ -79,7 +79,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
     if ui
         .add_enabled(
             !app.meta_state.current_meta_path.as_os_str().is_empty(),
-            egui::Button::new("Save"),
+            Button::new("Save"),
         )
         .on_hover_text_deferred(|| {
             format!("Save to {}", app.meta_state.current_meta_path.display())
@@ -115,7 +115,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             }
         }
         _ => {
-            ui.add_enabled(false, egui::Button::new("Associate with current file"))
+            ui.add_enabled(false, Button::new("Associate with current file"))
                 .on_disabled_hover_text("Both file and metafile need to have a path");
         }
     }

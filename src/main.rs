@@ -11,6 +11,7 @@
     cmp_minmax
 )]
 #![warn(
+    unused_qualifications,
     trivial_casts,
     trivial_numeric_casts,
     unsafe_op_in_unsafe_fn,
@@ -194,10 +195,10 @@ fn try_main() -> anyhow::Result<()> {
     let line_spacing = font.line_spacing(u32::from(font_size)) as u16;
     let mut app = App::new(args, cfg, font_size, line_spacing, &mut gui.msg_dialog)?;
     let lua = Lua::default();
-    crate::gui::set_font_sizes_style(&mut style, &app.cfg.style);
+    gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);
     // Custom egui_colors theme load
-    if let Some(project_dirs) = crate::config::project_dirs() {
+    if let Some(project_dirs) = config::project_dirs() {
         let path = project_dirs.color_theme_path();
         if path.exists() {
             match std::fs::read(path) {
@@ -565,12 +566,12 @@ fn draw(
         return;
     }
     for view_key in app.meta_state.meta.layouts[app.hex_ui.current_layout].iter() {
-        crate::view::View::draw(view_key, app, gui, window, vertex_buffer, font);
+        view::View::draw(view_key, app, gui, window, vertex_buffer, font);
     }
 }
 
 fn handle_events(
-    gui: &mut crate::gui::Gui,
+    gui: &mut Gui,
     app: &mut App,
     window: &mut RenderWindow,
     sf_egui: &mut SfEgui,
@@ -748,7 +749,7 @@ struct KeyMod {
 
 fn handle_key_pressed(
     code: Key,
-    gui: &mut crate::gui::Gui,
+    gui: &mut Gui,
     app: &mut App,
     key_mod: KeyMod,
     egui_wants_kb: bool,
@@ -1082,7 +1083,7 @@ fn handle_key_pressed(
         }
         Key::P if key_mod.ctrl => {
             let mut load = None;
-            crate::shell::open_previous(app, &mut load);
+            shell::open_previous(app, &mut load);
             if let Some(args) = load {
                 app.load_file_args(args, None, &mut gui.msg_dialog, font_size, line_spacing);
             }

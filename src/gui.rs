@@ -71,7 +71,7 @@ pub trait Dialog {
         &mut self,
         ui: &mut egui::Ui,
         app: &mut App,
-        gui: &mut crate::gui::Gui,
+        gui: &mut Gui,
         lua: &Lua,
         font_size: u16,
         line_spacing: u16,
@@ -93,7 +93,7 @@ impl Gui {
 /// The bool indicates whether the application should continue running
 pub fn do_egui(
     sf_egui: &mut SfEgui,
-    gui: &mut crate::gui::Gui,
+    gui: &mut Gui,
     app: &mut App,
     mouse_pos: ViewportVec,
     lua: &Lua,
@@ -114,7 +114,7 @@ pub fn do_egui(
         }
         gui.msg_dialog.show(ctx, &mut app.clipboard, &mut app.cmd);
         app.flush_command_queue(gui, lua, font_size, line_spacing);
-        self::Windows::update(ctx, gui, app, lua, font_size, line_spacing);
+        Windows::update(ctx, gui, app, lua, font_size, line_spacing);
 
         // Context menu
         if let Some(menu) = gui.context_menu.take() {

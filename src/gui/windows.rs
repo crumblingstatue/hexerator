@@ -103,8 +103,8 @@ impl WindowOpen {
 
 struct WinCtx<'a> {
     ui: &'a mut egui::Ui,
-    gui: &'a mut crate::gui::Gui,
-    app: &'a mut crate::app::App,
+    gui: &'a mut Gui,
+    app: &'a mut App,
     lua: &'a mlua::Lua,
     font_size: u16,
     line_spacing: u16,

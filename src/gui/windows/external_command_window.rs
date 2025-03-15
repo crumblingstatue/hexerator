@@ -252,7 +252,7 @@ impl super::Window for ExternalCommandWindow {
 
 fn resolve_args<'src>(
     args: impl Iterator<Item = Arg<'src>> + 'src,
-    path: &'src std::path::PathBuf,
+    path: &'src PathBuf,
 ) -> impl Iterator<Item = OsString> + 'src {
     args.map(|arg| match arg {
         Arg::TmpFilePath => path.into(),

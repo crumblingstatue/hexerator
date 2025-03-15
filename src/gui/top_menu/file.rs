@@ -64,10 +64,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
                 app.cfg.recent.set_capacity(cap);
             }
             ui.separator();
-            if ui
-                .add_enabled(!app.cfg.recent.is_empty(), egui::Button::new("🗑 Clear all"))
-                .clicked()
-            {
+            if ui.add_enabled(!app.cfg.recent.is_empty(), Button::new("🗑 Clear all")).clicked() {
                 app.cfg.recent.clear();
             }
         });

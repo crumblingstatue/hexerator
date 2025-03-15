@@ -26,7 +26,7 @@ pub struct LuaEditorWindow {
 }
 
 impl super::Window for LuaEditorWindow {
-    fn ui(&mut self, ctx: super::WinCtx) {
+    fn ui(&mut self, ctx: WinCtx) {
         let WinCtx {
             ui,
             gui,

@@ -53,7 +53,7 @@ impl super::Window for PreferencesWindow {
             ui.selectable_value(&mut self.tab, Tab::Fonts, Tab::Fonts.label());
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button("Open config dir").clicked() {
-                    match crate::config::project_dirs() {
+                    match config::project_dirs() {
                         Some(dirs) => {
                             if let Err(e) = open::that(dirs.config_dir()) {
                                 gui.msg_dialog.open(
@@ -181,7 +181,7 @@ fn style_ui(
         });
         ui.separator();
         colorix.ui_combo_12(ui, true);
-        if let Some(dirs) = crate::config::project_dirs() {
+        if let Some(dirs) = config::project_dirs() {
             ui.separator();
             ui.horizontal(|ui| {
                 if ui.button("Save").clicked() {

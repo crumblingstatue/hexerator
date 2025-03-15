@@ -158,7 +158,7 @@ impl std::fmt::Display for ReadValue {
 }
 
 pub trait EndianedPrimitive {
-    const BYTE_LEN: usize = std::mem::size_of::<Self::Primitive>();
+    const BYTE_LEN: usize = size_of::<Self::Primitive>();
     type Primitive: egui::emath::Numeric + std::fmt::Display + core::str::FromStr;
     fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive;
     fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN];

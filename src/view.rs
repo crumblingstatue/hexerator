@@ -625,7 +625,7 @@ pub struct ViewportVec {
 }
 
 impl TryFrom<(i32, i32)> for ViewportVec {
-    type Error = <ViewportScalar as std::convert::TryFrom<i32>>::Error;
+    type Error = <ViewportScalar as TryFrom<i32>>::Error;
 
     fn try_from(src: (i32, i32)) -> Result<Self, Self::Error> {
         Ok(Self {

@@ -836,7 +836,7 @@ impl App {
                         bail!("Can't use --new for {path:?}: File already exists");
                     }
                     // Set up source for this new file
-                    let f = std::fs::OpenOptions::new()
+                    let f = OpenOptions::new()
                         .create(true)
                         .truncate(false)
                         .read(true)
@@ -1194,13 +1194,13 @@ fn load_proc_memory_macos(
 }
 
 pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, anyhow::Error> {
-    let mut f = std::fs::File::open(path)?;
+    let mut f = File::open(path)?;
     if let &Some(to) = &args.hard_seek {
         #[expect(
             clippy::cast_possible_wrap,
             reason = "Files bigger than i64::MAX aren't supported"
         )]
-        f.seek(std::io::SeekFrom::Current(to as i64))?;
+        f.seek(SeekFrom::Current(to as i64))?;
     }
     #[expect(
         clippy::cast_possible_truncation,

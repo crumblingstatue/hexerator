@@ -137,7 +137,7 @@ fn struct_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::a
 }
 
 trait ToFromBytes: Sized {
-    const LEN: usize = std::mem::size_of::<Self>();
+    const LEN: usize = size_of::<Self>();
     fn from_bytes(bytes: [u8; Self::LEN], endian: Endian) -> Self;
     fn to_bytes(&self, endian: Endian) -> [u8; Self::LEN];
 }

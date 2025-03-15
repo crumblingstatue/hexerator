@@ -108,7 +108,7 @@ impl super::Window for BookmarksWindow {
                         });
                         row.col(|ui| {
                             let offset = app.meta_state.meta.bookmarks[idx].offset;
-                            let ctx_menu = |ui: &mut egui::Ui| {
+                            let ctx_menu = |ui: &mut Ui| {
                                 if ui.button("Copy to clipboard").clicked() {
                                     set_clipboard_string(
                                         &mut app.clipboard,
@@ -162,7 +162,7 @@ impl super::Window for BookmarksWindow {
                                 off,
                             ) {
                                 let region = &app.meta_state.meta.low.regions[region_key];
-                                let ctx_menu = |ui: &mut egui::Ui| {
+                                let ctx_menu = |ui: &mut Ui| {
                                     region_context_menu(
                                         ui,
                                         region,
@@ -311,12 +311,9 @@ impl super::Window for BookmarksWindow {
                 _ => {}
             }
             ui.heading("Description");
-            egui::ScrollArea::vertical()
-                .id_salt("desc_scroll")
-                .max_height(200.0)
-                .show(ui, |ui| {
-                    ui.add(egui::TextEdit::multiline(&mut mark.desc).code_editor());
-                });
+            ScrollArea::vertical().id_salt("desc_scroll").max_height(200.0).show(ui, |ui| {
+                ui.add(egui::TextEdit::multiline(&mut mark.desc).code_editor());
+            });
             if ui.button("Delete").clicked() {
                 app.meta_state.meta.bookmarks.remove(idx);
                 self.selected = None;
@@ -387,7 +384,7 @@ trait ValueTrait: EndianedPrimitive {
     /// Returns whether the value was changed.
     fn value_change_ui(
         &self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         bytes: &mut [u8; Self::BYTE_LEN],
         cb: &mut arboard::Clipboard,
         msg: &mut MessageDialog,
@@ -463,7 +460,7 @@ impl DefaultUi for F64Be {}
 impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
     fn value_change_ui(
         &self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         bytes: &mut [u8; Self::BYTE_LEN],
         cb: &mut arboard::Clipboard,
         msg: &mut MessageDialog,
@@ -471,9 +468,9 @@ impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
         let mut val = Self::from_bytes(*bytes);
         let mut action = UiAction::None;
         let act_mut = &mut action;
-        let ctx_menu = move |ui: &mut egui::Ui| {
+        let ctx_menu = move |ui: &mut Ui| {
             if ui.button("Copy").clicked() {
-                crate::app::set_clipboard_string(cb, msg, &val.to_string());
+                set_clipboard_string(cb, msg, &val.to_string());
                 ui.close_menu();
             }
             if ui.button("Jump").clicked() {
@@ -512,7 +509,7 @@ impl EndianedPrimitive for StringMap {
 impl ValueTrait for StringMap {
     fn value_change_ui(
         &self,
-        ui: &mut egui::Ui,
+        ui: &mut Ui,
         bytes: &mut [u8; Self::BYTE_LEN],
         _cb: &mut arboard::Clipboard,
         _msg: &mut MessageDialog,

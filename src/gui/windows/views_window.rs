@@ -297,7 +297,7 @@ fn new_from_perspective_button(ui: &mut egui::Ui, app: &mut App) {
 /// Returns whether the value was changed
 fn view_combo(
     id: impl Hash,
-    kind: &mut crate::view::ViewKind,
+    kind: &mut ViewKind,
     ui: &mut egui::Ui,
     font_size: u16,
     line_spacing: u16,

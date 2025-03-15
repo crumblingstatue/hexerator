@@ -71,8 +71,8 @@ impl super::Window for VarsWindow {
                         });
                         row.col(|ui| {
                             match &mut var_ent.val {
-                                crate::meta::VarVal::I64(var) => ui.add(egui::DragValue::new(var)),
-                                crate::meta::VarVal::U64(var) => ui.add(egui::DragValue::new(var)),
+                                VarVal::I64(var) => ui.add(egui::DragValue::new(var)),
+                                VarVal::U64(var) => ui.add(egui::DragValue::new(var)),
                             };
                         });
                     });

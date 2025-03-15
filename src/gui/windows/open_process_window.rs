@@ -12,7 +12,7 @@ use {
     sysinfo::{ProcessesToUpdate, Signal},
 };
 
-type MapRanges = Vec<proc_maps::MapRange>;
+type MapRanges = Vec<MapRange>;
 
 #[derive(Default)]
 pub struct OpenProcessWindow {
@@ -574,7 +574,7 @@ impl super::Window for OpenProcessWindow {
                 "{}/{} maps shown ({})",
                 filtered.len(),
                 self.map_ranges.len(),
-                crate::util::human_size(filtered.iter().map(|range| range.size()).sum::<usize>())
+                human_size(filtered.iter().map(|range| range.size()).sum::<usize>())
             ));
         } else {
             TableBuilder::new(ui)
@@ -647,7 +647,7 @@ impl super::Window for OpenProcessWindow {
     }
 }
 
-fn should_retain_range(filters: &Filters, range: &proc_maps::MapRange) -> bool {
+fn should_retain_range(filters: &Filters, range: &MapRange) -> bool {
     if filters.perms.read && !range.is_read() {
         return false;
     }

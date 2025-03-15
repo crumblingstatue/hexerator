@@ -22,8 +22,8 @@ impl Default for AboutWindow {
             open: Default::default(),
             sys: Default::default(),
             info: Default::default(),
-            os_name: sysinfo::System::name().unwrap_or_else(|| "Unknown".into()),
-            os_ver: sysinfo::System::os_version().unwrap_or_else(|| "Unknown version".into()),
+            os_name: System::name().unwrap_or_else(|| "Unknown".into()),
+            os_ver: System::os_version().unwrap_or_else(|| "Unknown version".into()),
         }
     }
 }

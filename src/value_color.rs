@@ -21,7 +21,7 @@ pub struct Palette(#[serde(with = "BigArray")] pub [[u8; 3]; 256]);
 
 pub fn load_palette(path: &Path) -> anyhow::Result<Palette> {
     let raw_bytes = std::fs::read(path)?;
-    if raw_bytes.len() != std::mem::size_of::<Palette>() {
+    if raw_bytes.len() != size_of::<Palette>() {
         anyhow::bail!("File for palette not the correct size");
     }
     let mut pal = Palette([[0u8; 3]; 256]);
