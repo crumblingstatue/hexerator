@@ -67,8 +67,7 @@ def_method! {
     "Loads a file"
     load_file(_lua, exec, path: String) -> () {
         exec.app
-            .load_file(path.into(), true, &mut exec.gui.msg_dialog, exec.font_size, exec.line_spacing)
-            .map_err(|e| e.into_lua_err())?;
+            .load_file(path.into(), true, &mut exec.gui.msg_dialog, exec.font_size, exec.line_spacing);
         Ok(())
     }
 }

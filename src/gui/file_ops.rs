@@ -164,16 +164,12 @@ impl FileOps {
                 }
                 FileOp::LoadFile => {
                     self.file_dialog_source_args.file = Some(path);
-                    msg_if_fail(
-                        app.load_file_args(
-                            self.file_dialog_source_args.clone(),
-                            None,
-                            msg,
-                            font_size,
-                            line_spacing,
-                        ),
-                        "Failed to load file (read-write)",
+                    app.load_file_args(
+                        self.file_dialog_source_args.clone(),
+                        None,
                         msg,
+                        font_size,
+                        line_spacing,
                     );
                 }
                 FileOp::LoadPaletteForView(key) => match value_color::load_palette(&path) {

@@ -59,7 +59,7 @@ impl super::Window for FileDiffResultWindow {
                 let prev_pref = app.preferences.keep_meta;
                 let prev_path = app.src_args.file.clone();
                 app.preferences.keep_meta = true;
-                let result = app.load_file(
+                app.load_file(
                     self.path.clone(),
                     false,
                     &mut gui.msg_dialog,
@@ -67,14 +67,12 @@ impl super::Window for FileDiffResultWindow {
                     line_spacing,
                 );
                 app.preferences.keep_meta = prev_pref;
-                if msg_if_fail(result, "Failed to load file", &mut gui.msg_dialog).is_none() {
-                    if let Some(path) = prev_path {
-                        msg_if_fail(
-                            app.diff_with_file(path, self),
-                            "Failed to diff",
-                            &mut gui.msg_dialog,
-                        );
-                    }
+                if let Some(path) = prev_path {
+                    msg_if_fail(
+                        app.diff_with_file(path, self),
+                        "Failed to diff",
+                        &mut gui.msg_dialog,
+                    );
                 }
             }
             if ui.button("🖹 Diff with...").on_hover_text("Diff with another file").clicked() {

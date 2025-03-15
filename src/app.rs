@@ -109,7 +109,7 @@ impl App {
         msg: &mut MessageDialog,
         font_size: u16,
         line_spacing: u16,
-    ) -> anyhow::Result<()> {
+    ) {
         if load_file_from_src_args(
             &mut src_args,
             &mut self.cfg,
@@ -155,7 +155,6 @@ impl App {
                 self.hex_ui.flash_cursor();
             }
         }
-        Ok(())
     }
     pub fn save(&mut self, msg: &mut MessageDialog) -> anyhow::Result<()> {
         let file = match &mut self.source {
@@ -262,7 +261,7 @@ impl App {
         msg: &mut MessageDialog,
         font_size: u16,
         line_spacing: u16,
-    ) -> Result<(), anyhow::Error> {
+    ) {
         self.load_file_args(
             SourceArgs {
                 file: Some(path),
@@ -279,7 +278,7 @@ impl App {
             msg,
             font_size,
             line_spacing,
-        )
+        );
     }
 
     pub fn close_file(&mut self) {
@@ -341,6 +340,7 @@ impl App {
             SourceProvider::WinProc { .. } => anyhow::bail!("Not implemented"),
         }
     }
+    #[allow(clippy::unnecessary_wraps, reason = "cfg shenanigans")]
     pub(crate) fn load_proc_memory(
         &mut self,
         pid: sysinfo::Pid,
@@ -352,16 +352,19 @@ impl App {
         line_spacing: u16,
     ) -> anyhow::Result<()> {
         #[cfg(target_os = "linux")]
-        return load_proc_memory_linux(
-            self,
-            pid,
-            start,
-            size,
-            is_write,
-            msg,
-            font_size,
-            line_spacing,
-        );
+        {
+            load_proc_memory_linux(
+                self,
+                pid,
+                start,
+                size,
+                is_write,
+                msg,
+                font_size,
+                line_spacing,
+            );
+            Ok(())
+        }
         #[cfg(windows)]
         return crate::windows::load_proc_memory(
             self,
@@ -850,11 +853,7 @@ impl App {
             None => {
                 // Set a clean meta, for an empty document
                 this.set_new_clean_meta(font_size, line_spacing);
-                msg_if_fail(
-                    this.load_file_args(args.src, args.meta, msg, font_size, line_spacing),
-                    "Failed to load file",
-                    msg,
-                );
+                this.load_file_args(args.src, args.meta, msg, font_size, line_spacing);
             }
         }
         if let Some(name) = args.layout {
@@ -1144,7 +1143,7 @@ fn load_proc_memory_linux(
     msg: &mut MessageDialog,
     font_size: u16,
     line_spacing: u16,
-) -> anyhow::Result<()> {
+) {
     app.load_file_args(
         SourceArgs {
             file: Some(Path::new("/proc/").join(pid.to_string()).join("mem")),
@@ -1161,7 +1160,7 @@ fn load_proc_memory_linux(
         msg,
         font_size,
         line_spacing,
-    )
+    );
 }
 
 #[cfg(target_os = "macos")]

@@ -74,11 +74,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         });
     });
     if let Some(args) = load {
-        msg_if_fail(
-            app.load_file_args(args, None, &mut gui.msg_dialog, font_size, line_spacing),
-            "Failed to load file",
-            &mut gui.msg_dialog,
-        );
+        app.load_file_args(args, None, &mut gui.msg_dialog, font_size, line_spacing);
     }
     ui.separator();
     if ui

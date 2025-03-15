@@ -1,6 +1,6 @@
 use {
     super::{WinCtx, WindowOpen},
-    crate::{args::SourceArgs, shell::msg_if_fail},
+    crate::args::SourceArgs,
     std::path::PathBuf,
 };
 
@@ -51,16 +51,12 @@ impl super::Window for AdvancedOpenWindow {
         }
         ui.separator();
         if ui.add_enabled(src_args.file.is_some(), egui::Button::new("Load")).clicked() {
-            msg_if_fail(
-                app.load_file_args(
-                    src_args.clone(),
-                    self.path_to_meta.clone(),
-                    &mut gui.msg_dialog,
-                    font_size,
-                    line_spacing,
-                ),
-                "Failed to load file",
+            app.load_file_args(
+                src_args.clone(),
+                self.path_to_meta.clone(),
                 &mut gui.msg_dialog,
+                font_size,
+                line_spacing,
             );
             self.open.set(false);
         }

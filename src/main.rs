@@ -1083,11 +1083,7 @@ fn handle_key_pressed(
             let mut load = None;
             crate::shell::open_previous(app, &mut load);
             if let Some(args) = load {
-                msg_if_fail(
-                    app.load_file_args(args, None, &mut gui.msg_dialog, font_size, line_spacing),
-                    "Failed to load file",
-                    &mut gui.msg_dialog,
-                );
+                app.load_file_args(args, None, &mut gui.msg_dialog, font_size, line_spacing);
             }
         }
         Key::W if key_mod.ctrl => app.close_file(),
