@@ -84,7 +84,7 @@ impl App {
         match &mut self.source {
             Some(src) => match &mut src.provider {
                 SourceProvider::File(file) => {
-                    self.data = Data::clean_from_buf(read_contents(&self.src_args, file)?);
+                    self.data.reload_from_file(&self.src_args, file)?;
                 }
                 SourceProvider::Stdin(_) => {
                     bail!("Can't reload streaming sources like standard input")
@@ -1354,7 +1354,7 @@ fn open_file(path: &Path, read_only: bool) -> std::io::Result<File> {
     OpenOptions::new().read(true).write(!read_only).open(path)
 }
 
-fn read_contents(args: &SourceArgs, file: &mut File) -> std::io::Result<Vec<u8>> {
+pub(crate) fn read_contents(args: &SourceArgs, file: &mut File) -> std::io::Result<Vec<u8>> {
     let seek = args.hard_seek.unwrap_or(0);
     file.seek(SeekFrom::Start(seek as u64))?;
     let mut data = Vec::new();

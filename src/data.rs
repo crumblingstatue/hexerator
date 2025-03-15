@@ -126,6 +126,21 @@ impl Data {
             self.widen_dirty_region(DamageRegion::RangeInclusive(range));
         }
     }
+
+    pub(crate) fn reload_from_file(
+        &mut self,
+        src_args: &crate::args::SourceArgs,
+        file: &mut std::fs::File,
+    ) -> anyhow::Result<()> {
+        match &mut self.data {
+            Some(DataProvider::Vec(buf)) => {
+                *buf = crate::app::read_contents(src_args, file)?;
+            }
+            etc => anyhow::bail!("Reload not supported for {etc:?}"),
+        }
+        self.dirty_region = None;
+        Ok(())
+    }
 }
 
 impl Deref for Data {
