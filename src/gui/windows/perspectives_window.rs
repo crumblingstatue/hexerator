@@ -2,6 +2,7 @@ use {
     super::{WinCtx, WindowOpen},
     crate::{
         app::command::Cmd, gui::windows::regions_window::region_context_menu, meta::PerspectiveKey,
+        shell::msg_if_fail,
     },
     egui_extras::{Column, TableBuilder},
     slotmap::Key as _,
@@ -80,6 +81,15 @@ impl super::Window for PerspectivesWindow {
                                         }
                                     }
                                 });
+                                if ui.button("Copy name to clipboard").clicked() {
+                                    let res = app.clipboard.set_text(name);
+                                    msg_if_fail(
+                                        res,
+                                        "Failed to copy to clipboard",
+                                        &mut gui.msg_dialog,
+                                    );
+                                    ui.close_menu();
+                                }
                             });
                         }
                     });
