@@ -49,4 +49,16 @@ pub trait HexeratorHandle {
     fn get_data(&self, start: usize, end: usize) -> Option<&[u8]>;
     fn get_data_mut(&mut self, start: usize, end: usize) -> Option<&mut [u8]>;
     fn debug_log(&self, msg: &str);
+    fn perspective(&self, name: &str) -> Option<PerspectiveHandle>;
+    fn perspective_rows(&self, ph: &PerspectiveHandle) -> Vec<&[u8]>;
+}
+
+pub struct PerspectiveHandle {
+    pub key_data: u64,
+}
+
+impl PerspectiveHandle {
+    pub fn rows<'hx>(&self, hx: &'hx dyn HexeratorHandle) -> Vec<&'hx [u8]> {
+        hx.perspective_rows(self)
+    }
 }

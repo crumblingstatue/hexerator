@@ -1,6 +1,7 @@
 use {
-    crate::app::App,
-    hexerator_plugin_api::{HexeratorHandle, Plugin, PluginMethod},
+    crate::{app::App, meta::PerspectiveKey},
+    hexerator_plugin_api::{HexeratorHandle, PerspectiveHandle, Plugin, PluginMethod},
+    slotmap::{Key as _, KeyData},
     std::{self, path::PathBuf},
 };
 
@@ -27,6 +28,32 @@ impl HexeratorHandle for App {
 
     fn selection_range(&self) -> Option<(usize, usize)> {
         self.hex_ui.selection().map(|sel| (sel.begin, sel.end))
+    }
+
+    fn perspective(&self, name: &str) -> Option<PerspectiveHandle> {
+        let key = self
+            .meta_state
+            .meta
+            .low
+            .perspectives
+            .iter()
+            .find_map(|(k, per)| (per.name == name).then_some(k))?;
+        Some(PerspectiveHandle {
+            key_data: key.data().as_ffi(),
+        })
+    }
+
+    fn perspective_rows(&self, ph: &PerspectiveHandle) -> Vec<&[u8]> {
+        let key: PerspectiveKey = KeyData::from_ffi(ph.key_data).into();
+        let per = &self.meta_state.meta.low.perspectives[key];
+        let regs = &self.meta_state.meta.low.regions;
+        let mut out = Vec::new();
+        let n_rows = per.n_rows(regs);
+        for row_idx in 0..n_rows {
+            let begin = per.byte_offset_of_row_col(row_idx, 0, regs);
+            out.push(&self.data[begin..begin + per.cols]);
+        }
+        out
     }
 }
 
