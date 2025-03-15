@@ -21,7 +21,7 @@ pub fn load_proc_memory(
     unsafe {
         let access =
             PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION;
-        handle = windows_sys::Win32::System::Threading::OpenProcess(access, 0, pid.as_u32());
+        handle = OpenProcess(access, 0, pid.as_u32());
         if handle.is_null() {
             bail!("Failed to open process.");
         }
@@ -60,7 +60,7 @@ unsafe fn load_proc_memory_inner(
 
 pub unsafe fn read_proc_memory(
     handle: windows_sys::Win32::Foundation::HANDLE,
-    data: &mut Vec<u8>,
+    data: &mut crate::data::Data,
     start: usize,
     size: usize,
 ) -> anyhow::Result<()> {

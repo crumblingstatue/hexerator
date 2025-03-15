@@ -163,7 +163,7 @@ impl App {
                 SourceProvider::Stdin(_) => bail!("Standard input doesn't support saving"),
                 #[cfg(windows)]
                 SourceProvider::WinProc { handle, start, .. } => {
-                    if let Some(region) = self.edit_state.dirty_region {
+                    if let Some(region) = self.data.dirty_region {
                         let mut n_write = 0;
                         unsafe {
                             if windows_sys::Win32::System::Diagnostics::Debug::WriteProcessMemory(
@@ -177,7 +177,7 @@ impl App {
                                 bail!("Failed to write process memory");
                             }
                         }
-                        self.edit_state.dirty_region = None;
+                        self.data.dirty_region = None;
                     }
                     return Ok(());
                 }
