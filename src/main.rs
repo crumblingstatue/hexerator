@@ -25,7 +25,9 @@
     clippy::semicolon_if_nothing_returned,
     clippy::items_after_statements,
     clippy::unused_trait_names,
-    clippy::undocumented_unsafe_blocks
+    clippy::undocumented_unsafe_blocks,
+    clippy::uninlined_format_args,
+    clippy::format_push_string
 )]
 #![expect(
     incomplete_features,

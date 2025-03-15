@@ -1,7 +1,7 @@
 use {
     super::{WinCtx, WindowOpen},
     crate::{meta::ScriptKey, scripting::exec_lua, shell::msg_if_fail},
-    std::collections::HashMap,
+    std::{collections::HashMap, fmt::Write as _},
 };
 
 type MsgBuf = Vec<ConMsg>;
@@ -108,10 +108,10 @@ impl super::Window for LuaConsoleWindow {
                             buf.push('\n');
                         }
                         ConMsg::OffsetLink { text, offset } => {
-                            buf.push_str(&format!("{offset}: {text}\n"));
+                            let _ = writeln!(&mut buf, "{offset}: {text}");
                         }
                         ConMsg::RangeLink { text, start, end } => {
-                            buf.push_str(&format!("{start}..={end}: {text}\n"));
+                            let _ = writeln!(&mut buf, "{start}..={end}: {text}");
                         }
                     }
                 }

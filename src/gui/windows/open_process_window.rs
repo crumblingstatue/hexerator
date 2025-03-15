@@ -8,7 +8,7 @@ use {
     egui_extras::{Column, TableBuilder},
     egui_file_dialog::FileDialog,
     proc_maps::MapRange,
-    std::{path::PathBuf, process::Command},
+    std::{fmt::Write as _, path::PathBuf, process::Command},
     sysinfo::{ProcessesToUpdate, Signal},
 };
 
@@ -136,7 +136,7 @@ impl super::Window for OpenProcessWindow {
                     run_command.file_dialog.update(ui.ctx());
                     ui.label("Command");
                     if let Some(file_path) = run_command.file_dialog.take_picked() {
-                        run_command.command.push_str(&format!("\"{}\"", file_path.display()));
+                        let _ = writeln!(&mut run_command.command, "\"{}\"", file_path.display());
                     }
                     let re = ui.text_edit_singleline(&mut run_command.command);
                     if run_command.just_opened {
@@ -354,7 +354,7 @@ impl super::Window for OpenProcessWindow {
                     }
                 }
 
-                ui.label(format!("{} Results", result_count));
+                ui.label(format!("{result_count} Results"));
                 return;
             }
             ui.heading(format!("Virtual memory maps for pid {pid}"));

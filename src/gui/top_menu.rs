@@ -112,7 +112,7 @@ pub fn top_menu(
                                             ui.code(format!("{:#?}", app.src_args));
                                         });
                                         ui.collapsing("Source", |ui| {
-                                            ui.code(format!("{:#?}", src));
+                                            ui.code(format!("{src:#?}"));
                                         });
                                         ui.collapsing("Data provider", |ui| {
                                             ui.code(format!("{:#?}", app.data));
