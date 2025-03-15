@@ -2,7 +2,7 @@ use {
     crate::{app::App, meta::PerspectiveKey},
     hexerator_plugin_api::{HexeratorHandle, PerspectiveHandle, Plugin, PluginMethod},
     slotmap::{Key as _, KeyData},
-    std::{self, path::PathBuf},
+    std::path::PathBuf,
 };
 
 pub struct PluginContainer {

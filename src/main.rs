@@ -12,6 +12,7 @@
 )]
 #![warn(
     unused_qualifications,
+    redundant_imports,
     trivial_casts,
     trivial_numeric_casts,
     unsafe_op_in_unsafe_fn,
