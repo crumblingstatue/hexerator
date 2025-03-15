@@ -726,7 +726,17 @@ impl View {
             }
         }
         if app.hex_ui.show_alt_overlay {
-            let mut text = Text::new(&this.name, font, 16);
+            let per = &app.meta_state.meta.low.perspectives[this.view.perspective];
+            let mut text = Text::new(
+                &format!(
+                    "{}\n{}x{}",
+                    this.name,
+                    per.n_rows(&app.meta_state.meta.low.regions),
+                    per.cols
+                ),
+                font,
+                16,
+            );
             text.set_position((
                 f32::from(this.view.viewport_rect.x),
                 f32::from(this.view.viewport_rect.y),
