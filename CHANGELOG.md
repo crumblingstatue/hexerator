@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.4.0] - TBD
+
+### New features
+
+- Memory mapped file support
+  - Using `--unsafe-mmap` command line option, large files can now efficiently be opened.
+- Allow defining data layouts with Rust struct syntax
+- Mouse drag selection
+  - You can finally select regions by dragging the mouse, rather than having to use shift+1/shift+2
+- Block selection with alt+drag
+  - You can select non-contiguous sections by holding alt and drawing a rectangle with the mouse
+
+### UI changes
+
+- Add custom right panel to file open dialog
+  - Shows information about the highlighted file
+  - Allows selecting advanced options
+- Backtrace support for error popups
+- External command window now provides more options for working directory
+- Show information about rows/column positions in more places
+- `Home`/`End` now jumps to row begin/end.
+  - `ctrl+Home`/`ctrl+End` are now used for view begin/end.
+- The selection can now be quickly cleared with a `Clear` button in the top panel
+- Add a "quick scroll" slider popup to the bottom panel, to quickly navigate huge files.
+- Add Find&Replace for `HexString` find type
+
+### Other Improvements
+
+- Make stream buffer size configurable, use a larger default size
+- Hexerator now retries opening a file as read-only if there was a permission error
+- Hex strings now accept parsing comma separated, or "packed" (unseparated) hex values
+
+### CLI
+Add `--view` flag to select view to focus on startup
+
+### Other
+
+- Add Windows CI
+
 ## [0.3.0] - 2024-10-16
 
 ### UI changes
