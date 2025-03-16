@@ -526,7 +526,6 @@ impl FindDialog {
 }
 
 trait SliceExt<T> {
-    #[expect(dead_code, reason = "Could be useful in the future")]
     fn get_array<const N: usize>(&self, offset: usize) -> Option<&[T; N]>;
     fn get_array_mut<const N: usize>(&mut self, offset: usize) -> Option<&mut [T; N]>;
 }
@@ -542,14 +541,18 @@ impl<T> SliceExt<T> for [T] {
 
 fn data_value_label<N: EndianedPrimitive>(
     ui: &mut Ui,
-    data: &mut [u8],
+    data: &mut crate::data::Data,
     off: usize,
 ) -> Option<DamageRegion>
 where
     [(); N::BYTE_LEN]:,
 {
     let Some(data) = data.get_array_mut(off) else {
-        ui.label("!!").on_hover_text("Out of bounds");
+        if let Some(immut) = data.get_array(off) {
+            ui.label(N::from_bytes(*immut).to_string());
+        } else {
+            ui.label("!!").on_hover_text("Out of bounds");
+        }
         return None;
     };
     let mut n = N::from_bytes(*data);
