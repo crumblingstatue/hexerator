@@ -51,6 +51,8 @@ hexerator-plugin-api = { path = "hexerator-plugin-api" }
 image = "0.25"
 structparse = { git = "https://github.com/crumblingstatue/structparse.git" }
 memmap2 = "0.9.5"
+egui-phosphor = "0.9.0"
+constcat = "0.6.0"
 
 [target."cfg(windows)".dependencies.windows-sys]
  version = "0.59.0"

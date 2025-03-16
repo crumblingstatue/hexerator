@@ -428,6 +428,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
+name = "constcat"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ffb5df6dd5dadb422897e8132f415d7a054e3cd757e5070b663f75bea1840fb"
+
+[[package]]
 name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -618,6 +624,15 @@ dependencies = [
 name = "egui-fontcfg"
 version = "0.1.0"
 source = "git+https://github.com/crumblingstatue/egui-fontcfg.git#63d9d0a880a28dbc6f5af6d8c867c87193d8b0fd"
+dependencies = [
+ "egui",
+]
+
+[[package]]
+name = "egui-phosphor"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "171d57331491e92f0a7c73fad1088716e3200984309f4f8684731b750cee1378"
 dependencies = [
  "egui",
 ]
@@ -907,10 +922,12 @@ dependencies = [
  "anyhow",
  "arboard",
  "clap",
+ "constcat",
  "directories",
  "egui",
  "egui-file-dialog",
  "egui-fontcfg",
+ "egui-phosphor",
  "egui-sfml",
  "egui_code_editor",
  "egui_colors",

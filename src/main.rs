@@ -202,6 +202,7 @@ fn try_main() -> anyhow::Result<()> {
         }));
     }
     let mut font_defs = egui::FontDefinitions::default();
+    egui_phosphor::add_to_fonts(&mut font_defs, egui_phosphor::Variant::Regular);
     egui_fontcfg::load_custom_fonts(&cfg.custom_font_paths, &mut font_defs.font_data)?;
     if !cfg.font_families.is_empty() {
         font_defs.families = cfg.font_families.clone();
