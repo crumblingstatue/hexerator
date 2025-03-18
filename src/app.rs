@@ -1019,6 +1019,18 @@ impl App {
         }
     }
 
+    pub(crate) fn focused_view_select_col(&mut self) {
+        let Some(offsets) = self.cursor_col_offsets() else {
+            return;
+        };
+        for col in offsets {
+            self.hex_ui.extra_selections.push(Region {
+                begin: col,
+                end: col,
+            });
+        }
+    }
+
     pub(crate) fn diff_with_file(
         &self,
         path: PathBuf,

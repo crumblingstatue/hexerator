@@ -7,9 +7,24 @@ use {
         gui::{Gui, dialogs::TruncateDialog, message_dialog::Icon},
         shell::msg_if_fail,
     },
+    constcat::concat,
     egui::Button,
+    egui_phosphor::regular as ic,
     mlua::Lua,
 };
+
+const L_FIND: &str = concat!(ic::MAGNIFYING_GLASS, " Find...");
+const L_SELECTION: &str = concat!(ic::SELECTION, " Selection");
+const L_SELECT_A: &str = "🅰 Set select a";
+const L_SELECT_B: &str = "🅱 Set select b";
+const L_SELECT_ALL: &str = concat!(ic::SELECTION_ALL, " Select all in region");
+const L_SELECT_ROW: &str = concat!(ic::ARROWS_HORIZONTAL, " Select row");
+const L_SELECT_COL: &str = concat!(ic::ARROWS_VERTICAL, " Select column");
+const L_EXTERNAL_COMMAND: &str = concat!(ic::TERMINAL_WINDOW, " External command...");
+const L_INC_BYTE: &str = concat!(ic::PLUS, " Inc byte");
+const L_DEC_BYTE: &str = concat!(ic::MINUS, " Dec byte");
+const L_PASTE_AT_CURSOR: &str = concat!(ic::CLIPBOARD_TEXT, " Paste at cursor");
+const L_TRUNCATE_EXTEND: &str = concat!(ic::SCISSORS, " Truncate/Extend...");
 
 pub fn ui(
     ui: &mut egui::Ui,
@@ -19,7 +34,7 @@ pub fn ui(
     font_size: u16,
     line_spacing: u16,
 ) {
-    if ui.add(Button::new("Find...").shortcut_text("Ctrl+F")).clicked() {
+    if ui.add(Button::new(L_FIND).shortcut_text("Ctrl+F")).clicked() {
         gui.win.find.open.toggle();
         ui.close_menu();
     }
@@ -27,7 +42,7 @@ pub fn ui(
     match app.hex_ui.selection() {
         Some(sel) => {
             if crate::gui::selection_menu::selection_menu(
-                "Selection",
+                L_SELECTION,
                 ui,
                 app,
                 &mut gui.dialogs,
@@ -43,44 +58,41 @@ pub fn ui(
             ui.label("<No selection>");
         }
     }
-    if ui.add(Button::new("Set select a").shortcut_text("shift+1")).clicked() {
+    if ui.add(Button::new(L_SELECT_A).shortcut_text("shift+1")).clicked() {
         app.hex_ui.select_a = Some(app.edit_state.cursor);
         ui.close_menu();
     }
-    if ui.add(Button::new("Set select b").shortcut_text("shift+2")).clicked() {
+    if ui.add(Button::new(L_SELECT_B).shortcut_text("shift+2")).clicked() {
         app.hex_ui.select_b = Some(app.edit_state.cursor);
         ui.close_menu();
     }
-    if ui.add(Button::new("Select all in view").shortcut_text("Ctrl+A")).clicked() {
+    if ui.add(Button::new(L_SELECT_ALL).shortcut_text("Ctrl+A")).clicked() {
         app.focused_view_select_all();
         ui.close_menu();
     }
-    if ui.add(Button::new("Select row")).clicked() {
+    if ui.add(Button::new(L_SELECT_ROW)).clicked() {
         app.focused_view_select_row();
         ui.close_menu();
     }
-    if ui.button("Zero out column").clicked() {
-        if let Some(offsets) = app.cursor_col_offsets() {
-            for offset in offsets {
-                app.data[offset] = 0;
-            }
-        }
+    if ui.add(Button::new(L_SELECT_COL)).clicked() {
+        app.focused_view_select_col();
+        ui.close_menu();
     }
     ui.separator();
-    if ui.add(Button::new("External command...").shortcut_text("Ctrl+E")).clicked() {
+    if ui.add(Button::new(L_EXTERNAL_COMMAND).shortcut_text("Ctrl+E")).clicked() {
         gui.win.external_command.open.toggle();
         ui.close_menu();
     }
     ui.separator();
-    if ui.add(Button::new("Inc byte").shortcut_text("Ctrl+=")).clicked() {
+    if ui.add(Button::new(L_INC_BYTE).shortcut_text("Ctrl+=")).clicked() {
         app.inc_byte_at_cursor();
         ui.close_menu();
     }
-    if ui.add(Button::new("Dec byte").shortcut_text("Ctrl+-")).clicked() {
-        app.inc_byte_at_cursor();
+    if ui.add(Button::new(L_DEC_BYTE).shortcut_text("Ctrl+-")).clicked() {
+        app.dec_byte_at_cursor();
         ui.close_menu();
     }
-    ui.menu_button("Paste at cursor", |ui| {
+    ui.menu_button(L_PASTE_AT_CURSOR, |ui| {
         if ui.button("Hex text from clipboard").clicked() {
             ui.close_menu();
             let s = crate::app::get_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog);
@@ -139,7 +151,7 @@ pub fn ui(
     ui.checkbox(&mut app.preferences.sticky_edit, "Sticky edit")
         .on_hover_text("Don't automatically move cursor after editing is finished");
     ui.separator();
-    if ui.button("Truncate/Extend").clicked() {
+    if ui.button(L_TRUNCATE_EXTEND).clicked() {
         Gui::add_dialog(
             &mut gui.dialogs,
             TruncateDialog::new(app.data.len(), app.hex_ui.selection()),
