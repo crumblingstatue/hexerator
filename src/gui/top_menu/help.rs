@@ -1,11 +1,17 @@
 use {
     crate::{gui::Gui, shell::msg_if_fail},
+    constcat::concat,
     egui::{Button, Ui},
+    egui_phosphor::regular as ic,
     gamedebug_core::{IMMEDIATE, PERSISTENT},
 };
 
+const L_HEXERATOR_BOOK: &str = concat!(ic::BOOK_OPEN_TEXT, " Hexerator book");
+const L_DEBUG_PANEL: &str = concat!(ic::BUG, " Debug panel...");
+const L_ABOUT: &str = concat!(ic::QUESTION, " About Hexerator...");
+
 pub fn ui(ui: &mut Ui, gui: &mut Gui) {
-    if ui.button("Hexerator book").clicked() {
+    if ui.button(L_HEXERATOR_BOOK).clicked() {
         msg_if_fail(
             open::that("https://crumblingstatue.github.io/hexerator-book/"),
             "Failed to open help",
@@ -13,21 +19,14 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui) {
         );
         ui.close_menu();
     }
-    if ui.add(Button::new("Debug panel...").shortcut_text("F12")).clicked() {
+    if ui.add(Button::new(L_DEBUG_PANEL).shortcut_text("F12")).clicked() {
         ui.close_menu();
         IMMEDIATE.toggle();
         PERSISTENT.toggle();
     }
     ui.separator();
-    if ui.button("About Hexerator...").clicked() {
+    if ui.button(L_ABOUT).clicked() {
         gui.win.about.open.toggle();
         ui.close_menu();
     }
-    ui.separator();
-    ui.menu_button("Debug", |ui| {
-        #[expect(clippy::panic)]
-        if ui.button("Simulate panic (crash hexerator)").clicked() {
-            panic!("User induced panic!");
-        }
-    });
 }
