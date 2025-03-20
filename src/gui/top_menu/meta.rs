@@ -9,6 +9,7 @@ use {
     egui_phosphor::regular as ic,
 };
 
+const L_PERSPECTIVES: &str = concat!(ic::PERSPECTIVE, " Perspectives...");
 const L_REGIONS: &str = concat!(ic::RULER, " Regions...");
 const L_BOOKMARKS: &str = concat!(ic::BOOKMARK, " Bookmarks...");
 const L_VARIABLES: &str = concat!(ic::X, " Variables...");
@@ -23,6 +24,10 @@ const L_SAVE_AS: &str = concat!(ic::FLOPPY_DISK_BACK, " Save as...");
 const L_ASSOCIATE_WITH_CURRENT: &str = concat!(ic::FLOW_ARROW, " Associate with current file");
 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_spacing: u16) {
+    if ui.add(Button::new(L_PERSPECTIVES).shortcut_text("F7")).clicked() {
+        gui.win.perspectives.open.toggle();
+        ui.close_menu();
+    }
     if ui.add(Button::new(L_REGIONS).shortcut_text("F8")).clicked() {
         gui.win.regions.open.toggle();
         ui.close_menu();
