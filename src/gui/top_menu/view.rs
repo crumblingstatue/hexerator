@@ -1,24 +1,31 @@
 use {
     crate::{app::App, gui::Gui, hex_ui::Ruler, meta::LayoutMapExt as _},
+    constcat::concat,
     egui::Button,
+    egui_phosphor::regular as ic,
 };
 
+const L_LAYOUT: &str = concat!(ic::LAYOUT, " Layout");
+const L_RULER: &str = concat!(ic::RULER, " Ruler");
+const L_LAYOUTS: &str = concat!(ic::LAYOUT, " Layouts...");
+const L_FOCUS_PREV: &str = concat!(ic::ARROW_FAT_LEFT, " Focus previous");
+const L_FOCUS_NEXT: &str = concat!(ic::ARROW_FAT_RIGHT, " Focus next");
+const L_VIEWS: &str = concat!(ic::EYE, " Views...");
+
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
-    ui.menu_button("Layout", |ui| {
-        for (k, v) in &app.meta_state.meta.layouts {
-            if ui.selectable_label(app.hex_ui.current_layout == k, &v.name).clicked() {
-                App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, k);
-                ui.close_menu();
-            }
-        }
-        ui.separator();
-        if ui.button("➕ Add new layout").clicked() {
-            app.hex_ui.current_layout = app.meta_state.meta.layouts.add_new_default();
-            gui.win.layouts.open.set(true);
-            ui.close_menu();
-        }
-    });
-    ui.menu_button("Ruler", |ui| match app.focused_view_mut() {
+    if ui.add(Button::new(L_VIEWS).shortcut_text("F6")).clicked() {
+        gui.win.views.open.toggle();
+        ui.close_menu();
+    }
+    if ui.add(Button::new(L_FOCUS_PREV).shortcut_text("Shift+Tab")).clicked() {
+        app.focus_prev_view_in_layout();
+        ui.close_menu();
+    }
+    if ui.add(Button::new(L_FOCUS_NEXT).shortcut_text("Tab")).clicked() {
+        app.focus_next_view_in_layout();
+        ui.close_menu();
+    }
+    ui.menu_button(L_RULER, |ui| match app.focused_view_mut() {
         Some((key, _view)) => match app.hex_ui.rulers.get_mut(&key) {
             Some(ruler) => {
                 if ui.button("Remove").clicked() {
@@ -56,22 +63,25 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
             ui.label("<No active view>");
         }
     });
-    if ui.add(Button::new("Layouts...").shortcut_text("F5")).clicked() {
-        gui.win.layouts.open.toggle();
-        ui.close_menu();
-    }
-    if ui.add(Button::new("Prev view").shortcut_text("Shift+Tab")).clicked() {
-        app.focus_prev_view_in_layout();
-        ui.close_menu();
-    }
-    if ui.add(Button::new("Next view").shortcut_text("Tab")).clicked() {
-        app.focus_next_view_in_layout();
-        ui.close_menu();
-    }
-    if ui.add(Button::new("Views...").shortcut_text("F6")).clicked() {
-        gui.win.views.open.toggle();
-        ui.close_menu();
-    }
+    ui.separator();
+    ui.menu_button(L_LAYOUT, |ui| {
+        if ui.add(Button::new(L_LAYOUTS).shortcut_text("F5")).clicked() {
+            gui.win.layouts.open.toggle();
+            ui.close_menu();
+        }
+        if ui.button("➕ Add new").clicked() {
+            app.hex_ui.current_layout = app.meta_state.meta.layouts.add_new_default();
+            gui.win.layouts.open.set(true);
+            ui.close_menu();
+        }
+        ui.separator();
+        for (k, v) in &app.meta_state.meta.layouts {
+            if ui.selectable_label(app.hex_ui.current_layout == k, &v.name).clicked() {
+                App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, k);
+                ui.close_menu();
+            }
+        }
+    });
     ui.checkbox(
         &mut app.preferences.col_change_lock_col,
         "Lock col on col change",
