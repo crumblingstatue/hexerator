@@ -6,7 +6,7 @@ use {
         edit_buffer::EditBuffer,
         gui::message_dialog::{Icon, MessageDialog},
         hex_conv::merge_hex_halves,
-        meta::{PerspectiveKey, PerspectiveMap, RegionMap, region::Region},
+        meta::{MetaLow, PerspectiveKey, PerspectiveMap, RegionMap, region::Region},
         preferences::Preferences,
     },
     gamedebug_core::per,
@@ -140,24 +140,36 @@ impl View {
     pub(crate) fn go_home(&mut self) {
         self.scroll_offset.row = 0;
         self.scroll_offset.col = 0;
-        self.scroll_offset.pix_xoff = 0;
-        self.scroll_offset.pix_yoff = 0;
+        self.scroll_offset.floor();
     }
+
+    pub(crate) fn go_home_col(&mut self) {
+        self.scroll_offset.col = 0;
+        self.scroll_offset.pix_xoff = 0;
+    }
+
     /// Scroll so the perspective's last row is visible
-    pub(crate) fn scroll_to_end(&mut self, perspectives: &PerspectiveMap, regions: &RegionMap) {
+    pub(crate) fn scroll_to_end(&mut self, meta_low: &MetaLow) {
         // Needs:
         // - row index of last byte of perspective
         // - number of rows this view can hold
-        let perspective = &perspectives[self.perspective];
-        let last_row_idx = perspective.last_row_idx(regions);
-        let last_col_idx = perspective.last_col_idx(regions);
+        let perspective = &meta_low.perspectives[self.perspective];
+        let last_row_idx = perspective.last_row_idx(&meta_low.regions);
+        let last_col_idx = perspective.last_col_idx(&meta_low.regions);
         self.scroll_offset.row = last_row_idx + 1;
         self.scroll_offset.col = last_col_idx + 1;
         self.scroll_page_up();
         self.scroll_page_left();
         self.scroll_offset.floor();
-        self.scroll_offset.pix_xoff = 0;
-        self.scroll_offset.pix_yoff = 0;
+    }
+    /// Scrolls the view right until it "bumps" into the right edge of content
+    pub(crate) fn scroll_right_until_bump(&mut self, meta_low: &MetaLow) {
+        let per = &meta_low.perspectives[self.perspective];
+        #[expect(clippy::cast_sign_loss, reason = "self.cols() is essentially `u15`")]
+        let view_cols = self.cols() as usize;
+        let offset = per.cols.saturating_sub(view_cols);
+        self.scroll_offset.col = offset;
+        self.scroll_offset.floor();
     }
 
     /// Row/col offset of relative position, including scrolling

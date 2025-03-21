@@ -555,8 +555,11 @@ fn handle_key_pressed(
             if let Some(key) = app.hex_ui.focused_view {
                 let view = &mut app.meta_state.meta.views[key].view;
                 match app.hex_ui.interact_mode {
-                    InteractMode::View => {
+                    InteractMode::View if key_mod.ctrl => {
                         view.go_home();
+                    }
+                    InteractMode::View => {
+                        view.go_home_col();
                     }
                     InteractMode::Edit if key_mod.ctrl => {
                         view.go_home();
@@ -579,11 +582,11 @@ fn handle_key_pressed(
             if let Some(key) = app.hex_ui.focused_view {
                 let view = &mut app.meta_state.meta.views[key].view;
                 match app.hex_ui.interact_mode {
+                    InteractMode::View if key_mod.ctrl => {
+                        view.scroll_to_end(&app.meta_state.meta.low);
+                    }
                     InteractMode::View => {
-                        app.meta_state.meta.views[key].view.scroll_to_end(
-                            &app.meta_state.meta.low.perspectives,
-                            &app.meta_state.meta.low.regions,
-                        );
+                        view.scroll_right_until_bump(&app.meta_state.meta.low);
                     }
                     InteractMode::Edit if key_mod.ctrl => {
                         app.edit_state.cursor = app.meta_state.meta.low.end_offset_of_view(view);
