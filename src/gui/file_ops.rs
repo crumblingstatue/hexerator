@@ -22,10 +22,12 @@ struct EntInfo {
     mime: Option<&'static str>,
 }
 
+type PreviewCache = PathCache<EntInfo>;
+
 pub struct FileOps {
     pub dialog: FileDialog,
     pub op: Option<FileOp>,
-    preview_cache: PathCache<EntInfo>,
+    preview_cache: PreviewCache,
     file_dialog_source_args: SourceArgs,
 }
 
@@ -96,48 +98,12 @@ impl FileOps {
         line_spacing: u16,
     ) {
         self.dialog.update_with_right_panel_ui(ctx, &mut |ui, dia| {
-            ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
-            if let Some(highlight) = dia.selected_entry() {
-                if let Some(parent) = highlight.as_path().parent() {
-                    ui.label(egui::RichText::new(parent.display().to_string()).small());
-                }
-                if let Some(filename) = highlight.as_path().file_name() {
-                    ui.label(filename.to_string_lossy());
-                }
-                ui.separator();
-                let ent_info =
-                    self.preview_cache.get_or_compute(highlight.as_path(), |path| EntInfo {
-                        meta: std::fs::metadata(path),
-                        mime: tree_magic_mini::from_filepath(path),
-                    });
-                if let Some(mime) = ent_info.mime {
-                    ui.label(mime);
-                }
-                match &ent_info.meta {
-                    Ok(meta) => {
-                        let ft = meta.file_type();
-                        if ft.is_file() {
-                            ui.label(format!("Size: {}", human_size_u64(meta.len())));
-                        }
-                        if ft.is_symlink() {
-                            ui.label("Symbolic link");
-                        }
-                        if !(ft.is_file() || ft.is_dir()) {
-                            ui.label(format!("Special (size: {})", meta.len()));
-                        }
-                    }
-                    Err(e) => {
-                        ui.label(e.to_string());
-                    }
-                }
-                if ui.button("📋 Copy path to clipboard").clicked() {
-                    ctx.copy_text(highlight.as_path().display().to_string());
-                }
-            } else {
-                ui.heading("Hexerator");
-            }
-            ui.separator();
-            crate::gui::src_args_ui(ui, &mut self.file_dialog_source_args);
+            right_panel_ui(
+                ui,
+                dia,
+                &mut self.preview_cache,
+                &mut self.file_dialog_source_args,
+            );
         });
         if let Some(path) = self.dialog.take_picked()
             && let Some(op) = self.op.take()
@@ -324,4 +290,113 @@ impl FileOps {
         self.dialog.save_file();
         self.op = Some(FileOp::SaveSelectionToFile(region));
     }
+}
+
+fn right_panel_ui(
+    ui: &mut egui::Ui,
+    dia: &FileDialog,
+    preview_cache: &mut PreviewCache,
+    src_args: &mut SourceArgs,
+) {
+    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
+    if let Some(highlight) = dia.selected_entry() {
+        if let Some(parent) = highlight.as_path().parent() {
+            ui.label(egui::RichText::new(parent.display().to_string()).small());
+        }
+        if let Some(filename) = highlight.as_path().file_name() {
+            ui.label(filename.to_string_lossy());
+        }
+        ui.separator();
+        let ent_info = preview_cache.get_or_compute(highlight.as_path(), |path| EntInfo {
+            meta: std::fs::metadata(path),
+            mime: tree_magic_mini::from_filepath(path),
+        });
+        if let Some(mime) = ent_info.mime {
+            ui.label(mime);
+        }
+        match &ent_info.meta {
+            Ok(meta) => {
+                let ft = meta.file_type();
+                if ft.is_file() {
+                    ui.label(format!("Size: {}", human_size_u64(meta.len())));
+                }
+                if ft.is_symlink() {
+                    ui.label("Symbolic link");
+                }
+                if !(ft.is_file() || ft.is_dir()) {
+                    ui.label(format!("Special (size: {})", meta.len()));
+                }
+            }
+            Err(e) => {
+                ui.label(e.to_string());
+            }
+        }
+        if ui.button("📋 Copy path to clipboard").clicked() {
+            ui.ctx().copy_text(highlight.as_path().display().to_string());
+        }
+    } else {
+        ui.heading("Hexerator");
+    }
+    ui.separator();
+    src_args_ui(ui, src_args);
+}
+
+fn src_args_ui(ui: &mut egui::Ui, src_args: &mut SourceArgs) {
+    opt(
+        ui,
+        &mut src_args.jump,
+        "jump",
+        "Jump to offset on startup",
+        |ui, jump| {
+            ui.add(egui::DragValue::new(jump));
+        },
+    );
+    opt(
+        ui,
+        &mut src_args.hard_seek,
+        "hard seek",
+        "Seek to offset, consider it beginning of the file in the editor",
+        |ui, hard_seek| {
+            ui.add(egui::DragValue::new(hard_seek));
+        },
+    );
+    opt(
+        ui,
+        &mut src_args.take,
+        "take",
+        "Read only this many bytes",
+        |ui, take| {
+            ui.add(egui::DragValue::new(take));
+        },
+    );
+    ui.checkbox(&mut src_args.read_only, "read-only")
+        .on_hover_text("Open file as read-only");
+    if ui
+        .checkbox(&mut src_args.stream, "stream")
+        .on_hover_text(
+            "Specify source as a streaming source (for example, standard streams).\n\
+             Sets read-only attribute",
+        )
+        .changed()
+    {
+        src_args.read_only = src_args.stream;
+    }
+}
+
+fn opt<V: Default>(
+    ui: &mut egui::Ui,
+    val: &mut Option<V>,
+    label: &str,
+    desc: &str,
+    f: impl FnOnce(&mut egui::Ui, &mut V),
+) {
+    ui.horizontal(|ui| {
+        let mut checked = val.is_some();
+        ui.checkbox(&mut checked, label).on_hover_text(desc);
+        if checked {
+            f(ui, val.get_or_insert_with(Default::default));
+        } else {
+            *val = None;
+        }
+    });
 }

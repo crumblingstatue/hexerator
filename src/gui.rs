@@ -6,7 +6,6 @@ use {
     },
     crate::{
         app::App,
-        args::SourceArgs,
         config::Style,
         meta::{
             Bookmark,
@@ -219,66 +218,6 @@ pub fn set_font_sizes_style(egui_style: &mut egui::Style, style: &Style) {
         ),
     ]
     .into();
-}
-
-fn opt<V: Default>(
-    ui: &mut egui::Ui,
-    val: &mut Option<V>,
-    label: &str,
-    desc: &str,
-    f: impl FnOnce(&mut egui::Ui, &mut V),
-) {
-    ui.horizontal(|ui| {
-        let mut checked = val.is_some();
-        ui.checkbox(&mut checked, label).on_hover_text(desc);
-        if checked {
-            f(ui, val.get_or_insert_with(Default::default));
-        } else {
-            *val = None;
-        }
-    });
-}
-
-fn src_args_ui(ui: &mut egui::Ui, src_args: &mut SourceArgs) {
-    opt(
-        ui,
-        &mut src_args.jump,
-        "jump",
-        "Jump to offset on startup",
-        |ui, jump| {
-            ui.add(egui::DragValue::new(jump));
-        },
-    );
-    opt(
-        ui,
-        &mut src_args.hard_seek,
-        "hard seek",
-        "Seek to offset, consider it beginning of the file in the editor",
-        |ui, hard_seek| {
-            ui.add(egui::DragValue::new(hard_seek));
-        },
-    );
-    opt(
-        ui,
-        &mut src_args.take,
-        "take",
-        "Read only this many bytes",
-        |ui, take| {
-            ui.add(egui::DragValue::new(take));
-        },
-    );
-    ui.checkbox(&mut src_args.read_only, "read-only")
-        .on_hover_text("Open file as read-only");
-    if ui
-        .checkbox(&mut src_args.stream, "stream")
-        .on_hover_text(
-            "Specify source as a streaming source (for example, standard streams).\n\
-             Sets read-only attribute",
-        )
-        .changed()
-    {
-        src_args.read_only = src_args.stream;
-    }
 }
 
 fn add_new_bookmark(app: &mut App, gui: &mut Gui, byte_off: usize) {
