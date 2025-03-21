@@ -745,3 +745,22 @@ impl ViewportRect {
         x >= self.x && y >= self.y && x <= self.x + self.w && y <= self.y + self.h
     }
 }
+
+/// Try to convert mouse position to ViewportVec.
+///
+/// Log error and return zeroed vec on conversion error.
+pub fn try_conv_mp_zero<T: TryInto<ViewportVec>>(src: T) -> ViewportVec
+where
+    T::Error: std::fmt::Display,
+{
+    match src.try_into() {
+        Ok(mp) => mp,
+        Err(e) => {
+            per!(
+                "Mouse position conversion error: {}\nHexerator doesn't support extremely high (>32700) mouse positions.",
+                e
+            );
+            ViewportVec { x: 0, y: 0 }
+        }
+    }
+}
