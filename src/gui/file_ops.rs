@@ -332,6 +332,7 @@ fn right_panel_ui(
                 ui.label(e.to_string());
             }
         }
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
         if ui.button("📋 Copy path to clipboard").clicked() {
             ui.ctx().copy_text(highlight.as_path().display().to_string());
         }
