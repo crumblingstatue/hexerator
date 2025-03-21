@@ -1014,6 +1014,8 @@ impl App {
         if let Some([row, _]) = self.row_col_of_cursor()
             && let Some(reg) = self.row_region(row)
         {
+            // To make behavior consistent with "select col", we clear all extra selections beforehand
+            self.hex_ui.extra_selections.clear();
             self.hex_ui.select_a = Some(reg.begin);
             self.hex_ui.select_b = Some(reg.end);
         }
