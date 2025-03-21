@@ -1,7 +1,7 @@
 use {
     crate::{
         app::App,
-        args::SourceArgs,
+        args::{MmapMode, SourceArgs},
         gui::{message_dialog::MessageDialog, windows::FileDiffResultWindow},
         meta::{ViewKey, region::Region},
         shell::{msg_fail, msg_if_fail},
@@ -15,6 +15,7 @@ use {
         io::Write as _,
         path::{Path, PathBuf},
     },
+    strum::IntoEnumIterator as _,
 };
 
 struct EntInfo {
@@ -381,7 +382,42 @@ fn src_args_ui(ui: &mut egui::Ui, src_args: &mut SourceArgs) {
     {
         src_args.read_only = src_args.stream;
     }
+    ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+    opt(
+        ui,
+        &mut src_args.unsafe_mmap,
+        "⚠ mmap",
+        MMAP_LABEL,
+        |ui, mode| {
+            let label = <&'static str>::from(&*mode);
+            egui::ComboBox::new("mmap_cbox", "mode").selected_text(label).show_ui(ui, |ui| {
+                for variant in MmapMode::iter() {
+                    let label = <&'static str>::from(&variant);
+                    ui.selectable_value(mode, variant, label);
+                }
+            });
+        },
+    );
+    if src_args.unsafe_mmap == Some(MmapMode::DangerousMut) {
+        ui.label(DANGEROUS_MUT_LABEL);
+    }
 }
+
+const MMAP_LABEL: &str = "Open as memory mapped file\n\
+\n\
+WARNING
+\n\
+Memory mapped i/o is inherently unsafe.
+To ensure no undefined behavior, make sure you have exclusive access to the file.
+There is no warranty for any damage you might cause to your system.
+";
+
+const DANGEROUS_MUT_LABEL: &str = "⚠ WARNING ⚠\n\
+\n\
+File will be opened with a direct mutable memory map.
+Any changes made to the file will be IMMEDIATE.
+THERE IS NO WAY TO UNDO ANY CHANGES.
+";
 
 fn opt<V: Default>(
     ui: &mut egui::Ui,

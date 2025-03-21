@@ -88,10 +88,23 @@ pub struct SourceArgs {
 }
 
 /// How the memory mapping should operate
-#[derive(Clone, Copy, clap::ValueEnum, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(
+    Clone,
+    Copy,
+    clap::ValueEnum,
+    Debug,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    strum::IntoStaticStr,
+    strum::EnumIter,
+    Default,
+)]
 pub enum MmapMode {
     /// Read-only memory map.
     /// Note: Some features may not work, as Hexerator was designed for a mutable data buffer.
+    #[default]
     Ro,
     /// Copy-on-write memory map.
     /// Changes are only visible locally.
