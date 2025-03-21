@@ -72,7 +72,7 @@ use {
         message_dialog::{Icon, MessageDialog},
         root_ctx_menu::{ContextMenu, ContextMenuData},
     },
-    meta::{NamedView, PerspectiveMap, RegionMap, region::Region},
+    meta::{MetaLow, NamedView, region::Region},
     mlua::Lua,
     shell::msg_if_fail,
     slotmap::Key as _,
@@ -752,12 +752,7 @@ fn handle_text_entered(app: &mut App, unicode: char, msg: &mut MessageDialog) {
                 &mut app.data,
                 msg,
             );
-            keep_cursor_in_view(
-                view,
-                &app.meta_state.meta.low.perspectives,
-                &app.meta_state.meta.low.regions,
-                app.edit_state.cursor,
-            );
+            keep_cursor_in_view(view, &app.meta_state.meta.low, app.edit_state.cursor);
         }
         InteractMode::View => {}
     }
@@ -816,12 +811,7 @@ fn handle_key_pressed(
                     app.edit_state.set_cursor_no_history(app.edit_state.cursor.saturating_sub(
                         app.meta_state.meta.low.perspectives[view.perspective].cols,
                     ));
-                    keep_cursor_in_view(
-                        view,
-                        &app.meta_state.meta.low.perspectives,
-                        &app.meta_state.meta.low.regions,
-                        app.edit_state.cursor,
-                    );
+                    keep_cursor_in_view(view, &app.meta_state.meta.low, app.edit_state.cursor);
                 }
             }
         },
@@ -849,12 +839,7 @@ fn handle_key_pressed(
                             app.meta_state.meta.low.perspectives[view.perspective].cols,
                         );
                     }
-                    keep_cursor_in_view(
-                        view,
-                        &app.meta_state.meta.low.perspectives,
-                        &app.meta_state.meta.low.regions,
-                        app.edit_state.cursor,
-                    );
+                    keep_cursor_in_view(view, &app.meta_state.meta.low, app.edit_state.cursor);
                 }
             }
         },
@@ -880,8 +865,7 @@ fn handle_key_pressed(
                         app.edit_state.step_cursor_back();
                         keep_cursor_in_view(
                             &mut view.view,
-                            &app.meta_state.meta.low.perspectives,
-                            &app.meta_state.meta.low.regions,
+                            &app.meta_state.meta.low,
                             app.edit_state.cursor,
                         );
                     }
@@ -918,8 +902,7 @@ fn handle_key_pressed(
                         app.edit_state.step_cursor_forward();
                         keep_cursor_in_view(
                             &mut view.view,
-                            &app.meta_state.meta.low.perspectives,
-                            &app.meta_state.meta.low.regions,
+                            &app.meta_state.meta.low,
                             app.edit_state.cursor,
                         );
                     }
@@ -948,12 +931,7 @@ fn handle_key_pressed(
                                 .cursor
                                 .saturating_sub(view.rows() as usize * per.cols);
                         }
-                        keep_cursor_in_view(
-                            view,
-                            &app.meta_state.meta.low.perspectives,
-                            &app.meta_state.meta.low.regions,
-                            app.edit_state.cursor,
-                        );
+                        keep_cursor_in_view(view, &app.meta_state.meta.low, app.edit_state.cursor);
                     }
                 }
             }
@@ -974,12 +952,7 @@ fn handle_key_pressed(
                                 .cursor
                                 .saturating_add(view.rows() as usize * per.cols);
                         }
-                        keep_cursor_in_view(
-                            view,
-                            &app.meta_state.meta.low.perspectives,
-                            &app.meta_state.meta.low.regions,
-                            app.edit_state.cursor,
-                        );
+                        keep_cursor_in_view(view, &app.meta_state.meta.low, app.edit_state.cursor);
                     }
                 }
             }
@@ -1000,8 +973,7 @@ fn handle_key_pressed(
                             app.edit_state.cursor = row_start;
                             keep_cursor_in_view(
                                 &mut app.meta_state.meta.views[key].view,
-                                &app.meta_state.meta.low.perspectives,
-                                &app.meta_state.meta.low.regions,
+                                &app.meta_state.meta.low,
                                 app.edit_state.cursor,
                             );
                         }
@@ -1028,8 +1000,7 @@ fn handle_key_pressed(
                             app.edit_state.cursor = row_end;
                             keep_cursor_in_view(
                                 &mut app.meta_state.meta.views[key].view,
-                                &app.meta_state.meta.low.perspectives,
-                                &app.meta_state.meta.low.regions,
+                                &app.meta_state.meta.low,
                                 app.edit_state.cursor,
                             );
                         }
@@ -1141,14 +1112,10 @@ fn handle_key_pressed(
     }
 }
 
-fn keep_cursor_in_view(
-    view: &mut view::View,
-    perspectives: &PerspectiveMap,
-    regions: &RegionMap,
-    cursor: usize,
-) {
-    let view_offs = view.offsets(perspectives, regions);
-    let [cur_row, cur_col] = perspectives[view.perspective].row_col_of_byte_offset(cursor, regions);
+fn keep_cursor_in_view(view: &mut view::View, meta_low: &MetaLow, cursor: usize) {
+    let view_offs = view.offsets(&meta_low.perspectives, &meta_low.regions);
+    let [cur_row, cur_col] =
+        meta_low.perspectives[view.perspective].row_col_of_byte_offset(cursor, &meta_low.regions);
     view.scroll_offset.pix_xoff = 0;
     view.scroll_offset.pix_yoff = 0;
     if view_offs.row > cur_row {
