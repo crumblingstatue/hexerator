@@ -10,10 +10,23 @@ use {
             windows::RegionsWindow,
         },
     },
+    constcat::concat,
     egui::Button,
+    egui_phosphor::regular as ic,
     rand::RngCore as _,
     std::fmt::Write as _,
 };
+
+const L_UNSELECT: &str = concat!(ic::SELECTION_SLASH, " Unselect");
+const L_ZERO_FILL: &str = concat!(ic::NUMBER_SQUARE_ZERO, " Zero fill");
+const L_PATTERN_FILL: &str = concat!(ic::BINARY, " Pattern fill...");
+const L_LUA_FILL: &str = concat!(ic::MOON, " Lua fill...");
+const L_RANDOM_FILL: &str = concat!(ic::SHUFFLE, " Random fill");
+const L_COPY_AS_HEX_TEXT: &str = concat!(ic::COPY, " Copy as hex text");
+const L_COPY_AS_UTF8: &str = concat!(ic::COPY, " Copy as utf-8 text");
+const L_ADD_AS_REGION: &str = concat!(ic::RULER, " Add as region");
+const L_SAVE_TO_FILE: &str = concat!(ic::FLOPPY_DISK, " Save to file");
+const L_X86_ASM: &str = concat!(ic::PIPE_WRENCH, " X86 asm");
 
 /// Returns whether anything was clicked
 pub fn selection_menu(
@@ -28,27 +41,27 @@ pub fn selection_menu(
 ) -> bool {
     let mut clicked = false;
     ui.menu_button(title, |ui| {
-        if ui.add(Button::new("Unselect").shortcut_text("Esc")).clicked() {
+        if ui.add(Button::new(L_UNSELECT).shortcut_text("Esc")).clicked() {
             app.hex_ui.clear_selections();
             ui.close_menu();
             clicked = true;
         }
-        if ui.add(Button::new("Zero fill").shortcut_text("Del")).clicked() {
+        if ui.add(Button::new(L_ZERO_FILL).shortcut_text("Del")).clicked() {
             app.data.zero_fill_region(sel);
             ui.close_menu();
             clicked = true;
         }
-        if ui.button("Pattern fill...").clicked() {
+        if ui.button(L_PATTERN_FILL).clicked() {
             Gui::add_dialog(gui_dialogs, PatternFillDialog::default());
             ui.close_menu();
             clicked = true;
         }
-        if ui.button("Lua fill...").clicked() {
+        if ui.button(L_LUA_FILL).clicked() {
             Gui::add_dialog(gui_dialogs, LuaFillDialog::default());
             ui.close_menu();
             clicked = true;
         }
-        if ui.button("Random fill").clicked() {
+        if ui.button(L_RANDOM_FILL).clicked() {
             for region in app.hex_ui.selected_regions() {
                 if let Some(data) = app.data.get_mut(region.to_range()) {
                     rand::rng().fill_bytes(data);
@@ -58,7 +71,7 @@ pub fn selection_menu(
             ui.close_menu();
             clicked = true;
         }
-        if ui.button("Copy as hex text").clicked() {
+        if ui.button(L_COPY_AS_HEX_TEXT).clicked() {
             let mut s = String::new();
             for &byte in &app.data[sel.begin..=sel.end] {
                 write!(&mut s, "{byte:02x} ").unwrap();
@@ -67,13 +80,13 @@ pub fn selection_menu(
             ui.close_menu();
             clicked = true;
         }
-        if ui.button("Copy as utf-8 text").clicked() {
+        if ui.button(L_COPY_AS_UTF8).clicked() {
             let s = String::from_utf8_lossy(&app.data[sel.begin..=sel.end]);
             crate::app::set_clipboard_string(&mut app.clipboard, gui_msg_dialog, &s);
             ui.close_menu();
             clicked = true;
         }
-        if ui.button("Add as region").clicked() {
+        if ui.button(L_ADD_AS_REGION).clicked() {
             crate::gui::ops::add_region_from_selection(
                 sel,
                 &mut app.meta_state,
@@ -82,12 +95,12 @@ pub fn selection_menu(
             ui.close_menu();
             clicked = true;
         }
-        if ui.button("Save to file").clicked() {
+        if ui.button(L_SAVE_TO_FILE).clicked() {
             file_ops.save_selection_to_file(sel);
             ui.close_menu();
             clicked = true;
         }
-        if ui.button("X86 asm").clicked() {
+        if ui.button(L_X86_ASM).clicked() {
             Gui::add_dialog(gui_dialogs, X86AsmDialog::new());
             ui.close_menu();
             clicked = true;
