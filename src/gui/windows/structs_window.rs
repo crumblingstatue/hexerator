@@ -28,11 +28,19 @@ impl super::Window for StructsWindow {
                 self.parsed_struct = Some(struct_.clone());
             }
         }
-        self.picker_ui(&app.meta_state.meta, ui);
-        ui.separator();
-        self.editor_ui(ui);
-        ui.separator();
-        self.parsed_struct_ui(ui, app);
+        let top_h = ui.available_height() - 32.0;
+        ui.horizontal(|ui| {
+            ui.set_max_height(top_h);
+            ui.vertical(|ui| {
+                self.picker_ui(&app.meta_state.meta, ui);
+            });
+            ui.separator();
+            self.editor_ui(ui);
+            ui.separator();
+            ui.vertical(|ui| {
+                self.parsed_struct_ui(ui, app);
+            });
+        });
         ui.separator();
         self.bottom_bar_ui(ui, app);
     }
@@ -63,6 +71,7 @@ impl StructsWindow {
     fn editor_ui(&mut self, ui: &mut egui::Ui) {
         let re = CodeEditor::default()
             .with_syntax(Syntax::rust())
+            .desired_width(300.0)
             .show(ui, &mut self.struct_text_buf)
             .response;
 
@@ -85,7 +94,7 @@ impl StructsWindow {
         }
     }
     fn parsed_struct_ui(&mut self, ui: &mut egui::Ui, app: &mut crate::app::App) {
-        egui::ScrollArea::vertical().max_height(300.0).show(ui, |ui| {
+        egui::ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
             if let Some(struct_) = &mut self.parsed_struct {
                 struct_ui(struct_, ui, app);
             }

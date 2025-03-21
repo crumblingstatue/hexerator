@@ -651,8 +651,7 @@ dependencies = [
 [[package]]
 name = "egui_code_editor"
 version = "0.2.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4df25ac42132e9fbb20785d9c0349ad5b2eabfb74023783632c04b315e395608"
+source = "git+https://github.com/crumblingstatue/egui_code_editor.git?branch=desired-width#a30d200f19c71cda0abfc32b78d07ce8847e94bb"
 dependencies = [
  "egui",
 ]
