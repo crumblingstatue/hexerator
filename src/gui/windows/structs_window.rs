@@ -10,7 +10,7 @@ pub struct StructsWindow {
     struct_text_buf: String,
     parsed_struct: Option<StructMetaItem>,
     error_label: String,
-    selected_idx: Option<usize>,
+    selected_idx: usize,
 }
 
 fn read_ty_as_usize_at(data: &[u8], ty: &StructTy, offset: usize) -> Option<usize> {
@@ -19,9 +19,15 @@ fn read_ty_as_usize_at(data: &[u8], ty: &StructTy, offset: usize) -> Option<usiz
 
 impl super::Window for StructsWindow {
     fn ui(&mut self, super::WinCtx { ui, app, .. }: super::WinCtx) {
+        if self.open.just_now() {
+            if let Some(struct_) = app.meta_state.meta.structs.get(self.selected_idx) {
+                self.struct_text_buf = struct_.src.clone();
+                self.parsed_struct = Some(struct_.clone());
+            }
+        }
         for (i, struct_) in app.meta_state.meta.structs.iter().enumerate() {
-            if ui.selectable_label(self.selected_idx == Some(i), &struct_.name).clicked() {
-                self.selected_idx = Some(i);
+            if ui.selectable_label(self.selected_idx == i, &struct_.name).clicked() {
+                self.selected_idx = i;
                 self.struct_text_buf = struct_.src.clone();
                 self.parsed_struct = Some(struct_.clone());
             }
