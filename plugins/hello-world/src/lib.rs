@@ -59,7 +59,7 @@ impl Plugin for HelloPlugin {
                 Ok(None)
             }
             "fill_selection" => match hx.selection_range() {
-                Some((start, end)) => match hx.get_data_mut(start, end) {
+                Some([start, end]) => match hx.get_data_mut(start, end) {
                     Some(data) => {
                         data.fill(0x42);
                         Ok(None)
