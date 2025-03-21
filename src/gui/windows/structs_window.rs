@@ -1,6 +1,9 @@
 use {
     super::WindowOpen,
-    crate::struct_meta_item::{Endian, StructMetaItem, StructPrimitive, StructTy},
+    crate::{
+        meta::Meta,
+        struct_meta_item::{Endian, StructMetaItem, StructPrimitive, StructTy},
+    },
     egui_code_editor::{CodeEditor, Syntax},
 };
 
@@ -67,6 +70,7 @@ impl super::Window for StructsWindow {
         match &mut self.parsed_struct {
             Some(struct_) => {
                 let mut del = false;
+                let mut refresh = false;
                 ui.horizontal(|ui| {
                     if ui.button("Save").clicked() {
                         struct_.src = self.struct_text_buf.clone();
@@ -81,18 +85,22 @@ impl super::Window for StructsWindow {
                     if ui.button("Delete").clicked() {
                         del = true;
                     }
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button("Restore all").clicked() {
+                            app.meta_state.meta.structs = app.meta_state.clean_meta.structs.clone();
+                            refresh = true;
+                        }
+                    });
                 });
                 if del {
                     if self.selected_idx < app.meta_state.meta.structs.len() {
                         app.meta_state.meta.structs.remove(self.selected_idx);
                     }
                     self.selected_idx = self.selected_idx.saturating_sub(1);
-                    self.struct_text_buf.clear();
-                    self.parsed_struct = None;
-                    if let Some(struct_) = app.meta_state.meta.structs.get(self.selected_idx) {
-                        self.struct_text_buf = struct_.src.clone();
-                        self.parsed_struct = Some(struct_.clone());
-                    }
+                    self.refresh(&app.meta_state.meta);
+                }
+                if refresh {
+                    self.refresh(&app.meta_state.meta);
                 }
             }
             None => {
@@ -103,6 +111,17 @@ impl super::Window for StructsWindow {
 
     fn title(&self) -> &str {
         "Structs"
+    }
+}
+
+impl StructsWindow {
+    fn refresh(&mut self, meta: &Meta) {
+        self.struct_text_buf.clear();
+        self.parsed_struct = None;
+        if let Some(struct_) = meta.structs.get(self.selected_idx) {
+            self.struct_text_buf = struct_.src.clone();
+            self.parsed_struct = Some(struct_.clone());
+        }
     }
 }
 
