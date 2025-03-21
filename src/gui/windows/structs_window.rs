@@ -66,14 +66,32 @@ impl super::Window for StructsWindow {
         ui.separator();
         match &mut self.parsed_struct {
             Some(struct_) => {
-                if ui.button("Save").clicked() {
-                    struct_.src = self.struct_text_buf.clone();
-                    if let Some(s) =
-                        app.meta_state.meta.structs.iter_mut().find(|s| s.name == struct_.name)
-                    {
-                        *s = struct_.clone();
-                    } else {
-                        app.meta_state.meta.structs.push(struct_.clone());
+                let mut del = false;
+                ui.horizontal(|ui| {
+                    if ui.button("Save").clicked() {
+                        struct_.src = self.struct_text_buf.clone();
+                        if let Some(s) =
+                            app.meta_state.meta.structs.iter_mut().find(|s| s.name == struct_.name)
+                        {
+                            *s = struct_.clone();
+                        } else {
+                            app.meta_state.meta.structs.push(struct_.clone());
+                        }
+                    }
+                    if ui.button("Delete").clicked() {
+                        del = true;
+                    }
+                });
+                if del {
+                    if self.selected_idx < app.meta_state.meta.structs.len() {
+                        app.meta_state.meta.structs.remove(self.selected_idx);
+                    }
+                    self.selected_idx = self.selected_idx.saturating_sub(1);
+                    self.struct_text_buf.clear();
+                    self.parsed_struct = None;
+                    if let Some(struct_) = app.meta_state.meta.structs.get(self.selected_idx) {
+                        self.struct_text_buf = struct_.src.clone();
+                        self.parsed_struct = Some(struct_.clone());
                     }
                 }
             }
