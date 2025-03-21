@@ -1,7 +1,19 @@
 use {
     super::Gui,
     crate::{app::App, meta::ViewKey, view::ViewportScalar},
+    constcat::concat,
+    egui_phosphor::regular as ic,
 };
+
+const L_SELECTION: &str = concat!(ic::SELECTION, " Selection 🖱⏵");
+const L_REGION_PROPS: &str = concat!(ic::RULER, " Region properties...");
+const L_VIEW_PROPS: &str = concat!(ic::EYE, " View properties...");
+const L_CHANGE_THIS_VIEW: &str = concat!(ic::SWAP, " Change this view to 🖱⏵");
+const L_REMOVE_FROM_LAYOUT: &str = concat!(ic::TRASH, " Remove from layout");
+const L_OPEN_BOOKMARK: &str = concat!(ic::BOOKMARK, " Open bookmark");
+const L_ADD_BOOKMARK: &str = concat!(ic::BOOKMARK, " Add bookmark");
+const L_LAYOUT_PROPS: &str = concat!(ic::LAYOUT, " Layout properties...");
+const L_LAYOUTS: &str = concat!(ic::LAYOUT, " Layouts 🖱⏵");
 
 pub struct ContextMenu {
     pos: egui::Pos2,
@@ -63,7 +75,7 @@ fn menu_inner_ui(
     if let Some(sel) = app.hex_ui.selection() {
         ui.separator();
         if crate::gui::selection_menu::selection_menu(
-            "Selection 🖱⏵",
+            L_SELECTION,
             ui,
             app,
             &mut gui.dialogs,
@@ -77,17 +89,17 @@ fn menu_inner_ui(
     }
     if let Some(view) = menu.data.view {
         ui.separator();
-        if ui.button("Region properties...").clicked() {
+        if ui.button(L_REGION_PROPS).clicked() {
             gui.win.regions.selected_key = Some(app.region_key_for_view(view));
             gui.win.regions.open.set(true);
             *close = true;
         }
-        if ui.button("View properties...").clicked() {
+        if ui.button(L_VIEW_PROPS).clicked() {
             gui.win.views.selected = view;
             gui.win.views.open.set(true);
             *close = true;
         }
-        ui.menu_button("Change this view to 🖱⏵", |ui| {
+        ui.menu_button(L_CHANGE_THIS_VIEW, |ui| {
             ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
             let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout)
             else {
@@ -104,7 +116,7 @@ fn menu_inner_ui(
                 }
             }
         });
-        if ui.button("Remove from layout").clicked() {
+        if ui.button(L_REMOVE_FROM_LAYOUT).clicked() {
             if let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) {
                 layout.remove_view(view);
                 if app.hex_ui.focused_view == Some(view) {
@@ -119,14 +131,14 @@ fn menu_inner_ui(
         ui.separator();
         match app.meta_state.meta.bookmarks.iter().position(|bm| bm.offset == byte_off) {
             Some(pos) => {
-                if ui.button("Open bookmark").clicked() {
+                if ui.button(L_OPEN_BOOKMARK).clicked() {
                     gui.win.bookmarks.open.set(true);
                     gui.win.bookmarks.selected = Some(pos);
                     *close = true;
                 }
             }
             None => {
-                if ui.button("Add bookmark").clicked() {
+                if ui.button(L_ADD_BOOKMARK).clicked() {
                     crate::gui::add_new_bookmark(app, gui, byte_off);
                     *close = true;
                 }
@@ -134,11 +146,11 @@ fn menu_inner_ui(
         }
     }
     ui.separator();
-    if ui.button("Layout properties...").clicked() {
+    if ui.button(L_LAYOUT_PROPS).clicked() {
         gui.win.layouts.open.toggle();
         *close = true;
     }
-    ui.menu_button("Layouts 🖱⏵", |ui| {
+    ui.menu_button(L_LAYOUTS, |ui| {
         for (key, layout) in app.meta_state.meta.layouts.iter() {
             if ui.button(&layout.name).clicked() {
                 App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, key);
