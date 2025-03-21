@@ -181,7 +181,6 @@ pub fn do_egui(
             ctx,
             app,
             &mut gui.msg_dialog,
-            &mut gui.win.advanced_open,
             &mut gui.win.file_diff_result,
             font_size,
             line_spacing,

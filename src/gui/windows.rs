@@ -1,5 +1,4 @@
 pub use self::{
-    advanced_open::AdvancedOpenWindow,
     file_diff_result_window::FileDiffResultWindow,
     lua_console::{ConMsg, LuaConsoleWindow},
     regions_window::{RegionsWindow, region_context_menu},
@@ -21,7 +20,6 @@ use {
 };
 
 mod about;
-mod advanced_open;
 mod bookmarks_window;
 pub mod debug_window;
 mod external_command_window;
@@ -55,7 +53,6 @@ pub struct Windows {
     pub file_diff_result: FileDiffResultWindow,
     pub open_process: OpenProcessWindow,
     pub find_memory_pointers: FindMemoryPointersWindow,
-    pub advanced_open: AdvancedOpenWindow,
     pub external_command: ExternalCommandWindow,
     pub preferences: PreferencesWindow,
     pub about: AboutWindow,
@@ -151,7 +148,6 @@ impl Windows {
             meta_diff,
             open_process,
             find_memory_pointers,
-            advanced_open,
             external_command,
             preferences,
             lua_editor,

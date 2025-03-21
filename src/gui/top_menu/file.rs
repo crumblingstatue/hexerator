@@ -10,7 +10,6 @@ use {
 };
 
 const L_LOPEN: &str = concat!(ic::FOLDER_OPEN, " Open...");
-const L_ADVANCED_OPEN: &str = concat!(ic::FOLDER_OPEN, " Advanced open...");
 const L_OPEN_PROCESS: &str = concat!(ic::CPU, " Open process...");
 const L_OPEN_PREVIOUS: &str = concat!(ic::ARROWS_LEFT_RIGHT, " Open previous");
 const L_SAVE: &str = concat!(ic::FLOPPY_DISK, " Save");
@@ -27,10 +26,6 @@ const L_QUIT: &str = concat!(ic::SIGN_OUT, " Quit");
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_spacing: u16) {
     if ui.add(Button::new(L_LOPEN).shortcut_text("Ctrl+O")).clicked() {
         gui.fileops.load_file(app.source_file());
-        ui.close_menu();
-    }
-    if ui.button(L_ADVANCED_OPEN).clicked() {
-        gui.win.advanced_open.open.toggle();
         ui.close_menu();
     }
     if ui.button(L_OPEN_PROCESS).clicked() {

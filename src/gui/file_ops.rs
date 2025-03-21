@@ -2,10 +2,7 @@ use {
     crate::{
         app::App,
         args::SourceArgs,
-        gui::{
-            message_dialog::MessageDialog,
-            windows::{AdvancedOpenWindow, FileDiffResultWindow},
-        },
+        gui::{message_dialog::MessageDialog, windows::FileDiffResultWindow},
         meta::{ViewKey, region::Region},
         shell::{msg_fail, msg_if_fail},
         source::Source,
@@ -76,8 +73,6 @@ impl<V> PathCache<V> {
 #[derive(Debug)]
 pub enum FileOp {
     LoadMetaFile,
-    AdvancedOpenPickFile,
-    AdvancedOpenPickMetafile,
     LoadFile,
     LoadPaletteForView(ViewKey),
     LoadPaletteFromImageForView(ViewKey),
@@ -96,7 +91,6 @@ impl FileOps {
         ctx: &egui::Context,
         app: &mut App,
         msg: &mut MessageDialog,
-        advanced_open_window: &mut AdvancedOpenWindow,
         file_diff_result_window: &mut FileDiffResultWindow,
         font_size: u16,
         line_spacing: u16,
@@ -155,12 +149,6 @@ impl FileOps {
                         "Failed to load metafile",
                         msg,
                     );
-                }
-                FileOp::AdvancedOpenPickFile => {
-                    advanced_open_window.src_args.file = Some(path);
-                }
-                FileOp::AdvancedOpenPickMetafile => {
-                    advanced_open_window.path_to_meta = Some(path);
                 }
                 FileOp::LoadFile => {
                     self.file_dialog_source_args.file = Some(path);
@@ -285,16 +273,6 @@ impl FileOps {
     pub fn load_meta_file(&mut self) {
         self.dialog.pick_file();
         self.op = Some(FileOp::LoadMetaFile);
-    }
-
-    pub fn advanced_open_pick_file(&mut self) {
-        self.dialog.pick_file();
-        self.op = Some(FileOp::AdvancedOpenPickFile);
-    }
-
-    pub fn advanced_open_pick_metafile(&mut self) {
-        self.dialog.pick_file();
-        self.op = Some(FileOp::AdvancedOpenPickMetafile);
     }
 
     pub fn load_palette_for_view(&mut self, key: ViewKey) {
