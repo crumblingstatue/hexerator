@@ -28,14 +28,39 @@ impl super::Window for StructsWindow {
                 self.parsed_struct = Some(struct_.clone());
             }
         }
-        for (i, struct_) in app.meta_state.meta.structs.iter().enumerate() {
+        self.picker_ui(&app.meta_state.meta, ui);
+        ui.separator();
+        self.editor_ui(ui);
+        ui.separator();
+        self.parsed_struct_ui(ui, app);
+        ui.separator();
+        self.bottom_bar_ui(ui, app);
+    }
+
+    fn title(&self) -> &str {
+        "Structs"
+    }
+}
+
+impl StructsWindow {
+    fn refresh(&mut self, meta: &Meta) {
+        self.struct_text_buf.clear();
+        self.parsed_struct = None;
+        if let Some(struct_) = meta.structs.get(self.selected_idx) {
+            self.struct_text_buf = struct_.src.clone();
+            self.parsed_struct = Some(struct_.clone());
+        }
+    }
+    fn picker_ui(&mut self, meta: &Meta, ui: &mut egui::Ui) {
+        for (i, struct_) in meta.structs.iter().enumerate() {
             if ui.selectable_label(self.selected_idx == i, &struct_.name).clicked() {
                 self.selected_idx = i;
                 self.struct_text_buf = struct_.src.clone();
                 self.parsed_struct = Some(struct_.clone());
             }
         }
-        ui.separator();
+    }
+    fn editor_ui(&mut self, ui: &mut egui::Ui) {
         let re = CodeEditor::default()
             .with_syntax(Syntax::rust())
             .show(ui, &mut self.struct_text_buf)
@@ -58,6 +83,8 @@ impl super::Window for StructsWindow {
                 }
             }
         }
+    }
+    fn parsed_struct_ui(&mut self, ui: &mut egui::Ui, app: &mut crate::app::App) {
         egui::ScrollArea::vertical().max_height(300.0).show(ui, |ui| {
             if let Some(struct_) = &mut self.parsed_struct {
                 struct_ui(struct_, ui, app);
@@ -66,7 +93,8 @@ impl super::Window for StructsWindow {
                 ui.label(egui::RichText::new(&self.error_label).color(egui::Color32::RED));
             }
         });
-        ui.separator();
+    }
+    fn bottom_bar_ui(&mut self, ui: &mut egui::Ui, app: &mut crate::app::App) {
         match &mut self.parsed_struct {
             Some(struct_) => {
                 let mut del = false;
@@ -106,21 +134,6 @@ impl super::Window for StructsWindow {
             None => {
                 ui.add_enabled(false, egui::Button::new("Save"));
             }
-        }
-    }
-
-    fn title(&self) -> &str {
-        "Structs"
-    }
-}
-
-impl StructsWindow {
-    fn refresh(&mut self, meta: &Meta) {
-        self.struct_text_buf.clear();
-        self.parsed_struct = None;
-        if let Some(struct_) = meta.structs.get(self.selected_idx) {
-            self.struct_text_buf = struct_.src.clone();
-            self.parsed_struct = Some(struct_.clone());
         }
     }
 }
