@@ -1023,6 +1023,12 @@ impl App {
         let Some(offsets) = self.cursor_col_offsets() else {
             return;
         };
+        self.hex_ui.extra_selections.clear();
+        let mut offsets = offsets.into_iter();
+        if let Some(off) = offsets.next() {
+            self.hex_ui.select_a = Some(off);
+            self.hex_ui.select_b = Some(off);
+        }
         for col in offsets {
             self.hex_ui.extra_selections.push(Region {
                 begin: col,
