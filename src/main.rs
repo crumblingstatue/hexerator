@@ -1164,7 +1164,7 @@ fn keep_cursor_in_view(
     }
     #[expect(clippy::cast_sign_loss, reason = "cols is always unsigned")]
     let view_cols = view.cols() as usize;
-    if (view_offs.col + view_cols) < cur_col {
-        view.scroll_offset.col = cur_col - view_cols;
+    if (view_offs.col + view_cols + 1) < cur_col {
+        view.scroll_offset.col = (cur_col - view_cols) + 1;
     }
 }
