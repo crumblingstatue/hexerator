@@ -1,5 +1,5 @@
 use {
-    crate::{app::App, gui::Dialog, preferences::Autoreload},
+    crate::{app::App, gui::Dialog, session_prefs::Autoreload},
     mlua::Lua,
 };
 

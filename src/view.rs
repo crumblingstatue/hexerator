@@ -7,7 +7,7 @@ use {
         gui::message_dialog::{Icon, MessageDialog},
         hex_conv::merge_hex_halves,
         meta::{MetaLow, PerspectiveKey, PerspectiveMap, RegionMap, region::Region},
-        preferences::Preferences,
+        session_prefs::SessionPrefs,
     },
     gamedebug_core::per,
     serde::{Deserialize, Serialize},
@@ -350,7 +350,7 @@ impl View {
         &mut self,
         unicode: char,
         edit_state: &mut EditState,
-        preferences: &Preferences,
+        preferences: &SessionPrefs,
         data: &mut Data,
         msg: &mut MessageDialog,
     ) {
@@ -429,7 +429,7 @@ impl View {
         &mut self,
         edit_state: &mut EditState,
         data: &mut Data,
-        preferences: &Preferences,
+        preferences: &SessionPrefs,
         msg: &mut MessageDialog,
     ) {
         match &mut self.kind {
