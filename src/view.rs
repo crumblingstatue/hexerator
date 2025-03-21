@@ -167,7 +167,7 @@ impl View {
         y: i16,
         perspectives: &PerspectiveMap,
         regions: &RegionMap,
-    ) -> Option<(usize, usize)> {
+    ) -> Option<[usize; 2]> {
         self.viewport_rect
             .relative_offset_of_pos(x, y)
             .and_then(|(x, y)| self.row_col_of_rel_pos(x, y, perspectives, regions))
@@ -182,7 +182,7 @@ impl View {
         y: i16,
         perspectives: &PerspectiveMap,
         regions: &RegionMap,
-    ) -> Option<(usize, usize)> {
+    ) -> Option<[usize; 2]> {
         let rel_x = x + self.scroll_offset.pix_xoff;
         let rel_y = y + self.scroll_offset.pix_yoff;
         let rel_col = rel_x / self.col_w as i16;
@@ -207,7 +207,7 @@ impl View {
             let abs_row = row + rel_row as usize;
             let abs_col = col + rel_col as usize;
             if perspective.row_col_within_bound(abs_row, abs_col, regions) {
-                Some((abs_row, abs_col))
+                Some([abs_row, abs_col])
             } else {
                 None
             }
@@ -222,7 +222,7 @@ impl View {
         perspectives: &PerspectiveMap,
         regions: &RegionMap,
     ) {
-        let (row, col) = perspectives[self.perspective].row_col_of_byte_offset(offset, regions);
+        let [row, col] = perspectives[self.perspective].row_col_of_byte_offset(offset, regions);
         self.center_on_row_col(row, col);
     }
 
@@ -252,7 +252,7 @@ impl View {
         do_col: bool,
         do_row: bool,
     ) {
-        let (row, col) = perspectives[self.perspective].row_col_of_byte_offset(offset, regions);
+        let [row, col] = perspectives[self.perspective].row_col_of_byte_offset(offset, regions);
         if do_row {
             self.scroll_offset.row = row;
         }

@@ -26,8 +26,8 @@ impl HexeratorHandle for App {
         self.data.get_mut(start..=end)
     }
 
-    fn selection_range(&self) -> Option<(usize, usize)> {
-        self.hex_ui.selection().map(|sel| (sel.begin, sel.end))
+    fn selection_range(&self) -> Option<[usize; 2]> {
+        self.hex_ui.selection().map(|sel| [sel.begin, sel.end])
     }
 
     fn perspective(&self, name: &str) -> Option<PerspectiveHandle> {

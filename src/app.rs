@@ -611,7 +611,7 @@ impl App {
             &self.meta_state.meta.low.perspectives,
             &self.meta_state.meta.low.regions,
         )
-        .map(|(row, col)| {
+        .map(|[row, col]| {
             self.meta_state.meta.low.perspectives[view.perspective].byte_offset_of_row_col(
                 row,
                 col,

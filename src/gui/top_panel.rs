@@ -40,7 +40,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
             && let Some(view_key) = app.hex_ui.focused_view
         {
             let view = &app.meta_state.meta.views[view_key].view;
-            let (rows, rem) =
+            let [rows, rem] =
                 app.meta_state.meta.low.perspectives[view.perspective].region_row_span(sel);
             ui.label(format!(
                 "{rows} rows * {} cols + {rem} = {}",

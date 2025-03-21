@@ -32,10 +32,10 @@ impl Perspective {
     pub(crate) fn byte_offset_of_row_col(&self, row: usize, col: usize, rmap: &RegionMap) -> usize {
         rmap[self.region].region.begin + (row * self.cols + col)
     }
-    pub(crate) fn row_col_of_byte_offset(&self, offset: usize, rmap: &RegionMap) -> (usize, usize) {
+    pub(crate) fn row_col_of_byte_offset(&self, offset: usize, rmap: &RegionMap) -> [usize; 2] {
         let reg = &rmap[self.region];
         let offset = offset.saturating_sub(reg.region.begin);
-        (offset / self.cols, offset % self.cols)
+        [offset / self.cols, offset % self.cols]
     }
     /// Whether the columns are within `cols` and the calculated offset is within the region
     pub(crate) fn row_col_within_bound(&self, row: usize, col: usize, rmap: &RegionMap) -> bool {
@@ -46,8 +46,8 @@ impl Perspective {
         self.cols = self.cols.clamp(1, rmap[self.region].region.len());
     }
     /// Returns rows spanned by `region`, and the remainder
-    pub(crate) fn region_row_span(&self, region: Region) -> (usize, usize) {
-        (region.len() / self.cols, region.len() % self.cols)
+    pub(crate) fn region_row_span(&self, region: Region) -> [usize; 2] {
+        [region.len() / self.cols, region.len() % self.cols]
     }
     pub(crate) fn n_rows(&self, rmap: &RegionMap) -> usize {
         let region = &rmap[self.region].region;

@@ -463,8 +463,8 @@ fn do_frame(
 fn block_select(app: &mut App, view_key: meta::ViewKey, a: usize, b: usize) {
     let view = &app.meta_state.meta.views[view_key];
     let per = &app.meta_state.meta.low.perspectives[view.view.perspective];
-    let (a_row, a_col) = per.row_col_of_byte_offset(a, &app.meta_state.meta.low.regions);
-    let (b_row, b_col) = per.row_col_of_byte_offset(b, &app.meta_state.meta.low.regions);
+    let [a_row, a_col] = per.row_col_of_byte_offset(a, &app.meta_state.meta.low.regions);
+    let [b_row, b_col] = per.row_col_of_byte_offset(b, &app.meta_state.meta.low.regions);
     let [min_row, max_row] = std::cmp::minmax(a_row, b_row);
     let [min_col, max_col] = std::cmp::minmax(a_col, b_col);
     let mut rows = min_row..=max_row;
@@ -1148,7 +1148,7 @@ fn keep_cursor_in_view(
     cursor: usize,
 ) {
     let view_offs = view.offsets(perspectives, regions);
-    let (cur_row, cur_col) = perspectives[view.perspective].row_col_of_byte_offset(cursor, regions);
+    let [cur_row, cur_col] = perspectives[view.perspective].row_col_of_byte_offset(cursor, regions);
     view.scroll_offset.pix_xoff = 0;
     view.scroll_offset.pix_yoff = 0;
     if view_offs.row > cur_row {

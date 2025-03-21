@@ -45,7 +45,7 @@ impl ValueTy {
 }
 
 pub trait HexeratorHandle {
-    fn selection_range(&self) -> Option<(usize, usize)>;
+    fn selection_range(&self) -> Option<[usize; 2]>;
     fn get_data(&self, start: usize, end: usize) -> Option<&[u8]>;
     fn get_data_mut(&mut self, start: usize, end: usize) -> Option<&mut [u8]>;
     fn debug_log(&self, msg: &str);

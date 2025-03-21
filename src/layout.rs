@@ -27,10 +27,10 @@ impl Layout {
         self.view_grid.iter().flatten().cloned()
     }
 
-    pub(crate) fn idx_of_key(&self, key: ViewKey) -> Option<(usize, usize)> {
+    pub(crate) fn idx_of_key(&self, key: ViewKey) -> Option<[usize; 2]> {
         self.view_grid.iter().enumerate().find_map(|(row_idx, row)| {
             let col_pos = row.iter().position(|k| *k == key)?;
-            Some((row_idx, col_pos))
+            Some([row_idx, col_pos])
         })
     }
 
