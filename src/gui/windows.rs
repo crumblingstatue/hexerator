@@ -15,6 +15,7 @@ use {
     },
     super::Gui,
     crate::app::App,
+    egui_sfml::sfml::graphics::Font,
     lua_editor::LuaEditorWindow,
 };
 
@@ -104,6 +105,7 @@ struct WinCtx<'a> {
     lua: &'a mlua::Lua,
     font_size: u16,
     line_spacing: u16,
+    font: &'a Font,
 }
 
 trait Window {
@@ -119,6 +121,7 @@ impl Windows {
         lua: &mlua::Lua,
         font_size: u16,
         line_spacing: u16,
+        font: &Font,
     ) {
         let mut open;
         macro_rules! windows {
@@ -126,7 +129,7 @@ impl Windows {
                 $(
                     let mut win = std::mem::take(&mut gui.win.$field);
                     open = win.open.is();
-                    egui::Window::new(win.title()).open(&mut open).show(ctx, |ui| win.ui(WinCtx{ ui, gui, app, lua, font_size, line_spacing }));
+                    egui::Window::new(win.title()).open(&mut open).show(ctx, |ui| win.ui(WinCtx{ ui, gui, app, lua, font_size, line_spacing, font }));
                     win.open.just_opened = false;
                     if !open {
                         win.open.set(false);
@@ -173,6 +176,7 @@ impl Windows {
                         lua,
                         font_size,
                         line_spacing,
+                        font,
                     });
                 });
             i += 1;

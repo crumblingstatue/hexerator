@@ -49,7 +49,17 @@ pub fn do_frame(
     update(app, sf_egui.context().wants_keyboard_input());
     app.update(gui, window, lua, font_size, line_spacing);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
-    let (di, cont) = gui::do_egui(sf_egui, gui, app, mp, lua, window, font_size, line_spacing)?;
+    let (di, cont) = gui::do_egui(
+        sf_egui,
+        gui,
+        app,
+        mp,
+        lua,
+        window,
+        font_size,
+        line_spacing,
+        font,
+    )?;
     if !cont {
         return Ok(false);
     }

@@ -46,6 +46,7 @@ impl super::Window for ViewsWindow {
             app,
             font_size,
             line_spacing,
+            font,
             ..
         }: WinCtx,
     ) {
@@ -249,10 +250,12 @@ impl super::Window for ViewsWindow {
                     ViewKind::Block => {}
                 }
                 if adjust_block_size {
-                    view.view.adjust_block_size();
+                    // We expect line spacing to be a positive integer that fits into u16
+                    #[expect(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
                     if let ViewKind::Text(data) = &mut view.view.kind {
-                        data.line_spacing = line_spacing;
+                        data.line_spacing = font.line_spacing(u32::from(data.font_size)) as u16;
                     }
+                    view.view.adjust_block_size();
                 }
                 ui.horizontal(|ui| {
                     labelled_drag(ui, "col w", &mut view.view.col_w, 1..=128);

@@ -20,7 +20,10 @@ use {
         TopBottomPanel, Window,
     },
     egui_colors::Colorix,
-    egui_sfml::{SfEgui, sfml::graphics::RenderWindow},
+    egui_sfml::{
+        SfEgui,
+        sfml::graphics::{Font, RenderWindow},
+    },
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     mlua::Lua,
     root_ctx_menu::ContextMenu,
@@ -99,6 +102,7 @@ pub fn do_egui(
     rwin: &mut RenderWindow,
     font_size: u16,
     line_spacing: u16,
+    font: &Font,
 ) -> anyhow::Result<(egui_sfml::DrawInput, bool)> {
     let di = sf_egui.run(rwin, |_rwin, ctx| {
         let mut open = IMMEDIATE.enabled() || PERSISTENT.enabled();
@@ -113,7 +117,7 @@ pub fn do_egui(
         }
         gui.msg_dialog.show(ctx, &mut app.clipboard, &mut app.cmd);
         app.flush_command_queue(gui, lua, font_size, line_spacing);
-        Windows::update(ctx, gui, app, lua, font_size, line_spacing);
+        Windows::update(ctx, gui, app, lua, font_size, line_spacing, font);
 
         // Context menu
         if let Some(menu) = gui.context_menu.take() {

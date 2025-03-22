@@ -34,6 +34,7 @@ impl super::Window for LuaEditorWindow {
             lua,
             font_size,
             line_spacing,
+            ..
         } = ctx;
         let ctrl_enter =
             ui.input_mut(|inp| inp.consume_key(egui::Modifiers::CTRL, egui::Key::Enter));
