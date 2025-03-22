@@ -1,45 +1,44 @@
 pub use self::{
-    file_diff_result_window::FileDiffResultWindow,
+    file_diff_result::FileDiffResultWindow,
     lua_console::{ConMsg, LuaConsoleWindow},
-    regions_window::{RegionsWindow, region_context_menu},
+    regions::{RegionsWindow, region_context_menu},
 };
 use {
     self::{
-        about::AboutWindow, bookmarks_window::BookmarksWindow,
-        external_command_window::ExternalCommandWindow, find_dialog::FindDialog,
-        find_memory_pointers_window::FindMemoryPointersWindow, layouts_window::LayoutsWindow,
-        lua_help::LuaHelpWindow, lua_watch::LuaWatchWindow, meta_diff_window::MetaDiffWindow,
-        open_process_window::OpenProcessWindow, perspectives_window::PerspectivesWindow,
-        preferences_window::PreferencesWindow, script_manager::ScriptManagerWindow,
-        vars::VarsWindow, views_window::ViewsWindow, zero_partition::ZeroPartition,
+        about::AboutWindow, bookmarks::BookmarksWindow, external_command::ExternalCommandWindow,
+        find_dialog::FindDialog, find_memory_pointers::FindMemoryPointersWindow,
+        layouts::LayoutsWindow, lua_help::LuaHelpWindow, lua_watch::LuaWatchWindow,
+        meta_diff::MetaDiffWindow, open_process::OpenProcessWindow,
+        perspectives::PerspectivesWindow, preferences::PreferencesWindow,
+        script_manager::ScriptManagerWindow, structs::StructsWindow, vars::VarsWindow,
+        views::ViewsWindow, zero_partition::ZeroPartition,
     },
     super::Gui,
     crate::app::App,
     lua_editor::LuaEditorWindow,
-    structs_window::StructsWindow,
 };
 
 mod about;
-mod bookmarks_window;
-pub mod debug_window;
-mod external_command_window;
-mod file_diff_result_window;
+mod bookmarks;
+pub mod debug;
+mod external_command;
+mod file_diff_result;
 mod find_dialog;
-mod find_memory_pointers_window;
-mod layouts_window;
+mod find_memory_pointers;
+mod layouts;
 mod lua_console;
 mod lua_editor;
 mod lua_help;
 mod lua_watch;
-mod meta_diff_window;
-mod open_process_window;
-mod perspectives_window;
-mod preferences_window;
-mod regions_window;
+mod meta_diff;
+mod open_process;
+mod perspectives;
+mod preferences;
+mod regions;
 mod script_manager;
-mod structs_window;
+mod structs;
 mod vars;
-mod views_window;
+mod views;
 mod zero_partition;
 
 #[derive(Default)]

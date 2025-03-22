@@ -2,7 +2,7 @@ use {
     super::{WinCtx, WindowOpen},
     crate::{
         app::{App, command::Cmd},
-        gui::windows::regions_window::region_context_menu,
+        gui::windows::regions::region_context_menu,
         meta::ViewKey,
         view::{HexData, TextData, TextKind, ViewKind},
     },

@@ -106,7 +106,7 @@ pub fn do_egui(
         if open {
             app.imm_debug_fun();
         }
-        Window::new("Debug").open(&mut open).show(ctx, windows::debug_window::ui);
+        Window::new("Debug").open(&mut open).show(ctx, windows::debug::ui);
         if was_open && !open {
             IMMEDIATE.toggle();
             PERSISTENT.toggle();

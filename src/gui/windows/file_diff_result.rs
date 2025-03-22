@@ -2,7 +2,7 @@ use {
     super::{WinCtx, WindowOpen},
     crate::{
         app::read_source_to_buf,
-        gui::windows::regions_window::region_context_menu,
+        gui::windows::regions::region_context_menu,
         meta::{Meta, RegionKey, find_most_specific_region_for_offset},
         shell::msg_if_fail,
     },

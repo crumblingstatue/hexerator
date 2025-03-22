@@ -4,7 +4,7 @@ use {
         app::set_clipboard_string,
         damage_region::DamageRegion,
         data::Data,
-        gui::{message_dialog::MessageDialog, windows::regions_window::region_context_menu},
+        gui::{message_dialog::MessageDialog, windows::regions::region_context_menu},
         meta::{
             Bookmark, find_most_specific_region_for_offset,
             value_type::{
