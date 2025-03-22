@@ -14,6 +14,13 @@ pub struct StructsWindow {
     parsed_struct: Option<StructMetaItem>,
     error_label: String,
     selected_idx: usize,
+    tab: Tab = Tab::Fields,
+}
+
+#[derive(PartialEq)]
+enum Tab {
+    Fields,
+    AtRow,
 }
 
 fn read_ty_as_usize_at(data: &[u8], ty: &StructTy, offset: usize) -> Option<usize> {
@@ -96,7 +103,30 @@ impl StructsWindow {
     fn parsed_struct_ui(&mut self, ui: &mut egui::Ui, app: &mut crate::app::App) {
         egui::ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
             if let Some(struct_) = &mut self.parsed_struct {
-                struct_ui(struct_, ui, app);
+                ui.horizontal(|ui| {
+                    ui.selectable_value(&mut self.tab, Tab::Fields, "Fields");
+                    if let Some([row, _col]) = app.row_col_of_cursor()
+                        && let Some(reg) = app.row_region(row)
+                    {
+                        let bm_name = app
+                            .meta_state
+                            .meta
+                            .bookmarks
+                            .iter()
+                            .find(|bm| bm.offset == reg.begin)
+                            .map_or(String::new(), |bm| format!(" ({})", bm.label));
+                        ui.selectable_value(
+                            &mut self.tab,
+                            Tab::AtRow,
+                            format!("At row {row}{bm_name}"),
+                        );
+                    }
+                });
+                ui.separator();
+                match self.tab {
+                    Tab::Fields => fields_ui(struct_, ui, app),
+                    Tab::AtRow => at_row_ui(struct_, ui, app),
+                }
             }
             if !self.error_label.is_empty() {
                 ui.label(egui::RichText::new(&self.error_label).color(egui::Color32::RED));
@@ -147,7 +177,7 @@ impl StructsWindow {
     }
 }
 
-fn struct_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::app::App) {
+fn fields_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::app::App) {
     for (off, field) in struct_.fields_with_offsets_mut() {
         ui.horizontal(|ui| {
             if ui.link(off.to_string()).clicked() {
@@ -174,21 +204,12 @@ fn struct_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::a
             }
         });
     }
-    ui.separator();
+}
+
+fn at_row_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::app::App) {
     if let Some([row, _]) = app.row_col_of_cursor()
         && let Some(reg) = app.row_region(row)
     {
-        let bm_name = app
-            .meta_state
-            .meta
-            .bookmarks
-            .iter()
-            .find(|bm| bm.offset == reg.begin)
-            .map_or(String::new(), |bm| format!(" ({})", bm.label));
-        ui.heading(format!(
-            "{structname} at row {row}{bm_name}",
-            structname = struct_.name
-        ));
         for (off, field) in struct_.fields_with_offsets_mut() {
             ui.horizontal(|ui| {
                 let data_off = reg.begin + off;
