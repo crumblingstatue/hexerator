@@ -153,7 +153,8 @@ impl StructTy {
             Self::Primitive { ty, endian } => {
                 macro_rules! from_byte_slice {
                     ($t:ty) => {
-                        <$t>::from_byte_slice(&data[..self.size()]).and_then(|i| i.try_into().ok())
+                        <$t>::from_byte_slice(&data.get(..self.size())?)
+                            .and_then(|i| i.try_into().ok())
                     };
                 }
                 match (ty, endian) {

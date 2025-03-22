@@ -194,8 +194,11 @@ fn struct_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::a
                 let data_off = reg.begin + off;
                 ui.label(&field.name);
                 let field_bytes_len = field.ty.size();
-                let byte_slice = &mut app.data[data_off..data_off + field_bytes_len];
-                field_edit_ui(ui, field, byte_slice);
+                if let Some(byte_slice) = app.data.get_mut(data_off..data_off + field_bytes_len) {
+                    field_edit_ui(ui, field, byte_slice);
+                } else {
+                    ui.label("<out of bounds>");
+                }
             });
         }
     }
