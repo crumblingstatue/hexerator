@@ -45,7 +45,7 @@ pub fn do_frame(
     )]
     let line_spacing = font.line_spacing(u32::from(font_size)) as u16;
     // Handle window events
-    handle_events(gui, app, window, sf_egui, font_size, line_spacing);
+    let post_egui_evs = handle_events(gui, app, window, sf_egui, font_size, line_spacing);
     update(app, sf_egui.context().wants_keyboard_input());
     app.update(gui, window, lua, font_size, line_spacing);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
@@ -60,6 +60,7 @@ pub fn do_frame(
         line_spacing,
         font,
     )?;
+    handle_post_egui_events(post_egui_evs, gui, app, sf_egui);
     if !cont {
         return Ok(false);
     }
@@ -103,6 +104,80 @@ pub fn do_frame(
         return Ok(false);
     }
     Ok(true)
+}
+
+/// Some events need to be handled after the egui passes, so we can know if
+/// egui wanted the keyboard or pointer input.
+fn handle_post_egui_events(
+    post_egui_evs: Vec<Event>,
+    gui: &mut Gui,
+    app: &mut App,
+    sf_egui: &SfEgui,
+) {
+    let wants_pointer = sf_egui.context().wants_pointer_input();
+    for ev in post_egui_evs {
+        match ev {
+            Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
+                let mp = try_conv_mp_zero((x, y));
+                if app.hex_ui.current_layout.is_null() {
+                    continue;
+                }
+                if button == mouse::Button::Left {
+                    gui.context_menu = None;
+                    if let Some((off, _view_idx)) = app.byte_offset_at_pos(mp.x, mp.y) {
+                        app.hex_ui.lmb_drag_offset = Some(off);
+                        app.edit_state.set_cursor(off);
+                    }
+                    if let Some(view_idx) = app.view_idx_at_pos(mp.x, mp.y) {
+                        app.hex_ui.focused_view = Some(view_idx);
+                        gui.win.views.selected = view_idx;
+                    }
+                } else if button == mouse::Button::Right {
+                    match app.view_at_pos(mp.x, mp.y) {
+                        Some(view_key) => match app.view_byte_offset_at_pos(view_key, mp.x, mp.y) {
+                            Some(pos) => {
+                                gui.context_menu = Some(ContextMenu::new(
+                                    mp.x,
+                                    mp.y,
+                                    ContextMenuData {
+                                        view: Some(view_key),
+                                        byte_off: Some(pos),
+                                    },
+                                ));
+                            }
+                            None => {
+                                gui.context_menu = Some(ContextMenu::new(
+                                    mp.x,
+                                    mp.y,
+                                    ContextMenuData {
+                                        view: Some(view_key),
+                                        byte_off: None,
+                                    },
+                                ));
+                            }
+                        },
+                        None => {
+                            gui.context_menu = Some(ContextMenu::new(
+                                mp.x,
+                                mp.y,
+                                ContextMenuData {
+                                    view: None,
+                                    byte_off: None,
+                                },
+                            ));
+                        }
+                    }
+                }
+            }
+            Event::MouseButtonReleased {
+                button: mouse::Button::Left,
+                ..
+            } => {
+                app.hex_ui.lmb_drag_offset = None;
+            }
+            _ => {}
+        }
+    }
 }
 
 fn update(app: &mut App, egui_wants_kb: bool) {
@@ -196,6 +271,8 @@ fn draw(
     }
 }
 
+/// Returns events that should be processed post-egui
+#[must_use]
 fn handle_events(
     gui: &mut Gui,
     app: &mut App,
@@ -203,7 +280,8 @@ fn handle_events(
     sf_egui: &mut SfEgui,
     font_size: u16,
     line_spacing: u16,
-) {
+) -> Vec<Event> {
+    let mut post_egui = Vec::new();
     while let Some(event) = window.poll_event() {
         let egui_ctx = sf_egui.context();
         let wants_pointer = egui_ctx.wants_pointer_input();
@@ -242,63 +320,8 @@ fn handle_events(
             Event::TextEntered { unicode } => {
                 handle_text_entered(app, unicode, &mut gui.msg_dialog);
             }
-            Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
-                let mp = try_conv_mp_zero((x, y));
-                if app.hex_ui.current_layout.is_null() {
-                    continue;
-                }
-                if button == mouse::Button::Left {
-                    gui.context_menu = None;
-                    if let Some((off, _view_idx)) = app.byte_offset_at_pos(mp.x, mp.y) {
-                        app.hex_ui.lmb_drag_offset = Some(off);
-                        app.edit_state.set_cursor(off);
-                    }
-                    if let Some(view_idx) = app.view_idx_at_pos(mp.x, mp.y) {
-                        app.hex_ui.focused_view = Some(view_idx);
-                        gui.win.views.selected = view_idx;
-                    }
-                } else if button == mouse::Button::Right {
-                    match app.view_at_pos(mp.x, mp.y) {
-                        Some(view_key) => match app.view_byte_offset_at_pos(view_key, mp.x, mp.y) {
-                            Some(pos) => {
-                                gui.context_menu = Some(ContextMenu::new(
-                                    mp.x,
-                                    mp.y,
-                                    ContextMenuData {
-                                        view: Some(view_key),
-                                        byte_off: Some(pos),
-                                    },
-                                ));
-                            }
-                            None => {
-                                gui.context_menu = Some(ContextMenu::new(
-                                    mp.x,
-                                    mp.y,
-                                    ContextMenuData {
-                                        view: Some(view_key),
-                                        byte_off: None,
-                                    },
-                                ));
-                            }
-                        },
-                        None => {
-                            gui.context_menu = Some(ContextMenu::new(
-                                mp.x,
-                                mp.y,
-                                ContextMenuData {
-                                    view: None,
-                                    byte_off: None,
-                                },
-                            ));
-                        }
-                    }
-                }
-            }
-            Event::MouseButtonReleased {
-                button: mouse::Button::Left,
-                ..
-            } => {
-                app.hex_ui.lmb_drag_offset = None;
+            Event::MouseButtonPressed { .. } | Event::MouseButtonReleased { .. } => {
+                post_egui.push(event);
             }
             Event::LostFocus => {
                 // When alt-tabbing, keys held down can get "stuck", because the key release events won't reach us
@@ -337,6 +360,7 @@ fn handle_events(
             _ => {}
         }
     }
+    post_egui
 }
 
 fn handle_text_entered(app: &mut App, unicode: char, msg: &mut MessageDialog) {
