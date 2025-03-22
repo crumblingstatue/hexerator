@@ -92,6 +92,7 @@ pub fn do_frame(
                 // Block multi-selection
                 block_select(app, view_key, a, offs);
             } else {
+                app.hex_ui.extra_selections.clear();
                 app.hex_ui.select_a = Some(a);
                 app.hex_ui.select_b = Some(offs);
             }
