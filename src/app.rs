@@ -28,7 +28,7 @@ use {
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
         view::{HexData, TextData, View, ViewKind, ViewportScalar},
     },
-    anyhow::{Context as _, bail},
+    anyhow::Context as _,
     egui_sfml::sfml::graphics::RenderWindow,
     gamedebug_core::{per, per_dbg},
     hexerator_plugin_api::MethodResult,
@@ -87,7 +87,7 @@ impl App {
                     self.data.reload_from_file(&self.src_args, file)?;
                 }
                 SourceProvider::Stdin(_) => {
-                    bail!("Can't reload streaming sources like standard input")
+                    anyhow::bail!("Can't reload streaming sources like standard input")
                 }
                 #[cfg(windows)]
                 SourceProvider::WinProc {
@@ -98,7 +98,7 @@ impl App {
                     crate::windows::read_proc_memory(*handle, &mut self.data, *start, *size)?;
                 },
             },
-            None => bail!("No file to reload"),
+            None => anyhow::bail!("No file to reload"),
         }
         Ok(())
     }
@@ -160,7 +160,7 @@ impl App {
         let file = match &mut self.source {
             Some(src) => match &mut src.provider {
                 SourceProvider::File(file) => file,
-                SourceProvider::Stdin(_) => bail!("Standard input doesn't support saving"),
+                SourceProvider::Stdin(_) => anyhow::bail!("Standard input doesn't support saving"),
                 #[cfg(windows)]
                 SourceProvider::WinProc { handle, start, .. } => {
                     if let Some(region) = self.data.dirty_region {
@@ -174,7 +174,7 @@ impl App {
                                 &mut n_write,
                             ) == 0
                             {
-                                bail!("Failed to write process memory");
+                                anyhow::bail!("Failed to write process memory");
                             }
                         }
                         self.data.dirty_region = None;
@@ -182,7 +182,7 @@ impl App {
                     return Ok(());
                 }
             },
-            None => bail!("No surce opened, nothing to save"),
+            None => anyhow::bail!("No surce opened, nothing to save"),
         };
         // If the file was truncated, we completely save over it
         if self.data.len() != self.data.orig_data_len {
@@ -240,10 +240,10 @@ impl App {
     }
     pub fn save_truncated_file_finish(&mut self) -> anyhow::Result<()> {
         let Some(source) = &mut self.source else {
-            bail!("There is no source");
+            anyhow::bail!("There is no source");
         };
         let SourceProvider::File(file) = &mut source.provider else {
-            bail!("Source is not a file");
+            anyhow::bail!("Source is not a file");
         };
         file.set_len(self.data.len() as u64)?;
         file.rewind()?;
@@ -833,7 +833,7 @@ impl App {
             Some(new_len) => {
                 if let Some(path) = args.src.file {
                     if path.exists() {
-                        bail!("Can't use --new for {path:?}: File already exists");
+                        anyhow::bail!("Can't use --new for {path:?}: File already exists");
                     }
                     // Set up source for this new file
                     let f = OpenOptions::new()
