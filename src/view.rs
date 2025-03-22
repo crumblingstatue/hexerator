@@ -698,17 +698,17 @@ impl PartialEq for HexData {
 
 impl Eq for HexData {}
 
-impl Default for HexData {
-    fn default() -> Self {
+impl HexData {
+    pub fn with_font_size(font_size: u16) -> Self {
         Self {
             edit_buf: Default::default(),
-            font_size: 14,
+            font_size,
         }
     }
 }
 
 impl TextData {
-    pub fn default_from_font(line_spacing: u16, font_size: u16) -> Self {
+    pub fn with_font_info(line_spacing: u16, font_size: u16) -> Self {
         Self {
             text_kind: TextKind::Ascii,
             line_spacing,

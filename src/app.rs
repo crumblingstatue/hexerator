@@ -1257,12 +1257,15 @@ pub fn default_views(
 ) -> Vec<NamedView> {
     vec![
         NamedView {
-            view: View::new(ViewKind::Hex(HexData::default()), perspective),
+            view: View::new(
+                ViewKind::Hex(HexData::with_font_size(font_size)),
+                perspective,
+            ),
             name: "Default hex".into(),
         },
         NamedView {
             view: View::new(
-                ViewKind::Text(TextData::default_from_font(line_spacing, font_size)),
+                ViewKind::Text(TextData::with_font_info(line_spacing, font_size)),
                 perspective,
             ),
             name: "Default text".into(),

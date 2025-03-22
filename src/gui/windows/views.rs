@@ -308,21 +308,21 @@ fn view_combo(
             .selectable_label(kind.name() == ViewKind::HEX_NAME, ViewKind::HEX_NAME)
             .clicked()
         {
-            *kind = ViewKind::Hex(HexData::default());
+            *kind = ViewKind::Hex(HexData::with_font_size(font_size));
             changed = true;
         }
         if ui
             .selectable_label(kind.name() == ViewKind::DEC_NAME, ViewKind::DEC_NAME)
             .clicked()
         {
-            *kind = ViewKind::Dec(HexData::default());
+            *kind = ViewKind::Dec(HexData::with_font_size(font_size));
             changed = true;
         }
         if ui
             .selectable_label(kind.name() == ViewKind::TEXT_NAME, ViewKind::TEXT_NAME)
             .clicked()
         {
-            *kind = ViewKind::Text(TextData::default_from_font(line_spacing, font_size));
+            *kind = ViewKind::Text(TextData::with_font_info(line_spacing, font_size));
             changed = true;
         }
         if ui

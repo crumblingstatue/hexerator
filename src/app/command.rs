@@ -122,7 +122,10 @@ pub fn perform_command(
             name,
         } => {
             app.meta_state.meta.views.insert(NamedView {
-                view: View::new(ViewKind::Hex(HexData::default()), perspective_key),
+                view: View::new(
+                    ViewKind::Hex(HexData::with_font_size(font_size)),
+                    perspective_key,
+                ),
                 name,
             });
         }

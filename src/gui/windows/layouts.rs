@@ -17,7 +17,16 @@ pub struct LayoutsWindow {
 }
 
 impl super::Window for LayoutsWindow {
-    fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
+    fn ui(
+        &mut self,
+        WinCtx {
+            ui,
+            gui,
+            app,
+            font_size,
+            ..
+        }: WinCtx,
+    ) {
         if self.open.just_now() {
             self.selected = app.hex_ui.current_layout;
         }
@@ -110,6 +119,7 @@ impl super::Window for LayoutsWindow {
                             ui,
                             &app.meta_state.meta.low,
                             &mut app.meta_state.meta.views,
+                            font_size,
                         ) {
                             row.push(k);
                             ui.close_menu();
@@ -150,6 +160,7 @@ impl super::Window for LayoutsWindow {
                         ui,
                         &app.meta_state.meta.low,
                         &mut app.meta_state.meta.views,
+                        font_size,
                     ) {
                         layout.view_grid.push(vec![k]);
                         ui.close_menu();
@@ -179,14 +190,19 @@ impl super::Window for LayoutsWindow {
     }
 }
 
-fn add_new_view_menu(ui: &mut egui::Ui, low: &MetaLow, views: &mut ViewMap) -> Option<ViewKey> {
+fn add_new_view_menu(
+    ui: &mut egui::Ui,
+    low: &MetaLow,
+    views: &mut ViewMap,
+    font_size: u16,
+) -> Option<ViewKey> {
     let mut ret_key = None;
     ui.separator();
     ui.menu_button("New from perspective", |ui| {
         for (per_key, per) in &low.perspectives {
             if ui.button(&per.name).clicked() {
                 let view_key = views.insert_with_key(|new_key| NamedView {
-                    view: View::new(ViewKind::Hex(HexData::default()), per_key),
+                    view: View::new(ViewKind::Hex(HexData::with_font_size(font_size)), per_key),
                     name: format!("View {:?} @ {}", new_key.data(), per.name),
                 });
                 ret_key = Some(view_key);
