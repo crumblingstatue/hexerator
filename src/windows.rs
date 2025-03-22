@@ -16,7 +16,7 @@ pub fn load_proc_memory(
     _is_write: bool,
     font_size: u16,
     line_spacing: u16,
-    _msg: &mut crate::MessageDialog,
+    _msg: &mut MessageDialog,
 ) -> anyhow::Result<()> {
     let handle;
     unsafe {
