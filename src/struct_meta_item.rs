@@ -1,10 +1,4 @@
-use {
-    crate::meta::value_type::{
-        EndianedPrimitive as _, I8, I16Be, I16Le, I32Be, I32Le, I64Be, I64Le, U8, U16Be, U16Le,
-        U32Be, U32Le, U64Be, U64Le,
-    },
-    serde::{Deserialize, Serialize},
-};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct StructMetaItem {
@@ -146,41 +140,6 @@ impl StructTy {
                 StructPrimitive::I64 | StructPrimitive::U64 | StructPrimitive::F64 => 8,
             },
             Self::Array { item_ty, len } => item_ty.size() * *len,
-        }
-    }
-    pub fn read_usize(&self, data: &[u8]) -> Option<usize> {
-        match self {
-            Self::Primitive { ty, endian } => {
-                macro_rules! from_byte_slice {
-                    ($t:ty) => {
-                        <$t>::from_byte_slice(&data.get(..self.size())?)
-                            .and_then(|i| i.try_into().ok())
-                    };
-                }
-                match (ty, endian) {
-                    (StructPrimitive::I8, Endian::Le) => from_byte_slice!(I8),
-                    (StructPrimitive::I8, Endian::Be) => from_byte_slice!(I8),
-                    (StructPrimitive::U8, Endian::Le) => from_byte_slice!(U8),
-                    (StructPrimitive::U8, Endian::Be) => from_byte_slice!(U8),
-                    (StructPrimitive::I16, Endian::Le) => from_byte_slice!(I16Le),
-                    (StructPrimitive::I16, Endian::Be) => from_byte_slice!(I16Be),
-                    (StructPrimitive::U16, Endian::Le) => from_byte_slice!(U16Le),
-                    (StructPrimitive::U16, Endian::Be) => from_byte_slice!(U16Be),
-                    (StructPrimitive::I32, Endian::Le) => from_byte_slice!(I32Le),
-                    (StructPrimitive::I32, Endian::Be) => from_byte_slice!(I32Be),
-                    (StructPrimitive::U32, Endian::Le) => from_byte_slice!(U32Le),
-                    (StructPrimitive::U32, Endian::Be) => from_byte_slice!(U32Be),
-                    (StructPrimitive::I64, Endian::Le) => from_byte_slice!(I64Le),
-                    (StructPrimitive::I64, Endian::Be) => from_byte_slice!(I64Be),
-                    (StructPrimitive::U64, Endian::Le) => from_byte_slice!(U64Le),
-                    (StructPrimitive::U64, Endian::Be) => from_byte_slice!(U64Be),
-                    (StructPrimitive::F32, Endian::Le) => None,
-                    (StructPrimitive::F32, Endian::Be) => None,
-                    (StructPrimitive::F64, Endian::Le) => None,
-                    (StructPrimitive::F64, Endian::Be) => None,
-                }
-            }
-            Self::Array { .. } => None,
         }
     }
     pub fn endian_mut(&mut self) -> &mut Endian {

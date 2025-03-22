@@ -23,10 +23,6 @@ enum Tab {
     AtRow,
 }
 
-fn read_ty_as_usize_at(data: &[u8], ty: &StructTy, offset: usize) -> Option<usize> {
-    ty.read_usize(data.get(offset..)?)
-}
-
 impl super::Window for StructsWindow {
     fn ui(&mut self, super::WinCtx { ui, app, .. }: super::WinCtx) {
         if self.open.just_now() {
@@ -124,7 +120,7 @@ impl StructsWindow {
                 });
                 ui.separator();
                 match self.tab {
-                    Tab::Fields => fields_ui(struct_, ui, app),
+                    Tab::Fields => fields_ui(struct_, ui),
                     Tab::AtRow => at_row_ui(struct_, ui, app),
                 }
             }
@@ -177,12 +173,9 @@ impl StructsWindow {
     }
 }
 
-fn fields_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::app::App) {
-    for (off, field) in struct_.fields_with_offsets_mut() {
+fn fields_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui) {
+    for (_off, field) in struct_.fields_with_offsets_mut() {
         ui.horizontal(|ui| {
-            if ui.link(off.to_string()).clicked() {
-                app.search_focus(off);
-            }
             ui.label(format!(
                 "{}: {} [size: {}]",
                 field.name,
@@ -192,15 +185,6 @@ fn fields_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::a
             let en = field.ty.endian_mut();
             if ui.checkbox(&mut matches!(en, Endian::Be), en.label()).clicked() {
                 en.toggle();
-            }
-            if ui.button("select").clicked() {
-                app.hex_ui.select_a = Some(off);
-                app.hex_ui.select_b = Some(off + field.ty.size());
-            }
-            if let Some(val) = read_ty_as_usize_at(&app.data, &field.ty, off) {
-                if ui.link(val.to_string()).on_hover_text("Jump to pointed-to offset").clicked() {
-                    app.search_focus(val);
-                }
             }
         });
     }
@@ -213,12 +197,19 @@ fn at_row_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::a
         for (off, field) in struct_.fields_with_offsets_mut() {
             ui.horizontal(|ui| {
                 let data_off = reg.begin + off;
+                if ui.link(off.to_string()).clicked() {
+                    app.search_focus(data_off);
+                }
                 ui.label(&field.name);
                 let field_bytes_len = field.ty.size();
                 if let Some(byte_slice) = app.data.get_mut(data_off..data_off + field_bytes_len) {
                     field_edit_ui(ui, field, byte_slice);
                 } else {
                     ui.label("<out of bounds>");
+                }
+                if ui.button("select").clicked() {
+                    app.hex_ui.select_a = Some(data_off);
+                    app.hex_ui.select_b = Some(data_off + field.ty.size().saturating_sub(1));
                 }
             });
         }
