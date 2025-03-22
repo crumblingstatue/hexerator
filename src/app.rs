@@ -717,6 +717,9 @@ impl App {
             &meta.low.perspectives[per_key]
         })
     }
+    pub fn focused_region<'a>(hex_ui: &HexUi, meta: &'a Meta) -> Option<&'a NamedRegion> {
+        Self::focused_perspective(hex_ui, meta).and_then(|per| meta.low.regions.get(per.region))
+    }
 
     pub(crate) fn region_key_for_view(&self, view_key: ViewKey) -> RegionKey {
         let per_key = self.meta_state.meta.views[view_key].view.perspective;
@@ -867,6 +870,10 @@ impl App {
                 let err = anyhow::anyhow!("No view with name '{name}' found.");
                 msg_fail(&err, "Couldn't focus view", msg);
             }
+        }
+        // Set cursor to the beginning of the focused region we ended up with
+        if let Some(reg) = Self::focused_region(&this.hex_ui, &this.meta_state.meta) {
+            this.edit_state.cursor = reg.region.begin;
         }
         Ok(this)
     }
