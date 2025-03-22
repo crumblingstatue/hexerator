@@ -85,11 +85,11 @@ pub fn ui(
     }
     ui.separator();
     if ui.add(Button::new(L_INC_BYTE).shortcut_text("Ctrl+=")).clicked() {
-        app.inc_byte_at_cursor();
+        app.inc_byte_or_bytes();
         ui.close_menu();
     }
     if ui.add(Button::new(L_DEC_BYTE).shortcut_text("Ctrl+-")).clicked() {
-        app.dec_byte_at_cursor();
+        app.dec_byte_or_bytes();
         ui.close_menu();
     }
     ui.menu_button(L_PASTE_AT_CURSOR, |ui| {

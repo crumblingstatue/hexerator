@@ -141,6 +141,17 @@ impl Data {
         self.dirty_region = None;
         Ok(())
     }
+
+    pub(crate) fn mod_range(
+        &mut self,
+        range: std::ops::RangeInclusive<usize>,
+        mut f: impl FnMut(&mut u8),
+    ) {
+        for byte in &mut self[range.clone()] {
+            f(byte);
+        }
+        self.widen_dirty_region(range.into());
+    }
 }
 
 impl Deref for Data {

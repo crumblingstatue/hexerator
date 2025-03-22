@@ -21,3 +21,9 @@ impl DamageRegion {
         }
     }
 }
+
+impl From<std::ops::RangeInclusive<usize>> for DamageRegion {
+    fn from(range: std::ops::RangeInclusive<usize>) -> Self {
+        Self::RangeInclusive(range)
+    }
+}

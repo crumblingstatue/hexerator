@@ -780,6 +780,32 @@ impl App {
     pub(crate) fn dec_byte_at_cursor(&mut self) {
         self.mod_byte_at_cursor(|b| *b = b.wrapping_sub(1));
     }
+
+    pub(crate) fn inc_byte_or_bytes(&mut self) {
+        let mut any = false;
+        for region in self.hex_ui.selected_regions() {
+            self.data.mod_range(region.to_range(), |byte| {
+                *byte = byte.wrapping_add(1);
+            });
+            any = true;
+        }
+        if !any {
+            self.inc_byte_at_cursor();
+        }
+    }
+
+    pub(crate) fn dec_byte_or_bytes(&mut self) {
+        let mut any = false;
+        for region in self.hex_ui.selected_regions() {
+            self.data.mod_range(region.to_range(), |byte| {
+                *byte = byte.wrapping_sub(1);
+            });
+            any = true;
+        }
+        if !any {
+            self.dec_byte_at_cursor();
+        }
+    }
 }
 
 /// Etc.
