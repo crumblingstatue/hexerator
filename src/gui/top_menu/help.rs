@@ -13,7 +13,7 @@ const L_ABOUT: &str = concat!(ic::QUESTION, " About Hexerator...");
 pub fn ui(ui: &mut Ui, gui: &mut Gui) {
     if ui.button(L_HEXERATOR_BOOK).clicked() {
         msg_if_fail(
-            open::that("https://crumblingstatue.github.io/hexerator-book/"),
+            open::that("https://crumblingstatue.github.io/hexerator-book/0.4.0"),
             "Failed to open help",
             &mut gui.msg_dialog,
         );
