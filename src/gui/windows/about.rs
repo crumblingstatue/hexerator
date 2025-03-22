@@ -94,7 +94,7 @@ impl super::Window for AboutWindow {
         ui.vertical_centered_justified(|ui| {
             let result: anyhow::Result<()> = try {
                 if ui.link("📖 Book").clicked() {
-                    open::that("https://crumblingstatue.github.io/hexerator-book/")?;
+                    open::that(crate::gui::BOOK_URL)?;
                 }
                 if ui.link(" Git repository").clicked() {
                     open::that("https://github.com/crumblingstatue/hexerator/")?;

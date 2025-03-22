@@ -47,6 +47,8 @@ pub mod top_menu;
 mod top_panel;
 pub mod windows;
 
+const BOOK_URL: &str = "https://crumblingstatue.github.io/hexerator-book/0.4.0";
+
 type Dialogs = HashMap<TypeId, Box<dyn Dialog>>;
 
 pub type HighlightSet = HashSet<usize>;
