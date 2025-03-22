@@ -175,9 +175,9 @@ fn draw_view<'f>(
                         text.set_outline_thickness(1.0);
                         text.set_fill_color(Color::WHITE);
                         text.set_outline_color(Color::BLACK);
-                        let y_offs = [24.0, 48.0, 64.0];
+                        let y_offs = [48.0, 72.0, 96.0];
                         let y_off = y_offs[i % y_offs.len()];
-                        let x = line_x + ruler.hoffset;
+                        let x = base_x + line_x + ruler.hoffset;
                         text.set_position((f32::from(x), f32::from(y) + y_off));
                         overlay_texts.push(text);
                     }
