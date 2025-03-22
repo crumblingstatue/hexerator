@@ -12,7 +12,7 @@ use {
 const L_PERSPECTIVES: &str = concat!(ic::PERSPECTIVE, " Perspectives...");
 const L_REGIONS: &str = concat!(ic::RULER, " Regions...");
 const L_BOOKMARKS: &str = concat!(ic::BOOKMARK, " Bookmarks...");
-const L_VARIABLES: &str = concat!(ic::X, " Variables...");
+const L_VARIABLES: &str = concat!(ic::CALCULATOR, " Variables...");
 const L_STRUCTS: &str = concat!(ic::BLUEPRINT, " Structs...");
 const L_RELOAD: &str = concat!(ic::ARROW_COUNTER_CLOCKWISE, " Reload");
 const L_LOAD_FROM_FILE: &str = concat!(ic::FOLDER_OPEN, " Load from file...");
