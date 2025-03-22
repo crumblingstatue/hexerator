@@ -21,8 +21,8 @@ const L_SELECT_ALL: &str = concat!(ic::SELECTION_ALL, " Select all in region");
 const L_SELECT_ROW: &str = concat!(ic::ARROWS_HORIZONTAL, " Select row");
 const L_SELECT_COL: &str = concat!(ic::ARROWS_VERTICAL, " Select column");
 const L_EXTERNAL_COMMAND: &str = concat!(ic::TERMINAL_WINDOW, " External command...");
-const L_INC_BYTE: &str = concat!(ic::PLUS, " Inc byte");
-const L_DEC_BYTE: &str = concat!(ic::MINUS, " Dec byte");
+const L_INC_BYTE: &str = concat!(ic::PLUS, " Inc byte(s)");
+const L_DEC_BYTE: &str = concat!(ic::MINUS, " Dec byte(s)");
 const L_PASTE_AT_CURSOR: &str = concat!(ic::CLIPBOARD_TEXT, " Paste at cursor");
 const L_TRUNCATE_EXTEND: &str = concat!(ic::SCISSORS, " Truncate/Extend...");
 
@@ -84,11 +84,19 @@ pub fn ui(
         ui.close_menu();
     }
     ui.separator();
-    if ui.add(Button::new(L_INC_BYTE).shortcut_text("Ctrl+=")).clicked() {
+    if ui
+        .add(Button::new(L_INC_BYTE).shortcut_text("Ctrl+="))
+        .on_hover_text("Increase byte(s) of selection or at cursor")
+        .clicked()
+    {
         app.inc_byte_or_bytes();
         ui.close_menu();
     }
-    if ui.add(Button::new(L_DEC_BYTE).shortcut_text("Ctrl+-")).clicked() {
+    if ui
+        .add(Button::new(L_DEC_BYTE).shortcut_text("Ctrl+-"))
+        .on_hover_text("Decrease byte(s) of selection or at cursor")
+        .clicked()
+    {
         app.dec_byte_or_bytes();
         ui.close_menu();
     }
