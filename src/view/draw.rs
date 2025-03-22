@@ -148,10 +148,16 @@ fn draw_view<'f>(
     {
         let y = view.viewport_rect.y;
         let h = view.viewport_rect.h;
+        let base_x = view.viewport_rect.x;
         let view_p_cols = view.p_cols(app_perspectives);
         let view_cols =
             usize::try_from(view.cols()).expect("Bug: view.cols() returned negative number");
         let end = view_p_cols.min(view.scroll_offset.col + view_cols);
+        // TODO: Hacky "gap" calculation to try to make rulers look "good" by default
+        // Needs proper way to determine "center of gap between columns",
+        // so we can place the vertical lines there
+        #[expect(clippy::cast_possible_truncation)]
+        let gap = (f64::from(view.col_w) * 0.17) as i16;
         match ruler.struct_idx {
             Some(idx) => {
                 let Some(struct_) = app_structs.get(idx) else {
@@ -179,9 +185,10 @@ fn draw_view<'f>(
                     let Some(line_x) = line_x(view, col) else {
                         continue;
                     };
+                    let x = (base_x + line_x + ruler.hoffset) - gap;
                     draw_vline(
                         vertex_buffer,
-                        f32::from(line_x + ruler.hoffset),
+                        f32::from(x),
                         f32::from(y),
                         f32::from(h),
                         ruler.color.into(),
@@ -191,14 +198,17 @@ fn draw_view<'f>(
             None => {
                 for col in view.scroll_offset.col..end {
                     if col % usize::from(ruler.freq) == 0 {
+                        // We want to draw the line after the current column
+                        let col = col + 1;
                         let x_offset = i16::try_from(col - view.scroll_offset.col)
                             .expect("Bug: x offset larger than i16::MAX");
                         let line_x = (x_offset
                             * i16::try_from(view.col_w).expect("Bug: col_w larger than i16::MAX"))
                             - view.scroll_offset.pix_xoff;
+                        let x = (base_x + line_x + ruler.hoffset) - gap;
                         draw_vline(
                             vertex_buffer,
-                            f32::from(line_x + ruler.hoffset),
+                            f32::from(x),
                             f32::from(y),
                             f32::from(h),
                             ruler.color.into(),
