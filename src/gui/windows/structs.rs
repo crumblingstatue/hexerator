@@ -125,7 +125,11 @@ impl StructsWindow {
                 }
             }
             if !self.error_label.is_empty() {
-                ui.label(egui::RichText::new(&self.error_label).color(egui::Color32::RED));
+                let label = egui::Label::new(
+                    egui::RichText::new(&self.error_label).color(egui::Color32::RED),
+                )
+                .extend();
+                ui.add(label);
             }
         });
     }
