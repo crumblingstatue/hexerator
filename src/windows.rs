@@ -1,6 +1,7 @@
 use {
     crate::{
         App,
+        gui::message_dialog::MessageDialog,
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
     },
     anyhow::bail,
