@@ -147,7 +147,7 @@ impl Data {
         range: std::ops::RangeInclusive<usize>,
         mut f: impl FnMut(&mut u8),
     ) {
-        for byte in &mut self[range.clone()] {
+        for byte in self.get_mut(range.clone()).into_iter().flatten() {
             f(byte);
         }
         self.widen_dirty_region(range.into());
