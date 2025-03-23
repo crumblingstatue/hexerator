@@ -7,9 +7,13 @@ use {
         util::human_size,
         view::ViewportVec,
     },
+    constcat::concat,
     egui::{Align, Color32, DragValue, Stroke, TextFormat, TextStyle, Ui, text::LayoutJob},
+    egui_phosphor::regular as ic,
     slotmap::Key as _,
 };
+
+const L_SCROLL: &str = concat!(ic::MOUSE_SCROLL, " scroll");
 
 pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
     ui.horizontal(|ui| {
@@ -50,7 +54,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
                     &app.meta_state.meta.low.perspectives,
                     &app.meta_state.meta.low.regions,
                 );
-                let re = ui.button("view offset");
+                let re = ui.button(L_SCROLL);
                 if re.clicked() {
                     gui.show_quick_scroll_popup ^= true;
                 }
