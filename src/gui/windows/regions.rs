@@ -6,15 +6,19 @@ use {
         meta::{Meta, NamedRegion, RegionKey},
         util::human_size,
     },
+    egui::TextBuffer as _,
     egui_extras::{Column, TableBuilder},
+    egui_phosphor::regular as ic,
 };
 
 #[derive(Default)]
 pub struct RegionsWindow {
     pub open: WindowOpen,
+    pub focus_rename: bool,
     pub selected_key: Option<RegionKey>,
     pub select_active: bool,
-    pub rename_active: bool,
+    pub rename_buffer: Option<String>,
+    pub activate_rename: bool,
 }
 
 pub fn region_context_menu(
@@ -83,22 +87,41 @@ impl super::Window for RegionsWindow {
         if let &Some(key) = &self.selected_key {
             ui.separator();
             let reg = &mut app.meta_state.meta.low.regions[key];
-            ui.horizontal(|ui| {
-                if self.rename_active {
-                    let re = ui.text_edit_singleline(&mut reg.name);
+            if std::mem::take(&mut self.activate_rename) {
+                self.rename_buffer = Some(reg.name.clone());
+            }
+            let mut unset_rename_buf = false;
+            ui.horizontal(|ui| match &mut self.rename_buffer {
+                Some(buf) => {
+                    let re = ui.text_edit_singleline(buf);
                     if self.open.just_now() {
+                        self.focus_rename = true;
+                    }
+                    if std::mem::take(&mut self.focus_rename) {
                         re.request_focus();
                     }
-                    if re.lost_focus() {
-                        self.rename_active = false;
+                    ui.add_enabled(false, egui::Label::new(""));
+                    if ui.button(ic::X).clicked() {
+                        unset_rename_buf = true;
                     }
-                } else {
-                    ui.heading(&reg.name);
+                    if ui.button(ic::CHECK).clicked()
+                        || ui.input(|inp| inp.key_pressed(egui::Key::Enter))
+                    {
+                        reg.name = buf.take();
+                        self.rename_buffer = None;
+                    }
                 }
-                if ui.button("✏").on_hover_text("Rename").clicked() {
-                    self.rename_active ^= true;
+                None => {
+                    ui.heading(&reg.name);
+                    if ui.button(ic::PENCIL).on_hover_text("Rename").clicked() {
+                        self.rename_buffer = Some(reg.name.clone());
+                        self.focus_rename = true;
+                    }
                 }
             });
+            if unset_rename_buf {
+                self.rename_buffer = None;
+            }
             ui.horizontal(|ui| {
                 ui.label("First byte");
                 ui.add(egui::DragValue::new(&mut reg.region.begin)).context_menu(|ui| {

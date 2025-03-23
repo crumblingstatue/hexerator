@@ -10,5 +10,5 @@ pub fn add_region_from_selection(
     let key = app_meta_state.meta.add_region_from_selection(selection);
     gui_regions_window.open.set(true);
     gui_regions_window.selected_key = Some(key);
-    gui_regions_window.rename_active = true;
+    gui_regions_window.activate_rename = true;
 }
