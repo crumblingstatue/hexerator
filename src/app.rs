@@ -209,13 +209,6 @@ impl App {
         file.seek(SeekFrom::Start(offset as u64))?;
         let data_to_write = match self.data.dirty_region {
             Some(region) => {
-                eprintln!(
-                    "Writing dirty region {}..{}, size {}",
-                    region.begin,
-                    region.end,
-                    // TODO: See below, same +1 stuff
-                    (region.end - region.begin) + 1,
-                );
                 #[expect(
                     clippy::cast_possible_wrap,
                     reason = "Files bigger than i64::MAX aren't supported"
