@@ -14,6 +14,8 @@ const L_NEW_FROM_PERSPECTIVE: &str = concat!(ic::PLUS, " New from perspective");
 const L_HEX: &str = concat!(ic::HEXAGON, " Hex");
 const L_TEXT: &str = concat!(ic::TEXT_AA, " Text");
 const L_BLOCK: &str = concat!(ic::RECTANGLE, " Block");
+const L_ADD_TO_NEW_ROW: &str = concat!(ic::PLUS, ic::ARROW_BEND_DOWN_RIGHT);
+const L_ADD_TO_CURRENT_ROW: &str = concat!(ic::PLUS, ic::ARROW_LEFT);
 
 #[derive(Default)]
 pub struct LayoutsWindow {
@@ -84,7 +86,7 @@ impl super::Window for LayoutsWindow {
                                 swap = Some((self.swap_a, *view_key));
                             }
                         } else {
-                            ui.menu_button(&view.name, |ui| {
+                            ui.menu_button([ic::EYE, " ", view.name.as_str()].concat(), |ui| {
                                 for &k in &unused_views {
                                     if ui.button(&app.meta_state.meta.views[k].name).clicked() {
                                         *view_key = k;
@@ -115,7 +117,7 @@ impl super::Window for LayoutsWindow {
 
                         retain
                     });
-                    ui.menu_button("✚", |ui| {
+                    ui.menu_button(L_ADD_TO_CURRENT_ROW, |ui| {
                         for &k in &unused_views {
                             if ui
                                 .button(
@@ -139,7 +141,7 @@ impl super::Window for LayoutsWindow {
                         }
                     })
                     .response
-                    .on_hover_text("Add view");
+                    .on_hover_text("Add to current row");
                     if ui.button("🗑").on_hover_text("Delete row").clicked() {
                         retain_row = false;
                     }
@@ -162,7 +164,7 @@ impl super::Window for LayoutsWindow {
                         }
                     }
                 }
-                ui.menu_button("✚", |ui| {
+                ui.menu_button(L_ADD_TO_NEW_ROW, |ui| {
                     for &k in &unused_views {
                         if ui
                             .button(
@@ -186,7 +188,7 @@ impl super::Window for LayoutsWindow {
                     }
                 })
                 .response
-                .on_hover_text("Add view")
+                .on_hover_text("Add to new row")
             });
             ui.horizontal(|ui| {
                 ui.label("Margin");
