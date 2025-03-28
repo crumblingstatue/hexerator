@@ -76,7 +76,13 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
         }
         ui.separator();
         for (k, v) in &app.meta_state.meta.layouts {
-            if ui.selectable_label(app.hex_ui.current_layout == k, &v.name).clicked() {
+            if ui
+                .selectable_label(
+                    app.hex_ui.current_layout == k,
+                    [ic::LAYOUT, " ", v.name.as_str()].concat(),
+                )
+                .clicked()
+            {
                 App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, k);
                 ui.close_menu();
             }
