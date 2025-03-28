@@ -1,6 +1,7 @@
 use {
     crate::{
         app::{App, interact_mode::InteractMode},
+        damage_region::DamageRegion,
         gui::{
             self, Gui,
             dialogs::JumpDialog,
@@ -650,6 +651,7 @@ fn handle_key_pressed(
             }
             if !any && let Some(byte) = app.data.get_mut(app.edit_state.cursor) {
                 *byte = 0;
+                app.data.widen_dirty_region(DamageRegion::Single(app.edit_state.cursor));
             }
         }
         Key::F1 => app.hex_ui.interact_mode = InteractMode::View,
