@@ -423,12 +423,16 @@ impl App {
         Ok(())
     }
 
-    pub fn add_perspective_from_region(&mut self, region_key: RegionKey, name: String) {
+    pub fn add_perspective_from_region(
+        &mut self,
+        region_key: RegionKey,
+        name: String,
+    ) -> PerspectiveKey {
         let mut per = Perspective::from_region(region_key, name);
         if let Some(focused_per) = Self::focused_perspective(&self.hex_ui, &self.meta_state.meta) {
             per.cols = focused_per.cols;
         }
-        self.meta_state.meta.low.perspectives.insert(per);
+        self.meta_state.meta.low.perspectives.insert(per)
     }
 }
 
