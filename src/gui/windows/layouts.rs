@@ -3,10 +3,17 @@ use {
     crate::{
         app::App,
         meta::{LayoutKey, LayoutMapExt as _, MetaLow, NamedView, ViewKey, ViewMap},
-        view::{HexData, View, ViewKind},
+        view::{HexData, TextData, View, ViewKind},
     },
+    constcat::concat,
+    egui_phosphor::regular as ic,
     slotmap::Key as _,
 };
+
+const L_NEW_FROM_PERSPECTIVE: &str = concat!(ic::PLUS, " New from perspective");
+const L_HEX: &str = concat!(ic::HEXAGON, " Hex");
+const L_TEXT: &str = concat!(ic::TEXT_AA, " Text");
+const L_BLOCK: &str = concat!(ic::RECTANGLE, " Block");
 
 #[derive(Default)]
 pub struct LayoutsWindow {
@@ -110,7 +117,13 @@ impl super::Window for LayoutsWindow {
                     });
                     ui.menu_button("✚", |ui| {
                         for &k in &unused_views {
-                            if ui.button(&app.meta_state.meta.views[k].name).clicked() {
+                            if ui
+                                .button(
+                                    [ic::EYE, " ", app.meta_state.meta.views[k].name.as_str()]
+                                        .concat(),
+                                )
+                                .clicked()
+                            {
                                 row.push(k);
                                 ui.close_menu();
                             }
@@ -151,7 +164,12 @@ impl super::Window for LayoutsWindow {
                 }
                 ui.menu_button("✚", |ui| {
                     for &k in &unused_views {
-                        if ui.button(&app.meta_state.meta.views[k].name).clicked() {
+                        if ui
+                            .button(
+                                [ic::EYE, " ", app.meta_state.meta.views[k].name.as_str()].concat(),
+                            )
+                            .clicked()
+                        {
                             layout.view_grid.push(vec![k]);
                             ui.close_menu();
                         }
@@ -163,6 +181,7 @@ impl super::Window for LayoutsWindow {
                         font_size,
                     ) {
                         layout.view_grid.push(vec![k]);
+                        app.hex_ui.focused_view = Some(k);
                         ui.close_menu();
                     }
                 })
@@ -198,15 +217,34 @@ fn add_new_view_menu(
 ) -> Option<ViewKey> {
     let mut ret_key = None;
     ui.separator();
-    ui.menu_button("New from perspective", |ui| {
+    ui.menu_button(L_NEW_FROM_PERSPECTIVE, |ui| {
         for (per_key, per) in &low.perspectives {
-            if ui.button(&per.name).clicked() {
-                let view_key = views.insert_with_key(|new_key| NamedView {
-                    view: View::new(ViewKind::Hex(HexData::with_font_size(font_size)), per_key),
-                    name: format!("View {:?} @ {}", new_key.data(), per.name),
-                });
-                ret_key = Some(view_key);
-            }
+            ui.menu_button([ic::PERSPECTIVE, " ", per.name.as_str()].concat(), |ui| {
+                let mut new = None;
+                if ui.button(L_HEX).clicked() {
+                    let view =
+                        View::new(ViewKind::Hex(HexData::with_font_size(font_size)), per_key);
+                    new = Some(("hex", view));
+                }
+                if ui.button(L_TEXT).clicked() {
+                    let view = View::new(
+                        ViewKind::Text(TextData::with_font_info(font_size, font_size)),
+                        per_key,
+                    );
+                    new = Some(("text", view));
+                }
+                if ui.button(L_BLOCK).clicked() {
+                    let view = View::new(ViewKind::Block, per_key);
+                    new = Some(("block", view));
+                }
+                if let Some((label, view)) = new {
+                    let view_key = views.insert(NamedView {
+                        view,
+                        name: [per.name.as_str(), " ", label].concat(),
+                    });
+                    ret_key = Some(view_key);
+                }
+            });
         }
     });
     ret_key
