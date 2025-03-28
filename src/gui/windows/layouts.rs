@@ -7,6 +7,7 @@ use {
     },
     constcat::concat,
     egui_phosphor::regular as ic,
+    egui_sfml::sfml::graphics::Font,
     slotmap::Key as _,
 };
 
@@ -33,6 +34,7 @@ impl super::Window for LayoutsWindow {
             gui,
             app,
             font_size,
+            font,
             ..
         }: WinCtx,
     ) {
@@ -135,6 +137,7 @@ impl super::Window for LayoutsWindow {
                             &app.meta_state.meta.low,
                             &mut app.meta_state.meta.views,
                             font_size,
+                            font,
                         ) {
                             row.push(k);
                             ui.close_menu();
@@ -181,6 +184,7 @@ impl super::Window for LayoutsWindow {
                         &app.meta_state.meta.low,
                         &mut app.meta_state.meta.views,
                         font_size,
+                        font,
                     ) {
                         layout.view_grid.push(vec![k]);
                         app.hex_ui.focused_view = Some(k);
@@ -216,6 +220,7 @@ fn add_new_view_menu(
     low: &MetaLow,
     views: &mut ViewMap,
     font_size: u16,
+    font: &Font,
 ) -> Option<ViewKey> {
     let mut ret_key = None;
     ui.separator();
@@ -230,7 +235,11 @@ fn add_new_view_menu(
                 }
                 if ui.button(L_TEXT).clicked() {
                     let view = View::new(
-                        ViewKind::Text(TextData::with_font_info(font_size, font_size)),
+                        #[expect(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+                        ViewKind::Text(TextData::with_font_info(
+                            dbg!(font.line_spacing(font_size.into())) as _,
+                            font_size,
+                        )),
                         per_key,
                     );
                     new = Some(("text", view));
