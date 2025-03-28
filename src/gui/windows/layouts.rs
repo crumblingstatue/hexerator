@@ -237,7 +237,7 @@ fn add_new_view_menu(
                     let view = View::new(
                         #[expect(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
                         ViewKind::Text(TextData::with_font_info(
-                            dbg!(font.line_spacing(font_size.into())) as _,
+                            font.line_spacing(font_size.into()) as _,
                             font_size,
                         )),
                         per_key,
