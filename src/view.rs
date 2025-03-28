@@ -660,6 +660,12 @@ pub enum ViewKind {
     Block,
 }
 
+impl ViewKind {
+    pub(crate) fn is_text(&self) -> bool {
+        matches!(self, Self::Text(_))
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TextData {
     /// The kind of text (ascii/utf16/etc)

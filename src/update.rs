@@ -419,6 +419,8 @@ fn handle_key_pressed(
     if app.data.is_empty() {
         return;
     }
+    let editing_text = app.hex_ui.interact_mode == InteractMode::Edit
+        && app.focused_view_mut().is_some_and(|(_k, view)| view.kind.is_text());
     // Key bindings that should only work with a file open
     match code {
         Key::Up => match app.hex_ui.interact_mode {
@@ -715,8 +717,16 @@ fn handle_key_pressed(
         }
         Key::W if key_mod.ctrl => app.close_file(),
         Key::J if key_mod.ctrl => Gui::add_dialog(&mut gui.dialogs, JumpDialog::default()),
-        Key::Num1 if key_mod.shift => app.hex_ui.select_a = Some(app.edit_state.cursor),
-        Key::Num2 if key_mod.shift => app.hex_ui.select_b = Some(app.edit_state.cursor),
+        Key::Num1 if key_mod.shift => {
+            if !editing_text {
+                app.hex_ui.select_a = Some(app.edit_state.cursor);
+            }
+        }
+        Key::Num2 if key_mod.shift => {
+            if !editing_text {
+                app.hex_ui.select_b = Some(app.edit_state.cursor);
+            }
+        }
         // Block selection with alt+1/2
         Key::Num1 if key_mod.alt => {
             if let Some(b) = app.hex_ui.select_b
