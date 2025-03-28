@@ -113,9 +113,9 @@ impl super::Window for PerspectivesWindow {
                         }
                     });
                     row.col(|ui| {
-                        ui.add(egui::DragValue::new(
-                            &mut app.meta_state.meta.low.perspectives[keys[idx]].cols,
-                        ));
+                        let per = &mut app.meta_state.meta.low.perspectives[keys[idx]];
+                        let reg = &app.meta_state.meta.low.regions[per.region];
+                        ui.add(egui::DragValue::new(&mut per.cols).range(1..=reg.region.len()));
                     });
                     row.col(|ui| {
                         let per = &app.meta_state.meta.low.perspectives[keys[idx]];
