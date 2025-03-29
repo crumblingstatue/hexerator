@@ -407,6 +407,9 @@ impl App {
         }
         Ok(())
     }
+    pub fn save_meta(&mut self) -> Result<(), anyhow::Error> {
+        self.save_meta_to_file(self.meta_state.current_meta_path.clone(), false)
+    }
     pub fn consume_meta_from_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
         per!("Consuming metafile: {}", path.display());
         let data = std::fs::read(&path)?;

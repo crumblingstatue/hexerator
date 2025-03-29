@@ -707,6 +707,13 @@ fn handle_key_pressed(
             }
             None => gui.msg_dialog.open(Icon::Warn, "Cannot save", "No source opened"),
         },
+        Key::M if key_mod.ctrl => {
+            msg_if_fail(
+                app.save_meta(),
+                "Failed to save metafile",
+                &mut gui.msg_dialog,
+            );
+        }
         Key::R if key_mod.ctrl => {
             msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
         }

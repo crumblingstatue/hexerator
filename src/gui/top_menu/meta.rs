@@ -99,7 +99,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
     if ui
         .add_enabled(
             !app.meta_state.current_meta_path.as_os_str().is_empty(),
-            Button::new(L_SAVE),
+            Button::new(L_SAVE).shortcut_text("Ctrl+M"),
         )
         .on_hover_text_deferred(|| {
             format!("Save to {}", app.meta_state.current_meta_path.display())
@@ -107,7 +107,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         .clicked()
     {
         msg_if_fail(
-            app.save_meta_to_file(app.meta_state.current_meta_path.clone(), false),
+            app.save_meta(),
             "Failed to save metafile",
             &mut gui.msg_dialog,
         );
