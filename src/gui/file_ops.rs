@@ -99,12 +99,12 @@ impl FileOps {
         line_spacing: u16,
     ) {
         self.dialog.update_with_right_panel_ui(ctx, &mut |ui, dia| {
-            right_panel_ui(
-                ui,
-                dia,
-                &mut self.preview_cache,
-                &mut self.file_dialog_source_args,
-            );
+            let src_args = self
+                .op
+                .as_ref()
+                .is_some_and(|op| matches!(op, FileOp::LoadFile))
+                .then_some(&mut self.file_dialog_source_args);
+            right_panel_ui(ui, dia, &mut self.preview_cache, src_args);
         });
         if let Some(path) = self.dialog.take_picked()
             && let Some(op) = self.op.take()
@@ -297,7 +297,7 @@ fn right_panel_ui(
     ui: &mut egui::Ui,
     dia: &FileDialog,
     preview_cache: &mut PreviewCache,
-    src_args: &mut SourceArgs,
+    src_args: Option<&mut SourceArgs>,
 ) {
     ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Truncate);
     if let Some(highlight) = dia.selected_entry() {
@@ -340,7 +340,9 @@ fn right_panel_ui(
         ui.heading("Hexerator");
     }
     ui.separator();
-    src_args_ui(ui, src_args);
+    if let Some(src_args) = src_args {
+        src_args_ui(ui, src_args);
+    }
 }
 
 fn src_args_ui(ui: &mut egui::Ui, src_args: &mut SourceArgs) {
