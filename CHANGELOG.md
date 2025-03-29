@@ -4,14 +4,18 @@
 
 ### New features
 
-- Memory mapped file support
-  - Using `--unsafe-mmap` command line option, large files can now efficiently be opened.
-- Allow defining data layouts with Rust struct syntax
+- [Memory mapped file support][mmap]
+- [Allow defining data layouts with Rust struct syntax][struct]
   - `View->Ruler` can use struct definitions
-- Mouse drag selection
+- [Mouse drag selection][mdrag]
   - You can finally select regions by dragging the mouse, rather than having to use shift+1/shift+2
-- Block selection with alt+drag
+- [Block selection with alt+drag][mblock]
   - You can select non-contiguous sections by holding alt and drawing a rectangle with the mouse
+
+[mmap]: <https://crumblingstatue.github.io/hexerator-book/0.4.0/feature-docs/mmap.html>
+[struct]: <https://crumblingstatue.github.io/hexerator-book/0.4.0/feature-docs/structs.html>
+[mdrag]: <https://crumblingstatue.github.io/hexerator-book/0.4.0/basic-ops/selecting-data.html#mouse-drag-selection>
+[mblock]: <https://crumblingstatue.github.io/hexerator-book/0.4.0/basic-ops/selecting-data.html#mouse-block-multi-selection>
 
 ### UI changes
 
