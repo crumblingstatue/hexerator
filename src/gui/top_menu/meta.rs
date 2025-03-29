@@ -65,7 +65,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         .clicked()
     {
         msg_if_fail(
-            app.consume_meta_from_file(app.meta_state.current_meta_path.clone()),
+            app.consume_meta_from_file(app.meta_state.current_meta_path.clone(), false),
             "Failed to load metafile",
             &mut gui.msg_dialog,
         );
@@ -81,7 +81,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         .clicked()
     {
         msg_if_fail(
-            app.consume_meta_from_file(crate::app::temp_metafile_backup_path()),
+            app.consume_meta_from_file(crate::app::temp_metafile_backup_path(), true),
             "Failed to load temp metafile",
             &mut gui.msg_dialog,
         );

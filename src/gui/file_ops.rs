@@ -112,7 +112,7 @@ impl FileOps {
             match op {
                 FileOp::LoadMetaFile => {
                     msg_if_fail(
-                        app.consume_meta_from_file(path),
+                        app.consume_meta_from_file(path, false),
                         "Failed to load metafile",
                         msg,
                     );

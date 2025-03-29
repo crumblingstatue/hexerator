@@ -325,7 +325,7 @@ impl super::Window for OpenProcessWindow {
                                                 && self.use_default_meta_path
                                             {
                                                 let result =
-                                                    app.consume_meta_from_file(path.clone());
+                                                    app.consume_meta_from_file(path.clone(), false);
                                                 msg_if_fail(
                                                     result,
                                                     "Failed to consume metafile",
@@ -511,7 +511,7 @@ impl super::Window for OpenProcessWindow {
                                 if let Some(path) = &self.default_meta_path
                                     && self.use_default_meta_path
                                 {
-                                    let result = app.consume_meta_from_file(path.clone());
+                                    let result = app.consume_meta_from_file(path.clone(), false);
                                     msg_if_fail(
                                         result,
                                         "Failed to consume metafile",

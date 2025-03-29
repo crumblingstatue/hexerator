@@ -121,7 +121,7 @@ impl App {
             // Set up meta
             if !self.preferences.keep_meta {
                 if let Some(meta_path) = meta_path {
-                    if let Err(e) = self.consume_meta_from_file(meta_path) {
+                    if let Err(e) = self.consume_meta_from_file(meta_path, false) {
                         self.set_new_clean_meta(font_size, line_spacing);
                         msg_fail(&e, "Failed to load metafile", msg);
                     }
@@ -137,7 +137,7 @@ impl App {
                             meta_path.display()
                         );
                         let meta_path = meta_path.clone();
-                        if let Err(e) = self.consume_meta_from_file(meta_path.clone()) {
+                        if let Err(e) = self.consume_meta_from_file(meta_path.clone(), false) {
                             self.set_new_clean_meta(font_size, line_spacing);
                             msg_fail(&e, &format!("Failed to load metafile {meta_path:?}"), msg);
                         }
@@ -423,14 +423,20 @@ impl App {
     pub fn save_meta(&mut self) -> Result<(), anyhow::Error> {
         self.save_meta_to_file(self.meta_state.current_meta_path.clone(), false)
     }
-    pub fn consume_meta_from_file(&mut self, path: PathBuf) -> Result<(), anyhow::Error> {
+    pub fn consume_meta_from_file(
+        &mut self,
+        path: PathBuf,
+        temp: bool,
+    ) -> Result<(), anyhow::Error> {
         per!("Consuming metafile: {}", path.display());
         let data = std::fs::read(&path)?;
         let meta = rmp_serde::from_slice(&data).context("Deserialization error")?;
         self.hex_ui.clear_meta_refs();
         self.meta_state.meta = meta;
-        self.meta_state.clean_meta = self.meta_state.meta.clone();
-        self.meta_state.current_meta_path = path;
+        if !temp {
+            self.meta_state.current_meta_path = path;
+            self.meta_state.clean_meta = self.meta_state.meta.clone();
+        }
         self.meta_state.meta.post_load_init();
         // Switch to first layout, if there is one
         if let Some(layout_key) = self.meta_state.meta.layouts.keys().next() {
