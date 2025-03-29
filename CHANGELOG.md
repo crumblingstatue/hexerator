@@ -2,6 +2,11 @@
 
 ## [0.4.0] - TBD
 
+### Tutorial
+
+There is now a basic tutorial you can find here:
+<https://crumblingstatue.github.io/hexerator-book/0.4.0/tutorial/00-aitd.html>
+
 ### New features
 
 - [Memory mapped file support][mmap]
