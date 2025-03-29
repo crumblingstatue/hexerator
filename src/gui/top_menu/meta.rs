@@ -92,7 +92,7 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         .on_hover_text("Replace current meta with default one")
         .clicked()
     {
-        app.set_new_clean_meta(font_size, line_spacing);
+        app.clear_meta(font_size, line_spacing);
         ui.close_menu();
     }
     ui.separator();

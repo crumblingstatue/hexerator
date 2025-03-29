@@ -390,6 +390,19 @@ impl App {
         self.meta_state.clean_meta = self.meta_state.meta.clone();
         Self::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
     }
+    /// Like `set_new_clean_meta`, but keeps the clean meta intact
+    ///
+    /// Used for "Clear meta" action.
+    pub fn clear_meta(&mut self, font_size: u16, line_spacing: u16) {
+        self.meta_state.meta = Meta::default();
+        let layout_key = setup_empty_meta(
+            self.data.len(),
+            &mut self.meta_state.meta,
+            font_size,
+            line_spacing,
+        );
+        Self::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
+    }
     pub fn save_temp_metafile_backup(&mut self) -> anyhow::Result<()> {
         // We set the last_meta_backup first, so if save fails, we don't get
         // a never ending stream of constant save failures.
