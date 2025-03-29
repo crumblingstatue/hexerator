@@ -1,7 +1,7 @@
 # Hexerator
 Versatile GUI hex editor focused on binary file exploration and aiding pattern recognition. Written in Rust.
 
-Check out [the Hexerator book](https://crumblingstatue.github.io/hexerator-book/) for a detailed list of features, and more!
+Check out [the Hexerator book](https://crumblingstatue.github.io/hexerator-book/0.4.0) for a detailed list of features, and more!
 
 ## Note for contributors:
 Hexerator only supports latest nightly Rust.
