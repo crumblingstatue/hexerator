@@ -60,7 +60,6 @@ use {
             window::{ContextSettings, Event, Style, VideoMode},
         },
     },
-    gamedebug_core::{IMMEDIATE, PERSISTENT},
     gui::{Gui, command::GCmd, message_dialog::Icon},
     mlua::Lua,
     std::{
@@ -134,8 +133,8 @@ fn try_main() -> anyhow::Result<()> {
         }
     };
     if args.debug {
-        IMMEDIATE.set_enabled(true);
-        PERSISTENT.set_enabled(true);
+        gamedebug_core::IMMEDIATE.set_enabled(true);
+        gamedebug_core::PERSISTENT.set_enabled(true);
     }
     if args.version {
         print_version_info();
