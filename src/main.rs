@@ -269,10 +269,10 @@ fn transfer_pinned_folders_to_file_dialog(gui: &mut Gui, cfg: &mut Config) {
 
 fn transfer_pinned_folders_to_config(mut gui: Gui, app: &mut App) {
     let storage = gui.fileops.dialog.storage_mut();
-    for entry in &storage.pinned_folders {
+    for entry in std::mem::take(&mut storage.pinned_folders) {
         app.cfg.pinned_dirs.push(PinnedDir {
-            path: entry.path.clone(),
-            label: entry.label.clone(),
+            path: entry.path,
+            label: entry.label,
         });
     }
 }
