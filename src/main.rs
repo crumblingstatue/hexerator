@@ -48,10 +48,12 @@ use {
     anyhow::Context as _,
     args::Args,
     clap::Parser as _,
-    config::{Config, LoadedConfig, ProjectDirsExt as _},
+    config::{Config, LoadedConfig, PinnedDir, ProjectDirsExt as _},
+    constcat::concat,
     core::f32,
     egui_colors::{Colorix, tokens::ThemeColor},
-    egui_file_dialog::{DirectoryEntry, NativeFileSystem},
+    egui_file_dialog::PinnedFolder,
+    egui_phosphor::regular as ic,
     egui_sfml::{
         SfEgui,
         sfml::{
@@ -102,6 +104,9 @@ mod value_color;
 mod view;
 #[cfg(windows)]
 mod windows;
+
+const L_CONTINUE: &str = concat!(ic::WARNING, " Continue");
+const L_ABORT: &str = concat!(ic::X_CIRCLE, "Abort");
 
 fn print_version_info() {
     eprintln!(
@@ -179,10 +184,10 @@ fn try_main() -> anyhow::Result<()> {
                      If you don't want to overwrite the old config, you should probably not continue."),
         );
         gui.msg_dialog.custom_button_row_ui(Box::new(|ui, payload, _cmd| {
-            if ui.button("⚠️ Continue").clicked() {
+            if ui.button(L_CONTINUE).clicked() {
                 payload.close = true;
             }
-            if ui.button("Abort").clicked() {
+            if ui.button(L_ABORT).clicked() {
                 std::process::abort();
             }
         }));
@@ -251,22 +256,24 @@ fn try_main() -> anyhow::Result<()> {
 }
 
 fn transfer_pinned_folders_to_file_dialog(gui: &mut Gui, cfg: &mut Config) {
-    let dia_cfg = gui.fileops.dialog.config_mut();
+    let dia_store = gui.fileops.dialog.storage_mut();
     // Remove them from the config, as later it will be filled with
     // the pinned dirs from the dialog
     for dir in cfg.pinned_dirs.drain(..) {
-        dia_cfg.storage.pinned_folders.push(DirectoryEntry::from_path(
-            dia_cfg,
-            &dir,
-            &NativeFileSystem,
-        ));
+        dia_store.pinned_folders.push(PinnedFolder {
+            label: dir.label,
+            path: dir.path,
+        });
     }
 }
 
 fn transfer_pinned_folders_to_config(mut gui: Gui, app: &mut App) {
     let storage = gui.fileops.dialog.storage_mut();
     for entry in &storage.pinned_folders {
-        app.cfg.pinned_dirs.push(entry.to_path_buf());
+        app.cfg.pinned_dirs.push(PinnedDir {
+            path: entry.path.clone(),
+            label: entry.label.clone(),
+        });
     }
 }
 

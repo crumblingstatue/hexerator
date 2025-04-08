@@ -23,11 +23,17 @@ pub struct Config {
     #[serde(default)]
     pub fps_limit: u32,
     #[serde(default)]
-    pub pinned_dirs: Vec<PathBuf>,
+    pub pinned_dirs: Vec<PinnedDir>,
     #[serde(default)]
     pub custom_font_paths: CustomFontPaths,
     #[serde(default)]
     pub font_families: BTreeMap<egui::FontFamily, Vec<String>>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PinnedDir {
+    pub path: PathBuf,
+    pub label: String,
 }
 
 const fn default_vsync() -> bool {
