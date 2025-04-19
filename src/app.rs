@@ -29,7 +29,7 @@ use {
         view::{HexData, TextData, View, ViewKind, ViewportScalar},
     },
     anyhow::Context as _,
-    egui_sfml::sfml::graphics::RenderWindow,
+    egui_sf2g::sf2g::graphics::RenderWindow,
     gamedebug_core::{per, per_dbg},
     hexerator_plugin_api::MethodResult,
     mlua::Lua,

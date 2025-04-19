@@ -7,7 +7,7 @@ use {
     },
     constcat::concat,
     egui_phosphor::regular as ic,
-    egui_sfml::sfml::graphics::Font,
+    egui_sf2g::sf2g::graphics::Font,
     slotmap::Key as _,
 };
 

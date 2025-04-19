@@ -3,7 +3,7 @@
 //! See that module for more information.
 
 use {
-    super::App, crate::config::Config, egui_sfml::sfml::graphics::RenderWindow,
+    super::App, crate::config::Config, egui_sf2g::sf2g::graphics::RenderWindow,
     std::collections::VecDeque,
 };
 

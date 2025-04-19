@@ -13,9 +13,9 @@ use {
         view::{self, ViewportVec, try_conv_mp_zero},
     },
     egui_file_dialog::DialogState,
-    egui_sfml::{
+    egui_sf2g::{
         SfEgui,
-        sfml::{
+        sf2g::{
             graphics::{
                 Color, Font, Rect, RenderStates, RenderTarget as _, RenderWindow, Text,
                 Transformable as _, Vertex, View,

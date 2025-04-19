@@ -54,9 +54,9 @@ use {
     egui_colors::{Colorix, tokens::ThemeColor},
     egui_file_dialog::PinnedFolder,
     egui_phosphor::regular as ic,
-    egui_sfml::{
+    egui_sf2g::{
         SfEgui,
-        sfml::{
+        sf2g::{
             graphics::{Color, Font, RenderTarget as _, RenderWindow},
             system::Vector2,
             window::{ContextSettings, Event, Style, VideoMode},

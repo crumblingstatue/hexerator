@@ -15,7 +15,7 @@ use {
     },
     super::Gui,
     crate::app::App,
-    egui_sfml::sfml::graphics::Font,
+    egui_sf2g::sf2g::graphics::Font,
     lua_editor::LuaEditorWindow,
 };
 

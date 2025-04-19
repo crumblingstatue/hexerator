@@ -11,7 +11,7 @@ use {
         struct_meta_item::StructMetaItem,
         view::ViewKind,
     },
-    egui_sfml::sfml::{
+    egui_sf2g::sf2g::{
         graphics::{
             Color, Font, PrimitiveType, RenderStates, RenderTarget as _, RenderWindow, Text,
             Transformable as _, Vertex,

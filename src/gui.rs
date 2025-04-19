@@ -20,9 +20,9 @@ use {
         TopBottomPanel, Window,
     },
     egui_colors::Colorix,
-    egui_sfml::{
+    egui_sf2g::{
         SfEgui,
-        sfml::graphics::{Font, RenderWindow},
+        sf2g::graphics::{Font, RenderWindow},
     },
     gamedebug_core::{IMMEDIATE, PERSISTENT},
     mlua::Lua,
@@ -105,7 +105,7 @@ pub fn do_egui(
     font_size: u16,
     line_spacing: u16,
     font: &Font,
-) -> anyhow::Result<(egui_sfml::DrawInput, bool)> {
+) -> anyhow::Result<(egui_sf2g::DrawInput, bool)> {
     let di = sf_egui.run(rwin, |_rwin, ctx| {
         let mut open = IMMEDIATE.enabled() || PERSISTENT.enabled();
         let was_open = open;

@@ -7,7 +7,7 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [features]
-backend-sfml = ["egui-sfml"]
+backend-sfml = ["egui-sf2g"]
 default = ["backend-sfml"]
 
 [dependencies]
@@ -25,7 +25,7 @@ thiserror = "2"
 either = "1.10.0"
 tree_magic_mini = { version = "3.1.4", features = ["tree_magic_db"] }
 slotmap = { version = "1.0.7", features = ["serde"] }
-egui-sfml = { version = "0.9.0", optional = true }
+egui-sf2g = { version = "0.1", optional = true }
 num-traits = "0.2.18"
 serde-big-array = "0.5.1"
 egui = { version = "0.31", features = ["serde"] }

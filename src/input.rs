@@ -1,5 +1,5 @@
 use {
-    egui_sfml::sfml::window::{Event, Key},
+    egui_sf2g::sf2g::window::{Event, Key},
     std::collections::HashSet,
 };
 
