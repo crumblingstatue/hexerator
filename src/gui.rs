@@ -124,7 +124,7 @@ pub fn do_egui(
         // Context menu
         if let Some(menu) = gui.context_menu.take() {
             if root_ctx_menu::show(&menu, ctx, app, gui) {
-                std::mem::swap(&mut gui.context_menu, &mut Some(menu));
+                gui.context_menu = Some(menu);
             }
         }
         // Panels
