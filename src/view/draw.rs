@@ -171,7 +171,7 @@ fn draw_view<'f>(
                     if app_hex_ui.show_alt_overlay
                         && let Some(line_x) = line_x(view, col)
                     {
-                        let mut text = Text::new(&field.name, font, 12);
+                        let mut text = Text::new(field.name.clone(), font, 12);
                         text.set_outline_thickness(1.0);
                         text.set_fill_color(Color::WHITE);
                         text.set_outline_color(Color::BLACK);
@@ -738,7 +738,7 @@ impl View {
         if app.hex_ui.show_alt_overlay {
             let per = &app.meta_state.meta.low.perspectives[this.view.perspective];
             let mut text = Text::new(
-                &format!(
+                format!(
                     "{}\n{}x{}",
                     this.name,
                     per.n_rows(&app.meta_state.meta.low.regions),
@@ -769,8 +769,8 @@ impl View {
                 glu_sys::glDisable(glu_sys::GL_SCISSOR_TEST);
             }
         }
-        for text in overlay_texts {
-            window.draw_text(&text, &RenderStates::DEFAULT);
+        for mut text in overlay_texts {
+            window.draw_text(&mut text, &RenderStates::DEFAULT);
         }
     }
 }

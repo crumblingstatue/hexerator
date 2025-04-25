@@ -81,9 +81,9 @@ pub fn do_frame(
     draw(app, gui, window, font, vertex_buffer);
     if let Some((offs, view_key)) = app.byte_offset_at_pos(mp.x, mp.y) {
         if let Some(bm) = app.meta_state.meta.bookmarks.iter().find(|bm| bm.offset == offs) {
-            let mut txt = Text::new(&bm.label, font, 20);
+            let mut txt = Text::new(bm.label.clone(), font, 20);
             txt.set_position((f32::from(mp.x), f32::from(mp.y + 15)));
-            window.draw_text(&txt, &RenderStates::DEFAULT);
+            window.draw_text(&mut txt, &RenderStates::DEFAULT);
         }
         // Mouse drag selection
         if let Some(a) = app.hex_ui.lmb_drag_offset
@@ -260,12 +260,12 @@ fn draw(
     vertex_buffer: &mut Vec<Vertex>,
 ) {
     if app.hex_ui.current_layout.is_null() {
-        let mut t = Text::new("No active layout", font, 20);
+        let mut t = Text::new("No active layout".into(), font, 20);
         t.set_position((
             f32::from(app.hex_ui.hex_iface_rect.x),
             f32::from(app.hex_ui.hex_iface_rect.y),
         ));
-        window.draw_text(&t, &RenderStates::DEFAULT);
+        window.draw_text(&mut t, &RenderStates::DEFAULT);
         return;
     }
     for view_key in app.meta_state.meta.layouts[app.hex_ui.current_layout].iter() {
