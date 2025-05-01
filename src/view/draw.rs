@@ -770,7 +770,7 @@ impl View {
             }
         }
         for mut text in overlay_texts {
-            window.draw_text(&mut text, &RenderStates::DEFAULT);
+            text.draw(window, &RenderStates::DEFAULT);
         }
     }
 }

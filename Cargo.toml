@@ -5,7 +5,7 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [features]
-backend-sfml = ["egui-sf2g"]
+backend-sfml = ["dep:egui-sf2g", "dep:sf2g"]
 default = ["backend-sfml"]
 
 [dependencies]
@@ -23,21 +23,23 @@ thiserror = "2"
 either = "1.10.0"
 tree_magic_mini = { version = "3.1.4", features = ["tree_magic_db"] }
 slotmap = { version = "1.0.7", features = ["serde"] }
-egui-sf2g = { version = "0.2", optional = true }
+egui-sf2g = { version = "0.3", optional = true }
+sf2g = { version = "0.3", optional = true, features = ["text"] }
 num-traits = "0.2.18"
 serde-big-array = "0.5.1"
 egui = { version = "0.31", features = ["serde"] }
 egui_extras = { version = "0.31", default-features = false }
 itertools = "0.14"
-sysinfo = { version = "0.34.1", default-features = false, features = ["system"] }
+sysinfo = { version = "0.34.1", default-features = false, features = [
+    "system",
+] }
 proc-maps = "0.4.0"
 open = "5.1.2"
 arboard = { version = "3.3.2", default-features = false }
 paste = "1.0.14"
 iced-x86 = "1.21.0"
 strum = { version = "0.27", features = ["derive"] }
-egui_code_editor.git = "https://github.com/crumblingstatue/egui_code_editor.git"
-egui_code_editor.branch = "desired-width"
+egui_code_editor = "0.2.13"
 # luajit breaks with panic=abort, because it relies on unwinding for exception handling
 mlua = { version = "0.10", features = ["lua54", "vendored"] }
 egui-file-dialog.git = "https://github.com/jannistpl/egui-file-dialog.git"
@@ -56,8 +58,12 @@ egui-phosphor = "0.9.0"
 constcat = "0.6.0"
 
 [target."cfg(windows)".dependencies.windows-sys]
- version = "0.59.0"
- features = ["Win32_System_Diagnostics_Debug", "Win32_Foundation", "Win32_System_Threading"]
+version = "0.59.0"
+features = [
+    "Win32_System_Diagnostics_Debug",
+    "Win32_Foundation",
+    "Win32_System_Threading",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -78,7 +84,11 @@ lto = "thin"
 codegen-units = 1
 
 [build-dependencies]
-vergen-gitcl = { version = "1.0.0", default-features = false, features = ["build", "cargo", "rustc"] }
+vergen-gitcl = { version = "1.0.0", default-features = false, features = [
+    "build",
+    "cargo",
+    "rustc",
+] }
 
 [workspace]
 members = ["hexerator-plugin-api", "plugins/hello-world"]

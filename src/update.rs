@@ -83,7 +83,7 @@ pub fn do_frame(
         if let Some(bm) = app.meta_state.meta.bookmarks.iter().find(|bm| bm.offset == offs) {
             let mut txt = Text::new(bm.label.clone(), font, 20);
             txt.set_position((f32::from(mp.x), f32::from(mp.y + 15)));
-            window.draw_text(&mut txt, &RenderStates::DEFAULT);
+            txt.draw(window, &RenderStates::DEFAULT);
         }
         // Mouse drag selection
         if let Some(a) = app.hex_ui.lmb_drag_offset
@@ -265,7 +265,7 @@ fn draw(
             f32::from(app.hex_ui.hex_iface_rect.x),
             f32::from(app.hex_ui.hex_iface_rect.y),
         ));
-        window.draw_text(&mut t, &RenderStates::DEFAULT);
+        t.draw(window, &RenderStates::DEFAULT);
         return;
     }
     for view_key in app.meta_state.meta.layouts[app.hex_ui.current_layout].iter() {
