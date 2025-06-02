@@ -13,8 +13,7 @@ use {
     },
     egui_sf2g::sf2g::{
         graphics::{
-            Color, Font, PrimitiveType, RenderStates, RenderTarget as _, RenderWindow, Text,
-            Transformable as _, Vertex,
+            Color, Font, PrimitiveType, RenderStates, RenderTarget as _, RenderWindow, Text, Vertex,
         },
         system::Vector2,
     },
@@ -178,7 +177,7 @@ fn draw_view<'f>(
                         let y_offs = [48.0, 72.0, 96.0];
                         let y_off = y_offs[i % y_offs.len()];
                         let x = base_x + line_x + ruler.hoffset;
-                        text.set_position((f32::from(x), f32::from(y) + y_off));
+                        text.tf.position = [f32::from(x), f32::from(y) + y_off];
                         overlay_texts.push(text);
                     }
                     col += field.ty.size();
@@ -747,10 +746,10 @@ impl View {
                 font,
                 16,
             );
-            text.set_position((
+            text.tf.position = [
                 f32::from(this.view.viewport_rect.x),
                 f32::from(this.view.viewport_rect.y),
-            ));
+            ];
             let text_bounds = text.global_bounds();
             draw_rect(
                 vertex_buffer,

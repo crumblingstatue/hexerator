@@ -21,16 +21,16 @@ memchr = "2.7.2"
 glu-sys = "0.1.4"
 thiserror = "2"
 either = "1.10.0"
-tree_magic_mini = { version = "3.1.4", features = ["tree_magic_db"] }
+tree_magic_mini = "3.1.6"
 slotmap = { version = "1.0.7", features = ["serde"] }
-egui-sf2g = { version = "0.3", optional = true }
-sf2g = { version = "0.3", optional = true, features = ["text"] }
+egui-sf2g = { version = "0.4", optional = true }
+sf2g = { version = "0.4", optional = true, features = ["text"] }
 num-traits = "0.2.18"
 serde-big-array = "0.5.1"
 egui = { version = "0.31", features = ["serde"] }
 egui_extras = { version = "0.31", default-features = false }
 itertools = "0.14"
-sysinfo = { version = "0.34.1", default-features = false, features = [
+sysinfo = { version = "0.35.1", default-features = false, features = [
     "system",
 ] }
 proc-maps = "0.4.0"

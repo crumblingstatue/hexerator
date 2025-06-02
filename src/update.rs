@@ -17,8 +17,8 @@ use {
         SfEgui,
         sf2g::{
             graphics::{
-                Color, Font, Rect, RenderStates, RenderTarget as _, RenderWindow, Text,
-                Transformable as _, Vertex, View,
+                Color, Font, Rect, RenderStates, RenderTarget as _, RenderWindow, Text, Vertex,
+                View,
             },
             window::{Event, Key, mouse},
         },
@@ -82,7 +82,7 @@ pub fn do_frame(
     if let Some((offs, view_key)) = app.byte_offset_at_pos(mp.x, mp.y) {
         if let Some(bm) = app.meta_state.meta.bookmarks.iter().find(|bm| bm.offset == offs) {
             let mut txt = Text::new(bm.label.clone(), font, 20);
-            txt.set_position((f32::from(mp.x), f32::from(mp.y + 15)));
+            txt.tf.position = [f32::from(mp.x), f32::from(mp.y + 15)];
             txt.draw(window, &RenderStates::DEFAULT);
         }
         // Mouse drag selection
@@ -261,10 +261,10 @@ fn draw(
 ) {
     if app.hex_ui.current_layout.is_null() {
         let mut t = Text::new("No active layout".into(), font, 20);
-        t.set_position((
+        t.tf.position = [
             f32::from(app.hex_ui.hex_iface_rect.x),
             f32::from(app.hex_ui.hex_iface_rect.y),
-        ));
+        ];
         t.draw(window, &RenderStates::DEFAULT);
         return;
     }
