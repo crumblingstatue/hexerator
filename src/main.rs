@@ -242,10 +242,10 @@ fn try_main() -> anyhow::Result<()> {
             return Ok(());
         }
         // Save a metafile backup every so often
-        if app.meta_state.last_meta_backup.get().elapsed() >= Duration::from_secs(60) {
-            if let Err(e) = app.save_temp_metafile_backup() {
-                gamedebug_core::per!("Failed to save temp metafile backup: {}", e);
-            }
+        if app.meta_state.last_meta_backup.get().elapsed() >= Duration::from_secs(60)
+            && let Err(e) = app.save_temp_metafile_backup()
+        {
+            gamedebug_core::per!("Failed to save temp metafile backup: {}", e);
         }
     }
     app.close_file();

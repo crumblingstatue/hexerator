@@ -31,13 +31,13 @@ pub fn region_context_menu(
 ) {
     ui.menu_button("Containing layouts", |ui| {
         for (key, layout) in meta.layouts.iter() {
-            if let Some(v) = layout.view_containing_region(&reg.region, meta) {
-                if ui.button(&layout.name).clicked() {
-                    cmd.push(Cmd::SetLayout(key));
-                    cmd.push(Cmd::FocusView(v));
-                    cmd.push(Cmd::SetAndFocusCursor(reg.region.begin));
-                    ui.close_menu();
-                }
+            if let Some(v) = layout.view_containing_region(&reg.region, meta)
+                && ui.button(&layout.name).clicked()
+            {
+                cmd.push(Cmd::SetLayout(key));
+                cmd.push(Cmd::FocusView(v));
+                cmd.push(Cmd::SetAndFocusCursor(reg.region.begin));
+                ui.close_menu();
             }
         }
     });

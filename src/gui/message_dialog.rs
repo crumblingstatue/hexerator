@@ -113,10 +113,9 @@ impl MessageDialog {
                             )
                             .on_hover_text(payload.icon.hover_text())
                             .clicked()
+                        && let Err(e) = cb.set_text(payload.desc.clone())
                     {
-                        if let Err(e) = cb.set_text(payload.desc.clone()) {
-                            gamedebug_core::per!("Clipboard set error: {e:?}");
-                        }
+                        gamedebug_core::per!("Clipboard set error: {e:?}");
                     }
                     ui.label(&payload.desc);
                 });

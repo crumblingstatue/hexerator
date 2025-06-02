@@ -501,10 +501,10 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
         gui.inspect_panel.seek_relativity == SeekRelativity::User,
         egui::TextEdit::singleline(&mut gui.inspect_panel.seek_user_buf),
     );
-    if re.changed() {
-        if let Ok(num) = gui.inspect_panel.seek_user_buf.parse() {
-            gui.inspect_panel.seek_user_offs = num;
-        }
+    if re.changed()
+        && let Ok(num) = gui.inspect_panel.seek_user_buf.parse()
+    {
+        gui.inspect_panel.seek_user_offs = num;
     }
     if app.data.is_empty() {
         return;
@@ -554,17 +554,16 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
         });
         if ui.text_edit_singleline(thingy.buf_mut()).lost_focus()
             && ui.input(|inp| inp.key_pressed(egui::Key::Enter))
-        {
-            if let Some(range) = thingy.write_data(
+            && let Some(range) = thingy.write_data(
                 &mut app.data,
                 offset,
                 gui.inspect_panel.big_endian,
                 gui.inspect_panel.format,
                 &mut gui.msg_dialog,
-            ) {
-                gui.inspect_panel.changed_one = true;
-                actions.push(Action::AddDirty(range));
-            }
+            )
+        {
+            gui.inspect_panel.changed_one = true;
+            actions.push(Action::AddDirty(range));
         }
     }
     ui.horizontal(|ui| {

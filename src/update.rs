@@ -486,12 +486,12 @@ fn handle_key_pressed(
                 if let Some(view_key) = app.hex_ui.focused_view {
                     let view = &mut app.meta_state.meta.views[view_key];
                     if move_edit {
-                        if let Some(edit_buf) = view.view.edit_buffer_mut() {
-                            if !edit_buf.move_cursor_back() {
-                                edit_buf.move_cursor_end();
-                                edit_buf.dirty = false;
-                                app.edit_state.step_cursor_back();
-                            }
+                        if let Some(edit_buf) = view.view.edit_buffer_mut()
+                            && !edit_buf.move_cursor_back()
+                        {
+                            edit_buf.move_cursor_end();
+                            edit_buf.dirty = false;
+                            app.edit_state.step_cursor_back();
                         }
                     } else {
                         app.edit_state.step_cursor_back();
@@ -523,12 +523,12 @@ fn handle_key_pressed(
                 if let Some(view_key) = app.hex_ui.focused_view {
                     let view = &mut app.meta_state.meta.views[view_key];
                     if move_edit {
-                        if let Some(edit_buf) = &mut view.view.edit_buffer_mut() {
-                            if !edit_buf.move_cursor_forward() {
-                                edit_buf.move_cursor_begin();
-                                edit_buf.dirty = false;
-                                app.edit_state.step_cursor_forward();
-                            }
+                        if let Some(edit_buf) = &mut view.view.edit_buffer_mut()
+                            && !edit_buf.move_cursor_forward()
+                        {
+                            edit_buf.move_cursor_begin();
+                            edit_buf.dirty = false;
+                            app.edit_state.step_cursor_forward();
                         }
                     } else {
                         app.edit_state.step_cursor_forward();

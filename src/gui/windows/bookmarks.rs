@@ -137,11 +137,10 @@ impl super::Window for BookmarksWindow {
                         row.col(|ui| {
                             let bookmark = &app.meta_state.meta.bookmarks[idx];
                             let offs = bookmark.offset;
-                            if self.autoreload {
-                                if let Err(e) = app.reload_range(offs, offs) {
+                            if self.autoreload
+                                && let Err(e) = app.reload_range(offs, offs) {
                                     eprintln!("Bookmark autoreload fail: {e}");
                                 }
-                            }
                             let bookmark = &app.meta_state.meta.bookmarks[idx];
                             let action = value_ui(
                                 bookmark,

@@ -122,10 +122,10 @@ pub fn do_egui(
         Windows::update(ctx, gui, app, lua, font_size, line_spacing, font);
 
         // Context menu
-        if let Some(menu) = gui.context_menu.take() {
-            if root_ctx_menu::show(&menu, ctx, app, gui) {
-                gui.context_menu = Some(menu);
-            }
+        if let Some(menu) = gui.context_menu.take()
+            && root_ctx_menu::show(&menu, ctx, app, gui)
+        {
+            gui.context_menu = Some(menu);
         }
         // Panels
         let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| {

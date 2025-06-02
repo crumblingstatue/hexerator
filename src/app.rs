@@ -904,17 +904,17 @@ impl App {
                 this.load_file_args(args.src, args.meta, msg, font_size, line_spacing);
             }
         }
-        if let Some(name) = args.layout {
-            if !Self::switch_layout_by_name(&mut this.hex_ui, &this.meta_state.meta, &name) {
-                let err = anyhow::anyhow!("No layout with name '{name}' found.");
-                msg_fail(&err, "Couldn't switch layout", msg);
-            }
+        if let Some(name) = args.layout
+            && !Self::switch_layout_by_name(&mut this.hex_ui, &this.meta_state.meta, &name)
+        {
+            let err = anyhow::anyhow!("No layout with name '{name}' found.");
+            msg_fail(&err, "Couldn't switch layout", msg);
         }
-        if let Some(name) = args.view {
-            if !Self::focus_first_view_of_name(&mut this.hex_ui, &this.meta_state.meta, &name) {
-                let err = anyhow::anyhow!("No view with name '{name}' found.");
-                msg_fail(&err, "Couldn't focus view", msg);
-            }
+        if let Some(name) = args.view
+            && !Self::focus_first_view_of_name(&mut this.hex_ui, &this.meta_state.meta, &name)
+        {
+            let err = anyhow::anyhow!("No view with name '{name}' found.");
+            msg_fail(&err, "Couldn't focus view", msg);
         }
         // Set cursor to the beginning of the focused region we ended up with
         if let Some(reg) = Self::focused_region(&this.hex_ui, &this.meta_state.meta) {
@@ -1014,10 +1014,11 @@ impl App {
                 &self.meta_state.meta.low.regions,
             );
         }
-        if self.preferences.auto_save && self.data.dirty_region.is_some() {
-            if let Err(e) = self.save(&mut gui.msg_dialog) {
-                per!("Save fail: {}", e);
-            }
+        if self.preferences.auto_save
+            && self.data.dirty_region.is_some()
+            && let Err(e) = self.save(&mut gui.msg_dialog)
+        {
+            per!("Save fail: {}", e);
         }
         if self.preferences.auto_reload.is_active()
             && self.source.is_some()

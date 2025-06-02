@@ -147,25 +147,24 @@ impl super::Window for OpenProcessWindow {
                     match shlex::split(&run_command.command) {
                         Some(tokens) => {
                             let mut tokens = tokens.into_iter();
-                            if ui.button("Run").clicked() || (re.lost_focus() && enter) {
-                                if let Some(first) = tokens.next() {
-                                    match Command::new(first).args(tokens).spawn() {
-                                        Ok(child) => {
-                                            let pid = child.id();
-                                            self.selected_pid = Some(sysinfo::Pid::from_u32(pid));
-                                            refresh_proc_maps(
-                                                pid,
-                                                &mut self.map_ranges,
-                                                &mut gui.msg_dialog,
-                                            );
-                                            // Make sure this process is visible for sysinfo to kill/stop/etc.
-                                            self.sys
-                                                .refresh_processes(ProcessesToUpdate::All, true);
-                                            close_modal = true;
-                                        }
-                                        Err(e) => {
-                                            msg_fail(&e, "Run command error", &mut gui.msg_dialog);
-                                        }
+                            if (ui.button("Run").clicked() || (re.lost_focus() && enter))
+                                && let Some(first) = tokens.next()
+                            {
+                                match Command::new(first).args(tokens).spawn() {
+                                    Ok(child) => {
+                                        let pid = child.id();
+                                        self.selected_pid = Some(sysinfo::Pid::from_u32(pid));
+                                        refresh_proc_maps(
+                                            pid,
+                                            &mut self.map_ranges,
+                                            &mut gui.msg_dialog,
+                                        );
+                                        // Make sure this process is visible for sysinfo to kill/stop/etc.
+                                        self.sys.refresh_processes(ProcessesToUpdate::All, true);
+                                        close_modal = true;
+                                    }
+                                    Err(e) => {
+                                        msg_fail(&e, "Run command error", &mut gui.msg_dialog);
                                     }
                                 }
                             }
@@ -432,14 +431,13 @@ impl super::Window for OpenProcessWindow {
                             if ui.button("🗑").on_hover_text("Remove filtered paths").clicked() {
                                 self.map_ranges.retain(|range| {
                                     let mut retain = true;
-                                    if let Some(filename) = range.filename() {
-                                        if filename
+                                    if let Some(filename) = range.filename()
+                                        && filename
                                             .display()
                                             .to_string()
                                             .contains(&self.filters.path)
-                                        {
-                                            retain = false;
-                                        }
+                                    {
+                                        retain = false;
                                     }
                                     retain
                                 });
@@ -464,12 +462,11 @@ impl super::Window for OpenProcessWindow {
                         let map_range = filtered[row.index()].clone();
                         // This range is likely open in the editor (range contains hard_seek)
                         let mut likely_open = false;
-                        if let Some(hard_seek) = app.src_args.hard_seek {
-                            if hard_seek >= map_range.start()
-                                && hard_seek < map_range.start() + map_range.size()
-                            {
-                                likely_open = true;
-                            }
+                        if let Some(hard_seek) = app.src_args.hard_seek
+                            && hard_seek >= map_range.start()
+                            && hard_seek < map_range.start() + map_range.size()
+                        {
+                            likely_open = true;
                         }
                         row.col(|ui| {
                             let txt = format!("{:X}", map_range.start());
@@ -657,10 +654,10 @@ fn should_retain_range(filters: &Filters, range: &MapRange) -> bool {
     if filters.perms.execute && !range.is_exec() {
         return false;
     }
-    if let Ok(addr) = usize::from_str_radix(&filters.addr, 16) {
-        if !(range.start() <= addr && range.start() + range.size() >= addr) {
-            return false;
-        }
+    if let Ok(addr) = usize::from_str_radix(&filters.addr, 16)
+        && !(range.start() <= addr && range.start() + range.size() >= addr)
+    {
+        return false;
     }
     if filters.path.is_empty() {
         return true;

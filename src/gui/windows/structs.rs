@@ -25,11 +25,11 @@ enum Tab {
 
 impl super::Window for StructsWindow {
     fn ui(&mut self, super::WinCtx { ui, app, .. }: super::WinCtx) {
-        if self.open.just_now() {
-            if let Some(struct_) = app.meta_state.meta.structs.get(self.selected_idx) {
-                self.struct_text_buf = struct_.src.clone();
-                self.parsed_struct = Some(struct_.clone());
-            }
+        if self.open.just_now()
+            && let Some(struct_) = app.meta_state.meta.structs.get(self.selected_idx)
+        {
+            self.struct_text_buf = struct_.src.clone();
+            self.parsed_struct = Some(struct_.clone());
         }
         let top_h = ui.available_height() - 32.0;
         ui.horizontal(|ui| {

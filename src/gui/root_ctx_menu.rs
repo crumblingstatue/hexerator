@@ -116,15 +116,15 @@ fn menu_inner_ui(
                 }
             }
         });
-        if ui.button(L_REMOVE_FROM_LAYOUT).clicked() {
-            if let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout) {
-                layout.remove_view(view);
-                if app.hex_ui.focused_view == Some(view) {
-                    let first_view = layout.view_grid.first().and_then(|row| row.first());
-                    app.hex_ui.focused_view = first_view.cloned();
-                }
-                *close = true;
+        if ui.button(L_REMOVE_FROM_LAYOUT).clicked()
+            && let Some(layout) = app.meta_state.meta.layouts.get_mut(app.hex_ui.current_layout)
+        {
+            layout.remove_view(view);
+            if app.hex_ui.focused_view == Some(view) {
+                let first_view = layout.view_grid.first().and_then(|row| row.first());
+                app.hex_ui.focused_view = first_view.cloned();
             }
+            *close = true;
         }
     }
     if let Some(byte_off) = menu.data.byte_off {

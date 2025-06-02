@@ -34,80 +34,80 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
         }
         ui.separator();
         let data_len = app.data.len();
-        if data_len != 0 {
-            if let Some(view_key) = app.hex_ui.focused_view {
-                let view = &mut app.meta_state.meta.views[view_key].view;
-                let per = match app.meta_state.meta.low.perspectives.get_mut(view.perspective) {
-                    Some(per) => per,
-                    None => {
-                        ui.label("Invalid perspective key");
-                        return;
-                    }
-                };
-                ui.label("offset");
-                ui.add(DragValue::new(
-                    &mut app.meta_state.meta.low.regions[per.region].region.begin,
-                ));
-                ui.label("columns");
-                ui.add(DragValue::new(&mut per.cols));
-                let offsets = view.offsets(
-                    &app.meta_state.meta.low.perspectives,
-                    &app.meta_state.meta.low.regions,
-                );
-                let re = ui.button(L_SCROLL);
-                if re.clicked() {
-                    gui.show_quick_scroll_popup ^= true;
+        if data_len != 0
+            && let Some(view_key) = app.hex_ui.focused_view
+        {
+            let view = &mut app.meta_state.meta.views[view_key].view;
+            let per = match app.meta_state.meta.low.perspectives.get_mut(view.perspective) {
+                Some(per) => per,
+                None => {
+                    ui.label("Invalid perspective key");
+                    return;
                 }
-                #[expect(
-                    clippy::cast_precision_loss,
-                    reason = "Precision is good until 52 bits (more than reasonable)"
-                )]
-                let mut ratio = offsets.byte as f64 / data_len as f64;
-                if gui.show_quick_scroll_popup {
-                    let avail_w = ui.available_width();
-                    egui::Window::new("quick_scroll_popup")
-                        .resizable(false)
-                        .title_bar(false)
-                        .fixed_pos(re.rect.right_top())
-                        .show(ui.ctx(), |ui| {
-                            ui.spacing_mut().slider_width = avail_w * 0.8;
-                            let re = ui.add(
-                                egui::Slider::new(&mut ratio, 0.0..=1.0)
-                                    .custom_formatter(|n, _| format!("{:.2}%", n * 100.)),
-                            );
-                            if re.changed() {
-                                // This is used for a rough scroll, so lossy conversion is to be expected
-                                #[expect(
-                                    clippy::cast_possible_truncation,
-                                    clippy::cast_precision_loss,
-                                    clippy::cast_sign_loss
-                                )]
-                                let new_off = (app.data.len() as f64 * ratio) as usize;
-                                view.scroll_to_byte_offset(
-                                    new_off,
-                                    &app.meta_state.meta.low.perspectives,
-                                    &app.meta_state.meta.low.regions,
-                                    false,
-                                    true,
-                                );
-                            }
-                            ui.horizontal(|ui| {
-                                ui.label(human_size(offsets.byte));
-                                if ui.button("Close").clicked() {
-                                    gui.show_quick_scroll_popup = false;
-                                }
-                            });
-                        });
-                }
-                ui.label(format!(
-                    "row {} col {} byte {} ({:.2}%)",
-                    offsets.row,
-                    offsets.col,
-                    offsets.byte,
-                    ratio * 100.0
-                ))
-                .on_hover_text_deferred(|| human_size(offsets.byte));
+            };
+            ui.label("offset");
+            ui.add(DragValue::new(
+                &mut app.meta_state.meta.low.regions[per.region].region.begin,
+            ));
+            ui.label("columns");
+            ui.add(DragValue::new(&mut per.cols));
+            let offsets = view.offsets(
+                &app.meta_state.meta.low.perspectives,
+                &app.meta_state.meta.low.regions,
+            );
+            let re = ui.button(L_SCROLL);
+            if re.clicked() {
+                gui.show_quick_scroll_popup ^= true;
             }
+            #[expect(
+                clippy::cast_precision_loss,
+                reason = "Precision is good until 52 bits (more than reasonable)"
+            )]
+            let mut ratio = offsets.byte as f64 / data_len as f64;
+            if gui.show_quick_scroll_popup {
+                let avail_w = ui.available_width();
+                egui::Window::new("quick_scroll_popup")
+                    .resizable(false)
+                    .title_bar(false)
+                    .fixed_pos(re.rect.right_top())
+                    .show(ui.ctx(), |ui| {
+                        ui.spacing_mut().slider_width = avail_w * 0.8;
+                        let re = ui.add(
+                            egui::Slider::new(&mut ratio, 0.0..=1.0)
+                                .custom_formatter(|n, _| format!("{:.2}%", n * 100.)),
+                        );
+                        if re.changed() {
+                            // This is used for a rough scroll, so lossy conversion is to be expected
+                            #[expect(
+                                clippy::cast_possible_truncation,
+                                clippy::cast_precision_loss,
+                                clippy::cast_sign_loss
+                            )]
+                            let new_off = (app.data.len() as f64 * ratio) as usize;
+                            view.scroll_to_byte_offset(
+                                new_off,
+                                &app.meta_state.meta.low.perspectives,
+                                &app.meta_state.meta.low.regions,
+                                false,
+                                true,
+                            );
+                        }
+                        ui.horizontal(|ui| {
+                            ui.label(human_size(offsets.byte));
+                            if ui.button("Close").clicked() {
+                                gui.show_quick_scroll_popup = false;
+                            }
+                        });
+                    });
+            }
+            ui.label(format!(
+                "row {} col {} byte {} ({:.2}%)",
+                offsets.row,
+                offsets.col,
+                offsets.byte,
+                ratio * 100.0
+            ))
+            .on_hover_text_deferred(|| human_size(offsets.byte));
         }
         ui.separator();
         let [row, col] = app.row_col_of_cursor().unwrap_or([0, 0]);
