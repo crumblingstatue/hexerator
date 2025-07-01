@@ -260,7 +260,7 @@ fn resolve_args<'src>(
     })
 }
 
-fn parse(input: &str) -> anyhow::Result<(&str, impl Iterator<Item = Arg>)> {
+fn parse(input: &'_ str) -> anyhow::Result<(&'_ str, impl Iterator<Item = Arg<'_>>)> {
     let mut tokens = input.split_whitespace();
     let cmd = tokens.next().context("Missing command")?;
     let iter = tokens.map(|tok| {
