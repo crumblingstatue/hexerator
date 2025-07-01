@@ -29,7 +29,9 @@ fn detect_hex_string_sep_kind(hex_string: &str) -> HexStringSepKind {
 fn chunks_2(input: &str) -> impl Iterator<Item = anyhow::Result<&str>> {
     input
         .as_bytes()
-        .array_chunks::<2>()
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| std::str::from_utf8(pair).map_err(anyhow::Error::from))
 }
 

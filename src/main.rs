@@ -1,7 +1,6 @@
 #![doc(html_no_source)]
 #![feature(
     try_blocks,
-    array_chunks,
     array_windows,
     generic_const_exprs,
     macro_metavar_expr_concat,
@@ -215,7 +214,7 @@ fn try_main() -> anyhow::Result<()> {
         if path.exists() {
             match std::fs::read(path) {
                 Ok(data) => {
-                    let mut chunks = data.array_chunks().copied();
+                    let mut chunks = data.as_chunks().0.iter().copied();
                     let theme = std::array::from_fn(|_| {
                         ThemeColor::Custom(chunks.next().unwrap_or_default())
                     });

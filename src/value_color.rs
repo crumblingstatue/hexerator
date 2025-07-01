@@ -25,7 +25,7 @@ pub fn load_palette(path: &Path) -> anyhow::Result<Palette> {
         anyhow::bail!("File for palette not the correct size");
     }
     let mut pal = Palette([[0u8; 3]; 256]);
-    for (rgb, pal_slot) in raw_bytes.array_chunks::<3>().zip(pal.0.iter_mut()) {
+    for (rgb, pal_slot) in raw_bytes.as_chunks::<3>().0.iter().zip(pal.0.iter_mut()) {
         *pal_slot = *rgb;
     }
     Ok(pal)
