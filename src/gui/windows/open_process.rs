@@ -488,7 +488,6 @@ impl super::Window for OpenProcessWindow {
                                         &mut gui.msg_dialog,
                                         &txt,
                                     );
-                                    ui.close_menu();
                                 }
                             });
                             if re.clicked() && is_button {
@@ -535,7 +534,6 @@ impl super::Window for OpenProcessWindow {
                                             &mut gui.msg_dialog,
                                             &txt,
                                         );
-                                        ui.close_menu();
                                     }
                                 });
                         });
@@ -560,7 +558,6 @@ impl super::Window for OpenProcessWindow {
                                             &mut gui.msg_dialog,
                                             &txt,
                                         );
-                                        ui.close_menu();
                                     }
                                 });
                         });

@@ -17,16 +17,13 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui) {
             "Failed to open help",
             &mut gui.msg_dialog,
         );
-        ui.close_menu();
     }
     if ui.add(Button::new(L_DEBUG_PANEL).shortcut_text("F12")).clicked() {
-        ui.close_menu();
         IMMEDIATE.toggle();
         PERSISTENT.toggle();
     }
     ui.separator();
     if ui.button(L_ABOUT).clicked() {
         gui.win.about.open.toggle();
-        ui.close_menu();
     }
 }

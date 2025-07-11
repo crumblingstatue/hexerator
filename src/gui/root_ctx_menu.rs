@@ -110,7 +110,7 @@ fn menu_inner_ui(
             {
                 if ui.button(&v.name).clicked() {
                     layout.change_view_type(view, k);
-                    ui.close_menu();
+
                     *close = true;
                     return;
                 }
@@ -154,7 +154,7 @@ fn menu_inner_ui(
         for (key, layout) in app.meta_state.meta.layouts.iter() {
             if ui.button(&layout.name).clicked() {
                 App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, key);
-                ui.close_menu();
+
                 *close = true;
             }
         }

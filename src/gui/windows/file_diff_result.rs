@@ -189,7 +189,6 @@ impl super::Window for FileDiffResultWindow {
                         re.context_menu(|ui| {
                             if ui.button("Add bookmark").clicked() {
                                 crate::gui::add_new_bookmark(app, gui, offs);
-                                ui.close_menu();
                             }
                         });
                         if re.clicked() {
@@ -206,7 +205,6 @@ impl super::Window for FileDiffResultWindow {
                                 ui.menu_button(&reg.name, |ui| {
                                     if ui.button("Remove region from results").clicked() {
                                         action = Action::RemoveRegion(reg_key);
-                                        ui.close_menu();
                                     }
                                 })
                                 .response

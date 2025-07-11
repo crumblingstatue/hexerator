@@ -57,18 +57,15 @@ impl super::Window for PerspectivesWindow {
                             ui.menu_button(name, |ui| {
                                 if ui.button("✏ Rename").clicked() {
                                     self.rename_idx = keys[idx];
-                                    ui.close_menu();
                                 }
                                 if ui.button("🗑 Delete").clicked() {
                                     app.cmd.push(Cmd::RemovePerspective(keys[idx]));
-                                    ui.close_menu();
                                 }
                                 if ui.button("Create view").clicked() {
                                     app.cmd.push(Cmd::CreateView {
                                         perspective_key: keys[idx],
                                         name: name.to_owned(),
                                     });
-                                    ui.close_menu();
                                 }
                                 ui.menu_button("Containing views", |ui| {
                                     for (view_key, view) in app.meta_state.meta.views.iter() {
@@ -77,7 +74,6 @@ impl super::Window for PerspectivesWindow {
                                         {
                                             gui.win.views.open.set(true);
                                             gui.win.views.selected = view_key;
-                                            ui.close_menu();
                                         }
                                     }
                                 });
@@ -88,7 +84,6 @@ impl super::Window for PerspectivesWindow {
                                         "Failed to copy to clipboard",
                                         &mut gui.msg_dialog,
                                     );
-                                    ui.close_menu();
                                 }
                             });
                         }
@@ -147,7 +142,7 @@ impl super::Window for PerspectivesWindow {
                         region_key: key,
                         name: region.name.clone(),
                     });
-                    ui.close_menu();
+
                     return;
                 }
             }

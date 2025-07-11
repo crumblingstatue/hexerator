@@ -101,7 +101,6 @@ impl super::Window for ViewsWindow {
                                             key,
                                         );
                                         app.hex_ui.focused_view = Some(view_key);
-                                        ui.close_menu();
                                     }
                                 }
                             });
@@ -287,7 +286,6 @@ fn new_from_perspective_button(ui: &mut egui::Ui, app: &mut App) {
     ui.menu_button("New from perspective", |ui| {
         for (key, perspective) in app.meta_state.meta.low.perspectives.iter() {
             if ui.button(&perspective.name).clicked() {
-                ui.close_menu();
                 app.cmd.push(Cmd::CreateView {
                     perspective_key: key,
                     name: perspective.name.to_owned(),

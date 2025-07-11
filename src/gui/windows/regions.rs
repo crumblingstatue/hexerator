@@ -37,7 +37,6 @@ pub fn region_context_menu(
                 cmd.push(Cmd::SetLayout(key));
                 cmd.push(Cmd::FocusView(v));
                 cmd.push(Cmd::SetAndFocusCursor(reg.region.begin));
-                ui.close_menu();
             }
         }
     });
@@ -50,14 +49,12 @@ pub fn region_context_menu(
     });
     if ui.button("Select").clicked() {
         cmd.push(Cmd::SetSelection(reg.region.begin, reg.region.end));
-        ui.close_menu();
     }
     if ui.button("Create perspective").clicked() {
         cmd.push(Cmd::CreatePerspective {
             region_key: key,
             name: reg.name.clone(),
         });
-        ui.close_menu();
     }
 }
 
@@ -127,14 +124,12 @@ impl super::Window for RegionsWindow {
                 ui.add(egui::DragValue::new(&mut reg.region.begin)).context_menu(|ui| {
                     if ui.button("Set to cursor").clicked() {
                         reg.region.begin = app.edit_state.cursor;
-                        ui.close_menu();
                     }
                 });
                 ui.label("Last byte");
                 ui.add(egui::DragValue::new(&mut reg.region.end)).context_menu(|ui| {
                     if ui.button("Set to cursor").clicked() {
                         reg.region.end = app.edit_state.cursor;
-                        ui.close_menu();
                     }
                 });
             });
@@ -225,7 +220,6 @@ impl super::Window for RegionsWindow {
                                     key: k,
                                     begin: app.edit_state.cursor,
                                 };
-                                ui.close_menu();
                             }
                         });
                         if re.clicked() {
@@ -240,7 +234,6 @@ impl super::Window for RegionsWindow {
                                     key: k,
                                     end: app.edit_state.cursor,
                                 };
-                                ui.close_menu();
                             }
                         });
                         if re.clicked() {

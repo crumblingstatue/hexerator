@@ -468,7 +468,6 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                                 &mut gui.msg_dialog,
                                 &format!("{:x}", off + add),
                             );
-                            ui.close_menu();
                         }
                     });
                 off
@@ -644,7 +643,6 @@ fn edit_offset(app: &mut App, gui: &mut crate::gui::Gui, ui: &mut Ui) -> usize {
                 &mut gui.msg_dialog,
                 &format!("{off:x}"),
             );
-            ui.close_menu();
         }
     });
     app.edit_state.cursor

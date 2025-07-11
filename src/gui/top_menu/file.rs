@@ -26,11 +26,9 @@ const L_QUIT: &str = concat!(ic::SIGN_OUT, " Quit");
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_spacing: u16) {
     if ui.add(Button::new(L_LOPEN).shortcut_text("Ctrl+O")).clicked() {
         gui.fileops.load_file(app.source_file());
-        ui.close_menu();
     }
     if ui.button(L_OPEN_PROCESS).clicked() {
         gui.win.open_process.open.toggle();
-        ui.close_menu();
     }
     let mut load = None;
     if ui
@@ -42,7 +40,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         .clicked()
     {
         crate::shell::open_previous(app, &mut load);
-        ui.close_menu();
     }
     ui.checkbox(&mut app.preferences.keep_meta, "Keep metadata")
         .on_hover_text("Keep metadata when loading a new file");
@@ -56,7 +53,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             ui.horizontal(|ui| {
                 if ui.button(&path).clicked() {
                     load = Some(entry.clone());
-                    ui.close_menu();
                 }
                 ui.separator();
                 if ui.button("📋").clicked() {
@@ -98,18 +94,14 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             "Failed to save",
             &mut gui.msg_dialog,
         );
-        ui.close_menu();
     }
     if ui.button(L_SAVE_AS).clicked() {
         gui.fileops.save_file_as();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_RELOAD).shortcut_text("Ctrl+R")).clicked() {
         msg_if_fail(app.reload(), "Failed to reload", &mut gui.msg_dialog);
-        ui.close_menu();
     }
     if ui.button(L_AUTO_SAVE_RELOAD).clicked() {
-        ui.close_menu();
         Gui::add_dialog(&mut gui.dialogs, AutoSaveReloadDialog);
     }
     ui.separator();
@@ -119,7 +111,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             "Failed to create backup",
             &mut gui.msg_dialog,
         );
-        ui.close_menu();
     }
     if ui.button(L_RESTORE_BACKUP).clicked() {
         msg_if_fail(
@@ -127,17 +118,14 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             "Failed to restore backup",
             &mut gui.msg_dialog,
         );
-        ui.close_menu();
     }
     ui.separator();
     if ui.button(L_PREFERENCES).clicked() {
         gui.win.preferences.open.toggle();
-        ui.close_menu();
     }
     ui.separator();
     if ui.add(Button::new(L_CLOSE).shortcut_text("Ctrl+W")).clicked() {
         app.close_file();
-        ui.close_menu();
     }
     if ui.button(L_QUIT).clicked() {
         app.quit_requested = true;

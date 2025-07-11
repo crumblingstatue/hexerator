@@ -20,24 +20,18 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     );
     if re.clicked() {
         app.set_cursor_init();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_JUMP).shortcut_text("Ctrl+J")).clicked() {
-        ui.close_menu();
         Gui::add_dialog(&mut gui.dialogs, JumpDialog::default());
     }
     if ui.button(L_FLASH_CURSOR).clicked() {
         app.preferences.hide_cursor = false;
         app.hex_ui.flash_cursor();
-        ui.close_menu();
     }
     if ui.button(L_CENTER_VIEW_ON_CURSOR).clicked() {
         app.preferences.hide_cursor = false;
         app.center_view_on_offset(app.edit_state.cursor);
         app.hex_ui.flash_cursor();
-        ui.close_menu();
     }
-    if ui.checkbox(&mut app.preferences.hide_cursor, "Hide cursor").clicked() {
-        ui.close_menu();
-    }
+    ui.checkbox(&mut app.preferences.hide_cursor, "Hide cursor");
 }

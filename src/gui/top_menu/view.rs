@@ -15,15 +15,12 @@ const L_VIEWS: &str = concat!(ic::EYE, " Views...");
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     if ui.add(Button::new(L_VIEWS).shortcut_text("F6")).clicked() {
         gui.win.views.open.toggle();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_FOCUS_PREV).shortcut_text("Shift+Tab")).clicked() {
         app.focus_prev_view_in_layout();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_FOCUS_NEXT).shortcut_text("Tab")).clicked() {
         app.focus_next_view_in_layout();
-        ui.close_menu();
     }
     ui.menu_button(L_RULER, |ui| match app.focused_view_mut() {
         Some((key, _view)) => match app.hex_ui.rulers.get_mut(&key) {
@@ -67,12 +64,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
     ui.menu_button(L_LAYOUT, |ui| {
         if ui.add(Button::new(L_LAYOUTS).shortcut_text("F5")).clicked() {
             gui.win.layouts.open.toggle();
-            ui.close_menu();
         }
         if ui.button("➕ Add new").clicked() {
             app.hex_ui.current_layout = app.meta_state.meta.layouts.add_new_default();
             gui.win.layouts.open.set(true);
-            ui.close_menu();
         }
         ui.separator();
         for (k, v) in &app.meta_state.meta.layouts {
@@ -84,7 +79,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                 .clicked()
             {
                 App::switch_layout(&mut app.hex_ui, &app.meta_state.meta, k);
-                ui.close_menu();
             }
         }
     });

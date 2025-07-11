@@ -26,23 +26,18 @@ const L_ASSOCIATE_WITH_CURRENT: &str = concat!(ic::FLOW_ARROW, " Associate with 
 pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_spacing: u16) {
     if ui.add(Button::new(L_PERSPECTIVES).shortcut_text("F7")).clicked() {
         gui.win.perspectives.open.toggle();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_REGIONS).shortcut_text("F8")).clicked() {
         gui.win.regions.open.toggle();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_BOOKMARKS).shortcut_text("F9")).clicked() {
         gui.win.bookmarks.open.toggle();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_VARIABLES).shortcut_text("F10")).clicked() {
         gui.win.vars.open.toggle();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_STRUCTS).shortcut_text("F11")).clicked() {
         gui.win.structs.open.toggle();
-        ui.close_menu();
     }
     ui.separator();
     if ui
@@ -51,7 +46,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         .clicked()
     {
         gui.win.meta_diff.open.toggle();
-        ui.close_menu();
     }
     ui.separator();
     if ui
@@ -69,11 +63,9 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             "Failed to load metafile",
             &mut gui.msg_dialog,
         );
-        ui.close_menu();
     }
     if ui.button(L_LOAD_FROM_FILE).clicked() {
         gui.fileops.load_meta_file();
-        ui.close_menu();
     }
     if ui
         .button(L_LOAD_FROM_BACKUP)
@@ -85,7 +77,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             "Failed to load temp metafile",
             &mut gui.msg_dialog,
         );
-        ui.close_menu();
     }
     if ui
         .button(L_CLEAR)
@@ -93,7 +84,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
         .clicked()
     {
         app.clear_meta(font_size, line_spacing);
-        ui.close_menu();
     }
     ui.separator();
     if ui
@@ -111,11 +101,9 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             "Failed to save metafile",
             &mut gui.msg_dialog,
         );
-        ui.close_menu();
     }
     if ui.button(L_SAVE_AS).clicked() {
         gui.fileops.save_metafile_as();
-        ui.close_menu();
     }
     ui.separator();
     match (
@@ -131,7 +119,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
                 app.cfg
                     .meta_assocs
                     .insert(src.to_owned(), app.meta_state.current_meta_path.clone());
-                ui.close_menu();
             }
         }
         _ => {

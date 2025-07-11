@@ -130,14 +130,12 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
             if ui.button("Copy").clicked() {
                 let result = app.clipboard.set_text(app.edit_state.cursor.to_string());
                 msg_if_fail(result, "Failed to set clipboard text", &mut gui.msg_dialog);
-                ui.close_menu();
             }
             if ui.button("Copy absolute").on_hover_text("Hard seek + cursor").clicked() {
                 let result = app.clipboard.set_text(
                     (app.edit_state.cursor + app.src_args.hard_seek.unwrap_or(0)).to_string(),
                 );
                 msg_if_fail(result, "Failed to set clipboard text", &mut gui.msg_dialog);
-                ui.close_menu();
             }
         });
         if re.clicked() {
@@ -170,7 +168,6 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
                 if ui.button("Select").clicked() {
                     app.hex_ui.select_a = Some(reg.region.begin);
                     app.hex_ui.select_b = Some(reg.region.end);
-                    ui.close_menu();
                 }
             });
         }

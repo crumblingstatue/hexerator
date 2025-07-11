@@ -43,22 +43,22 @@ pub fn selection_menu(
     ui.menu_button(title, |ui| {
         if ui.add(Button::new(L_UNSELECT).shortcut_text("Esc")).clicked() {
             app.hex_ui.clear_selections();
-            ui.close_menu();
+
             clicked = true;
         }
         if ui.add(Button::new(L_ZERO_FILL).shortcut_text("Del")).clicked() {
             app.data.zero_fill_region(sel);
-            ui.close_menu();
+
             clicked = true;
         }
         if ui.button(L_PATTERN_FILL).clicked() {
             Gui::add_dialog(gui_dialogs, PatternFillDialog::default());
-            ui.close_menu();
+
             clicked = true;
         }
         if ui.button(L_LUA_FILL).clicked() {
             Gui::add_dialog(gui_dialogs, LuaFillDialog::default());
-            ui.close_menu();
+
             clicked = true;
         }
         if ui.button(L_RANDOM_FILL).clicked() {
@@ -68,7 +68,7 @@ pub fn selection_menu(
                     app.data.widen_dirty_region(DamageRegion::RangeInclusive(region.to_range()));
                 }
             }
-            ui.close_menu();
+
             clicked = true;
         }
         if ui.button(L_COPY_AS_HEX_TEXT).clicked() {
@@ -77,13 +77,13 @@ pub fn selection_menu(
                 write!(&mut s, "{byte:02x} ").unwrap();
             }
             crate::app::set_clipboard_string(&mut app.clipboard, gui_msg_dialog, s.trim_end());
-            ui.close_menu();
+
             clicked = true;
         }
         if ui.button(L_COPY_AS_UTF8).clicked() {
             let s = String::from_utf8_lossy(&app.data[sel.begin..=sel.end]);
             crate::app::set_clipboard_string(&mut app.clipboard, gui_msg_dialog, &s);
-            ui.close_menu();
+
             clicked = true;
         }
         if ui.button(L_ADD_AS_REGION).clicked() {
@@ -92,17 +92,17 @@ pub fn selection_menu(
                 &mut app.meta_state,
                 gui_regions_window,
             );
-            ui.close_menu();
+
             clicked = true;
         }
         if ui.button(L_SAVE_TO_FILE).clicked() {
             file_ops.save_selection_to_file(sel);
-            ui.close_menu();
+
             clicked = true;
         }
         if ui.button(L_X86_ASM).clicked() {
             Gui::add_dialog(gui_dialogs, X86AsmDialog::new());
-            ui.close_menu();
+
             clicked = true;
         }
     });

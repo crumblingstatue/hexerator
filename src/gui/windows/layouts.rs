@@ -92,7 +92,6 @@ impl super::Window for LayoutsWindow {
                                 for &k in &unused_views {
                                     if ui.button(&app.meta_state.meta.views[k].name).clicked() {
                                         *view_key = k;
-                                        ui.close_menu();
                                     }
                                 }
                                 if unused_views.is_empty() {
@@ -103,16 +102,13 @@ impl super::Window for LayoutsWindow {
                             .context_menu(|ui| {
                                 if ui.button("🔃 Swap").clicked() {
                                     self.swap_a = *view_key;
-                                    ui.close_menu();
                                 }
                                 if ui.button("🗑 Remove").clicked() {
                                     retain = false;
-                                    ui.close_menu();
                                 }
                                 if ui.button("👁 View properties").clicked() {
                                     gui.win.views.open.set(true);
                                     gui.win.views.selected = *view_key;
-                                    ui.close_menu();
                                 }
                             });
                         }
@@ -129,7 +125,6 @@ impl super::Window for LayoutsWindow {
                                 .clicked()
                             {
                                 row.push(k);
-                                ui.close_menu();
                             }
                         }
                         if let Some(k) = add_new_view_menu(
@@ -140,7 +135,6 @@ impl super::Window for LayoutsWindow {
                             font,
                         ) {
                             row.push(k);
-                            ui.close_menu();
                         }
                     })
                     .response
@@ -175,7 +169,6 @@ impl super::Window for LayoutsWindow {
                             .clicked()
                         {
                             layout.view_grid.push(vec![k]);
-                            ui.close_menu();
                         }
                     }
                     if let Some(k) = add_new_view_menu(
@@ -187,7 +180,6 @@ impl super::Window for LayoutsWindow {
                     ) {
                         layout.view_grid.push(vec![k]);
                         app.hex_ui.focused_view = Some(k);
-                        ui.close_menu();
                     }
                 })
                 .response

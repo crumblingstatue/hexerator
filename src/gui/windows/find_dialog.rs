@@ -263,7 +263,6 @@ impl super::Window for FindDialog {
                                     re.context_menu(|ui| {
                                         if ui.button("Remove from results").clicked() {
                                             action = Action::RemoveIdxFromResults(i);
-                                            ui.close_menu();
                                         }
                                     });
                                     if re.clicked() {
@@ -364,7 +363,6 @@ impl super::Window for FindDialog {
                                                 if ui.button("Remove region from results").clicked()
                                                 {
                                                     action = Action::RemoveRegionFromResults(key);
-                                                    ui.close_menu();
                                                 }
                                             };
                                             let re = ui.link(&reg.name);

@@ -25,7 +25,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
             "Data mime type under cursor",
             tree_magic_mini::from_u8(&app.data[app.edit_state.cursor..]).to_string(),
         );
-        ui.close_menu();
     }
     if let Some(region) = app.hex_ui.selection()
         && ui.button(L_DETERMINE_DATA_MIME_SEL).clicked()
@@ -35,15 +34,12 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
             "Data mime type of selection",
             tree_magic_mini::from_u8(&app.data[region.begin..=region.end]).to_string(),
         );
-        ui.close_menu();
     }
     ui.separator();
     if ui.button(L_DIFF_WITH_FILE).clicked() {
         gui.fileops.diff_with_file(app.source_file());
-        ui.close_menu();
     }
     if ui.button(L_DIFF_WITH_SOURCE_FILE).clicked() {
-        ui.close_menu();
         if let Some(path) = app.source_file() {
             let path = path.to_owned();
             msg_if_fail(
@@ -56,7 +52,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
     match app.backup_path() {
         Some(path) if path.exists() => {
             if ui.button(L_DIFF_WITH_BACKUP).clicked() {
-                ui.close_menu();
                 msg_if_fail(
                     app.diff_with_file(path, &mut gui.win.file_diff_result),
                     "Failed to diff",
@@ -78,7 +73,6 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
         .clicked()
     {
         gui.win.find_memory_pointers.open.toggle();
-        ui.close_menu();
     }
     if ui
         .button(L_ZERO_PARTITION)
@@ -86,6 +80,5 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
         .clicked()
     {
         gui.win.zero_partition.open.toggle();
-        ui.close_menu();
     }
 }

@@ -36,7 +36,6 @@ pub fn ui(
 ) {
     if ui.add(Button::new(L_FIND).shortcut_text("Ctrl+F")).clicked() {
         gui.win.find.open.toggle();
-        ui.close_menu();
     }
     ui.separator();
     match app.hex_ui.selection() {
@@ -50,9 +49,7 @@ pub fn ui(
                 &mut gui.win.regions,
                 sel,
                 &mut gui.fileops,
-            ) {
-                ui.close_menu();
-            }
+            ) {}
         }
         None => {
             ui.label("<No selection>");
@@ -60,28 +57,22 @@ pub fn ui(
     }
     if ui.add(Button::new(L_SELECT_A).shortcut_text("shift+1")).clicked() {
         app.hex_ui.select_a = Some(app.edit_state.cursor);
-        ui.close_menu();
     }
     if ui.add(Button::new(L_SELECT_B).shortcut_text("shift+2")).clicked() {
         app.hex_ui.select_b = Some(app.edit_state.cursor);
-        ui.close_menu();
     }
     if ui.add(Button::new(L_SELECT_ALL).shortcut_text("Ctrl+A")).clicked() {
         app.focused_view_select_all();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_SELECT_ROW)).clicked() {
         app.focused_view_select_row();
-        ui.close_menu();
     }
     if ui.add(Button::new(L_SELECT_COL)).clicked() {
         app.focused_view_select_col();
-        ui.close_menu();
     }
     ui.separator();
     if ui.add(Button::new(L_EXTERNAL_COMMAND).shortcut_text("Ctrl+E")).clicked() {
         gui.win.external_command.open.toggle();
-        ui.close_menu();
     }
     ui.separator();
     if ui
@@ -90,7 +81,6 @@ pub fn ui(
         .clicked()
     {
         app.inc_byte_or_bytes();
-        ui.close_menu();
     }
     if ui
         .add(Button::new(L_DEC_BYTE).shortcut_text("Ctrl+-"))
@@ -98,11 +88,9 @@ pub fn ui(
         .clicked()
     {
         app.dec_byte_or_bytes();
-        ui.close_menu();
     }
     ui.menu_button(L_PASTE_AT_CURSOR, |ui| {
         if ui.button("Hex text from clipboard").clicked() {
-            ui.close_menu();
             let s = crate::app::get_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog);
             let cursor = app.edit_state.cursor;
             let result: anyhow::Result<()> = try {
@@ -164,6 +152,5 @@ pub fn ui(
             &mut gui.dialogs,
             TruncateDialog::new(app.data.len(), app.hex_ui.selection()),
         );
-        ui.close_menu();
     }
 }

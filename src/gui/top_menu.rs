@@ -50,7 +50,6 @@ pub fn top_menu(
                                     let ctx_menu = |ui: &mut egui::Ui| {
                                         if ui.button("Open").clicked() {
                                             try_open_file(file, gui);
-                                            ui.close_menu();
                                         }
                                         if ui.button("Copy path to clipboard").clicked() {
                                             crate::app::set_clipboard_string(
@@ -58,7 +57,6 @@ pub fn top_menu(
                                                 &mut gui.msg_dialog,
                                                 &s,
                                             );
-                                            ui.close_menu();
                                         }
                                         if let Some(parent) = file.parent() {
                                             if ui.button("Open containing folder").clicked() {
@@ -68,11 +66,9 @@ pub fn top_menu(
                                                     "Failed to open folder",
                                                     &mut gui.msg_dialog,
                                                 );
-                                                ui.close_menu();
                                             }
                                             if ui.button("Copy folder path to clipboard").clicked()
                                             {
-                                                ui.close_menu();
                                                 crate::app::set_clipboard_string(
                                                     &mut app.clipboard,
                                                     &mut gui.msg_dialog,

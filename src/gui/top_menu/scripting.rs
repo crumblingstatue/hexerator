@@ -13,29 +13,23 @@ pub fn ui(
 ) {
     if ui.button("🖹 Lua editor").clicked() {
         gui.win.lua_editor.open.toggle();
-        ui.close_menu();
     }
     if ui.button("📃 Script manager").clicked() {
         gui.win.script_manager.open.toggle();
-        ui.close_menu();
     }
     if ui.button("🖳 Quick eval window").clicked() {
         gui.win.lua_console.open.toggle();
-        ui.close_menu();
     }
     if ui.button("👁 New watch window").clicked() {
         gui.win.add_lua_watch_window();
-        ui.close_menu();
     }
     if ui.button("？ Hexerator Lua API").clicked() {
         gui.win.lua_help.open.toggle();
-        ui.close_menu();
     }
     ui.separator();
     let mut scripts = std::mem::take(&mut app.meta_state.meta.scripts);
     for (key, script) in scripts.iter() {
         if ui.button(&script.name).clicked() {
-            ui.close_menu();
             let result = crate::scripting::exec_lua(
                 lua,
                 &script.content,

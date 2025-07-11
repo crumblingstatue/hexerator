@@ -15,7 +15,7 @@ use {
         shell::{msg_fail, msg_if_fail},
     },
     anyhow::Context as _,
-    egui::{ScrollArea, Ui, text::CursorRange},
+    egui::{ScrollArea, Ui, text::CCursorRange},
     egui_extras::{Column, TableBuilder},
     gamedebug_core::per,
     num_traits::AsPrimitive,
@@ -99,7 +99,6 @@ impl super::Window for BookmarksWindow {
                                         &mut gui.msg_dialog,
                                         &app.meta_state.meta.bookmarks[idx].label,
                                     );
-                                    ui.close_menu();
                                 }
                             });
                             if re.clicked() {
@@ -115,14 +114,12 @@ impl super::Window for BookmarksWindow {
                                         &mut gui.msg_dialog,
                                         &offset.to_string(),
                                     );
-                                    ui.close_menu();
                                 }
                                 if ui
                                     .button("Reoffset all bookmarks")
                                     .on_hover_text("Assume that the cursor is at the correct offset for this bookmark.\n\
                                                     Reoffset all the other bookmarks based on that assumption.").clicked() {
                                         app.reoffset_bookmarks_cursor_diff(offset);
-                                        ui.close_menu();
                                 }
                             };
                             let re = ui.link(offset.to_string());
@@ -199,7 +196,9 @@ impl super::Window for BookmarksWindow {
                     }
                     if self.focus_text_edit {
                         out.response.request_focus();
-                        out.state.cursor.set_range(Some(CursorRange::select_all(&out.galley)));
+                        out.state
+                            .cursor
+                            .set_char_range(Some(CCursorRange::select_all(&out.galley)));
                         out.state.store(ui.ctx(), out.response.id);
                         self.focus_text_edit = false;
                     }
@@ -470,10 +469,8 @@ impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
         let ctx_menu = move |ui: &mut Ui| {
             if ui.button("Copy").clicked() {
                 set_clipboard_string(cb, msg, &val.to_string());
-                ui.close_menu();
             }
             if ui.button("Jump").clicked() {
-                ui.close_menu();
                 *act_mut = UiAction::Goto(val);
             }
         };
