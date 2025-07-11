@@ -9,6 +9,7 @@ use {
             message_dialog::MessageDialog,
             windows::RegionsWindow,
         },
+        shell::msg_fail,
     },
     constcat::concat,
     egui::Button,
@@ -73,10 +74,23 @@ pub fn selection_menu(
         }
         if ui.button(L_COPY_AS_HEX_TEXT).clicked() {
             let mut s = String::new();
-            for &byte in &app.data[sel.begin..=sel.end] {
-                write!(&mut s, "{byte:02x} ").unwrap();
+            let result: std::fmt::Result = try {
+                for &byte in &app.data[sel.begin..=sel.end] {
+                    write!(&mut s, "{byte:02x} ")?;
+                }
+            };
+            match result {
+                Ok(()) => {
+                    crate::app::set_clipboard_string(
+                        &mut app.clipboard,
+                        gui_msg_dialog,
+                        s.trim_end(),
+                    );
+                }
+                Err(e) => {
+                    msg_fail(&e, "Failed to copy as hex text", gui_msg_dialog);
+                }
             }
-            crate::app::set_clipboard_string(&mut app.clipboard, gui_msg_dialog, s.trim_end());
 
             clicked = true;
         }
