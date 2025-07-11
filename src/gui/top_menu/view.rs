@@ -1,7 +1,11 @@
 use {
     crate::{app::App, gui::Gui, hex_ui::Ruler, meta::LayoutMapExt as _},
     constcat::concat,
-    egui::Button,
+    egui::{
+        Button,
+        color_picker::{Alpha, color_picker_color32},
+        containers::menu::{MenuConfig, SubMenuButton},
+    },
     egui_phosphor::regular as ic,
 };
 
@@ -29,9 +33,24 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App) {
                     app.hex_ui.rulers.remove(&key);
                     return;
                 }
-                ui.label("Color (right or middle click when open)");
                 ruler.color.with_as_egui_mut(|c| {
-                    ui.color_edit_button_srgba(c);
+                    // Customized color SubMenuButton (taken from the egui demo)
+                    let is_bright = c.intensity() > 0.5;
+                    let text_color = if is_bright {
+                        egui::Color32::BLACK
+                    } else {
+                        egui::Color32::WHITE
+                    };
+                    let mut color_button =
+                        SubMenuButton::new(egui::RichText::new("Color").color(text_color)).config(
+                            MenuConfig::new()
+                                .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside),
+                        );
+                    color_button.button = color_button.button.fill(*c);
+                    color_button.ui(ui, |ui| {
+                        ui.spacing_mut().slider_width = 200.0;
+                        color_picker_color32(ui, c, Alpha::Opaque);
+                    });
                 });
                 ui.label("Frequency");
                 ui.add(egui::DragValue::new(&mut ruler.freq));
