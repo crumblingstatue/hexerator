@@ -5,15 +5,15 @@ use {
     egui_phosphor::regular as ic,
 };
 
-const L_SELECTION: &str = concat!(ic::SELECTION, " Selection 🖱⏵");
+const L_SELECTION: &str = concat!(ic::SELECTION, " Selection");
 const L_REGION_PROPS: &str = concat!(ic::RULER, " Region properties...");
 const L_VIEW_PROPS: &str = concat!(ic::EYE, " View properties...");
-const L_CHANGE_THIS_VIEW: &str = concat!(ic::SWAP, " Change this view to 🖱⏵");
+const L_CHANGE_THIS_VIEW: &str = concat!(ic::SWAP, " Change this view to");
 const L_REMOVE_FROM_LAYOUT: &str = concat!(ic::TRASH, " Remove from layout");
 const L_OPEN_BOOKMARK: &str = concat!(ic::BOOKMARK, " Open bookmark");
 const L_ADD_BOOKMARK: &str = concat!(ic::BOOKMARK, " Add bookmark");
 const L_LAYOUT_PROPS: &str = concat!(ic::LAYOUT, " Layout properties...");
-const L_LAYOUTS: &str = concat!(ic::LAYOUT, " Layouts 🖱⏵");
+const L_LAYOUTS: &str = concat!(ic::LAYOUT, " Layouts");
 
 pub struct ContextMenu {
     pos: egui::Pos2,
