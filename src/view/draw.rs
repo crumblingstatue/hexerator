@@ -196,7 +196,7 @@ fn draw_view<'f>(
             }
             None => {
                 for col in view.scroll_offset.col..end {
-                    if col % usize::from(ruler.freq) == 0 {
+                    if col.is_multiple_of(usize::from(ruler.freq)) {
                         // We want to draw the line after the current column
                         let col = col + 1;
                         let x_offset = i16::try_from(col - view.scroll_offset.col)

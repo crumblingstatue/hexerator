@@ -52,7 +52,7 @@ impl Perspective {
     pub(crate) fn n_rows(&self, rmap: &RegionMap) -> usize {
         let region = &rmap[self.region].region;
         let mut rows = region.len() / self.cols;
-        if region.len() % self.cols != 0 {
+        if !region.len().is_multiple_of(self.cols) {
             rows += 1;
         }
         rows
