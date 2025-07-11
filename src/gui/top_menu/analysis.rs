@@ -39,15 +39,15 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &App) {
     if ui.button(L_DIFF_WITH_FILE).clicked() {
         gui.fileops.diff_with_file(app.source_file());
     }
-    if ui.button(L_DIFF_WITH_SOURCE_FILE).clicked() {
-        if let Some(path) = app.source_file() {
-            let path = path.to_owned();
-            msg_if_fail(
-                app.diff_with_file(path, &mut gui.win.file_diff_result),
-                "Failed to diff",
-                &mut gui.msg_dialog,
-            );
-        }
+    if ui.button(L_DIFF_WITH_SOURCE_FILE).clicked()
+        && let Some(path) = app.source_file()
+    {
+        let path = path.to_owned();
+        msg_if_fail(
+            app.diff_with_file(path, &mut gui.win.file_diff_result),
+            "Failed to diff",
+            &mut gui.msg_dialog,
+        );
     }
     match app.backup_path() {
         Some(path) if path.exists() => {
