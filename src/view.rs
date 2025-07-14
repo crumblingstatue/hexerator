@@ -588,7 +588,7 @@ fn test_scroll_impl_negative() {
     assert_eq!((whole, pixel), (0, -320));
 }
 
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct ScrollOffset {
     /// What column we are at
     pub col: usize,
