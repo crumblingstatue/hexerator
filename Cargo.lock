@@ -236,6 +236,8 @@ version = "1.2.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3a42d84bb6b69d3a8b3eaacf0d88f179e1929695e1ad012b6cf64d9caaa5fd2"
 dependencies = [
+ "jobserver",
+ "libc",
  "shlex",
 ]
 
@@ -914,6 +916,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 
 [[package]]
+name = "jobserver"
+version = "0.1.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38f262f097c174adebe41eb73d66ae9c06b2844fb0da69969647bbddd9b0538a"
+dependencies = [
+ "getrandom 0.3.3",
+ "libc",
+]
+
+[[package]]
 name = "jpeg-decoder"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1019,6 +1031,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "luau0-src"
+version = "0.15.4+luau682"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c658d07cf320153a615d85ac44c44548817b4e68c9f34b124648dd3c673030e6"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "mach2"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1083,6 +1104,7 @@ dependencies = [
  "cfg-if",
  "lua-src",
  "luajit-src",
+ "luau0-src",
  "pkg-config",
 ]
 
