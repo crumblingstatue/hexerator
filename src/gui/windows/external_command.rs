@@ -192,6 +192,7 @@ impl super::Window for ExternalCommandWindow {
 
         if let Some(child) = &mut self.child {
             ui.horizontal(|ui| {
+                ui.spinner();
                 ui.label(format!("{} running", child.id()));
                 if ui.button("Kill").clicked() {
                     self.auto_exec = false;
