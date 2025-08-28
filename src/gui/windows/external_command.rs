@@ -180,6 +180,9 @@ impl super::Window for ExternalCommandWindow {
                     }
                     let handle = cmd.spawn()?;
                     self.child = Some(handle);
+                    // Clear output from previous run
+                    self.stderr.clear();
+                    self.stdout.clear();
                 };
                 if let Err(e) = res {
                     msg_fail(&e, "Failed to spawn command", &mut gui.msg_dialog);
