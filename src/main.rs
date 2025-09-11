@@ -193,6 +193,19 @@ fn try_main() -> anyhow::Result<()> {
     let mut font_defs = egui::FontDefinitions::default();
     egui_phosphor::add_to_fonts(&mut font_defs, egui_phosphor::Variant::Regular);
     egui_fontcfg::load_custom_fonts(&cfg.custom_font_paths, &mut font_defs.font_data)?;
+    // Manually ensure that there are no entries in the font config that don't have font data.
+    // Egui panics if this is the case, but we don't want to panic, so we just remove the offending
+    // font families.
+    cfg.font_families.retain(|_k, v| {
+        let mut retain = true;
+        for font_name in v {
+            if !font_defs.font_data.contains_key(font_name) {
+                eprintln!("Error: No font data for {font_name}. Removing.");
+                retain = false;
+            }
+        }
+        retain
+    });
     if !cfg.font_families.is_empty() {
         font_defs.families = cfg.font_families.clone();
     }
