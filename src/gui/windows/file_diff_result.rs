@@ -99,19 +99,6 @@ impl super::Window for FileDiffResultWindow {
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
-            if ui.button("Highlight all").clicked() {
-                gui.highlight_set.clear();
-                for &offs in &self.offsets {
-                    gui.highlight_set.insert(offs);
-                    if let Some((_, bm)) =
-                        Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
-                    {
-                        for i in 1..bm.value_type.byte_len() {
-                            gui.highlight_set.insert(offs + i);
-                        }
-                    }
-                }
-            }
         });
         ui.horizontal(|ui| {
             if ui.button("Refresh").clicked()
@@ -133,6 +120,24 @@ impl super::Window for FileDiffResultWindow {
         if self.offsets.is_empty() {
             ui.label("No difference");
             return;
+        } else {
+            ui.horizontal(|ui| {
+                ui.label(format!("{} bytes different.", self.offsets.len()));
+                if ui.button("Highlight all").clicked() {
+                    gui.highlight_set.clear();
+                    for &offs in &self.offsets {
+                        gui.highlight_set.insert(offs);
+                        if let Some((_, bm)) =
+                            Meta::bookmark_for_offset(&app.meta_state.meta.bookmarks, offs)
+                        {
+                            for i in 1..bm.value_type.byte_len() {
+                                gui.highlight_set.insert(offs + i);
+                            }
+                        }
+                    }
+                }
+            });
+            ui.separator();
         }
         let mut action = Action::None;
         egui_extras::TableBuilder::new(ui)
