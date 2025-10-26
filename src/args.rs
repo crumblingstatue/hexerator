@@ -50,6 +50,9 @@ pub struct Args {
     /// Allocate a new (zero-filled) buffer. Also creates the provided file argument if it doesn't exist.
     #[arg(long, value_name = "length")]
     pub new: Option<usize>,
+    /// Diff against this file
+    #[arg(long, value_name = "path")]
+    pub diff_against: Option<PathBuf>,
 }
 
 /// Arguments for opening a source (file/stream/process/etc)

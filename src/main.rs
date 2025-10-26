@@ -217,7 +217,7 @@ fn try_main() -> anyhow::Result<()> {
         reason = "It's extremely unlikely that the line spacing is not between 0..u16::MAX"
     )]
     let line_spacing = font.line_spacing(u32::from(font_size)) as u16;
-    let mut app = App::new(args, cfg, font_size, line_spacing, &mut gui.msg_dialog)?;
+    let mut app = App::new(args, cfg, font_size, line_spacing, &mut gui)?;
     let lua = Lua::default();
     gui::set_font_sizes_style(&mut style, &app.cfg.style);
     sf_egui.context().set_style(style);

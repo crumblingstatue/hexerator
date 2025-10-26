@@ -834,7 +834,7 @@ impl App {
         cfg: Config,
         font_size: u16,
         line_spacing: u16,
-        msg: &mut MessageDialog,
+        gui: &mut Gui,
     ) -> anyhow::Result<Self> {
         if args.recent
             && let Some(recent) = cfg.recent.most_recent()
@@ -901,24 +901,35 @@ impl App {
             None => {
                 // Set a clean meta, for an empty document
                 this.set_new_clean_meta(font_size, line_spacing);
-                this.load_file_args(args.src, args.meta, msg, font_size, line_spacing);
+                this.load_file_args(
+                    args.src,
+                    args.meta,
+                    &mut gui.msg_dialog,
+                    font_size,
+                    line_spacing,
+                );
             }
         }
         if let Some(name) = args.layout
             && !Self::switch_layout_by_name(&mut this.hex_ui, &this.meta_state.meta, &name)
         {
             let err = anyhow::anyhow!("No layout with name '{name}' found.");
-            msg_fail(&err, "Couldn't switch layout", msg);
+            msg_fail(&err, "Couldn't switch layout", &mut gui.msg_dialog);
         }
         if let Some(name) = args.view
             && !Self::focus_first_view_of_name(&mut this.hex_ui, &this.meta_state.meta, &name)
         {
             let err = anyhow::anyhow!("No view with name '{name}' found.");
-            msg_fail(&err, "Couldn't focus view", msg);
+            msg_fail(&err, "Couldn't focus view", &mut gui.msg_dialog);
         }
         // Set cursor to the beginning of the focused region we ended up with
         if let Some(reg) = Self::focused_region(&this.hex_ui, &this.meta_state.meta) {
             this.edit_state.cursor = reg.region.begin;
+        }
+        // Diff against a file if requested
+        if let Some(path) = &args.diff_against {
+            let result = this.diff_with_file(path.clone(), &mut gui.win.file_diff_result);
+            msg_if_fail(result, "Failed to diff", &mut gui.msg_dialog);
         }
         Ok(this)
     }
