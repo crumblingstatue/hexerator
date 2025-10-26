@@ -96,7 +96,7 @@ impl Endian {
 #[derive(Serialize, Deserialize, Clone)]
 pub enum StructTy {
     Primitive { ty: StructPrimitive, endian: Endian },
-    Array { item_ty: Box<StructTy>, len: usize },
+    Array { item_ty: Box<Self>, len: usize },
 }
 
 #[derive(Serialize, Deserialize, Clone)]
