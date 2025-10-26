@@ -48,8 +48,8 @@ impl super::Window for FileDiffResultWindow {
         ui.label(self.path.display().to_string());
         ui.horizontal(|ui| {
             if ui
-                .button("🗁 Open this")
-                .on_hover_text("Open the diffed-against file Hexerator")
+                .button("🔁 Switch")
+                .on_hover_text("Switch to the diffed against file (keeping the current meta)")
                 .clicked()
             {
                 let prev_pref = app.preferences.keep_meta;
