@@ -45,10 +45,6 @@ impl super::Window for FileDiffResultWindow {
             ..
         }: WinCtx,
     ) {
-        if self.offsets.is_empty() {
-            ui.label("No difference");
-            return;
-        }
         ui.label(self.path.display().to_string());
         ui.horizontal(|ui| {
             if ui
@@ -134,6 +130,10 @@ impl super::Window for FileDiffResultWindow {
             ui.add(egui::DragValue::new(&mut self.auto_refresh_interval_ms));
         });
         ui.separator();
+        if self.offsets.is_empty() {
+            ui.label("No difference");
+            return;
+        }
         let mut action = Action::None;
         egui_extras::TableBuilder::new(ui)
             .columns(Column::auto(), 4)
