@@ -245,6 +245,14 @@ def_method! {
 }
 
 def_method! {
+    "Clears all bookmarks"
+    clear_bookmarks(_lua, exec,) -> () {
+        exec.app.meta_state.meta.bookmarks.clear();
+        Ok(())
+    }
+}
+
+def_method! {
     "Adds a bookmark with name `name`, pointing at `offset`"
     add_bookmark(_lua, exec, offset: usize, name: String) -> () {
         exec.app.meta_state.meta.bookmarks.push(Bookmark {
@@ -405,6 +413,7 @@ macro_rules! for_each_method {
         $m!(save);
         $m!(bookmark_offset);
         $m!(region);
+        $m!(clear_bookmarks);
         $m!(add_bookmark);
         $m!(find_hex_string);
         $m!(focus_cursor);
