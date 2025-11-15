@@ -4,7 +4,7 @@ use {
         args::{MmapMode, SourceArgs},
         gui::{message_dialog::MessageDialog, windows::FileDiffResultWindow},
         meta::{ViewKey, region::Region},
-        result_ext::AnyhowConv,
+        result_ext::AnyhowConv as _,
         shell::{msg_fail, msg_if_fail},
         source::Source,
         util::human_size_u64,

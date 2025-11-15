@@ -5,7 +5,7 @@ use {
             command::{Cmd, perform_command},
         },
         gui::{Gui, dialogs::TruncateDialog, message_dialog::Icon},
-        result_ext::AnyhowConv,
+        result_ext::AnyhowConv as _,
         shell::msg_if_fail,
     },
     constcat::concat,

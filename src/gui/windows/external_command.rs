@@ -1,7 +1,7 @@
 use {
     super::{WinCtx, WindowOpen},
     crate::{
-        result_ext::AnyhowConv,
+        result_ext::AnyhowConv as _,
         shell::{msg_fail, msg_if_fail},
         str_ext::StrExt as _,
     },

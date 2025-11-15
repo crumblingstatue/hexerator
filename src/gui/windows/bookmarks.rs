@@ -12,7 +12,7 @@ use {
                 I64Be, I64Le, StringMap, U8, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType,
             },
         },
-        result_ext::AnyhowConv,
+        result_ext::AnyhowConv as _,
         shell::{msg_fail, msg_if_fail},
     },
     anyhow::Context as _,

@@ -3,7 +3,7 @@ use {
     crate::{
         app::{App, interact_mode::InteractMode},
         damage_region::DamageRegion,
-        result_ext::AnyhowConv,
+        result_ext::AnyhowConv as _,
         shell::msg_if_fail,
         view::ViewportVec,
     },

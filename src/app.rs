@@ -23,7 +23,7 @@ use {
         },
         meta_state::MetaState,
         plugin::PluginContainer,
-        result_ext::AnyhowConv,
+        result_ext::AnyhowConv as _,
         session_prefs::{Autoreload, SessionPrefs},
         shell::{msg_fail, msg_if_fail},
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},

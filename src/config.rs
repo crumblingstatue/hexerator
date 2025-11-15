@@ -1,5 +1,5 @@
 use {
-    crate::{args::SourceArgs, result_ext::AnyhowConv},
+    crate::{args::SourceArgs, result_ext::AnyhowConv as _},
     anyhow::Context as _,
     directories::ProjectDirs,
     egui_fontcfg::CustomFontPaths,
