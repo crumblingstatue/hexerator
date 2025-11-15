@@ -53,6 +53,9 @@ pub struct Args {
     /// Diff against this file
     #[arg(long, value_name = "path")]
     pub diff_against: Option<PathBuf>,
+    /// Set the initial column count of the default perspective
+    #[arg(short = 'c', long = "col")]
+    pub column_count: Option<usize>,
 }
 
 /// Arguments for opening a source (file/stream/process/etc)

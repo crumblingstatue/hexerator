@@ -110,6 +110,7 @@ impl App {
         msg: &mut MessageDialog,
         font_size: u16,
         line_spacing: u16,
+        column_count: Option<usize>,
     ) {
         if load_file_from_src_args(
             &mut src_args,
@@ -123,7 +124,7 @@ impl App {
             if !self.preferences.keep_meta {
                 if let Some(meta_path) = meta_path {
                     if let Err(e) = self.consume_meta_from_file(meta_path, false) {
-                        self.set_new_clean_meta(font_size, line_spacing);
+                        self.set_new_clean_meta(font_size, line_spacing, column_count);
                         msg_fail(&e, "Failed to load metafile", msg);
                     }
                 } else if let Some(src_path) = per_dbg!(&src_args.file)
@@ -139,14 +140,14 @@ impl App {
                         );
                         let meta_path = meta_path.clone();
                         if let Err(e) = self.consume_meta_from_file(meta_path.clone(), false) {
-                            self.set_new_clean_meta(font_size, line_spacing);
+                            self.set_new_clean_meta(font_size, line_spacing, column_count);
                             msg_fail(&e, &format!("Failed to load metafile {meta_path:?}"), msg);
                         }
                     }
                 } else {
                     // We didn't load any meta, but we're loading a new file.
                     // Set up a new clean meta for it.
-                    self.set_new_clean_meta(font_size, line_spacing);
+                    self.set_new_clean_meta(font_size, line_spacing, column_count);
                 }
             }
             self.src_args = src_args;
@@ -272,6 +273,7 @@ impl App {
             msg,
             font_size,
             line_spacing,
+            None,
         );
     }
 
@@ -375,10 +377,17 @@ impl App {
     }
 }
 
+const DEFAULT_COLUMN_COUNT: usize = 48;
+
 /// Metafile
 impl App {
     /// Set a new clean meta for the current data, and switch to default layout
-    pub fn set_new_clean_meta(&mut self, font_size: u16, line_spacing: u16) {
+    pub fn set_new_clean_meta(
+        &mut self,
+        font_size: u16,
+        line_spacing: u16,
+        column_count: Option<usize>,
+    ) {
         per!("Setting up new clean meta");
         self.meta_state.current_meta_path.clear();
         self.meta_state.meta = Meta::default();
@@ -387,6 +396,7 @@ impl App {
             &mut self.meta_state.meta,
             font_size,
             line_spacing,
+            column_count.unwrap_or(DEFAULT_COLUMN_COUNT),
         );
         self.meta_state.clean_meta = self.meta_state.meta.clone();
         Self::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
@@ -401,6 +411,7 @@ impl App {
             &mut self.meta_state.meta,
             font_size,
             line_spacing,
+            DEFAULT_COLUMN_COUNT,
         );
         Self::switch_layout(&mut self.hex_ui, &self.meta_state.meta, layout_key);
     }
@@ -897,17 +908,18 @@ impl App {
                 }
                 this.data = Data::clean_from_buf(vec![0; new_len]);
                 // Set clean meta for the newly allocated buffer
-                this.set_new_clean_meta(font_size, line_spacing);
+                this.set_new_clean_meta(font_size, line_spacing, args.column_count);
             }
             None => {
                 // Set a clean meta, for an empty document
-                this.set_new_clean_meta(font_size, line_spacing);
+                this.set_new_clean_meta(font_size, line_spacing, args.column_count);
                 this.load_file_args(
                     args.src,
                     args.meta,
                     &mut gui.msg_dialog,
                     font_size,
                     line_spacing,
+                    args.column_count,
                 );
             }
         }
@@ -1173,6 +1185,7 @@ pub fn setup_empty_meta(
     meta: &mut Meta,
     font_size: u16,
     line_spacing: u16,
+    cols: usize,
 ) -> LayoutKey {
     let def_region = meta.low.regions.insert(NamedRegion {
         name: "default".into(),
@@ -1184,7 +1197,7 @@ pub fn setup_empty_meta(
     });
     let default_perspective = meta.low.perspectives.insert(Perspective {
         region: def_region,
-        cols: 48,
+        cols,
         flip_row_order: false,
         name: "default".to_string(),
     });
@@ -1245,6 +1258,7 @@ fn load_proc_memory_linux(
         msg,
         font_size,
         line_spacing,
+        None,
     );
 }
 

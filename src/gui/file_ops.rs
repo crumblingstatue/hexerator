@@ -126,6 +126,7 @@ impl FileOps {
                         msg,
                         font_size,
                         line_spacing,
+                        None,
                     );
                 }
                 FileOp::LoadPaletteForView(key) => match value_color::load_palette(&path) {

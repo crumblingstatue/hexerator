@@ -721,7 +721,14 @@ fn handle_key_pressed(
             let mut load = None;
             shell::open_previous(app, &mut load);
             if let Some(args) = load {
-                app.load_file_args(args, None, &mut gui.msg_dialog, font_size, line_spacing);
+                app.load_file_args(
+                    args,
+                    None,
+                    &mut gui.msg_dialog,
+                    font_size,
+                    line_spacing,
+                    None,
+                );
             }
         }
         Key::W if key_mod.ctrl => app.close_file(),
