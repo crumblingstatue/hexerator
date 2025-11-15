@@ -51,7 +51,7 @@ pub struct Args {
     #[arg(long, value_name = "length")]
     pub new: Option<usize>,
     /// Diff against this file
-    #[arg(long, value_name = "path")]
+    #[arg(long, value_name = "path", alias = "diff-with")]
     pub diff_against: Option<PathBuf>,
     /// Set the initial column count of the default perspective
     #[arg(short = 'c', long = "col")]
