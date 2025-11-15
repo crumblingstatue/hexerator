@@ -74,7 +74,7 @@ pub fn selection_menu(
         }
         if ui.button(L_COPY_AS_HEX_TEXT).clicked() {
             let mut s = String::new();
-            let result: std::fmt::Result = try {
+            let result = try {
                 for &byte in &app.data[sel.begin..=sel.end] {
                     write!(&mut s, "{byte:02x} ")?;
                 }

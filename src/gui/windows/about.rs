@@ -1,6 +1,6 @@
 use {
     super::{WinCtx, WindowOpen},
-    crate::shell::msg_if_fail,
+    crate::{result_ext::AnyhowConv, shell::msg_if_fail},
     egui_extras::{Column, TableBuilder},
     std::fmt::Write as _,
     sysinfo::System,
@@ -92,15 +92,15 @@ impl super::Window for AboutWindow {
         ui.separator();
         ui.heading("Links");
         ui.vertical_centered_justified(|ui| {
-            let result: anyhow::Result<()> = try {
+            let result = try {
                 if ui.link("📖 Book").clicked() {
-                    open::that(crate::gui::BOOK_URL)?;
+                    open::that(crate::gui::BOOK_URL).how()?;
                 }
                 if ui.link(" Git repository").clicked() {
-                    open::that("https://github.com/crumblingstatue/hexerator/")?;
+                    open::that("https://github.com/crumblingstatue/hexerator/").how()?;
                 }
                 if ui.link("💬 Discussions forum").clicked() {
-                    open::that("https://github.com/crumblingstatue/hexerator/discussions")?;
+                    open::that("https://github.com/crumblingstatue/hexerator/discussions").how()?;
                 }
             };
             msg_if_fail(result, "Failed to open link", &mut gui.msg_dialog);

@@ -1,5 +1,5 @@
 use {
-    crate::args::SourceArgs,
+    crate::{args::SourceArgs, result_ext::AnyhowConv},
     anyhow::Context as _,
     directories::ProjectDirs,
     egui_fontcfg::CustomFontPaths,
@@ -107,9 +107,9 @@ impl Config {
                 old_config_err: None,
             })
         } else {
-            let result: anyhow::Result<Self> = try {
-                let cfg_bytes = std::fs::read(cfg_file)?;
-                rmp_serde::from_slice(&cfg_bytes)?
+            let result = try {
+                let cfg_bytes = std::fs::read(cfg_file).how()?;
+                rmp_serde::from_slice(&cfg_bytes).how()?
             };
             match result {
                 Ok(cfg) => Ok(LoadedConfig {

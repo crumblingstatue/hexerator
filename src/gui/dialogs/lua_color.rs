@@ -58,7 +58,7 @@ impl Dialog for LuaColorDialog {
         ui.horizontal(|ui| {
             if ui.button("Execute").clicked() || self.auto_exec {
                 let chunk = lua.load(&self.script);
-                let res: mlua::Result<()> = try {
+                let res = try {
                     let fun = chunk.eval::<Function>()?;
                     for (i, c) in color_data.iter_mut().enumerate() {
                         let rgb: [u8; 3] = fun.call((i,))?;

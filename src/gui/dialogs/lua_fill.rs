@@ -53,7 +53,7 @@ impl Dialog for LuaFillDialog {
         if ui.button("Execute").clicked() || ctrl_enter {
             let start_time = Instant::now();
             let chunk = lua.load(&app.meta_state.meta.misc.fill_lua_script);
-            let res: mlua::Result<()> = try {
+            let res = try {
                 let f = chunk.eval::<Function>()?;
                 for (i, b) in app.data[sel.begin..=sel.end].iter_mut().enumerate() {
                     *b = f.call((i, *b))?;

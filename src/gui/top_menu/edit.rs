@@ -5,6 +5,7 @@ use {
             command::{Cmd, perform_command},
         },
         gui::{Gui, dialogs::TruncateDialog, message_dialog::Icon},
+        result_ext::AnyhowConv,
         shell::msg_if_fail,
     },
     constcat::concat,
@@ -93,11 +94,12 @@ pub fn ui(
         if ui.button("Hex text from clipboard").clicked() {
             let s = crate::app::get_clipboard_string(&mut app.clipboard, &mut gui.msg_dialog);
             let cursor = app.edit_state.cursor;
-            let result: anyhow::Result<()> = try {
+            let result = try {
                 let bytes = s
                     .split_ascii_whitespace()
                     .map(|s| u8::from_str_radix(s, 16))
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .collect::<Result<Vec<_>, _>>()
+                    .how()?;
                 if cursor + bytes.len() < app.data.len() {
                     perform_command(
                         app,

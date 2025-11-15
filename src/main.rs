@@ -88,6 +88,7 @@ mod meta;
 mod meta_state;
 mod parse_radix;
 mod plugin;
+mod result_ext;
 mod scripting;
 mod session_prefs;
 mod shell;

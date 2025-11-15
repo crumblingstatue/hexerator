@@ -12,6 +12,7 @@ use {
                 I64Be, I64Le, StringMap, U8, U16Be, U16Le, U32Be, U32Le, U64Be, U64Le, ValueType,
             },
         },
+        result_ext::AnyhowConv,
         shell::{msg_fail, msg_if_fail},
     },
     anyhow::Context as _,
@@ -292,10 +293,10 @@ impl super::Window for BookmarksWindow {
                         .lost_focus()
                         && ui.input(|inp| inp.key_pressed(egui::Key::Enter));
                     if text_edit_finished || ui.button("Set key = value").clicked() {
-                        let result: anyhow::Result<()> = try {
+                        let result = try {
                             let s = &self.value_type_string_buf;
                             let (k, v) = s.split_once('=').context("Missing `=`")?;
-                            let k: u8 = k.trim().parse()?;
+                            let k: u8 = k.trim().parse().how()?;
                             let v = v.trim().to_owned();
                             list.insert(k, v);
                         };

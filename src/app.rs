@@ -23,6 +23,7 @@ use {
         },
         meta_state::MetaState,
         plugin::PluginContainer,
+        result_ext::AnyhowConv,
         session_prefs::{Autoreload, SessionPrefs},
         shell::{msg_fail, msg_if_fail},
         source::{Source, SourceAttributes, SourcePermissions, SourceProvider, SourceState},
@@ -993,10 +994,10 @@ impl App {
                 let buffer_size = self.stream_buffer_size;
                 thread::spawn(move || {
                     let mut buf = vec![0; buffer_size];
-                    let result: anyhow::Result<()> = try {
-                        let amount = src_clone.read(&mut buf)?;
+                    let result = try {
+                        let amount = src_clone.read(&mut buf).how()?;
                         buf.truncate(amount);
-                        tx.send(buf)?;
+                        tx.send(buf).how()?;
                     };
                     if let Err(e) = result {
                         per!("Stream error: {}", e);
@@ -1363,7 +1364,7 @@ fn load_file_from_src_args(
             cmd.push(Cmd::ProcessSourceChange);
             true
         } else {
-            let result: std::io::Result<()> = try {
+            let result = try {
                 let mut file = open_file(file_arg, src_args.read_only)?;
                 if let Some(path) = &mut src_args.file {
                     match path.canonicalize() {

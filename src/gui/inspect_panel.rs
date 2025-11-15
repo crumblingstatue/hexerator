@@ -3,6 +3,7 @@ use {
     crate::{
         app::{App, interact_mode::InteractMode},
         damage_region::DamageRegion,
+        result_ext::AnyhowConv,
         shell::msg_if_fail,
         view::ViewportVec,
     },
@@ -529,22 +530,22 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                 );
             }
             if ui.button("⬇").on_hover_text("go to offset").clicked() {
-                let result: anyhow::Result<()> = try {
+                let result = try {
                     let offset = match gui.inspect_panel.format {
-                        Format::Decimal => thingy.buf_mut().parse()?,
-                        Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16)?,
-                        Format::Bin => usize::from_str_radix(thingy.buf_mut(), 2)?,
+                        Format::Decimal => thingy.buf_mut().parse().how()?,
+                        Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16).how()?,
+                        Format::Bin => usize::from_str_radix(thingy.buf_mut(), 2).how()?,
                     };
                     actions.push(Action::GoToOffset(offset));
                 };
                 msg_if_fail(result, "Failed to go to offset", &mut gui.msg_dialog);
             }
             if ui.button("➡").on_hover_text("jump forward").clicked() {
-                let result: anyhow::Result<()> = try {
+                let result = try {
                     let offset = match gui.inspect_panel.format {
-                        Format::Decimal => thingy.buf_mut().parse()?,
-                        Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16)?,
-                        Format::Bin => usize::from_str_radix(thingy.buf_mut(), 2)?,
+                        Format::Decimal => thingy.buf_mut().parse().how()?,
+                        Format::Hex => usize::from_str_radix(thingy.buf_mut(), 16).how()?,
+                        Format::Bin => usize::from_str_radix(thingy.buf_mut(), 2).how()?,
                     };
                     actions.push(Action::JumpForward(offset));
                 };

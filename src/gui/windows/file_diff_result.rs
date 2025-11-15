@@ -82,7 +82,7 @@ impl super::Window for FileDiffResultWindow {
                 .on_hover_text("Keep only the unchanged values")
                 .clicked()
             {
-                let result: anyhow::Result<()> = try {
+                let result = try {
                     let file_data = read_source_to_buf(&self.path, &app.src_args)?;
                     self.offsets.retain(|&offs| self.file_data[offs] == file_data[offs]);
                 };
@@ -93,7 +93,7 @@ impl super::Window for FileDiffResultWindow {
                 .on_hover_text("Keep only the values that changed")
                 .clicked()
             {
-                let result: anyhow::Result<()> = try {
+                let result = try {
                     let file_data = read_source_to_buf(&self.path, &app.src_args)?;
                     self.offsets.retain(|&offs| self.file_data[offs] != file_data[offs]);
                 };
@@ -107,7 +107,7 @@ impl super::Window for FileDiffResultWindow {
                         >= u128::from(self.auto_refresh_interval_ms))
             {
                 self.last_refresh = Instant::now();
-                let result: anyhow::Result<()> = try {
+                let result = try {
                     self.file_data = read_source_to_buf(&self.path, &app.src_args)?;
                 };
                 msg_if_fail(result, "Refresh failed", &mut gui.msg_dialog);

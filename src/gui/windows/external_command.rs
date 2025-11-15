@@ -1,6 +1,7 @@
 use {
     super::{WinCtx, WindowOpen},
     crate::{
+        result_ext::AnyhowConv,
         shell::{msg_fail, msg_if_fail},
         str_ext::StrExt as _,
     },
@@ -129,7 +130,7 @@ impl super::Window for ExternalCommandWindow {
                         inp.key_pressed(egui::Key::E) && inp.modifiers.ctrl && !self.open.just_now()
                     })) || self.auto_exec))
             {
-                let res: anyhow::Result<()> = try {
+                let res = try {
                     // Parse args
                     let (cmd, args) = parse(&self.cmd_str)?;
                     // Generate temp file
@@ -147,11 +148,11 @@ impl super::Window for ExternalCommandWindow {
                             dir = std::env::temp_dir();
                             let path = dir.join(&self.temp_file_name);
                             let data = app.data.get(range).context("Range out of bounds")?;
-                            std::fs::write(&path, data)?;
+                            std::fs::write(&path, data).how()?;
                             file_path = path;
                         }
                         WorkingDir::Hexerator => {
-                            dir = std::env::current_dir()?;
+                            dir = std::env::current_dir().how()?;
                             file_path = dir.clone();
                         }
                         WorkingDir::Document => match &app.src_args.file {
@@ -178,7 +179,7 @@ impl super::Window for ExternalCommandWindow {
                         cmd.stdout(Stdio::piped());
                         cmd.stderr(Stdio::piped());
                     }
-                    let handle = cmd.spawn()?;
+                    let handle = cmd.spawn().how()?;
                     self.child = Some(handle);
                     // Clear output from previous run
                     self.stderr.clear();

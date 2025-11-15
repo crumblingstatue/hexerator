@@ -4,6 +4,7 @@ use {
         args::{MmapMode, SourceArgs},
         gui::{message_dialog::MessageDialog, windows::FileDiffResultWindow},
         meta::{ViewKey, region::Region},
+        result_ext::AnyhowConv,
         shell::{msg_fail, msg_if_fail},
         source::Source,
         util::human_size_u64,
@@ -139,7 +140,7 @@ impl FileOps {
                     let ColorMethod::Custom(pal) = &mut view.presentation.color_method else {
                         return;
                     };
-                    let result: anyhow::Result<()> = try {
+                    let result = try {
                         let img = image::open(path).context("Failed to load image")?.to_rgb8();
                         let (width, height) = (img.width(), img.height());
                         let sel = app.hex_ui.selection().context("Missing app selection")?;
@@ -165,8 +166,9 @@ impl FileOps {
                     );
                 }
                 FileOp::LoadLuaScript => {
-                    let res: anyhow::Result<()> = try {
-                        app.meta_state.meta.misc.exec_lua_script = std::fs::read_to_string(path)?;
+                    let res = try {
+                        app.meta_state.meta.misc.exec_lua_script =
+                            std::fs::read_to_string(path).how()?;
                     };
                     msg_if_fail(res, "Failed to load script", msg);
                 }
@@ -182,14 +184,15 @@ impl FileOps {
                     );
                 }
                 FileOp::SaveFileAs => {
-                    let result: anyhow::Result<()> = try {
+                    let result = try {
                         let mut f = std::fs::OpenOptions::new()
                             .create(true)
                             .truncate(true)
                             .read(true)
                             .write(true)
-                            .open(&path)?;
-                        f.write_all(&app.data)?;
+                            .open(&path)
+                            .how()?;
+                        f.write_all(&app.data).how()?;
                         app.source = Some(Source::file(f));
                         app.src_args.file = Some(path);
                         app.cfg.recent.use_(SourceArgs {
