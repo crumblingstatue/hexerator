@@ -18,6 +18,8 @@ pub struct FileDiffResultWindow {
     pub auto_refresh: bool,
     pub auto_refresh_interval_ms: u32,
     pub last_refresh: Instant,
+    /// Allows filtering differences based on diff threshold
+    pub diff_threshold: u8,
 }
 
 impl Default for FileDiffResultWindow {
@@ -30,6 +32,7 @@ impl Default for FileDiffResultWindow {
             auto_refresh_interval_ms: Default::default(),
             last_refresh: Instant::now(),
             file_data: Vec::new(),
+            diff_threshold: 1,
         }
     }
 }
@@ -99,6 +102,18 @@ impl super::Window for FileDiffResultWindow {
                 };
                 msg_if_fail(result, "Filter unchanged failed", &mut gui.msg_dialog);
             }
+            if ui
+                .button("Filter diff>threshold")
+                .on_hover_text(
+                    "Keep only the values whose difference is larger than the provided threshold",
+                )
+                .clicked()
+            {
+                self.offsets.retain(|&offs| {
+                    self.file_data[offs].abs_diff(app.data[offs]) > self.diff_threshold
+                });
+            }
+            ui.add(egui::DragValue::new(&mut self.diff_threshold));
         });
         ui.horizontal(|ui| {
             if ui.button("Refresh").clicked()
