@@ -1,7 +1,6 @@
 #![doc(html_no_source)]
 #![feature(
     try_blocks,
-    array_windows,
     generic_const_exprs,
     macro_metavar_expr_concat,
     default_field_values,
