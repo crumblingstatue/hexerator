@@ -48,7 +48,13 @@ impl super::Window for FileDiffResultWindow {
             ..
         }: WinCtx,
     ) {
-        ui.label(self.path.display().to_string());
+        ui.horizontal(|ui| {
+            if let Some(src_file) = &app.src_args.file {
+                ui.colored_label(egui::Color32::GREEN, src_file.display().to_string());
+            }
+            ui.label("vs");
+            ui.colored_label(egui::Color32::RED, self.path.display().to_string());
+        });
         ui.horizontal(|ui| {
             if ui
                 .button("🔁 Switch")
@@ -162,10 +168,10 @@ impl super::Window for FileDiffResultWindow {
             .striped(true)
             .header(32.0, |mut row| {
                 row.col(|ui| {
-                    ui.label("My value");
+                    ui.colored_label(egui::Color32::GREEN, "My value");
                 });
                 row.col(|ui| {
-                    ui.label("File value");
+                    ui.colored_label(egui::Color32::RED, "File value");
                 });
                 row.col(|ui| {
                     ui.label("Offset");
