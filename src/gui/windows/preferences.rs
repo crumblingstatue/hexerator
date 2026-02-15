@@ -7,7 +7,7 @@ use {
     },
     egui_colors::{Colorix, tokens::ThemeColor},
     egui_fontcfg::{CustomFontPaths, FontCfgUi, FontDefsUiMsg},
-    rand::Rng as _,
+    rand::RngExt as _,
 };
 
 #[derive(Default)]
@@ -40,7 +40,7 @@ impl Tab {
 impl super::Window for PreferencesWindow {
     fn ui(&mut self, WinCtx { ui, gui, app, .. }: WinCtx) {
         if self.open.just_now() {
-            self.font_defs = ui.ctx().fonts(|f| f.lock().fonts.definitions().clone());
+            self.font_defs = ui.ctx().fonts(|f| f.definitions().clone());
             self.temp_custom_font_paths.clone_from(&app.cfg.custom_font_paths);
             let _ = egui_fontcfg::load_custom_fonts(
                 &app.cfg.custom_font_paths,

@@ -187,8 +187,7 @@ impl super::Window for FileDiffResultWindow {
                             Some(bm) => bm
                                 .value_type
                                 .read(&app.data[offs..])
-                                .map(|v| v.to_string())
-                                .unwrap_or("err".into()),
+                                .map_or("err".into(), |v| v.to_string()),
                             None => app.data[offs].to_string(),
                         };
                         ui.label(s);
@@ -198,8 +197,7 @@ impl super::Window for FileDiffResultWindow {
                             Some(bm) => bm
                                 .value_type
                                 .read(&self.file_data[offs..])
-                                .map(|v| v.to_string())
-                                .unwrap_or("err".into()),
+                                .map_or("err".into(), |v| v.to_string()),
                             None => self.file_data[offs].to_string(),
                         };
                         ui.label(s);

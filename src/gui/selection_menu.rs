@@ -14,7 +14,7 @@ use {
     constcat::concat,
     egui::Button,
     egui_phosphor::regular as ic,
-    rand::RngCore as _,
+    rand::Rng as _,
     std::fmt::Write as _,
 };
 
