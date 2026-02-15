@@ -20,6 +20,8 @@ pub struct FileDiffResultWindow {
     pub last_refresh: Instant,
     /// Allows filtering differences based on diff threshold
     pub diff_threshold: u8,
+    /// Display the relative offset values as relative to this value
+    pub base_offset: usize,
 }
 
 impl Default for FileDiffResultWindow {
@@ -33,6 +35,7 @@ impl Default for FileDiffResultWindow {
             last_refresh: Instant::now(),
             file_data: Vec::new(),
             diff_threshold: 1,
+            base_offset: 0,
         }
     }
 }
@@ -48,6 +51,7 @@ impl super::Window for FileDiffResultWindow {
             ..
         }: WinCtx,
     ) {
+        let mut action = Action::None;
         ui.horizontal(|ui| {
             if let Some(src_file) = &app.src_args.file {
                 ui.colored_label(egui::Color32::GREEN, src_file.display().to_string());
@@ -136,6 +140,13 @@ impl super::Window for FileDiffResultWindow {
             ui.checkbox(&mut self.auto_refresh, "Auto refresh");
             ui.label("Interval");
             ui.add(egui::DragValue::new(&mut self.auto_refresh_interval_ms));
+            if ui.link("Base offset").clicked() {
+                action = Action::Goto(self.base_offset);
+            }
+            ui.add(egui::DragValue::new(&mut self.base_offset));
+            if ui.button("Set to cursor").clicked() {
+                self.base_offset = app.edit_state.cursor;
+            }
         });
         ui.separator();
         if self.offsets.is_empty() {
@@ -157,6 +168,7 @@ impl super::Window for FileDiffResultWindow {
                         }
                     }
                 }
+                #[expect(clippy::collapsible_if)]
                 if !gui.highlight_set.is_empty() {
                     if ui.button("Clear highlight").clicked() {
                         gui.highlight_set.clear();
@@ -165,7 +177,6 @@ impl super::Window for FileDiffResultWindow {
             });
             ui.separator();
         }
-        let mut action = Action::None;
         egui_extras::TableBuilder::new(ui)
             .columns(Column::auto(), 4)
             .column(Column::remainder())
@@ -214,7 +225,9 @@ impl super::Window for FileDiffResultWindow {
                         ui.label(s);
                     });
                     row.col(|ui| {
-                        let re = ui.link(offs.to_string());
+                        #[expect(clippy::cast_possible_wrap)]
+                        let display_offs: isize = offs as isize - self.base_offset as isize;
+                        let re = ui.link(display_offs.to_string());
                         re.context_menu(|ui| {
                             if ui.button("Add bookmark").clicked() {
                                 crate::gui::add_new_bookmark(app, gui, offs);
