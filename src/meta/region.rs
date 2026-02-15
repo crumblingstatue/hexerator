@@ -23,4 +23,21 @@ impl Region {
     pub fn to_range(self) -> std::ops::RangeInclusive<usize> {
         self.begin..=self.end
     }
+    /// The "previous chunk" with the same length
+    pub fn prev_chunk(self) -> Option<Self> {
+        let len = self.len();
+        self.begin.checked_sub(len).map(|new_begin| Self {
+            begin: new_begin,
+            // INVARIANT: begin < end
+            end: self.end - len,
+        })
+    }
+    /// The "next chunk" with the same length
+    pub fn next_chunk(self) -> Self {
+        let len = self.len();
+        Self {
+            begin: self.begin + len,
+            end: self.end + len,
+        }
+    }
 }

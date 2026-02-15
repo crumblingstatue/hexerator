@@ -48,6 +48,18 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
                 sel.len()
             ))
             .on_hover_text_deferred(|| human_size(sel.len()));
+            #[expect(clippy::collapsible_if)]
+            if ui.button("⬅ prev chunk").clicked() {
+                if let Some(chk) = sel.prev_chunk() {
+                    app.hex_ui.select_a = Some(chk.begin);
+                    app.hex_ui.select_b = Some(chk.end);
+                }
+            }
+            if ui.button("next chunk ➡").clicked() {
+                let chk = sel.next_chunk();
+                app.hex_ui.select_a = Some(chk.begin);
+                app.hex_ui.select_b = Some(chk.end);
+            }
             if ui.button("Clear").clicked() {
                 app.hex_ui.clear_selections();
             }
