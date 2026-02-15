@@ -157,6 +157,11 @@ impl super::Window for FileDiffResultWindow {
                         }
                     }
                 }
+                if !gui.highlight_set.is_empty() {
+                    if ui.button("Clear highlight").clicked() {
+                        gui.highlight_set.clear();
+                    }
+                }
             });
             ui.separator();
         }
