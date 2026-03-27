@@ -47,7 +47,7 @@ pub fn do_frame(
     let line_spacing = font.line_spacing(u32::from(font_size)) as u16;
     // Handle window events
     let post_egui_evs = handle_events(gui, app, window, sf_egui, font_size, line_spacing);
-    update(app, sf_egui.context().wants_keyboard_input());
+    update(app, sf_egui.context().egui_wants_keyboard_input());
     app.update(gui, window, lua, font_size, line_spacing);
     let mp: ViewportVec = try_conv_mp_zero(window.mouse_position());
     let (di, cont) = gui::do_egui(
@@ -116,7 +116,7 @@ fn handle_post_egui_events(
     app: &mut App,
     sf_egui: &SfEgui,
 ) {
-    let wants_pointer = sf_egui.context().wants_pointer_input();
+    let wants_pointer = sf_egui.context().egui_wants_pointer_input();
     for ev in post_egui_evs {
         match ev {
             Event::MouseButtonPressed { button, x, y } if !wants_pointer => {
@@ -286,8 +286,8 @@ fn handle_events(
     let mut post_egui = Vec::new();
     while let Some(event) = window.poll_event() {
         let egui_ctx = sf_egui.context();
-        let wants_pointer = egui_ctx.wants_pointer_input();
-        let wants_kb = egui_ctx.wants_keyboard_input()
+        let wants_pointer = egui_ctx.egui_wants_pointer_input();
+        let wants_kb = egui_ctx.egui_wants_keyboard_input()
             || matches!(gui.fileops.dialog.state(), DialogState::Open);
         let block_event_from_egui = (matches!(event, Event::KeyPressed { code: Key::Tab, .. })
             && !(wants_kb || wants_pointer));

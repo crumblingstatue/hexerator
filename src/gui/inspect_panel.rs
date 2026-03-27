@@ -449,7 +449,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
         return;
     }
     let offset = match app.hex_ui.interact_mode {
-        InteractMode::View if !ui.ctx().wants_pointer_input() => {
+        InteractMode::View if !ui.egui_wants_pointer_input() => {
             if let Some((off, _view_idx)) = app.byte_offset_at_pos(mouse_pos.x, mouse_pos.y) {
                 let mut add = 0;
                 match gui.inspect_panel.seek_relativity {

@@ -15,9 +15,9 @@ use {
     },
     egui::{
         FontFamily::{self, Proportional},
-        FontId,
+        FontId, Panel,
         TextStyle::{Body, Button, Heading, Monospace, Small},
-        TopBottomPanel, Window,
+        Window,
     },
     egui_colors::Colorix,
     egui_sf2g::{
@@ -106,35 +106,35 @@ pub fn do_egui(
     line_spacing: u16,
     font: &Font,
 ) -> anyhow::Result<(egui_sf2g::DrawInput, bool)> {
-    let di = sf_egui.run(rwin, |_rwin, ctx| {
+    let di = sf_egui.run(rwin, |_rwin, ui| {
         let mut open = IMMEDIATE.enabled() || PERSISTENT.enabled();
         let was_open = open;
         if open {
             app.imm_debug_fun();
         }
-        Window::new("Debug").open(&mut open).show(ctx, windows::debug::ui);
+        Window::new("Debug").open(&mut open).show(ui, windows::debug::ui);
         if was_open && !open {
             IMMEDIATE.toggle();
             PERSISTENT.toggle();
         }
-        gui.msg_dialog.show(ctx, &mut app.clipboard, &mut app.cmd);
+        gui.msg_dialog.show(ui, &mut app.clipboard, &mut app.cmd);
         app.flush_command_queue(gui, lua, font_size, line_spacing);
-        Windows::update(ctx, gui, app, lua, font_size, line_spacing, font);
+        Windows::update(ui, gui, app, lua, font_size, line_spacing, font);
 
         // Context menu
         if let Some(menu) = gui.context_menu.take()
-            && root_ctx_menu::show(&menu, ctx, app, gui)
+            && root_ctx_menu::show(&menu, ui, app, gui)
         {
             gui.context_menu = Some(menu);
         }
         // Panels
-        let top_re = TopBottomPanel::top("top_panel").show(ctx, |ui| {
+        let top_re = Panel::top("top_panel").show_inside(ui, |ui| {
             top_panel::ui(ui, gui, app, lua, font_size, line_spacing);
         });
-        let bot_re = TopBottomPanel::bottom("bottom_panel")
-            .show(ctx, |ui| bottom_panel::ui(ui, app, mouse_pos, gui));
-        let right_re = egui::SidePanel::right("right_panel")
-            .show(ctx, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
+        let bot_re = Panel::bottom("bottom_panel")
+            .show_inside(ui, |ui| bottom_panel::ui(ui, app, mouse_pos, gui));
+        let right_re = Panel::right("right_panel")
+            .show_inside(ui, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
             .response;
         let padding = 2;
         app.hex_ui.hex_iface_rect.x = padding;
@@ -172,7 +172,7 @@ pub fn do_egui(
             if dialog.has_close_button() {
                 win = win.open(&mut open);
             }
-            win.show(ctx, |ui| {
+            win.show(ui, |ui| {
                 retain = dialog.ui(ui, app, gui, lua, font_size, line_spacing);
             });
             if !open {
@@ -183,7 +183,7 @@ pub fn do_egui(
         std::mem::swap(&mut gui.dialogs, &mut dialogs);
         // File dialog
         gui.fileops.update(
-            ctx,
+            ui,
             app,
             &mut gui.msg_dialog,
             &mut gui.win.file_diff_result,
@@ -195,9 +195,9 @@ pub fn do_egui(
 }
 
 pub fn set_font_sizes_ctx(ctx: &egui::Context, style: &Style) {
-    let mut egui_style = (*ctx.style()).clone();
+    let mut egui_style = (*ctx.global_style()).clone();
     set_font_sizes_style(&mut egui_style, style);
-    ctx.set_style(egui_style);
+    ctx.set_global_style(egui_style);
 }
 
 pub fn set_font_sizes_style(egui_style: &mut egui::Style, style: &Style) {

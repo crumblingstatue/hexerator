@@ -52,7 +52,7 @@ pub(super) fn show(menu: &ContextMenu, ctx: &egui::Context, app: &mut App, gui: 
         .kind(egui::UiKind::Menu)
         .order(egui::Order::Foreground)
         .fixed_pos(menu.pos)
-        .default_width(ctx.style().spacing.menu_width)
+        .default_width(ctx.global_style().spacing.menu_width)
         .sense(egui::Sense::hover())
         .show(ctx, |ui| {
             set_menu_style(ui.style_mut());

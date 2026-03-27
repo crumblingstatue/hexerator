@@ -23,12 +23,12 @@ thiserror = "2"
 either = "1.10.0"
 tree_magic_mini = "3.1.6"
 slotmap = { version = "1.0.7", features = ["serde"] }
-egui-sf2g = { version = "0.6", optional = true }
+egui-sf2g = { version = "0.7", optional = true }
 sf2g = { version = "0.4", optional = true, features = ["text"] }
 num-traits = "0.2.18"
 serde-big-array = "0.5.1"
-egui = { version = "0.33", features = ["serde"] }
-egui_extras = { version = "0.33", default-features = false }
+egui = { version = "0.34", features = ["serde"] }
+egui_extras = { version = "0.34", default-features = false }
 itertools = "0.14"
 sysinfo = { version = "0.38", default-features = false, features = ["system"] }
 proc-maps = "0.4.0"
@@ -44,7 +44,7 @@ egui-file-dialog.git = "https://github.com/jannistpl/egui-file-dialog.git"
 human_bytes = "0.4.3"
 shlex = "1.3.0"
 egui-fontcfg = { git = "https://github.com/crumblingstatue/egui-fontcfg.git" }
-egui_colors = "0.10.0"
+egui_colors = "0.11.0"
 libloading = "0.9"
 hexerator-plugin-api = { path = "hexerator-plugin-api" }
 image.version = "0.25"
@@ -52,7 +52,8 @@ image.default-features = false
 image.features = ["png", "bmp"]
 structparse = { git = "https://github.com/crumblingstatue/structparse.git" }
 memmap2 = "0.9.5"
-egui-phosphor = "0.11.0"
+egui-phosphor.git = "https://github.com/crumblingstatue/egui-phosphor.git"
+egui-phosphor.branch = "egui-034"
 constcat = "0.6.0"
 
 [target."cfg(windows)".dependencies.windows-sys]

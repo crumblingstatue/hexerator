@@ -220,7 +220,7 @@ fn try_main() -> anyhow::Result<()> {
     let mut app = App::new(args, cfg, font_size, line_spacing, &mut gui)?;
     let lua = Lua::default();
     gui::set_font_sizes_style(&mut style, &app.cfg.style);
-    sf_egui.context().set_style(style);
+    sf_egui.context().set_global_style(style);
     // Custom egui_colors theme load
     if let Some(project_dirs) = config::project_dirs() {
         let path = project_dirs.color_theme_path();
@@ -357,8 +357,8 @@ fn do_fatal_error_report(title: &str, mut desc: &str, backtrace: &Backtrace) {
         rw.clear(Color::BLACK);
         #[expect(clippy::unwrap_used)]
         let di = sf_egui
-            .run(&mut rw, |rw, ctx| {
-                egui::CentralPanel::default().show(ctx, |ui| {
+            .run(&mut rw, |rw, ui| {
+                egui::CentralPanel::default().show_inside(ui, |ui| {
                     ui.heading(title);
                     ui.separator();
                     egui::ScrollArea::vertical().auto_shrink(false).max_height(500.).show(
@@ -382,7 +382,7 @@ fn do_fatal_error_report(title: &str, mut desc: &str, backtrace: &Backtrace) {
                     ui.separator();
                     ui.horizontal(|ui| {
                         if ui.button("Copy to clipboard").clicked() {
-                            ctx.copy_text(desc.to_owned());
+                            ui.copy_text(desc.to_owned());
                         }
                         if ui.button("Close").clicked() {
                             rw.close();
