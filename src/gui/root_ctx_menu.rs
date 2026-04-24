@@ -34,34 +34,24 @@ pub struct ContextMenuData {
     pub byte_off: Option<usize>,
 }
 
-/// Yoinked from egui source code
-fn set_menu_style(style: &mut egui::Style) {
-    style.spacing.button_padding = egui::vec2(2.0, 0.0);
-    style.visuals.widgets.active.bg_stroke = egui::Stroke::NONE;
-    style.visuals.widgets.hovered.bg_stroke = egui::Stroke::NONE;
-    style.visuals.widgets.inactive.weak_bg_fill = egui::Color32::TRANSPARENT;
-    style.visuals.widgets.inactive.bg_stroke = egui::Stroke::NONE;
-    style.wrap_mode = Some(egui::TextWrapMode::Extend);
-}
-
 /// Returns whether to keep root context menu open
 #[must_use]
-pub(super) fn show(menu: &ContextMenu, ctx: &egui::Context, app: &mut App, gui: &mut Gui) -> bool {
+pub(super) fn show(menu: &ContextMenu, ui: &egui::Ui, app: &mut App, gui: &mut Gui) -> bool {
     let mut close = false;
-    egui::Area::new("root_ctx_menu".into())
-        .kind(egui::UiKind::Menu)
-        .order(egui::Order::Foreground)
-        .fixed_pos(menu.pos)
-        .default_width(ctx.global_style().spacing.menu_width)
-        .sense(egui::Sense::hover())
-        .show(ctx, |ui| {
-            set_menu_style(ui.style_mut());
-            egui::Frame::menu(ui.style()).show(ui, |ui| {
-                ui.with_layout(egui::Layout::top_down_justified(egui::Align::LEFT), |ui| {
-                    menu_inner_ui(app, ui, gui, &mut close, menu);
-                });
-            });
-        });
+    egui::Popup::new(
+        "root_ctx_menu".into(),
+        ui.ctx().clone(),
+        egui::PopupAnchor::Position(menu.pos),
+        ui.layer_id(),
+    )
+    .kind(egui::PopupKind::Menu)
+    .layout(egui::Layout::top_down_justified(egui::Align::Min))
+    .style(egui::containers::menu::menu_style)
+    .gap(0.0)
+    .show(|ui| {
+        ui.style_mut().wrap_mode = Some(egui::TextWrapMode::Extend);
+        menu_inner_ui(app, ui, gui, &mut close, menu);
+    });
     !close
 }
 
