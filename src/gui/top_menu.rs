@@ -149,6 +149,6 @@ pub fn top_menu(
 }
 
 fn try_open_file(file: &std::path::Path, gui: &mut super::Gui) {
-    let result = open::that(file);
+    let result = open::that_detached(file);
     msg_if_fail(result, "Failed to open file", &mut gui.msg_dialog);
 }
