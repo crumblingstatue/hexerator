@@ -36,7 +36,8 @@
 #![expect(
     incomplete_features,
     // It's hard to reconcile lack of partial borrows with few arguments
-    clippy::too_many_arguments
+    clippy::too_many_arguments,
+    clippy::collapsible_match
 )]
 #![windows_subsystem = "windows"]
 
