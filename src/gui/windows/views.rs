@@ -9,7 +9,7 @@ use {
     egui::emath::Numeric,
     egui_extras::{Column, TableBuilder},
     slotmap::Key as _,
-    std::{hash::Hash, ops::RangeInclusive},
+    std::ops::RangeInclusive,
 };
 
 #[derive(Default)]
@@ -297,7 +297,7 @@ fn new_from_perspective_button(ui: &mut egui::Ui, app: &mut App) {
 
 /// Returns whether the value was changed
 fn view_combo(
-    id: impl Hash,
+    id: egui::Id,
     kind: &mut ViewKind,
     ui: &mut egui::Ui,
     font_size: u16,

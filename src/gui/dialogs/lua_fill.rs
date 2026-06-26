@@ -5,10 +5,21 @@ use {
     std::time::Instant,
 };
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct LuaFillDialog {
     result_info_string: String,
     err: bool,
+    syntax: Syntax,
+}
+
+impl Default for LuaFillDialog {
+    fn default() -> Self {
+        Self {
+            result_info_string: Default::default(),
+            err: Default::default(),
+            syntax: Syntax::lua(),
+        }
+    }
 }
 
 impl Dialog for LuaFillDialog {
@@ -46,9 +57,11 @@ impl Dialog for LuaFillDialog {
             // beyond window height
             .max_height(ui.available_height() - 100.0)
             .show(ui, |ui| {
-                CodeEditor::default()
-                    .with_syntax(Syntax::lua())
-                    .show(ui, &mut app.meta_state.meta.misc.fill_lua_script);
+                CodeEditor::default().show(
+                    ui,
+                    &mut app.meta_state.meta.misc.fill_lua_script,
+                    &self.syntax,
+                );
             });
         if ui.button("Execute").clicked() || ctrl_enter {
             let start_time = Instant::now();

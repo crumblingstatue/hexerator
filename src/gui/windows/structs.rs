@@ -7,14 +7,28 @@ use {
     egui_code_editor::{CodeEditor, Syntax},
 };
 
-#[derive(Default)]
 pub struct StructsWindow {
     pub open: WindowOpen,
     struct_text_buf: String,
     parsed_struct: Option<StructMetaItem>,
     error_label: String,
     selected_idx: usize,
-    tab: Tab = Tab::Fields,
+    tab: Tab,
+    syntax: Syntax,
+}
+
+impl Default for StructsWindow {
+    fn default() -> Self {
+        Self {
+            open: Default::default(),
+            struct_text_buf: Default::default(),
+            parsed_struct: Default::default(),
+            error_label: Default::default(),
+            selected_idx: Default::default(),
+            tab: Tab::Fields,
+            syntax: Syntax::lua(),
+        }
+    }
 }
 
 #[derive(PartialEq)]
@@ -73,9 +87,8 @@ impl StructsWindow {
     }
     fn editor_ui(&mut self, ui: &mut egui::Ui) {
         let re = CodeEditor::default()
-            .with_syntax(Syntax::rust())
             .desired_width(300.0)
-            .show(ui, &mut self.struct_text_buf)
+            .show(ui, &mut self.struct_text_buf, &self.syntax)
             .response;
 
         if re.changed() {

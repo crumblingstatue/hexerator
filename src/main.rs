@@ -359,7 +359,7 @@ fn do_fatal_error_report(title: &str, mut desc: &str, backtrace: &Backtrace) {
         #[expect(clippy::unwrap_used)]
         let di = sf_egui
             .run(&mut rw, |rw, ui| {
-                egui::CentralPanel::default().show_inside(ui, |ui| {
+                egui::CentralPanel::default().show(ui, |ui| {
                     ui.heading(title);
                     ui.separator();
                     egui::ScrollArea::vertical().auto_shrink(false).max_height(500.).show(

@@ -128,13 +128,13 @@ pub fn do_egui(
             gui.context_menu = Some(menu);
         }
         // Panels
-        let top_re = Panel::top("top_panel").show_inside(ui, |ui| {
+        let top_re = Panel::top("top_panel").show(ui, |ui| {
             top_panel::ui(ui, gui, app, lua, font_size, line_spacing);
         });
-        let bot_re = Panel::bottom("bottom_panel")
-            .show_inside(ui, |ui| bottom_panel::ui(ui, app, mouse_pos, gui));
+        let bot_re =
+            Panel::bottom("bottom_panel").show(ui, |ui| bottom_panel::ui(ui, app, mouse_pos, gui));
         let right_re = Panel::right("right_panel")
-            .show_inside(ui, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
+            .show(ui, |ui| inspect_panel::ui(ui, app, gui, mouse_pos))
             .response;
         let padding = 2;
         app.hex_ui.hex_iface_rect.x = padding;

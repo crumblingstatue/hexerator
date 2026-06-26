@@ -11,10 +11,20 @@ use {
     mlua::Lua,
 };
 
-#[derive(Default)]
 pub struct ScriptManagerWindow {
     pub open: WindowOpen,
     selected: Option<ScriptKey>,
+    syntax: Syntax,
+}
+
+impl Default for ScriptManagerWindow {
+    fn default() -> Self {
+        Self {
+            open: Default::default(),
+            selected: Default::default(),
+            syntax: Syntax::lua(),
+        }
+    }
 }
 
 impl super::Window for ScriptManagerWindow {
@@ -97,7 +107,7 @@ impl ScriptManagerWindow {
         ui.text_edit_multiline(&mut scr.desc);
         ui.label("Code");
         egui::ScrollArea::vertical().show(ui, |ui| {
-            CodeEditor::default().with_syntax(Syntax::lua()).show(ui, &mut scr.content);
+            CodeEditor::default().show(ui, &mut scr.content, &self.syntax);
         });
         if ui.button("⚡ Execute").clicked() {
             let result = exec_lua(

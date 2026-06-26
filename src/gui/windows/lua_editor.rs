@@ -15,7 +15,6 @@ use {
     std::time::Instant,
 };
 
-#[derive(Default)]
 pub struct LuaEditorWindow {
     pub open: WindowOpen,
     result_info_string: String,
@@ -23,6 +22,21 @@ pub struct LuaEditorWindow {
     new_script_name: String,
     args_string: String,
     edit_key: Option<ScriptKey>,
+    syntax: Syntax,
+}
+
+impl Default for LuaEditorWindow {
+    fn default() -> Self {
+        Self {
+            open: Default::default(),
+            result_info_string: Default::default(),
+            err: Default::default(),
+            new_script_name: Default::default(),
+            args_string: Default::default(),
+            edit_key: Default::default(),
+            syntax: Syntax::lua(),
+        }
+    }
 }
 
 impl super::Window for LuaEditorWindow {
@@ -64,7 +78,7 @@ impl super::Window for LuaEditorWindow {
                             },
                             None => lua = &mut app.meta_state.meta.misc.exec_lua_script,
                         }
-                        CodeEditor::default().with_syntax(Syntax::lua()).show(ui, lua);
+                        CodeEditor::default().show(ui, lua, &self.syntax);
                     });
                 });
                 strip.cell(|ui| {
