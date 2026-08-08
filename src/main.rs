@@ -48,7 +48,6 @@ use {
     clap::Parser as _,
     config::{Config, LoadedConfig, PinnedDir, ProjectDirsExt as _},
     constcat::concat,
-    core::f32,
     egui_colors::{Colorix, tokens::ThemeColor},
     egui_file_dialog::PinnedFolder,
     egui_phosphor::regular as ic,

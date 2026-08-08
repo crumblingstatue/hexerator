@@ -6,7 +6,6 @@ use {
         str_ext::StrExt as _,
     },
     anyhow::Context as _,
-    core::f32,
     std::{
         ffi::OsString,
         io::Read as _,

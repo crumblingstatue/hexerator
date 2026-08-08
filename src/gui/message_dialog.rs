@@ -1,6 +1,5 @@
 use {
     crate::app::command::CommandQueue,
-    core::f32,
     egui::Color32,
     std::{backtrace::Backtrace, collections::VecDeque},
 };
