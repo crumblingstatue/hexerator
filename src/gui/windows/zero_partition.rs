@@ -1,9 +1,6 @@
 use {
     super::{WinCtx, WindowOpen},
-    crate::{
-        gui::egui_ui_ext::EguiResponseExt as _, meta::region::Region, shell::msg_if_fail,
-        util::human_size,
-    },
+    crate::{meta::region::Region, shell::msg_if_fail, util::human_size},
     egui_extras::{Column, TableBuilder},
 };
 
@@ -77,24 +74,20 @@ impl super::Window for ZeroPartition {
                     row.col(|ui| {
                         if ui
                             .link(reg.begin.to_string())
-                            .on_hover_text_deferred(|| human_size(reg.begin))
+                            .on_hover_text(human_size(reg.begin))
                             .clicked()
                         {
                             app.search_focus(reg.begin);
                         }
                     });
                     row.col(|ui| {
-                        if ui
-                            .link(reg.end.to_string())
-                            .on_hover_text_deferred(|| human_size(reg.end))
-                            .clicked()
+                        if ui.link(reg.end.to_string()).on_hover_text(human_size(reg.end)).clicked()
                         {
                             app.search_focus(reg.end);
                         }
                     });
                     row.col(|ui| {
-                        ui.label(reg.len().to_string())
-                            .on_hover_text_deferred(|| human_size(reg.len()));
+                        ui.label(reg.len().to_string()).on_hover_text(human_size(reg.len()));
                     });
                     row.col(|ui| {
                         if ui.button("Select").clicked() {

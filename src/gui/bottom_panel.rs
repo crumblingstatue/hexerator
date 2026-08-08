@@ -1,5 +1,5 @@
 use {
-    super::{Gui, dialogs::JumpDialog, egui_ui_ext::EguiResponseExt as _},
+    super::{Gui, dialogs::JumpDialog},
     crate::{
         app::{App, interact_mode::InteractMode},
         meta::find_most_specific_region_for_offset,
@@ -107,7 +107,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
                 offsets.byte,
                 ratio * 100.0
             ))
-            .on_hover_text_deferred(|| human_size(offsets.byte));
+            .on_hover_text(human_size(offsets.byte));
         }
         ui.separator();
         let [row, col] = app.row_col_of_cursor().unwrap_or([0, 0]);
@@ -148,7 +148,7 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
         } else if cursor_begin {
             re.on_hover_text("Cursor is at beginning");
         } else {
-            re.on_hover_text_deferred(|| human_size(app.edit_state.cursor));
+            re.on_hover_text(human_size(app.edit_state.cursor));
         }
         if let Some(label) = app
             .meta_state
@@ -194,9 +194,8 @@ pub fn ui(ui: &mut Ui, app: &mut App, mouse_pos: ViewportVec, gui: &mut Gui) {
                 ui.label(format!("Human size: {}", human_size(app.data.len())));
             });
             if truncated {
-                label_re = label_re.on_hover_text_deferred(|| {
-                    format!("Length changed, orig.: {}", app.data.orig_data_len)
-                });
+                label_re = label_re
+                    .on_hover_text(format!("Length changed, orig.: {}", app.data.orig_data_len));
             }
             if label_re.clicked() {
                 crate::app::set_clipboard_string(

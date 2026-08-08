@@ -1,9 +1,5 @@
 use {
-    crate::{
-        app::App,
-        gui::{Gui, egui_ui_ext::EguiResponseExt as _},
-        shell::msg_if_fail,
-    },
+    crate::{app::App, gui::Gui, shell::msg_if_fail},
     constcat::concat,
     egui::Button,
     egui_phosphor::regular as ic,
@@ -53,9 +49,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             !app.meta_state.current_meta_path.as_os_str().is_empty(),
             Button::new(L_RELOAD),
         )
-        .on_hover_text_deferred(|| {
-            format!("Reload from {}", app.meta_state.current_meta_path.display())
-        })
+        .on_hover_text(format!(
+            "Reload from {}",
+            app.meta_state.current_meta_path.display()
+        ))
         .clicked()
     {
         msg_if_fail(
@@ -91,9 +88,10 @@ pub fn ui(ui: &mut egui::Ui, gui: &mut Gui, app: &mut App, font_size: u16, line_
             !app.meta_state.current_meta_path.as_os_str().is_empty(),
             Button::new(L_SAVE).shortcut_text("Ctrl+M"),
         )
-        .on_hover_text_deferred(|| {
-            format!("Save to {}", app.meta_state.current_meta_path.display())
-        })
+        .on_hover_text(format!(
+            "Save to {}",
+            app.meta_state.current_meta_path.display()
+        ))
         .clicked()
     {
         msg_if_fail(

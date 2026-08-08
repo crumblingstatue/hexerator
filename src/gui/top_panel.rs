@@ -1,8 +1,5 @@
 use {
-    super::{
-        Gui, dialogs::LuaColorDialog, egui_ui_ext::EguiResponseExt as _, message_dialog::Icon,
-        top_menu::top_menu,
-    },
+    super::{Gui, dialogs::LuaColorDialog, message_dialog::Icon, top_menu::top_menu},
     crate::{
         app::App,
         color::RgbColor,
@@ -47,7 +44,7 @@ pub fn ui(ui: &mut Ui, gui: &mut Gui, app: &mut App, lua: &Lua, font_size: u16, 
                 app.meta_state.meta.low.perspectives[view.perspective].cols,
                 sel.len()
             ))
-            .on_hover_text_deferred(|| human_size(sel.len()));
+            .on_hover_text(human_size(sel.len()));
             #[expect(clippy::collapsible_if)]
             if ui.button("⬅ prev chunk").clicked() {
                 if let Some(chk) = sel.prev_chunk() {
