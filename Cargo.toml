@@ -29,7 +29,7 @@ num-traits = "0.2.18"
 serde-big-array = "0.5.1"
 egui = { version = "0.35", features = ["serde"] }
 egui_extras = { version = "0.35", default-features = false }
-itertools = "0.14"
+itertools = "0.15"
 sysinfo = { version = "0.38", default-features = false, features = ["system"] }
 proc-maps = "0.4.0"
 open = "5.1.2"
