@@ -30,7 +30,7 @@ serde-big-array = "0.5.1"
 egui = { version = "0.35", features = ["serde"] }
 egui_extras = { version = "0.35", default-features = false }
 itertools = "0.15"
-sysinfo = { version = "0.38", default-features = false, features = ["system"] }
+sysinfo = { version = "0.39", default-features = false, features = ["system"] }
 proc-maps = "0.4.0"
 open = "5.1.2"
 arboard = { version = "3.6.0", default-features = false }
