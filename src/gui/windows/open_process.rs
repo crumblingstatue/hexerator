@@ -666,10 +666,6 @@ fn should_retain_range(filters: &Filters, range: &MapRange) -> bool {
 }
 
 fn refresh_proc_maps(pid: u32, win_map_ranges: &mut MapRanges, msg: &mut MessageDialog) {
-    #[cfg_attr(
-        windows,
-        expect(clippy::useless_conversion, reason = "lossless on windows")
-    )]
     match proc_maps::get_process_maps(pid.try_into().expect("Couldnt't convert process id")) {
         Ok(ranges) => {
             *win_map_ranges = ranges;

@@ -57,14 +57,6 @@ egui-phosphor.git = "https://github.com/crumblingstatue/egui-phosphor.git"
 egui-phosphor.branch = "egui-035"
 constcat = "0.6.0"
 
-[target."cfg(windows)".dependencies.windows-sys]
-version = "0.59.0"
-features = [
-    "Win32_System_Diagnostics_Debug",
-    "Win32_Foundation",
-    "Win32_System_Threading",
-]
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 # Uncomment in case incremental compilation breaks things

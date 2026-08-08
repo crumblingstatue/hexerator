@@ -90,14 +90,6 @@ impl App {
                 SourceProvider::Stdin(_) => {
                     anyhow::bail!("Can't reload streaming sources like standard input")
                 }
-                #[cfg(windows)]
-                SourceProvider::WinProc {
-                    handle,
-                    start,
-                    size,
-                } => unsafe {
-                    crate::windows::read_proc_memory(*handle, &mut self.data, *start, *size)?;
-                },
             },
             None => anyhow::bail!("No file to reload"),
         }
@@ -163,26 +155,6 @@ impl App {
             Some(src) => match &mut src.provider {
                 SourceProvider::File(file) => file,
                 SourceProvider::Stdin(_) => anyhow::bail!("Standard input doesn't support saving"),
-                #[cfg(windows)]
-                SourceProvider::WinProc { handle, start, .. } => {
-                    if let Some(region) = self.data.dirty_region {
-                        let mut n_write = 0;
-                        unsafe {
-                            if windows_sys::Win32::System::Diagnostics::Debug::WriteProcessMemory(
-                                *handle,
-                                (*start + region.begin) as _,
-                                self.data[region.begin..].as_mut_ptr() as _,
-                                region.len(),
-                                &mut n_write,
-                            ) == 0
-                            {
-                                anyhow::bail!("Failed to write process memory");
-                            }
-                        }
-                        self.data.dirty_region = None;
-                    }
-                    return Ok(());
-                }
             },
             None => anyhow::bail!("No surce opened, nothing to save"),
         };
@@ -332,8 +304,6 @@ impl App {
                 Ok(())
             }
             SourceProvider::Stdin(_) => anyhow::bail!("Not implemented"),
-            #[cfg(windows)]
-            SourceProvider::WinProc { .. } => anyhow::bail!("Not implemented"),
         }
     }
     #[allow(clippy::unnecessary_wraps, reason = "cfg shenanigans")]
@@ -347,33 +317,17 @@ impl App {
         font_size: u16,
         line_spacing: u16,
     ) -> anyhow::Result<()> {
-        #[cfg(target_os = "linux")]
-        {
-            load_proc_memory_linux(
-                self,
-                pid,
-                start,
-                size,
-                is_write,
-                msg,
-                font_size,
-                line_spacing,
-            );
-            Ok(())
-        }
-        #[cfg(windows)]
-        return crate::windows::load_proc_memory(
+        load_proc_memory_linux(
             self,
             pid,
             start,
             size,
             is_write,
+            msg,
             font_size,
             line_spacing,
-            msg,
         );
-        #[cfg(target_os = "macos")]
-        return load_proc_memory_macos(self, pid, start, size, is_write, font, msg);
+        Ok(())
     }
 }
 
@@ -1231,7 +1185,6 @@ pub fn set_clipboard_string(cb: &mut arboard::Clipboard, msg: &mut MessageDialog
     msg_if_fail(cb.set_text(text), "Failed to set clipboard text", msg);
 }
 
-#[cfg(target_os = "linux")]
 fn load_proc_memory_linux(
     app: &mut App,
     pid: sysinfo::Pid,
@@ -1260,36 +1213,6 @@ fn load_proc_memory_linux(
         line_spacing,
         None,
     );
-}
-
-#[cfg(target_os = "macos")]
-fn load_proc_memory_macos(
-    app: &mut App,
-    pid: sysinfo::Pid,
-    start: usize,
-    size: usize,
-    is_write: bool,
-    font: &Font,
-    msg: &mut MessageDialog,
-    events: &EventQueue,
-) -> anyhow::Result<()> {
-    app.load_file_args(
-        Args {
-            src: SourceArgs {
-                file: Some(Path::new("/proc/").join(pid.to_string()).join("mem")),
-                jump: None,
-                hard_seek: Some(start),
-                take: Some(size),
-                read_only: !is_write,
-                stream: false,
-            },
-            recent: false,
-            meta: None,
-        },
-        font,
-        msg,
-        events,
-    )
 }
 
 pub fn read_source_to_buf(path: &Path, args: &SourceArgs) -> Result<Vec<u8>, anyhow::Error> {

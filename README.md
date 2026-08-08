@@ -1,5 +1,5 @@
 # Hexerator
-Versatile GUI hex editor focused on binary file exploration and aiding pattern recognition. Written in Rust.
+Versatile GUI hex editor for Linux, focused on binary file exploration and aiding pattern recognition.
 
 Check out [the Hexerator book](https://crumblingstatue.github.io/hexerator-book/0.4.0) for a detailed list of features, and more!
 

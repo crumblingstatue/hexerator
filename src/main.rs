@@ -39,7 +39,6 @@
     clippy::too_many_arguments,
     clippy::collapsible_match
 )]
-#![windows_subsystem = "windows"]
 
 use {
     crate::app::App,
@@ -100,8 +99,6 @@ mod update;
 mod util;
 mod value_color;
 mod view;
-#[cfg(windows)]
-mod windows;
 
 const L_CONTINUE: &str = concat!(ic::WARNING, " Continue");
 const L_ABORT: &str = concat!(ic::X_CIRCLE, "Abort");

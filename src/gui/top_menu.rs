@@ -126,10 +126,6 @@ pub fn top_menu(
                         SourceProvider::Stdin(_) => {
                             ui.label("Standard input");
                         }
-                        #[cfg(windows)]
-                        SourceProvider::WinProc { handle, .. } => {
-                            ui.label(format!("Windows process: {:p}", handle));
-                        }
                     }
                     if src.attr.stream {
                         if src.state.stream_end {
