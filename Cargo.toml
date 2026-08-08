@@ -39,7 +39,7 @@ iced-x86 = "1.21.0"
 strum = { version = "0.27", features = ["derive"] }
 egui_code_editor = "0.3.7"
 # luajit breaks with panic=abort, because it relies on unwinding for exception handling
-mlua = { version = "0.11", features = ["luau", "vendored"] }
+mlua = { version = "0.12", features = ["luau", "vendored"] }
 egui-file-dialog.git = "https://github.com/crumblingstatue/egui-file-dialog.git"
 egui-file-dialog.branch = "egui-035"
 human_bytes = "0.4.3"
