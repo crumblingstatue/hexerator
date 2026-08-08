@@ -43,7 +43,7 @@ mlua = { version = "0.12", features = ["luau", "vendored"] }
 egui-file-dialog.git = "https://github.com/crumblingstatue/egui-file-dialog.git"
 egui-file-dialog.branch = "egui-035"
 human_bytes = "0.4.3"
-shlex = "1.3.0"
+shlex = "2.0.0"
 egui-fontcfg = { git = "https://github.com/crumblingstatue/egui-fontcfg.git" }
 egui_colors = "0.12.0"
 libloading = "0.9"
