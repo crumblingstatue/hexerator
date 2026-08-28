@@ -102,10 +102,7 @@ pub fn do_frame(
     sf_egui.draw(di, window, None);
     window.display();
     gamedebug_core::inc_frame();
-    if app.quit_requested {
-        return Ok(false);
-    }
-    Ok(true)
+    Ok(!app.quit_requested)
 }
 
 /// Some events need to be handled after the egui passes, so we can know if
