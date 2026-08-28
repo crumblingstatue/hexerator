@@ -384,7 +384,7 @@ trait ValueTrait: EndianedPrimitive {
     fn value_change_ui(
         &self,
         ui: &mut Ui,
-        bytes: &mut [u8; Self::BYTE_LEN],
+        bytes: &mut [u8; <Self as EndianedPrimitive>::BYTE_LEN],
         cb: &mut arboard::Clipboard,
         msg: &mut MessageDialog,
     ) -> ValueUiOutput<Self::Primitive>;
@@ -395,10 +395,7 @@ trait ValueTrait: EndianedPrimitive {
         ui: &mut Ui,
         cb: &mut arboard::Clipboard,
         msg: &mut MessageDialog,
-    ) -> UiAction<Self::Primitive>
-    where
-        [(); Self::BYTE_LEN]:,
-    {
+    ) -> UiAction<Self::Primitive> {
         let range = bm.offset..bm.offset + Self::BYTE_LEN;
         match data.get_mut(range.clone()) {
             Some(slice) => {
@@ -490,11 +487,11 @@ impl<T: EndianedPrimitive + DefaultUi> ValueTrait for T {
 impl EndianedPrimitive for StringMap {
     type Primitive = u8;
 
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+    fn from_bytes(bytes: [u8; <Self as EndianedPrimitive>::BYTE_LEN]) -> Self::Primitive {
         bytes[0]
     }
 
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+    fn to_bytes(prim: Self::Primitive) -> [u8; <Self as EndianedPrimitive>::BYTE_LEN] {
         [prim]
     }
 
@@ -507,7 +504,7 @@ impl ValueTrait for StringMap {
     fn value_change_ui(
         &self,
         ui: &mut Ui,
-        bytes: &mut [u8; Self::BYTE_LEN],
+        bytes: &mut [u8; <Self as EndianedPrimitive>::BYTE_LEN],
         _cb: &mut arboard::Clipboard,
         _msg: &mut MessageDialog,
     ) -> ValueUiOutput<Self::Primitive> {

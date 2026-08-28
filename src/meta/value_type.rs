@@ -180,11 +180,11 @@ pub struct I8;
 impl EndianedPrimitive for I8 {
     type Primitive = i8;
 
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+    fn from_bytes(bytes: [u8; <Self as EndianedPrimitive>::BYTE_LEN]) -> Self::Primitive {
         i8::from_ne_bytes(bytes)
     }
 
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+    fn to_bytes(prim: Self::Primitive) -> [u8; <Self as EndianedPrimitive>::BYTE_LEN] {
         prim.to_ne_bytes()
     }
 
@@ -199,11 +199,11 @@ pub struct U8;
 impl EndianedPrimitive for U8 {
     type Primitive = u8;
 
-    fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+    fn from_bytes(bytes: [u8; <Self as EndianedPrimitive>::BYTE_LEN]) -> Self::Primitive {
         u8::from_ne_bytes(bytes)
     }
 
-    fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+    fn to_bytes(prim: Self::Primitive) -> [u8; <Self as EndianedPrimitive>::BYTE_LEN] {
         prim.to_ne_bytes()
     }
 
@@ -221,11 +221,11 @@ macro_rules! impl_for_num {
             impl EndianedPrimitive for $wrap {
                 type Primitive = $prim;
 
-                fn from_bytes(bytes: [u8; Self::BYTE_LEN]) -> Self::Primitive {
+                fn from_bytes(bytes: [u8; <Self as EndianedPrimitive>::BYTE_LEN]) -> Self::Primitive {
                     $prim::${concat(from_, $en, _bytes)}(bytes)
                 }
 
-                fn to_bytes(prim: Self::Primitive) -> [u8; Self::BYTE_LEN] {
+                fn to_bytes(prim: Self::Primitive) -> [u8; <Self as EndianedPrimitive>::BYTE_LEN] {
                     prim.${concat(to_, $en, _bytes)}()
                 }
 

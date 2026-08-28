@@ -235,8 +235,8 @@ fn at_row_ui(struct_: &mut StructMetaItem, ui: &mut egui::Ui, app: &mut crate::a
 
 trait ToFromBytes: Sized {
     const LEN: usize = size_of::<Self>();
-    fn from_bytes(bytes: [u8; Self::LEN], endian: Endian) -> Self;
-    fn to_bytes(&self, endian: Endian) -> [u8; Self::LEN];
+    fn from_bytes(bytes: [u8; <Self as ToFromBytes>::LEN], endian: Endian) -> Self;
+    fn to_bytes(&self, endian: Endian) -> [u8; <Self as ToFromBytes>::LEN];
 }
 
 fn with_bytes_as_primitive<T, F>(bytes: &mut [u8], endian: Endian, mut fun: F)
