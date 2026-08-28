@@ -76,9 +76,6 @@ impl Dialog for LuaColorDialog {
         if !self.err_string.is_empty() {
             ui.label(egui::RichText::new(&self.err_string).color(egui::Color32::RED));
         }
-        if ui.button("Close").clicked() {
-            return false;
-        }
-        true
+        !ui.button("Close").clicked()
     }
 }
