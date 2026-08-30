@@ -23,12 +23,12 @@ thiserror = "2"
 either = "1.10.0"
 tree_magic_mini = "3.1.6"
 slotmap = { version = "1.0.7", features = ["serde"] }
-egui-sf2g = { version = "0.8", optional = true }
+egui-sf2g = { version = "0.9", optional = true }
 sf2g = { version = "0.4", optional = true, features = ["text"] }
 num-traits = "0.2.18"
 serde-big-array = "0.5.1"
-egui = { version = "0.35", features = ["serde"] }
-egui_extras = { version = "0.35", default-features = false }
+egui = { version = "0.36", features = ["serde"] }
+egui_extras = { version = "0.36", default-features = false }
 itertools = "0.15"
 sysinfo = { version = "0.39", default-features = false, features = ["system"] }
 proc-maps = "0.5.0"
@@ -37,15 +37,14 @@ arboard = { version = "3.6.0", default-features = false }
 paste = "1.0.14"
 iced-x86 = "1.21.0"
 strum = { version = "0.28", features = ["derive"] }
-egui_code_editor = "0.3.7"
+egui_code_editor = "0.4.1"
 # luajit breaks with panic=abort, because it relies on unwinding for exception handling
 mlua = { version = "0.12", features = ["luau", "vendored"] }
-egui-file-dialog.git = "https://github.com/crumblingstatue/egui-file-dialog.git"
-egui-file-dialog.branch = "egui-035"
+egui-file-dialog = "0.15"
 human_bytes = "0.4.3"
 shlex = "2.0.0"
 egui-fontcfg = { git = "https://github.com/crumblingstatue/egui-fontcfg.git" }
-egui_colors = "0.12.0"
+egui_colors = "0.13.0"
 libloading = "0.9"
 hexerator-plugin-api = { path = "hexerator-plugin-api" }
 image.version = "0.25"
@@ -54,7 +53,7 @@ image.features = ["png", "bmp"]
 structparse = { git = "https://github.com/crumblingstatue/structparse.git" }
 memmap2 = "0.9.5"
 egui-phosphor.git = "https://github.com/crumblingstatue/egui-phosphor.git"
-egui-phosphor.branch = "egui-035"
+egui-phosphor.branch = "egui-036"
 constcat = "0.6.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

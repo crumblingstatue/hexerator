@@ -89,6 +89,7 @@ impl StructsWindow {
         let re = CodeEditor::default()
             .desired_width(300.0)
             .show(ui, &mut self.struct_text_buf, &self.syntax)
+            .0
             .response;
 
         if re.changed() {
