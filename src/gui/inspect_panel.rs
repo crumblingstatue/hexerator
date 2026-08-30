@@ -44,6 +44,8 @@ pub struct InspectPanel {
     seek_user_offs: usize,
     /// The value of the cursor on the previous frame. Used to determine when the cursor changes
     pub prev_frame_inspect_offset: usize,
+    /// Index of the currently focused text edit
+    focused_idx: Option<usize>,
 }
 
 /// Relativity of seeking to an offset
@@ -95,6 +97,7 @@ impl Default for InspectPanel {
             prev_frame_inspect_offset: 0,
             seek_user_buf: String::new(),
             seek_user_offs: 0,
+            focused_idx: None,
         }
     }
 }
@@ -509,17 +512,19 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
     if app.data.is_empty() {
         return;
     }
-    for thingy in &mut gui.inspect_panel.input_thingies {
-        thingy.update(
-            &app.data[..],
-            offset,
-            gui.inspect_panel.big_endian,
-            gui.inspect_panel.format,
-        );
-    }
     gui.inspect_panel.changed_one = false;
     let mut actions = Vec::new();
-    for thingy in &mut gui.inspect_panel.input_thingies {
+    let mut some_focused = false;
+    for (idx, thingy) in gui.inspect_panel.input_thingies.iter_mut().enumerate() {
+        // Don't update if we're focused, so we can edit the value without it being overwritten
+        if gui.inspect_panel.focused_idx != Some(idx) {
+            thingy.update(
+                &app.data[..],
+                offset,
+                gui.inspect_panel.big_endian,
+                gui.inspect_panel.format,
+            );
+        }
         ui.horizontal(|ui| {
             ui.label(thingy.label());
             if ui.button("📋").on_hover_text("copy to clipboard").clicked() {
@@ -552,7 +557,12 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
                 msg_if_fail(result, "Failed to jump forward", &mut gui.msg_dialog);
             }
         });
-        if ui.text_edit_singleline(thingy.buf_mut()).lost_focus()
+        let re = ui.text_edit_singleline(thingy.buf_mut());
+        if re.has_focus() {
+            gui.inspect_panel.focused_idx = Some(idx);
+            some_focused = true;
+        }
+        if re.lost_focus()
             && ui.input(|inp| inp.key_pressed(egui::Key::Enter))
             && let Some(range) = thingy.write_data(
                 &mut app.data,
@@ -565,6 +575,10 @@ pub fn ui(ui: &mut Ui, app: &mut App, gui: &mut crate::gui::Gui, mouse_pos: View
             gui.inspect_panel.changed_one = true;
             actions.push(Action::AddDirty(range));
         }
+    }
+    // Clear focus indicator if none were focused
+    if !some_focused {
+        gui.inspect_panel.focused_idx = None;
     }
     ui.horizontal(|ui| {
         if ui.checkbox(&mut gui.inspect_panel.big_endian, "Big endian").clicked() {
