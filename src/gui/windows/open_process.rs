@@ -546,10 +546,8 @@ impl super::Window for OpenProcessWindow {
                             ));
                         });
                         row.col(|ui| {
-                            let txt = map_range
-                                .filename()
-                                .map(|p| p.display().to_string())
-                                .unwrap_or_default();
+                            let txt =
+                                map_range.filename().map_or_default(|p| p.display().to_string());
                             ui.add(egui::Label::new(&txt).sense(egui::Sense::click()))
                                 .context_menu(|ui| {
                                     if ui.button("📋 Copy to clipboard").clicked() {
