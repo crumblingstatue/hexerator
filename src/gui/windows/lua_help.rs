@@ -27,7 +27,9 @@ impl super::Window for LuaHelpWindow {
                             ui.style_mut().spacing.item_spacing = egui::vec2(0., 0.);
                             ui.label("hx:");
                             ui.label(
-                                egui::RichText::new(<$t>::API_SIG).color(Color32::WHITE).strong(),
+                                egui::RichText::new(<$t>::API_SIG)
+                                    .color(Color32::WHITE)
+                                    .strong(),
                             );
                         });
                         ui.indent("doc_indent", |ui| {
