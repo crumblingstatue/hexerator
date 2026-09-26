@@ -1,9 +1,9 @@
 #![doc(html_no_source)]
 #![feature(
     try_blocks,
-    min_generic_const_args,
-    macroless_generic_const_args,
-    generic_const_args,
+    gca_min_const_items,
+    gca_macroless_args,
+    gca_const_items,
     macro_metavar_expr_concat,
     default_field_values,
     yeet_expr,
